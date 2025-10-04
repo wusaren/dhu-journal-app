@@ -1,0 +1,512 @@
+<template>
+  <div class="paper-management">
+    
+
+    <!-- 筛选区域 -->
+    <el-card class="filter-card">
+      <el-form :model="filterForm" label-width="80px">
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <el-form-item label="期刊刊期">
+              <el-select v-model="filterForm.issue" placeholder="请选择刊期" clearable>
+                <el-option label="2024年第1期" value="2024-1" />
+                <el-option label="2024年第2期" value="2024-2" />
+                <el-option label="2024年第3期" value="2024-3" />
+                <el-option label="2023年第4期" value="2023-4" />
+                <el-option label="2023年第3期" value="2023-3" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="论文状态">
+              <el-select v-model="filterForm.status" placeholder="请选择状态" clearable>
+                <el-option label="待审核" value="pending" />
+                <el-option label="已通过" value="approved" />
+                <el-option label="需修改" value="need_revision" />
+                <el-option label="已拒绝" value="rejected" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="关键词">
+              <el-input v-model="filterForm.keyword" placeholder="输入关键词搜索" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item>
+              <el-button class="search-btn" type="primary" @click="handleSearch">搜索</el-button>
+              <el-button class="reset-btn" @click="resetFilter">重置</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </el-card>
+
+    <!-- 论文列表 -->
+    <el-card class="content-card">
+      <template #header>
+        <div class="card-header">
+          <h3>论文列表</h3>
+          <el-button class="add-paper-btn" type="primary" size="small">添加论文</el-button>
+        </div>
+      </template>
+
+      <!-- 批量操作按钮 -->
+      <div class="batch-actions" v-if="selectedPapers.length > 0">
+        <el-button size="small" type="danger" @click="handleBatchDelete">
+          批量删除 ({{ selectedPapers.length }})
+        </el-button>
+        <el-button size="small" type="warning" @click="handleBatchMove">
+          批量移动
+        </el-button>
+      </div>
+
+      <el-table 
+        :data="pagedPaperList" 
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="title" label="论文标题" width="250" />
+        <el-table-column prop="author" label="作者" width="100" />
+        <el-table-column prop="journalIssue" label="期刊刊期" width="120" />
+        <el-table-column prop="startPage" label="起始页" width="80" />
+        <el-table-column prop="endPage" label="结束页" width="80" />
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="scope">
+            <el-tag :type="getStatusType(scope.row.status)">
+              {{ scope.row.status }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="submitDate" label="提交日期" width="120" />
+        <el-table-column label="操作" width="200">
+          <template #default="scope">
+            <el-button class="view-btn" size="small" @click="handleView(scope.row)">
+              查看
+            </el-button>
+            <el-button class="edit-btn" size="small" @click="handleEdit(scope.row)">
+              编辑
+            </el-button>
+            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页控件 -->
+      <div class="pagination">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :small="true"
+          :background="true"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="filteredPaperList.length"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
+interface Paper {
+  id: number
+  title: string
+  author: string
+  journalIssue: string
+  startPage: number
+  endPage: number
+  status: string
+  submitDate: string
+}
+
+interface FilterForm {
+  issue: string
+  status: string
+  keyword: string
+}
+
+const filterForm = ref<FilterForm>({
+  issue: '',
+  status: '',
+  keyword: ''
+})
+
+const selectedPapers = ref<Paper[]>([])
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+// 模拟数据 - 包含更多论文数据用于分页测试
+const allPaperList = ref<Paper[]>([
+  {
+    id: 1,
+    title: '基于深度学习的图像识别技术研究',
+    author: '张三',
+    journalIssue: '2024年第1期',
+    startPage: 1,
+    endPage: 10,
+    status: '待审核',
+    submitDate: '2024-01-15'
+  },
+  {
+    id: 2,
+    title: '人工智能在医疗诊断中的应用',
+    author: '李四',
+    journalIssue: '2024年第1期',
+    startPage: 11,
+    endPage: 20,
+    status: '已通过',
+    submitDate: '2024-01-10'
+  },
+  {
+    id: 3,
+    title: '区块链技术在供应链管理中的研究',
+    author: '王五',
+    journalIssue: '2024年第2期',
+    startPage: 21,
+    endPage: 30,
+    status: '需修改',
+    submitDate: '2024-01-08'
+  },
+  {
+    id: 4,
+    title: '大数据分析在商业决策中的应用',
+    author: '赵六',
+    journalIssue: '2024年第2期',
+    startPage: 31,
+    endPage: 40,
+    status: '已拒绝',
+    submitDate: '2024-01-05'
+  },
+  {
+    id: 5,
+    title: '云计算环境下的数据安全研究',
+    author: '钱七',
+    journalIssue: '2024年第3期',
+    startPage: 41,
+    endPage: 50,
+    status: '待审核',
+    submitDate: '2024-01-03'
+  },
+  {
+    id: 6,
+    title: '物联网技术在智能家居中的应用',
+    author: '孙八',
+    journalIssue: '2024年第3期',
+    startPage: 51,
+    endPage: 60,
+    status: '已通过',
+    submitDate: '2024-01-01'
+  },
+  {
+    id: 7,
+    title: '机器学习算法优化研究',
+    author: '周九',
+    journalIssue: '2023年第4期',
+    startPage: 61,
+    endPage: 70,
+    status: '需修改',
+    submitDate: '2023-12-28'
+  },
+  {
+    id: 8,
+    title: '自然语言处理技术进展',
+    author: '吴十',
+    journalIssue: '2023年第4期',
+    startPage: 71,
+    endPage: 80,
+    status: '已拒绝',
+    submitDate: '2023-12-25'
+  },
+  {
+    id: 9,
+    title: '计算机视觉技术应用',
+    author: '郑十一',
+    journalIssue: '2023年第3期',
+    startPage: 81,
+    endPage: 90,
+    status: '待审核',
+    submitDate: '2023-12-20'
+  },
+  {
+    id: 10,
+    title: '网络安全防护技术研究',
+    author: '王十二',
+    journalIssue: '2023年第3期',
+    startPage: 91,
+    endPage: 100,
+    status: '已通过',
+    submitDate: '2023-12-15'
+  },
+  {
+    id: 11,
+    title: '数据库优化技术研究',
+    author: '李十三',
+    journalIssue: '2023年第2期',
+    startPage: 101,
+    endPage: 110,
+    status: '需修改',
+    submitDate: '2023-12-10'
+  },
+  {
+    id: 12,
+    title: '软件工程方法论研究',
+    author: '张十四',
+    journalIssue: '2023年第2期',
+    startPage: 111,
+    endPage: 120,
+    status: '已拒绝',
+    submitDate: '2023-12-05'
+  }
+])
+
+// 过滤后的论文列表
+const filteredPaperList = computed(() => {
+  return allPaperList.value.filter(paper => {
+    // 刊期筛选：使用value值进行匹配
+    const matchesIssue = !filterForm.value.issue || 
+      paper.journalIssue.includes(filterForm.value.issue.replace('-', '年第') + '期')
+    
+    // 状态筛选：将英文状态值映射为中文状态
+    const statusMap: Record<string, string> = {
+      'pending': '待审核',
+      'approved': '已通过', 
+      'need_revision': '需修改',
+      'rejected': '已拒绝'
+    }
+    const matchesStatus = !filterForm.value.status || 
+      paper.status === statusMap[filterForm.value.status]
+    
+    // 关键词筛选：不区分大小写
+    const matchesKeyword = !filterForm.value.keyword || 
+      paper.title.toLowerCase().includes(filterForm.value.keyword.toLowerCase()) || 
+      paper.author.toLowerCase().includes(filterForm.value.keyword.toLowerCase())
+    
+    return matchesIssue && matchesStatus && matchesKeyword
+  })
+})
+
+// 分页后的论文列表
+const pagedPaperList = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredPaperList.value.slice(start, end)
+})
+
+const getStatusType = (status: string) => {
+  const statusMap: Record<string, string> = {
+    '待审核': 'warning',
+    '已通过': 'success',
+    '需修改': 'danger',
+    '已拒绝': 'info'
+  }
+  return statusMap[status] || 'info'
+}
+
+const handleSearch = () => {
+  currentPage.value = 1 // 搜索时重置到第一页
+  ElMessage.info('搜索完成')
+}
+
+const resetFilter = () => {
+  filterForm.value = {
+    issue: '',
+    status: '',
+    keyword: ''
+  }
+  currentPage.value = 1
+}
+
+const handleSelectionChange = (selection: Paper[]) => {
+  selectedPapers.value = selection
+}
+
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  currentPage.value = 1
+}
+
+const handleCurrentChange = (page: number) => {
+  currentPage.value = page
+}
+
+const handleView = (paper: Paper) => {
+  ElMessage.info(`查看论文: ${paper.title}`)
+}
+
+const handleEdit = (paper: Paper) => {
+  ElMessage.info(`编辑论文: ${paper.title}`)
+}
+
+const handleDelete = async (paper: Paper) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除论文"${paper.title}"吗？`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    // 这里添加删除逻辑
+    ElMessage.success('论文删除成功')
+  } catch {
+    ElMessage.info('取消删除')
+  }
+}
+
+const handleBatchDelete = async () => {
+  try {
+    await ElMessageBox.confirm(`确定要删除选中的 ${selectedPapers.value.length} 篇论文吗？`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    // 这里添加批量删除逻辑
+    ElMessage.success('批量删除成功')
+    selectedPapers.value = []
+  } catch {
+    ElMessage.info('取消批量删除')
+  }
+}
+
+const handleBatchMove = () => {
+  ElMessage.info('批量移动功能待实现')
+}
+</script>
+
+<style scoped>
+.paper-management {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.page-header p {
+  color: #666;
+  margin: 0;
+}
+
+.filter-card {
+  margin-bottom: 20px;
+}
+
+.content-card {
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.batch-actions {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 搜索按钮自定义样式 */
+.search-btn {
+  background-color: #9c0e0e !important;
+  border-color: #9c0e0e !important;
+  color: white !important;
+}
+
+.search-btn:hover {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+}
+
+/* 重置按钮自定义样式 */
+.reset-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.reset-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
+/* 添加论文按钮自定义样式 */
+.add-paper-btn {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+
+.add-paper-btn:hover {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+}
+
+/* 查看按钮自定义样式 */
+.view-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.view-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
+/* 编辑按钮自定义样式 */
+.edit-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.edit-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
+/* 删除按钮自定义样式 */
+.delete-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.delete-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+</style>
