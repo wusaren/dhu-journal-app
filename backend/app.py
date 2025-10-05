@@ -8,14 +8,16 @@ import os
 import logging
 import bcrypt
 
-# 导入新的模型
+# 导入配置和模型
+from config import current_config
 from models import User, Journal, Paper, FileUpload, db
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:zs156987@localhost/journal'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+
+# 加载配置
+app.config.from_object(current_config)
+
+# JWT配置
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['JWT_HEADER_NAME'] = 'Authorization'
