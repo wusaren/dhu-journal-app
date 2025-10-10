@@ -50,40 +50,24 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <!-- 上传区域 -->
-    <el-card class="upload-card">
+    <!-- 创建期刊区域 -->
+    <el-card class="create-card">
       <template #header>
         <div class="card-header">
-          <h3>上传期刊文件</h3>
+          <h3>期刊管理</h3>
+          <el-button 
+            class="create-journal-btn" 
+            type="primary" 
+            size="mid"
+            @click="handleCreateJournal"
+          >
+            创建期刊
+          </el-button>
         </div>
       </template>
-
-      <el-upload
-        class="upload-demo"
-        action="#"
-        :auto-upload="false"
-        :on-change="handleFileChange"
-        :show-file-list="false"
-      >
-        <template #trigger>
-          <el-button class="select-journal-btn" type="primary" size="mid">选择期刊文件</el-button>
-        </template>
-        <el-button 
-          style="margin-left: 10px;" 
-          :disabled="!selectedFile"
-          :loading="uploadLoading"
-          @click="handleParse"
-          class="analysis-journal-btn"
-          type="success" 
-          size="mid"
-        >
-          添加到期刊
-        </el-button>
-      </el-upload>
-
-      <div v-if="selectedFile" class="file-info">
-        <p>已选择文件: {{ selectedFile.name }}</p>
-        <p>文件大小: {{ formatFileSize(selectedFile.size) }}</p>
+      
+      <div class="create-tips">
+        <p>点击"创建期刊"按钮来添加新的期刊记录</p>
       </div>
     </el-card>
   </div>
@@ -91,8 +75,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import type { UploadFile, UploadFiles } from 'element-plus'
 import axios from 'axios'
 
 interface Journal {
@@ -107,19 +91,9 @@ interface Journal {
   fileSize?: number
 }
 
-const selectedFile = ref<File | null>(null)
+const router = useRouter()
 const journalList = ref<Journal[]>([])
 const loading = ref(false)
-const uploadLoading = ref(false)
-
-// 获取认证token
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  }
-}
 
 // 加载期刊列表
 const loadJournals = async () => {
@@ -163,71 +137,8 @@ onMounted(() => {
   loadJournals()
 })
 
-const handleFileChange = (file: UploadFile, fileList: UploadFiles) => {
-  selectedFile.value = file.raw as File
-}
-
-const handleParse = async () => {
-  if (!selectedFile.value) {
-    ElMessage.error('请先选择文件')
-    return
-  }
-
-  uploadLoading.value = true
-  
-  try {
-    console.log('开始上传文件:', selectedFile.value.name)
-    
-    // 创建FormData
-    const formData = new FormData()
-    formData.append('file', selectedFile.value)
-    formData.append('journalId', '1') // 默认关联到期刊ID 1
-    
-    console.log('准备上传文件...')
-    
-    // 上传文件（不需要认证）
-    const uploadResponse = await axios.post('http://localhost:5000/api/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-
-    console.log('文件上传响应:', uploadResponse.data)
-
-    console.log('上传响应:', uploadResponse.data)
-    
-    if (uploadResponse.data.fileId || uploadResponse.data.message === '文件上传成功') {
-      ElMessage.success('文件上传成功！')
-      
-      // 重新从数据库加载期刊列表
-      await loadJournals()
-      
-      ElMessage.success('文件已添加到期刊列表！')
-    } else {
-      ElMessage.error('文件上传失败：未收到有效响应')
-    }
-  } catch (error: any) {
-    console.error('文件上传失败:', error)
-    console.error('错误详情:', error.response?.data)
-    
-    if (error.code === 'ERR_NETWORK' || error.message.includes('ERR_CONNECTION_REFUSED')) {
-      ElMessage.error('无法连接到后端服务，请确保后端服务已启动 (http://localhost:5000)')
-    } else if (error.response?.status === 500) {
-      ElMessage.error(`服务器内部错误: ${error.response?.data?.message || '请检查后端日志'}`)
-    } else {
-      ElMessage.error(`文件上传失败: ${error.response?.data?.message || error.message}`)
-    }
-  } finally {
-    uploadLoading.value = false
-  }
-}
-
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+const handleCreateJournal = () => {
+  router.push('/create-journal')
 }
 
 const getStatusType = (status: string) => {
@@ -346,7 +257,7 @@ const handleViewStats = async (journal: Journal) => {
   margin: 0;
 }
 
-.upload-card {
+.create-card {
   margin-bottom: 20px;
 }
 
@@ -370,44 +281,31 @@ const handleViewStats = async (journal: Journal) => {
   font-size: 14px;
 }
 
-.file-info {
+.create-tips {
   margin-top: 15px;
   padding: 10px;
   background-color: #f8f9fa;
   border-radius: 4px;
 }
 
-.file-info p {
+.create-tips p {
   margin: 5px 0;
   color: #666;
   font-size: 14px;
 }
 
-.upload-demo {
-  display: flex;
-  align-items: center;
-}
-/* 选择期刊按钮自定义样式 */
-.select-journal-btn {
+/* 创建期刊按钮自定义样式 */
+.create-journal-btn {
   background-color: #b62020ff !important;
   border-color: #be2121ff !important;
   color: white !important;
 }
 
-.select-journal-btn:hover {
+.create-journal-btn:hover {
   background-color: #7a0b0b !important;
   border-color: #7a0b0b !important;
 }
-.analysis-journal-btn {
-  background-color: #fa8c16 !important;
-  border-color: #fa8c16 !important;
-  color: white !important;
-}
-.analysis-journal-btn:hover {
-  background-color: #fa8c20 !important;
-  border-color: #fa8c20!important;
-  color: white !important;
-}
+
 /* 查看按钮自定义样式 */
 .view-btn {
   background-color: #f5f5f5 !important;

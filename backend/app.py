@@ -121,6 +121,56 @@ def get_journals():
         logger.error(f"获取期刊列表错误: {str(e)}")
         return jsonify({'message': f'获取期刊列表失败: {str(e)}'}), 500
 
+# 创建期刊
+@app.route('/api/journals/create', methods=['POST'])
+def create_journal():
+    try:
+        data = request.get_json()
+        
+        # 验证必填字段
+        required_fields = ['issue', 'title', 'publish_date', 'status']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'message': f'缺少必填字段: {field}'}), 400
+        
+        # 检查期刊号是否已存在
+        existing_journal = Journal.query.filter_by(issue=data['issue']).first()
+        if existing_journal:
+            return jsonify({'message': '期刊号已存在'}), 400
+        
+        # 创建新期刊
+        new_journal = Journal(
+            title=data['title'],
+            issue=data['issue'],
+            publish_date=datetime.strptime(data['publish_date'], '%Y-%m-%d').date(),
+            status=data['status'],
+            description=data.get('description', ''),
+            created_by=1  # 默认管理员用户ID
+        )
+        
+        db.session.add(new_journal)
+        db.session.commit()
+        
+        logger.info(f"新期刊创建成功: {new_journal.issue}")
+        
+        return jsonify({
+            'success': True,
+            'message': '期刊创建成功',
+            'journal': {
+                'id': new_journal.id,
+                'title': new_journal.title,
+                'issue': new_journal.issue,
+                'publishDate': new_journal.publish_date.isoformat(),
+                'status': new_journal.status,
+                'description': new_journal.description
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"创建期刊错误: {str(e)}")
+        db.session.rollback()
+        return jsonify({'message': f'创建期刊失败: {str(e)}'}), 500
+
 # 文件上传
 @app.route('/api/upload', methods=['POST'])
 def upload_file():

@@ -33,6 +33,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'PreliminaryReview',
     component: () => import('@/views/PreliminaryReviewView.vue')
   },
+  {
+    path: '/create-journal',
+    name: 'CreateJournal',
+    component: () => import('@/views/CreateJournalView.vue')
+  },
   // 可以继续添加更多路由...
 ]
 
