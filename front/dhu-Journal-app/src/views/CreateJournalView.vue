@@ -16,7 +16,7 @@
         style="max-width: 600px;"
       >
         <el-form-item label="期刊号" prop="issue">
-          <el-input v-model="form.issue" placeholder="请输入期刊号，如：2024年第1期" />
+          <el-input v-model="form.issue" placeholder="请输入期刊号，如：2025，42（3）" />
         </el-form-item>
 
         <el-form-item label="期刊名称" prop="title">

@@ -145,129 +145,8 @@ const selectedPapers = ref<Paper[]>([])
 const currentPage = ref(1)
 const pageSize = ref(10)
 
-// 模拟数据 - 包含更多论文数据用于分页测试
-const allPaperList = ref<Paper[]>([
-  {
-    id: 1,
-    title: '基于深度学习的图像识别技术研究',
-    author: '张三',
-    journalIssue: '2024年第1期',
-    startPage: 1,
-    endPage: 10,
-    status: '待审核',
-    submitDate: '2024-01-15'
-  },
-  {
-    id: 2,
-    title: '人工智能在医疗诊断中的应用',
-    author: '李四',
-    journalIssue: '2024年第1期',
-    startPage: 11,
-    endPage: 20,
-    status: '已通过',
-    submitDate: '2024-01-10'
-  },
-  {
-    id: 3,
-    title: '区块链技术在供应链管理中的研究',
-    author: '王五',
-    journalIssue: '2024年第2期',
-    startPage: 21,
-    endPage: 30,
-    status: '需修改',
-    submitDate: '2024-01-08'
-  },
-  {
-    id: 4,
-    title: '大数据分析在商业决策中的应用',
-    author: '赵六',
-    journalIssue: '2024年第2期',
-    startPage: 31,
-    endPage: 40,
-    status: '已拒绝',
-    submitDate: '2024-01-05'
-  },
-  {
-    id: 5,
-    title: '云计算环境下的数据安全研究',
-    author: '钱七',
-    journalIssue: '2024年第3期',
-    startPage: 41,
-    endPage: 50,
-    status: '待审核',
-    submitDate: '2024-01-03'
-  },
-  {
-    id: 6,
-    title: '物联网技术在智能家居中的应用',
-    author: '孙八',
-    journalIssue: '2024年第3期',
-    startPage: 51,
-    endPage: 60,
-    status: '已通过',
-    submitDate: '2024-01-01'
-  },
-  {
-    id: 7,
-    title: '机器学习算法优化研究',
-    author: '周九',
-    journalIssue: '2023年第4期',
-    startPage: 61,
-    endPage: 70,
-    status: '需修改',
-    submitDate: '2023-12-28'
-  },
-  {
-    id: 8,
-    title: '自然语言处理技术进展',
-    author: '吴十',
-    journalIssue: '2023年第4期',
-    startPage: 71,
-    endPage: 80,
-    status: '已拒绝',
-    submitDate: '2023-12-25'
-  },
-  {
-    id: 9,
-    title: '计算机视觉技术应用',
-    author: '郑十一',
-    journalIssue: '2023年第3期',
-    startPage: 81,
-    endPage: 90,
-    status: '待审核',
-    submitDate: '2023-12-20'
-  },
-  {
-    id: 10,
-    title: '网络安全防护技术研究',
-    author: '王十二',
-    journalIssue: '2023年第3期',
-    startPage: 91,
-    endPage: 100,
-    status: '已通过',
-    submitDate: '2023-12-15'
-  },
-  {
-    id: 11,
-    title: '数据库优化技术研究',
-    author: '李十三',
-    journalIssue: '2023年第2期',
-    startPage: 101,
-    endPage: 110,
-    status: '需修改',
-    submitDate: '2023-12-10'
-  },
-  {
-    id: 12,
-    title: '软件工程方法论研究',
-    author: '张十四',
-    journalIssue: '2023年第2期',
-    startPage: 111,
-    endPage: 120,
-    status: '已拒绝',
-    submitDate: '2023-12-05'
-  }
-])
+// 论文列表数据 - 从后端API获取
+const allPaperList = ref<Paper[]>([])
 
 // 过滤后的论文列表
 const filteredPaperList = computed(() => {
@@ -433,22 +312,32 @@ const handleAddPaper = () => {
 const loadPapers = async () => {
   try {
     const response = await fetch('http://localhost:5000/api/papers')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
     const papers = await response.json()
     
-    // 将API数据转换为前端格式
-    allPaperList.value = papers.map((paper: any) => ({
-      id: paper.id,
-      title: paper.title,
-      author: paper.authors,
-      journalIssue: paper.issue, // 使用论文表中的issue字段
-      startPage: paper.page_start,
-      endPage: paper.page_end,
-      status: '待审核', // 默认状态，实际应该从数据库获取
-      submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
-    }))
+    if (papers && papers.length > 0) {
+      // 将API数据转换为前端格式
+      allPaperList.value = papers.map((paper: any) => ({
+        id: paper.id,
+        title: paper.title || '无标题',
+        author: paper.authors || paper.first_author || '未知作者',
+        journalIssue: paper.issue || '未知刊期',
+        startPage: paper.page_start || 0,
+        endPage: paper.page_end || 0,
+        status: '待审核', // 默认状态，实际应该从数据库获取
+        submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+      }))
+      ElMessage.success(`成功加载 ${papers.length} 篇论文`)
+    } else {
+      allPaperList.value = []
+      ElMessage.info('暂无论文数据')
+    }
   } catch (error) {
     console.error('加载论文列表失败:', error)
-    ElMessage.error('加载论文列表失败')
+    ElMessage.error('加载论文列表失败，请确保后端服务已启动')
+    allPaperList.value = []
   }
 }
 
