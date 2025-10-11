@@ -20,26 +20,41 @@ def _get(a: Any, key: str):
 
 def generate_toc_docx(papers: List[Any], journal: Any) -> str:
     """
-    生成目录Word文档 - 完全照搬参考代码实现
+    生成目录Word文档 - 导出期刊内所有论文
     """
     try:
         # 创建Word文档
         doc = Document()
         
-        # 设置样式 - 完全按照参考代码
+        # 设置样式
         style = doc.styles['Normal']
         style.font.name = 'Times New Roman'
         style._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
         style.font.size = Pt(11)
         
-        # 按页码排序 - 完全按照参考代码逻辑
+        # 添加期刊标题
+        title_para = doc.add_paragraph()
+        title_run = title_para.runs[0] if title_para.runs else title_para.add_run()
+        title_run.text = f"{journal.title} - {journal.issue}"
+        title_run.font.size = Pt(16)
+        title_run.font.bold = True
+        
+        # 添加空行
+        doc.add_paragraph()
+        
+        # 按页码排序
         items = sorted([a for a in papers if _get(a, 'page_start') is not None], 
                       key=lambda x: _get(x, 'page_start'))
         
-        # 添加内容 - 完全按照参考代码格式
-        for a in items:
+        # 添加目录内容
+        for i, a in enumerate(items, 1):
+            # 论文标题和页码
             doc.add_paragraph(f"{_get(a,'page_start')} {_get(a,'title') or ''}")
+            # 作者信息
             doc.add_paragraph(_get(a, 'authors') or '')
+            # 空行分隔
+            if i < len(items):
+                doc.add_paragraph()
         
         # 保存文件
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -60,24 +75,26 @@ def generate_toc_docx(papers: List[Any], journal: Any) -> str:
 
 def generate_excel_stats(articles, journal) -> str:
     """
-    生成统计表Excel - 完全照搬参考代码实现
+    生成统计表Excel - 导出期刊内所有论文的统计信息
     """
     try:
-        # 完全照搬参考代码的Excel生成逻辑
         wb = Workbook()
         ws = wb.active
-        ws.title = '校内'
+        ws.title = '期刊统计表'
+        
+        # 添加期刊信息标题
+        ws.cell(row=1, column=1, value=f"{journal.title} - {journal.issue}")
+        ws.cell(row=2, column=1, value=f"论文总数: {len(articles)}")
+        ws.cell(row=3, column=1, value="")  # 空行
+        
+        # 表头
         headers = ['稿件号','页数','一作','通讯','刊期','是否东华大学']
-        ws.append([None])
         ws.append(headers)
 
         col_pos = {name: idx+1 for idx, name in enumerate(headers)}
-        r = 3
-        maxr = ws.max_row
-        if maxr >= r:
-            for row in ws.iter_rows(min_row=r, max_row=maxr):
-                for cell in row: cell.value = None
-
+        r = 5  # 从第5行开始（前面有标题）
+        
+        # 添加所有论文数据
         for a in articles:
             values = {
                 '稿件号': _get(a, 'manuscript_id'),

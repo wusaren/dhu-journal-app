@@ -42,7 +42,7 @@ def rebuild_database():
             print("📚 创建测试期刊...")
             test_journal = Journal(
                 title='东华学报',
-                issue='2025, 42(3)',
+                issue='测试期刊-2025',
                 publish_date='2025-01-01',
                 status='published',
                 description='测试期刊',
@@ -92,7 +92,7 @@ def rebuild_database():
                 pdf_pages=15,
                 first_author='HUANG Jiacui',
                 corresponding='ZHAO Mingbo',
-                issue='2025, 42(3)',
+                issue='测试期刊-2025',
                 is_dhu=True
             )
             db.session.add(test_paper)

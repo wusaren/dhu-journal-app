@@ -49,6 +49,7 @@ class Journal(db.Model):
     publish_date = db.Column(db.Date)
     status = db.Column(db.Enum('draft', 'published', 'archived'), default='draft')
     description = db.Column(db.Text)
+    paper_count = db.Column(db.Integer, default=0)  # 论文数量
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -94,7 +95,7 @@ class Paper(db.Model):
     pdf_pages = db.Column(db.Integer, nullable=False)  # 页数，如: 15
     first_author = db.Column(db.String(200), nullable=False)  # 一作，如: HUANG Jiacui
     corresponding = db.Column(db.String(200))  # 通讯，如: ZHAO Mingbo
-    issue = db.Column(db.String(100), nullable=False)  # 刊期，如: 2025, 42(3)
+    issue = db.Column(db.String(100), nullable=False)  # 刊期，如: 2025, 42(3) - 从PDF解析
     is_dhu = db.Column(db.Boolean, default=False)  # 是否东华大学
     
     # 其他字段

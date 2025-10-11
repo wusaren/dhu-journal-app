@@ -47,7 +47,7 @@
       <template #header>
         <div class="card-header">
           <h3>论文列表</h3>
-          <el-button class="add-paper-btn" type="primary" size="small">添加论文</el-button>
+          <el-button class="add-paper-btn" type="primary" size="small" @click="handleAddPaper">添加论文</el-button>
         </div>
       </template>
 
@@ -110,11 +110,12 @@
         />
       </div>
     </el-card>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 interface Paper {
@@ -378,6 +379,83 @@ const handleBatchDelete = async () => {
 const handleBatchMove = () => {
   ElMessage.info('批量移动功能待实现')
 }
+
+const handleAddPaper = () => {
+  // 创建文件输入元素
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.pdf'
+  input.style.display = 'none'
+  
+  input.onchange = async (event: any) => {
+    const file = event.target.files[0]
+    if (!file) return
+    
+    if (file.type !== 'application/pdf') {
+      ElMessage.error('请选择PDF文件')
+      return
+    }
+    
+    try {
+      ElMessage.info('正在上传并解析论文...')
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('journalId', '1') // 默认期刊ID
+      
+      const response = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        ElMessage.success('论文添加成功！系统已自动解析论文信息')
+        // 刷新论文列表
+        loadPapers()
+      } else {
+        ElMessage.error(result.message || '论文上传失败')
+      }
+    } catch (error) {
+      console.error('上传失败:', error)
+      ElMessage.error('论文上传失败，请检查网络连接')
+    }
+  }
+  
+  // 触发文件选择
+  document.body.appendChild(input)
+  input.click()
+  document.body.removeChild(input)
+}
+
+// 加载论文列表
+const loadPapers = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/papers')
+    const papers = await response.json()
+    
+    // 将API数据转换为前端格式
+    allPaperList.value = papers.map((paper: any) => ({
+      id: paper.id,
+      title: paper.title,
+      author: paper.authors,
+      journalIssue: paper.issue, // 使用论文表中的issue字段
+      startPage: paper.page_start,
+      endPage: paper.page_end,
+      status: '待审核', // 默认状态，实际应该从数据库获取
+      submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+    }))
+  } catch (error) {
+    console.error('加载论文列表失败:', error)
+    ElMessage.error('加载论文列表失败')
+  }
+}
+
+// 页面加载时获取论文列表
+onMounted(() => {
+  loadPapers()
+})
 </script>
 
 <style scoped>
