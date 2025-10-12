@@ -622,6 +622,30 @@ def download_file(filename):
         logger.error(f"文件下载错误: {str(e)}")
         return jsonify({'message': f'文件下载失败: {str(e)}'}), 500
 
+# PDF预览
+@app.route('/api/preview/<filename>')
+def preview_pdf(filename):
+    """PDF预览接口 - 不强制下载，在浏览器中预览"""
+    try:
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        logger.info(f"尝试预览PDF文件: {file_path}")
+        
+        if not os.path.exists(file_path):
+            logger.error(f"文件不存在: {file_path}")
+            return jsonify({'message': '文件不存在'}), 404
+        
+        # 检查文件类型
+        file_type = get_file_type(filename)
+        if file_type != 'pdf':
+            return jsonify({'message': '只能预览PDF文件'}), 400
+        
+        # 不设置as_attachment=True，让浏览器决定如何处理
+        return send_file(file_path, as_attachment=False)
+    
+    except Exception as e:
+        logger.error(f"PDF预览错误: {str(e)}")
+        return jsonify({'message': f'PDF预览失败: {str(e)}'}), 500
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
