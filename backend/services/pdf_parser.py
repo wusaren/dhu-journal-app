@@ -16,11 +16,58 @@ def extract_issue_info(text: str) -> Optional[str]:
     return f"{year}, {vol}({no})"
 
 def extract_start_page(text: str) -> Optional[int]:
-    """提取起始页码 - 完全照搬参考代码"""
-    for line in [l.strip() for l in text.splitlines()][:6]:
-        m = re.search(r"(\b\d{3}\b)\s*$", line)
-        if m: 
-            return int(m.group(1))
+    """提取起始页码 - 改进版本，处理奇偶页不同位置"""
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    
+    # 分别处理奇偶页的页码位置
+    even_page_patterns = [
+        r'^\s*(\d{1,4})\b',  # 行首的1-4位数字（偶数页）
+    ]
+    
+    odd_page_patterns = [
+        r'\b(\d{1,4})\s*$',  # 行尾的1-4位数字（奇数页）
+    ]
+    
+    candidates = []
+    
+    # 搜索偶数页位置（行首）
+    for line in lines[:10]:
+        for pattern in even_page_patterns:
+            matches = re.findall(pattern, line)
+            for match in matches:
+                num = int(match)
+                if 1 <= num <= 9999:
+                    candidates.append(num)
+    
+    # 搜索奇数页位置（行尾）
+    for line in lines[:10]:
+        for pattern in odd_page_patterns:
+            matches = re.findall(pattern, line)
+            for match in matches:
+                num = int(match)
+                if 1 <= num <= 9999:
+                    candidates.append(num)
+    
+    if not candidates:
+        return None
+    
+    # 选择策略：优先选择合理的页码范围
+    reasonable_candidates = [c for c in candidates if 100 <= c <= 999]
+    
+    if reasonable_candidates:
+        # 返回最小的合理页码（通常是起始页）
+        return min(reasonable_candidates)
+    else:
+        # 如果没有合理范围内的页码，返回最小的候选页码
+        return min(candidates)
+
+def extract_end_page(text: str, start_page: int = None, total_pages: int = None) -> Optional[int]:
+    """提取结束页码 - 简化版本，直接使用数学计算"""
+    # 如果有起始页和总页数，直接计算
+    if start_page and total_pages:
+        return start_page + total_pages - 1
+    
+    # 如果没有起始页或总页数，返回None
     return None
 
 def extract_doi(text: str) -> Optional[str]:
@@ -54,7 +101,7 @@ def extract_title_authors(text: str) -> tuple[str, str]:
                 i += 1
                 continue
             # 允许单空格、多空格、或逗号的作者行
-            authors = re.sub(r"\s{2,}", ", ", re.sub(r"[∗*]", "", lines[i])).strip(" ,")
+            authors = re.sub(r"\s{2,}", ", ", re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", lines[i])).strip(" ,")
             break
     
     return title, authors
@@ -142,8 +189,9 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int) -> List[Dict[str, Any]]:
                     corresponding = extract_corresponding(text, authors_display)
                     is_dhu = "donghua university" in text.lower() or "东华大学" in text
                     
-                    # 计算结束页码（简单估算）
-                    page_end = start_page + 4 if start_page else None
+                    # 计算结束页码（改进版本）
+                    # 结束页需要在最后一页提取，这里先设为None，后面统一处理
+                    page_end = None
                     
                     # 按照参考代码逻辑 - 使用总页数
                     pdf_pages = n_pages if n_pages < 2000 else None
@@ -182,6 +230,18 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int) -> List[Dict[str, Any]]:
         if not records:
             logger.warning("未从PDF中提取到论文信息")
             return []
+        
+        # 统一处理结束页：从最后一页提取
+        if records and n_pages > 0:
+            try:
+                last_page_text = pdf.pages[-1].extract_text() or ""
+                for record in records:
+                    if record.get('page_start'):
+                        end_page = extract_end_page(last_page_text, record['page_start'], n_pages)
+                        record['page_end'] = end_page
+                        logger.info(f"更新结束页: {record['page_start']} -> {end_page}")
+            except Exception as e:
+                logger.error(f"提取结束页时出错: {e}")
         
         logger.info(f"成功解析出 {len(records)} 篇论文")
         return records

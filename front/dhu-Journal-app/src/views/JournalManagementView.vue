@@ -22,7 +22,7 @@
             {{ scope.row.paperCount }} 篇
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="400">
+        <el-table-column label="操作" width="500">
           <template #default="scope">
             <el-button class="edit-btn" size="small" type="primary" @click="handleEdit(scope.row)">
               编辑
@@ -45,6 +45,14 @@
               @click="handleViewStats(scope.row)"
             >
               查看统计表
+            </el-button>
+            <el-button 
+              class="delete-btn"
+              size="small" 
+              type="danger"
+              @click="handleDelete(scope.row)"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -76,7 +84,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 
 interface Journal {
@@ -234,6 +242,45 @@ const handleViewStats = async (journal: Journal) => {
     ElMessage.error(`生成统计表失败: ${error.response?.data?.message || error.message}`)
   }
 }
+
+const handleDelete = async (journal: Journal) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除期刊"${journal.title} - ${journal.issue}"吗？\n\n⚠️ 警告：删除期刊将同时删除该期刊下的所有 ${journal.paperCount || 0} 篇论文！\n\n此操作不可恢复，请谨慎操作。`, 
+      '危险操作', 
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'error',
+      }
+    )
+    
+    // 调用后端API删除期刊
+    const response = await axios.delete(`http://localhost:5000/api/journals/${journal.id}`)
+    
+    if (response.data.success) {
+      const deletedPapersCount = response.data.deleted_papers_count || 0
+      if (deletedPapersCount > 0) {
+        ElMessage.success(`期刊删除成功，同时删除了 ${deletedPapersCount} 篇论文`)
+      } else {
+        ElMessage.success('期刊删除成功')
+      }
+      // 刷新期刊列表
+      loadJournals()
+    } else {
+      ElMessage.error(response.data.message || '期刊删除失败')
+    }
+  } catch (error: any) {
+    if (error === 'cancel' || error.message === 'cancel') {
+      ElMessage.info('取消删除')
+    } else if (error.response?.status === 400) {
+      ElMessage.error(error.response.data.message || '期刊删除失败')
+    } else {
+      console.error('删除期刊失败:', error)
+      ElMessage.error('期刊删除失败，请检查网络连接')
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -356,5 +403,18 @@ const handleViewStats = async (journal: Journal) => {
   background-color: #e6f7ff !important;
   border-color: #3f4041ff !important;
   color: #7a7d80ff !important;
+}
+
+/* 删除按钮自定义样式 */
+.delete-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.delete-btn:hover {
+  background-color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
+  color: white !important;
 }
 </style>

@@ -41,9 +41,14 @@ if errorlevel 1 (
 echo OK: Database rebuild completed
 
 echo.
-echo [4/6] Cleaning upload files...
-call clean_uploads.bat
-echo OK: Upload files cleaned
+echo [4/6] Checking upload files...
+if exist "backend\uploads\*" (
+    echo Found upload files, cleaning...
+    call clean_uploads.bat
+    echo OK: Upload files cleaned
+) else (
+    echo No upload files to clean
+)
 
 echo.
 echo [5/6] Starting backend service...

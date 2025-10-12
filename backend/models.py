@@ -57,6 +57,13 @@ class Journal(db.Model):
     # 关系
     papers = db.relationship('Paper', backref='journal', lazy='dynamic', cascade='all, delete-orphan')
     file_uploads = db.relationship('FileUpload', backref='journal', lazy='dynamic')
+    
+    # 唯一约束：同一期刊的同一期应该唯一
+    __table_args__ = (
+        db.UniqueConstraint('title', 'issue', name='uk_journal_title_issue'),
+        db.Index('idx_journal_title', 'title'),
+        db.Index('idx_journal_issue', 'issue'),
+    )
 
 class PaperAuthor(db.Model):
     """论文-作者关联表 - 多对多关系"""
@@ -109,10 +116,15 @@ class Paper(db.Model):
     # 关系
     paper_authors = db.relationship('PaperAuthor', backref='paper', lazy='dynamic', cascade='all, delete-orphan')
     
-    # 索引
+    # 索引和唯一约束
     __table_args__ = (
         db.Index('idx_journal_id', 'journal_id'),
         db.Index('idx_page_start', 'page_start'),
+        db.Index('idx_manuscript_id', 'manuscript_id'),
+        # 唯一约束：稿件号应该唯一
+        db.UniqueConstraint('manuscript_id', name='uk_paper_manuscript_id'),
+        # 唯一约束：同一期刊中论文标题应该唯一
+        db.UniqueConstraint('journal_id', 'title', name='uk_paper_journal_title'),
     )
 
 class FileUpload(db.Model):

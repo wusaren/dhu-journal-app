@@ -39,7 +39,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def get_file_type(filename):
     """获取文件类型"""
-    return filename.split('.')[-1].lower() if '.' in filename else 'unknown'
+    if '.' in filename:
+        ext = filename.split('.')[-1].lower()
+        # 只返回允许的文件类型，其他都默认为pdf
+        if ext in ['pdf', 'docx', 'xlsx']:
+            return ext
+        else:
+            return 'pdf'  # 默认为pdf类型
+    else:
+        return 'pdf'  # 默认为pdf类型
 
 def init_db():
     """初始化数据库"""
@@ -133,10 +141,10 @@ def create_journal():
             if not data.get(field):
                 return jsonify({'message': f'缺少必填字段: {field}'}), 400
         
-        # 检查期刊号是否已存在
-        existing_journal = Journal.query.filter_by(issue=data['issue']).first()
+        # 检查期刊是否已存在（基于title + issue组合）
+        existing_journal = Journal.query.filter_by(title=data['title'], issue=data['issue']).first()
         if existing_journal:
-            return jsonify({'message': '期刊号已存在'}), 400
+            return jsonify({'message': f'期刊"{data["title"]} - {data["issue"]}"已存在'}), 400
         
         # 创建新期刊
         new_journal = Journal(
@@ -211,39 +219,93 @@ def upload_file():
                 if not journal:
                     return jsonify({'message': '指定的期刊不存在'}), 404
             else:
-                # 自动创建新期刊或使用默认期刊
-                # 先检查是否有默认期刊
-                default_journal = Journal.query.filter_by(title='东华学报', status='draft').first()
-                if default_journal:
-                    journal = default_journal
-                    logger.info(f"使用现有默认期刊: {journal.id}")
-                else:
-                    # 获取第一个用户ID，如果没有则创建默认用户
-                    first_user = User.query.first()
-                    if not first_user:
-                        password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
-                        first_user = User(
-                            username='admin',
-                            password_hash=password_hash.decode('utf-8'),
-                            email='admin@example.com',
-                            role='admin'
+                # 先解析PDF获取期刊信息，然后查找或创建期刊
+                journal = None
+                papers_data = None  # 初始化变量
+                if get_file_type(filename) == 'pdf':
+                    try:
+                        from services.pdf_parser import parse_pdf_to_papers
+                        logger.info(f"开始预解析PDF文件获取期刊信息: {file_path}")
+                        
+                        # 预解析PDF获取期刊信息
+                        papers_data = parse_pdf_to_papers(file_path, 0)  # 临时使用0作为journal_id
+                        logger.info(f"预解析结果: {len(papers_data) if papers_data else 0} 篇论文")
+                        if papers_data and papers_data[0].get('issue'):
+                            real_issue = papers_data[0]['issue']
+                            # 根据is_dhu字段判断期刊名称
+                            is_dhu = papers_data[0].get('is_dhu', False)
+                            real_title = '东华学报' if is_dhu else '其他期刊'
+                            
+                            # 基于真实期刊信息查找现有期刊
+                            journal = Journal.query.filter_by(title=real_title, issue=real_issue).first()
+                            
+                            if journal:
+                                logger.info(f"找到现有期刊: {journal.title} - {journal.issue}")
+                            else:
+                                # 创建新期刊
+                                first_user = User.query.first()
+                                if not first_user:
+                                    password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                                    first_user = User(
+                                        username='admin',
+                                        password_hash=password_hash.decode('utf-8'),
+                                        email='admin@example.com',
+                                        role='admin'
+                                    )
+                                    db.session.add(first_user)
+                                    db.session.flush()
+                                
+                                journal = Journal(
+                                    title=real_title,
+                                    issue=real_issue,
+                                    publish_date=datetime.now().date(),
+                                    status='draft',
+                                    description=f'基于PDF解析自动创建的期刊 - 上传文件: {filename}',
+                                    paper_count=0,
+                                    created_by=first_user.id
+                                )
+                                db.session.add(journal)
+                                db.session.flush()
+                                logger.info(f"创建新期刊: {journal.title} - {journal.issue}")
+                    except Exception as parse_error:
+                        logger.warning(f"PDF预解析失败，使用默认期刊: {str(parse_error)}")
+                        # 如果PDF解析失败，回退到默认逻辑
+                        journal = None
+                        papers_data = None
+                
+                # 如果PDF解析失败或不是PDF文件，使用默认期刊逻辑
+                if not journal:
+                    default_journal = Journal.query.filter_by(title='东华学报', status='draft').first()
+                    if default_journal:
+                        journal = default_journal
+                        logger.info(f"使用现有默认期刊: {journal.id}")
+                    else:
+                        # 获取第一个用户ID，如果没有则创建默认用户
+                        first_user = User.query.first()
+                        if not first_user:
+                            password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                            first_user = User(
+                                username='admin',
+                                password_hash=password_hash.decode('utf-8'),
+                                email='admin@example.com',
+                                role='admin'
+                            )
+                            db.session.add(first_user)
+                            db.session.flush()
+                        
+                        # 创建新期刊记录
+                        journal = Journal(
+                            title='东华学报',
+                            issue=f'第{Journal.query.count() + 1}期',
+                            publish_date=datetime.now().date(),
+                            status='draft',
+                            description=f'自动创建的期刊 - 上传文件: {filename}',
+                            paper_count=0,
+                            created_by=first_user.id
                         )
-                        db.session.add(first_user)
+                        db.session.add(journal)
                         db.session.flush()
-                    
-                    # 创建新期刊记录
-                    journal = Journal(
-                        title='东华学报',
-                        issue=f'第{Journal.query.count() + 1}期',
-                        publish_date=datetime.now().date(),
-                        status='draft',
-                        description=f'自动创建的期刊 - 上传文件: {filename}',
-                        paper_count=0,
-                        created_by=first_user.id
-                    )
-                    db.session.add(journal)
-                    db.session.flush()  # 获取期刊ID
-                    logger.info(f"创建新期刊: {journal.id}")
+                        logger.info(f"创建新期刊: {journal.id}")
             
             # 创建文件上传记录
             file_upload = FileUpload(
@@ -263,46 +325,86 @@ def upload_file():
                 try:
                     from services.pdf_parser import parse_pdf_to_papers
                     
-                    # 检查是否已有论文数据（去重）
-                    existing_papers = Paper.query.filter_by(journal_id=journal.id).count()
-                    if existing_papers > 0:
-                        logger.info(f"期刊 {journal.id} 已有 {existing_papers} 篇论文，跳过重复解析")
-                    else:
+                    # 如果之前没有预解析或预解析失败，现在进行完整解析
+                    if not papers_data:
                         papers_data = parse_pdf_to_papers(file_path, journal.id)
+                        logger.info(f"完整PDF解析结果: {len(papers_data) if papers_data else 0} 篇论文")
+                    
+                    # 检查数据库唯一约束冲突（基于manuscript_id和journal_id+title）
+                    if papers_data:
+                        for paper_data in papers_data:
+                            manuscript_id = paper_data.get('manuscript_id', '')
+                            title = paper_data.get('title', '')
+                            
+                            # 检查稿件号是否已存在
+                            if manuscript_id:
+                                existing_manuscript = Paper.query.filter_by(manuscript_id=manuscript_id).first()
+                                if existing_manuscript:
+                                    logger.info(f"稿件号 {manuscript_id} 已存在，跳过重复上传")
+                                    return jsonify({
+                                        'message': f'稿件号"{manuscript_id}"已存在，跳过重复上传',
+                                        'fileId': timestamp,
+                                        'filename': filename,
+                                        'filePath': file_path,
+                                        'fileSize': os.path.getsize(file_path),
+                                        'journalId': journal.id,
+                                        'duplicate': True
+                                    })
+                            
+                            # 检查同期刊内标题是否已存在
+                            if title:
+                                existing_title = Paper.query.filter_by(journal_id=journal.id, title=title).first()
+                                if existing_title:
+                                    logger.info(f"期刊 {journal.id} 中标题'{title}'已存在，跳过重复上传")
+                                    return jsonify({
+                                        'message': f'该期刊中已存在相同标题的论文，跳过重复上传',
+                                        'fileId': timestamp,
+                                        'filename': filename,
+                                        'filePath': file_path,
+                                        'fileSize': os.path.getsize(file_path),
+                                        'journalId': journal.id,
+                                        'duplicate': True
+                                    })
+                    
+                    # 如果没有冲突，继续处理
                         
                         # 保存解析出的真实论文
-                        for paper_data in papers_data:
-                            paper = Paper(
-                                journal_id=journal.id,
-                                title=paper_data.get('title', ''),
-                                authors=paper_data.get('authors', ''),
-                                abstract=paper_data.get('abstract', ''),
-                                keywords=paper_data.get('keywords', ''),
-                                doi=paper_data.get('doi', ''),
-                                page_start=paper_data.get('page_start'),
-                                page_end=paper_data.get('page_end'),
-                                file_path=file_path,
-                                # 统计表字段
-                                manuscript_id=paper_data.get('manuscript_id', ''),
-                                pdf_pages=paper_data.get('pdf_pages', 0),
-                                first_author=paper_data.get('first_author', ''),
-                                corresponding=paper_data.get('corresponding', ''),
-                                issue=paper_data.get('issue', journal.issue),
-                                is_dhu=paper_data.get('is_dhu', False)
-                            )
-                            db.session.add(paper)
-                        
-                        logger.info(f"成功解析出 {len(papers_data)} 篇真实论文")
-                        
-                        # 从解析的论文中获取真实的issue值，并更新期刊表
-                        if papers_data and papers_data[0].get('issue'):
-                            real_issue = papers_data[0]['issue']
-                            if journal.issue != real_issue:
-                                logger.info(f"更新期刊issue字段: '{journal.issue}' → '{real_issue}'")
-                                journal.issue = real_issue
-                        
-                        # 更新期刊的论文数量
-                        journal.paper_count = Paper.query.filter_by(journal_id=journal.id).count()
+                        if papers_data:
+                            logger.info(f"开始保存 {len(papers_data)} 篇论文到数据库")
+                            for paper_data in papers_data:
+                                paper = Paper(
+                                    journal_id=journal.id,
+                                    title=paper_data.get('title', ''),
+                                    authors=paper_data.get('authors', ''),
+                                    abstract=paper_data.get('abstract', ''),
+                                    keywords=paper_data.get('keywords', ''),
+                                    doi=paper_data.get('doi', ''),
+                                page_start=paper_data.get('page_start') or 1,  # 默认第1页
+                                page_end=paper_data.get('page_end') or None,  # 结束页可以为空
+                                    file_path=file_path,
+                                    # 统计表字段
+                                    manuscript_id=paper_data.get('manuscript_id', ''),
+                                    pdf_pages=paper_data.get('pdf_pages', 0),
+                                    first_author=paper_data.get('first_author', ''),
+                                    corresponding=paper_data.get('corresponding', ''),
+                                    issue=paper_data.get('issue', journal.issue),
+                                    is_dhu=paper_data.get('is_dhu', False)
+                                )
+                                db.session.add(paper)
+                            
+                            logger.info(f"成功解析出 {len(papers_data)} 篇真实论文")
+                            
+                            # 从解析的论文中获取真实的issue值，并更新期刊表
+                            if papers_data and papers_data[0].get('issue'):
+                                real_issue = papers_data[0]['issue']
+                                if journal.issue != real_issue:
+                                    logger.info(f"更新期刊issue字段: '{journal.issue}' → '{real_issue}'")
+                                    journal.issue = real_issue
+                            
+                            # 更新期刊的论文数量
+                            journal.paper_count = Paper.query.filter_by(journal_id=journal.id).count()
+                        else:
+                            logger.warning("PDF解析未返回论文数据")
                     
                 except Exception as parse_error:
                     logger.error(f"PDF解析失败: {str(parse_error)}")
@@ -318,19 +420,37 @@ def upload_file():
             db.session.commit()
             logger.info(f"期刊和文件记录已保存到数据库: 期刊ID={journal.id}, 文件ID={file_upload.id}, 论文数量={journal.paper_count}")
             
+            # 检查是否成功解析出论文
+            papers_count = Paper.query.filter_by(journal_id=journal.id).count()
+            if papers_count > 0:
+                return jsonify({
+                    'message': '文件上传成功，已解析出论文信息',
+                    'fileId': timestamp,
+                    'filename': filename,
+                    'filePath': file_path,
+                    'fileSize': os.path.getsize(file_path),
+                    'journalId': journal.id,
+                    'papersCount': papers_count
+                })
+            else:
+                return jsonify({
+                    'message': '文件上传成功，但未能解析出论文信息，请检查PDF文件格式',
+                    'fileId': timestamp,
+                    'filename': filename,
+                    'filePath': file_path,
+                    'fileSize': os.path.getsize(file_path),
+                    'journalId': journal.id,
+                    'papersCount': 0,
+                    'warning': True
+                })
+            
         except Exception as db_error:
             logger.error(f"数据库保存失败: {str(db_error)}")
             db.session.rollback()
-            # 即使数据库保存失败，文件上传也算成功
-        
-        return jsonify({
-            'message': '文件上传成功',
-            'fileId': timestamp,  # 使用时间戳作为ID
-            'filename': filename,
-            'filePath': file_path,
-            'fileSize': os.path.getsize(file_path),
-            'journalId': journal.id if 'journal' in locals() else None
-        })
+            return jsonify({
+                'message': f'文件上传失败: {str(db_error)}',
+                'error': True
+            }), 500
     
     except Exception as e:
         logger.error(f"文件上传错误: {str(e)}")
@@ -589,8 +709,19 @@ def delete_paper(paper_id):
         if not paper:
             return jsonify({'message': '论文不存在'}), 404
         
+        # 获取期刊ID，用于后续更新paper_count
+        journal_id = paper.journal_id
+        
+        # 删除论文
         db.session.delete(paper)
         db.session.commit()
+        
+        # 更新期刊的论文数量
+        journal = Journal.query.get(journal_id)
+        if journal:
+            journal.paper_count = Paper.query.filter_by(journal_id=journal_id).count()
+            db.session.commit()
+            logger.info(f"期刊 {journal.title} 论文数量已更新为: {journal.paper_count}")
         
         logger.info(f"论文删除成功: {paper.title}")
         
@@ -603,6 +734,35 @@ def delete_paper(paper_id):
         logger.error(f"删除论文错误: {str(e)}")
         db.session.rollback()
         return jsonify({'message': f'删除论文失败: {str(e)}'}), 500
+
+# 删除期刊
+@app.route('/api/journals/<int:journal_id>', methods=['DELETE'])
+def delete_journal(journal_id):
+    """删除期刊（同时删除所有相关论文）"""
+    try:
+        journal = Journal.query.get(journal_id)
+        if not journal:
+            return jsonify({'message': '期刊不存在'}), 404
+        
+        # 获取关联的论文数量
+        papers_count = Paper.query.filter_by(journal_id=journal_id).count()
+        
+        # 删除期刊（由于设置了cascade='all, delete-orphan'，相关论文会自动删除）
+        db.session.delete(journal)
+        db.session.commit()
+        
+        logger.info(f"期刊删除成功: {journal.title} - {journal.issue}，同时删除了 {papers_count} 篇论文")
+        
+        return jsonify({
+            'success': True,
+            'message': f'期刊删除成功，同时删除了 {papers_count} 篇论文',
+            'deleted_papers_count': papers_count
+        })
+    
+    except Exception as e:
+        logger.error(f"删除期刊错误: {str(e)}")
+        db.session.rollback()
+        return jsonify({'message': f'删除期刊失败: {str(e)}'}), 500
 
 # 文件下载
 @app.route('/api/download/<filename>')

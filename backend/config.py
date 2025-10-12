@@ -10,8 +10,8 @@ class Config:
     # Flask配置
     SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
     
-    # 数据库配置 - 使用SQLite用于本地测试
-    DB_TYPE = os.getenv('DB_TYPE', 'sqlite')  # sqlite 或 mysql
+    # 数据库配置 - 使用MySQL
+    DB_TYPE = os.getenv('DB_TYPE', 'mysql')  # sqlite 或 mysql
     
     if DB_TYPE == 'sqlite':
         # SQLite配置
