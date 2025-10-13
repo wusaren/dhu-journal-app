@@ -9,11 +9,12 @@
           <el-col :span="6">
             <el-form-item label="期刊刊期">
               <el-select v-model="filterForm.issue" placeholder="请选择刊期" clearable>
-                <el-option label="2024年第1期" value="2024-1" />
-                <el-option label="2024年第2期" value="2024-2" />
-                <el-option label="2024年第3期" value="2024-3" />
-                <el-option label="2023年第4期" value="2023-4" />
-                <el-option label="2023年第3期" value="2023-3" />
+                <el-option 
+                  v-for="journal in journalList" 
+                  :key="journal.id"
+                  :label="journal.issue" 
+                  :value="journal.issue" 
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -56,8 +57,8 @@
         <el-button size="small" type="danger" @click="handleBatchDelete">
           批量删除 ({{ selectedPapers.length }})
         </el-button>
-        <el-button size="small" type="warning" @click="handleBatchMove">
-          批量移动
+        <el-button size="small" type="success" @click="handleBatchDownload">
+          批量下载 ({{ selectedPapers.length }})
         </el-button>
       </div>
 
@@ -127,12 +128,21 @@ interface Paper {
   endPage: number
   status: string
   submitDate: string
+  file_path?: string
+  stored_filename?: string
 }
 
 interface FilterForm {
   issue: string
   status: string
   keyword: string
+}
+
+interface Journal {
+  id: number
+  title: string
+  issue: string
+  status: string
 }
 
 const filterForm = ref<FilterForm>({
@@ -144,6 +154,7 @@ const filterForm = ref<FilterForm>({
 const selectedPapers = ref<Paper[]>([])
 const currentPage = ref(1)
 const pageSize = ref(10)
+const journalList = ref<Journal[]>([])
 
 // 论文列表数据 - 从后端API获取
 const allPaperList = ref<Paper[]>([])
@@ -151,9 +162,9 @@ const allPaperList = ref<Paper[]>([])
 // 过滤后的论文列表
 const filteredPaperList = computed(() => {
   return allPaperList.value.filter(paper => {
-    // 刊期筛选：使用value值进行匹配
+    // 刊期筛选：直接匹配期刊刊期
     const matchesIssue = !filterForm.value.issue || 
-      paper.journalIssue.includes(filterForm.value.issue.replace('-', '年第') + '期')
+      paper.journalIssue === filterForm.value.issue
     
     // 状态筛选：将英文状态值映射为中文状态
     const statusMap: Record<string, string> = {
@@ -219,7 +230,41 @@ const handleCurrentChange = (page: number) => {
 }
 
 const handleView = (paper: Paper) => {
-  ElMessage.info(`查看论文: ${paper.title}`)
+  console.log('查看按钮点击，论文数据:', paper)
+  
+  // 检查是否有PDF文件路径
+  if (!paper.file_path && !paper.stored_filename) {
+    ElMessage.warning('该论文暂无PDF文件')
+    return
+  }
+  
+  // 从文件路径中提取文件名
+  let filename = ''
+  if (paper.file_path) {
+    // 从文件路径中提取文件名
+    const pathParts = paper.file_path.split(/[\\/]/)
+    filename = pathParts[pathParts.length - 1]
+  } else if (paper.stored_filename) {
+    filename = paper.stored_filename
+  }
+  
+  if (!filename) {
+    ElMessage.error('无法获取PDF文件名')
+    return
+  }
+  
+  // 使用预览API访问PDF文件 - 不强制下载
+  const pdfUrl = `http://localhost:5000/api/preview/${filename}`
+  console.log('PDF预览URL:', pdfUrl)
+  
+  // 在新窗口打开PDF预览
+  const previewWindow = window.open(pdfUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes')
+  
+  if (previewWindow) {
+    ElMessage.success('正在打开PDF预览...')
+  } else {
+    ElMessage.error('无法打开预览窗口，请检查浏览器弹窗设置')
+  }
 }
 
 const handleEdit = (paper: Paper) => {
@@ -255,6 +300,62 @@ const handleBatchDelete = async () => {
   }
 }
 
+const handleBatchDownload = async () => {
+  if (selectedPapers.value.length === 0) {
+    ElMessage.warning('请先选择要下载的论文')
+    return
+  }
+
+  try {
+    ElMessage.info(`正在批量下载 ${selectedPapers.value.length} 篇论文...`)
+    
+    // 检查选中的论文是否有PDF文件
+    const papersWithFiles = selectedPapers.value.filter(paper => 
+      paper.file_path || paper.stored_filename
+    )
+    
+    if (papersWithFiles.length === 0) {
+      ElMessage.warning('选中的论文都没有PDF文件')
+      return
+    }
+    
+    // 逐个下载PDF文件
+    for (const paper of papersWithFiles) {
+      // 从文件路径中提取文件名
+      let filename = ''
+      if (paper.file_path) {
+        const pathParts = paper.file_path.split(/[\\/]/)
+        filename = pathParts[pathParts.length - 1]
+      } else if (paper.stored_filename) {
+        filename = paper.stored_filename
+      }
+      
+      if (filename) {
+        // 使用下载API下载PDF文件
+        const downloadUrl = `http://localhost:5000/api/download/${filename}`
+        
+        // 创建下载链接并触发下载
+        const link = document.createElement('a')
+        link.href = downloadUrl
+        link.download = filename
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // 添加小延迟避免浏览器限制
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
+    
+    ElMessage.success(`批量下载完成，共下载 ${papersWithFiles.length} 篇论文`)
+    
+  } catch (error) {
+    console.error('批量下载失败:', error)
+    ElMessage.error('批量下载失败，请稍后重试')
+  }
+}
+
 const handleBatchMove = () => {
   ElMessage.info('批量移动功能待实现')
 }
@@ -276,6 +377,13 @@ const handleAddPaper = () => {
     }
     
     try {
+      // 检查论文是否已存在
+      const existingPapers = await checkPaperExists(file.name)
+      if (existingPapers.length > 0) {
+        ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，不可重复上传`)
+        return
+      }
+      
       ElMessage.info('正在上传并解析论文...')
       
       const formData = new FormData()
@@ -308,6 +416,58 @@ const handleAddPaper = () => {
   document.body.removeChild(input)
 }
 
+// 检查论文是否已存在
+const checkPaperExists = async (filename: string): Promise<Paper[]> => {
+  try {
+    // 获取所有论文
+    const response = await fetch('http://localhost:5000/api/papers')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const papers = await response.json()
+    
+    // 检查是否有相同文件名的论文
+    const existingPapers = papers.filter((paper: any) => {
+      // 检查文件路径或存储文件名是否匹配
+      const filePath = paper.file_path || ''
+      const storedFilename = paper.stored_filename || ''
+      return filePath.includes(filename) || storedFilename.includes(filename)
+    })
+    
+    return existingPapers
+  } catch (error) {
+    console.error('检查论文存在性失败:', error)
+    return []
+  }
+}
+
+// 加载期刊列表
+const loadJournals = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/journals')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const journals = await response.json()
+    
+    if (journals && journals.length > 0) {
+      journalList.value = journals.map((journal: any) => ({
+        id: journal.id,
+        title: journal.title,
+        issue: journal.issue,
+        status: journal.status
+      }))
+      console.log('成功加载期刊列表:', journalList.value)
+    } else {
+      journalList.value = []
+      console.log('暂无期刊数据')
+    }
+  } catch (error) {
+    console.error('加载期刊列表失败:', error)
+    journalList.value = []
+  }
+}
+
 // 加载论文列表
 const loadPapers = async () => {
   try {
@@ -327,7 +487,9 @@ const loadPapers = async () => {
         startPage: paper.page_start || 0,
         endPage: paper.page_end || 0,
         status: '待审核', // 默认状态，实际应该从数据库获取
-        submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+        submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+        file_path: paper.file_path,
+        stored_filename: paper.stored_filename
       }))
       ElMessage.success(`成功加载 ${papers.length} 篇论文`)
     } else {
@@ -341,8 +503,9 @@ const loadPapers = async () => {
   }
 }
 
-// 页面加载时获取论文列表
+// 页面加载时获取数据
 onMounted(() => {
+  loadJournals()
   loadPapers()
 })
 </script>
@@ -399,6 +562,19 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* 翻页组件当前页码自定义颜色 */
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+
+:deep(.el-pagination.is-background .el-pager li.is-active:hover) {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+  color: white !important;
 }
 
 /* 搜索按钮自定义样式 */
@@ -469,6 +645,18 @@ onMounted(() => {
   background-color: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
   color: #333 !important;
+}
+
+/* 批量下载按钮自定义样式 */
+.batch-actions .el-button--success {
+  background-color: #67c23a !important;
+  border-color: #67c23a !important;
+  color: white !important;
+}
+
+.batch-actions .el-button--success:hover {
+  background-color: #5daf34 !important;
+  border-color: #5daf34 !important;
 }
 
 .delete-btn:hover {
