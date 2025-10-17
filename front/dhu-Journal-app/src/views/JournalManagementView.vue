@@ -454,7 +454,7 @@ const handleGenerateWeibo = async (journal: Journal) => {
     ElMessage.info(`正在生成推文: ${journal.issue}`)
     
     // 调用后端生成推文
-    const response = await axios.post('http://localhost:5000/api/export/weibo', {
+    const response = await axios.post('http://localhost:5000/api/export/tuiwen', {
       journalId: journal.id
     })
     
@@ -462,7 +462,7 @@ const handleGenerateWeibo = async (journal: Journal) => {
       // 下载文件
       const link = document.createElement('a')
       link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `推文_${journal.issue}.html`
+      link.download = `推文_${journal.issue}.docx`
       link.click()
       ElMessage.success('推文生成成功！')
     }

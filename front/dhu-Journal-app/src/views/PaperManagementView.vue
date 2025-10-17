@@ -73,11 +73,25 @@
         <el-table-column prop="journalIssue" label="期刊刊期" width="120" />
         <el-table-column prop="startPage" label="起始页" width="80" />
         <el-table-column prop="endPage" label="结束页" width="80" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="150">
           <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.status)">
-              {{ scope.row.status }}
-            </el-tag>
+            <div v-if="scope.row.parsing_status === 'parsing'">
+              <el-progress 
+                :percentage="scope.row.parsing_progress || 0" 
+                :show-text="false"
+                :stroke-width="8"
+                status="success"
+              />
+              <span style="font-size: 12px; color: #67c23a;">解析中...</span>
+            </div>
+            <div v-else-if="scope.row.parsing_status === 'failed'">
+              <el-tag type="danger">解析失败</el-tag>
+            </div>
+            <div v-else>
+              <el-tag :type="getStatusType(scope.row.status)">
+                {{ scope.row.status }}
+              </el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="submitDate" label="提交日期" width="120" />
@@ -130,6 +144,8 @@ interface Paper {
   submitDate: string
   file_path?: string
   stored_filename?: string
+  parsing_status?: string // 解析状态：parsing, completed, failed
+  parsing_progress?: number // 解析进度 0-100
 }
 
 interface FilterForm {
@@ -158,6 +174,7 @@ const journalList = ref<Journal[]>([])
 
 // 论文列表数据 - 从后端API获取
 const allPaperList = ref<Paper[]>([])
+const parsingPapers = ref<Set<number>>(new Set()) // 正在解析的论文ID集合
 
 // 过滤后的论文列表
 const filteredPaperList = computed(() => {
@@ -449,7 +466,19 @@ const handleAddPaper = () => {
         } else if (result.error) {
           ElMessage.error(result.message || '文件上传失败')
         } else {
-          ElMessage.success(result.message || '论文添加成功！系统已自动解析论文信息')
+          // 检查是否创建了新期刊
+          if (result.journalCreated && result.journalInfo) {
+            const journalTitle = result.journalInfo.title
+            const journalIssue = result.journalInfo.issue
+            ElMessage.success(`已为您在期刊管理页面创建期刊 ${journalTitle}（${journalIssue}）`)
+          } else {
+            ElMessage.success(result.message || '论文添加成功！系统已自动解析论文信息')
+          }
+          
+          // 如果上传成功且有期刊ID，开始轮询解析状态
+          if (result.journalId) {
+            startParsingStatusPolling(result.journalId)
+          }
         }
         // 刷新论文列表
         loadPapers()
@@ -466,6 +495,79 @@ const handleAddPaper = () => {
   document.body.appendChild(input)
   input.click()
   document.body.removeChild(input)
+}
+
+// 开始解析状态轮询
+const startParsingStatusPolling = (journalId: number) => {
+  const pollingInterval = setInterval(async () => {
+    try {
+      // 获取该期刊的所有论文
+      const response = await fetch(`http://localhost:5000/api/papers?journalId=${journalId}`)
+      const papers = await response.json()
+      
+      if (papers && papers.length > 0) {
+        // 检查是否有正在解析的论文
+        const parsingPapersInJournal = papers.filter((paper: any) => 
+          paper.parsing_status === 'parsing'
+        )
+        
+        if (parsingPapersInJournal.length === 0) {
+          // 所有论文解析完成，停止轮询
+          clearInterval(pollingInterval)
+          ElMessage.success('所有论文解析完成！')
+          // 刷新论文列表显示最终状态
+          loadPapers()
+        } else {
+          // 更新正在解析的论文状态
+          updateParsingPapersStatus(papers)
+        }
+      } else {
+        // 没有论文数据，停止轮询
+        clearInterval(pollingInterval)
+      }
+    } catch (error) {
+      console.error('轮询解析状态失败:', error)
+      // 发生错误时停止轮询
+      clearInterval(pollingInterval)
+    }
+  }, 3000) // 每3秒轮询一次
+  
+  // 设置最大轮询时间（5分钟）
+  setTimeout(() => {
+    clearInterval(pollingInterval)
+    ElMessage.warning('论文解析超时，请检查解析状态')
+  }, 5 * 60 * 1000)
+}
+
+// 更新正在解析的论文状态
+const updateParsingPapersStatus = (papers: any[]) => {
+  papers.forEach((paper: any) => {
+    if (paper.parsing_status === 'parsing') {
+      // 找到对应的论文并更新状态
+      const existingPaper = allPaperList.value.find(p => p.id === paper.id)
+      if (existingPaper) {
+        existingPaper.parsing_status = paper.parsing_status
+        existingPaper.parsing_progress = paper.parsing_progress || 0
+      } else {
+        // 如果是新论文，添加到列表并标记为解析中
+        const newPaper: Paper = {
+          id: paper.id,
+          title: paper.title || '正在解析中...',
+          author: paper.authors || paper.first_author || '未知作者',
+          journalIssue: paper.issue || '未知刊期',
+          startPage: paper.page_start || 0,
+          endPage: paper.page_end || 0,
+          status: '待审核',
+          submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          file_path: paper.file_path,
+          stored_filename: paper.stored_filename,
+          parsing_status: paper.parsing_status,
+          parsing_progress: paper.parsing_progress || 0
+        }
+        allPaperList.value.unshift(newPaper)
+      }
+    }
+  })
 }
 
 // 检查论文是否已存在
@@ -538,7 +640,9 @@ const loadPapers = async () => {
         status: '待审核', // 默认状态，实际应该从数据库获取
         submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
         file_path: paper.file_path,
-        stored_filename: paper.stored_filename
+        stored_filename: paper.stored_filename,
+        parsing_status: paper.parsing_status, // 解析状态
+        parsing_progress: paper.parsing_progress || 0 // 解析进度
       }))
       ElMessage.success(`成功加载 ${papers.length} 篇论文`)
     } else {

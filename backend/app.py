@@ -422,27 +422,27 @@ def upload_file():
             
             # 检查是否成功解析出论文
             papers_count = Paper.query.filter_by(journal_id=journal.id).count()
-            if papers_count > 0:
-                return jsonify({
-                    'message': '文件上传成功，已解析出论文信息',
-                    'fileId': timestamp,
-                    'filename': filename,
-                    'filePath': file_path,
-                    'fileSize': os.path.getsize(file_path),
-                    'journalId': journal.id,
-                    'papersCount': papers_count
-                })
-            else:
-                return jsonify({
-                    'message': '文件上传成功，但未能解析出论文信息，请检查PDF文件格式',
-                    'fileId': timestamp,
-                    'filename': filename,
-                    'filePath': file_path,
-                    'fileSize': os.path.getsize(file_path),
-                    'journalId': journal.id,
-                    'papersCount': 0,
-                    'warning': True
-                })
+            
+            # 构建返回数据
+            response_data = {
+                'message': '文件上传成功，已解析出论文信息' if papers_count > 0 else '文件上传成功，但未能解析出论文信息，请检查PDF文件格式',
+                'fileId': timestamp,
+                'filename': filename,
+                'filePath': file_path,
+                'fileSize': os.path.getsize(file_path),
+                'journalId': journal.id,
+                'papersCount': papers_count,
+                'journalCreated': True,  # 标记是否创建了新期刊
+                'journalInfo': {
+                    'title': journal.title,
+                    'issue': journal.issue
+                }
+            }
+            
+            if papers_count == 0:
+                response_data['warning'] = True
+            
+            return jsonify(response_data)
             
         except Exception as db_error:
             logger.error(f"数据库保存失败: {str(db_error)}")
@@ -494,7 +494,42 @@ def export_toc():
     except Exception as e:
         logger.error(f"目录生成错误: {str(e)}")
         return jsonify({'message': f'目录生成失败: {str(e)}'}), 500
-
+# 生成推文
+@app.route('/api/export/tuiwen', methods=['POST'])
+def export_tuiwen():
+    """生成推文Word文档"""
+    try:
+        data = request.get_json()
+        journal_id = data.get('journalId')
+        
+        if not journal_id:
+            return jsonify({'message': '缺少期刊ID'}), 400
+        
+        # 获取期刊信息
+        journal = Journal.query.get(journal_id)
+        if not journal:
+            return jsonify({'message': '期刊不存在'}), 404
+        
+        # 获取论文信息
+        papers = Paper.query.filter_by(journal_id=journal_id).all()
+        
+        # 如果没有论文数据，返回错误
+        if not papers:
+            return jsonify({'message': '该期刊没有论文数据，无法生成推文'}), 400
+        
+        # 生成推文文档
+        from services.document_generator import generate_tuiwen_content
+        output_path = generate_tuiwen_content(papers, journal)
+        
+        return jsonify({
+            'message': '推文生成成功',
+            'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
+            'filePath': output_path
+        })
+    
+    except Exception as e:
+        logger.error(f"推文生成错误: {str(e)}")
+        return jsonify({'message': f'推文生成失败: {str(e)}'}), 500
 # 生成统计表
 @app.route('/api/export/excel', methods=['POST'])
 def export_excel():

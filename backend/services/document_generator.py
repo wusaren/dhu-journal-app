@@ -137,5 +137,148 @@ def generate_excel_stats(articles, journal) -> str:
     except Exception as e:
         logger.error(f"生成统计表Excel失败: {str(e)}")
         raise Exception(f"生成统计表Excel失败: {str(e)}")
-
-
+def generate_tuiwen_content(papers, journal):
+    """生成秀米推文内容 - Word文档格式"""
+    try:
+        # 创建Word文档
+        doc = Document()
+        
+        # 设置样式
+        style = doc.styles['Normal']
+        style.font.name = 'Times New Roman'
+        style._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+        style.font.size = Pt(11)
+        
+        # 获取当前日期
+        current_date = datetime.now().strftime('%Y年%m月%d日')
+        issue = journal.issue
+        
+        # 转换期刊号格式：从"2025,42(3)"转换为"2025年第42卷第3期"
+        def convert_issue_format(issue_str):
+            """
+            将期刊号格式从"2025,42(3)"转换为"2025年第42卷第3期"
+            支持多种可能的格式：
+            - "2025,42(3)" -> "2025年第42卷第3期"
+            - "2025,42(3-4)" -> "2025年第42卷第3-4期"
+            - "2025,42(3,4)" -> "2025年第42卷第3-4期"
+            """
+            try:
+                # 匹配格式：年份,卷号(期号)
+                match = re.match(r'(\d{4}),\s*(\d+)\(([^)]+)\)', issue_str)
+                if match:
+                    year = match.group(1)  # 年份
+                    volume = match.group(2)  # 卷号
+                    issue_num = match.group(3)  # 期号
+                    
+                    # 处理期号中的特殊字符
+                    issue_num = issue_num.replace(',', '-')  # 将逗号替换为连字符
+                    
+                    return f"{year}年第{volume}卷第{issue_num}期"
+                else:
+                    # 如果格式不匹配，返回原格式
+                    logger.warning(f"无法解析期刊号格式: {issue_str}")
+                    return issue_str
+            except Exception as e:
+                logger.error(f"转换期刊号格式失败: {str(e)}")
+                return issue_str
+        
+        # 转换期刊号格式
+        issue_info = convert_issue_format(issue)
+        
+        # 添加期刊标题
+        title_para = doc.add_paragraph()
+        title_run = title_para.runs[0] if title_para.runs else title_para.add_run()
+        title_run.text = "东华大学学报"
+        title_run.font.size = Pt(16)
+        title_run.font.bold = True
+        title_run.font.color.rgb = None  # 黑色
+        
+        # 添加期刊号
+        issue_para = doc.add_paragraph()
+        issue_run = issue_para.runs[0] if issue_para.runs else issue_para.add_run()
+        issue_run.text = issue_info
+        issue_run.font.size = Pt(12)
+        
+        # 添加分隔线
+        doc.add_paragraph("─" * 30)  # 使用字符作为分隔线
+        
+        # 添加编辑信息
+        editor_para = doc.add_paragraph()
+        editor_run = editor_para.runs[0] if editor_para.runs else editor_para.add_run()
+        editor_run.text = f"本期责编: 编辑部 | {current_date}"
+        editor_run.font.size = Pt(10)
+        editor_run.font.italic = True
+        
+        # 添加空行
+        doc.add_paragraph()
+        
+        # 添加论文内容
+        for i, paper in enumerate(papers, 1):
+            # 处理数据库Paper对象或字典
+            if hasattr(paper, 'title'):
+                # 数据库对象
+                title = paper.title
+                authors = paper.authors
+                doi = paper.doi or ''
+                page_start = paper.page_start
+                page_end = paper.page_end
+                # 生成引用信息
+                citation = f"{authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+            
+            # 添加论文标题
+            paper_title_para = doc.add_paragraph()
+            paper_title_run = paper_title_para.runs[0] if paper_title_para.runs else paper_title_para.add_run()
+            paper_title_run.text = f"{i}. {title}"
+            paper_title_run.font.size = Pt(12)
+            paper_title_run.font.bold = True
+            
+            # 添加作者信息
+            doc.add_paragraph(f"作者: {authors}")
+            
+            # 添加页码信息
+            doc.add_paragraph(f"页码: {page_start}-{page_end}")
+            
+            
+            
+            # 添加DOI信息
+            if doi:
+                doc.add_paragraph(f"DOI: {doi}")
+            
+            # 添加引用信息
+            citation_para = doc.add_paragraph()
+            citation_run = citation_para.runs[0] if citation_para.runs else citation_para.add_run()
+            citation_run.text = citation
+            citation_run.font.size = Pt(9)
+            
+            # 添加空行分隔
+            doc.add_paragraph()
+        
+        # 添加页脚信息
+        doc.add_paragraph("─" * 30)  # 分隔线
+        footer_para = doc.add_paragraph()
+        footer_run = footer_para.runs[0] if footer_para.runs else footer_para.add_run()
+        footer_run.text = "感谢您的阅读！欢迎引用本文内容"
+        footer_run.font.size = Pt(10)
+        
+        copyright_para = doc.add_paragraph()
+        copyright_run = copyright_para.runs[0] if copyright_para.runs else copyright_para.add_run()
+        copyright_run.text = "© 2025 东华大学学报 版权所有"
+        copyright_run.font.size = Pt(9)
+        
+        # 保存Word文档
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"推文_{journal.issue}_{timestamp}.docx"
+        output_path = os.path.join('uploads', filename)
+        
+        # 确保目录存在
+        os.makedirs('uploads', exist_ok=True)
+        
+        doc.save(output_path)
+        logger.info(f"推文Word文档已生成: {output_path}")
+        
+        # 返回文件路径
+        return output_path
+    
+    except Exception as e:
+        logger.error(f"生成推文Word文档失败: {str(e)}")
+        raise Exception(f"生成推文Word文档失败: {str(e)}")
