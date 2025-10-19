@@ -222,6 +222,7 @@ def upload_file():
                 # 先解析PDF获取期刊信息，然后查找或创建期刊
                 journal = None
                 papers_data = None  # 初始化变量
+                journal_created = False  # 标记是否创建了新期刊
                 if get_file_type(filename) == 'pdf':
                     try:
                         from services.pdf_parser import parse_pdf_to_papers
@@ -243,6 +244,7 @@ def upload_file():
                                 logger.info(f"找到现有期刊: {journal.title} - {journal.issue}")
                             else:
                                 # 创建新期刊
+                                journal_created = True  # 标记创建了新期刊
                                 first_user = User.query.first()
                                 if not first_user:
                                     password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
@@ -280,6 +282,8 @@ def upload_file():
                         journal = default_journal
                         logger.info(f"使用现有默认期刊: {journal.id}")
                     else:
+                        # 创建新期刊记录
+                        journal_created = True  # 标记创建了新期刊
                         # 获取第一个用户ID，如果没有则创建默认用户
                         first_user = User.query.first()
                         if not first_user:
@@ -432,7 +436,7 @@ def upload_file():
                 'fileSize': os.path.getsize(file_path),
                 'journalId': journal.id,
                 'papersCount': papers_count,
-                'journalCreated': True,  # 标记是否创建了新期刊
+                'journalCreated': journal_created,  # 标记是否创建了新期刊
                 'journalInfo': {
                     'title': journal.title,
                     'issue': journal.issue
@@ -773,7 +777,7 @@ def delete_paper(paper_id):
 # 删除期刊
 @app.route('/api/journals/<int:journal_id>', methods=['DELETE'])
 def delete_journal(journal_id):
-    """删除期刊（同时删除所有相关论文）"""
+    """删除期刊（如果期刊下存在论文则不允许删除）"""
     try:
         journal = Journal.query.get(journal_id)
         if not journal:
@@ -782,16 +786,23 @@ def delete_journal(journal_id):
         # 获取关联的论文数量
         papers_count = Paper.query.filter_by(journal_id=journal_id).count()
         
-        # 删除期刊（由于设置了cascade='all, delete-orphan'，相关论文会自动删除）
+        # 如果期刊下还有论文，不允许删除
+        if papers_count > 0:
+            return jsonify({
+                'success': False,
+                'message': f'无法删除期刊，该期刊下还有 {papers_count} 篇论文。请先删除所有论文后再删除期刊。',
+                'papers_count': papers_count
+            }), 400
+        
+        # 删除期刊
         db.session.delete(journal)
         db.session.commit()
         
-        logger.info(f"期刊删除成功: {journal.title} - {journal.issue}，同时删除了 {papers_count} 篇论文")
+        logger.info(f"期刊删除成功: {journal.title} - {journal.issue}")
         
         return jsonify({
             'success': True,
-            'message': f'期刊删除成功，同时删除了 {papers_count} 篇论文',
-            'deleted_papers_count': papers_count
+            'message': '期刊删除成功'
         })
     
     except Exception as e:

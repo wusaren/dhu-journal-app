@@ -218,16 +218,13 @@ const handleBatchDelete = async () => {
   }
 
   try {
-    // 计算总论文数量
-    const totalPapers = selectedJournals.value.reduce((sum, journal) => sum + (journal.paperCount || 0), 0)
-    
     await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedJournals.value.length} 个期刊吗？\n\n⚠️ 警告：删除期刊将同时删除所有关联的 ${totalPapers} 篇论文！\n\n此操作不可恢复，请谨慎操作。`, 
-      '危险操作', 
+      `确定要删除选中的 ${selectedJournals.value.length} 个期刊吗？\n\n⚠️ 注意：如果期刊下还有论文，将无法删除该期刊。`, 
+      '批量删除期刊', 
       {
         confirmButtonText: '确定删除',
         cancelButtonText: '取消',
-        type: 'error',
+        type: 'warning',
       }
     )
     
@@ -498,12 +495,12 @@ const handleViewStats = async (journal: Journal) => {
 const handleDelete = async (journal: Journal) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除期刊"${journal.title} - ${journal.issue}"吗？\n\n⚠️ 警告：删除期刊将同时删除该期刊下的所有 ${journal.paperCount || 0} 篇论文！\n\n此操作不可恢复，请谨慎操作。`, 
-      '危险操作', 
+      `确定要删除期刊"${journal.title} - ${journal.issue}"吗？\n\n⚠️ 注意：如果该期刊下还有论文，将无法删除期刊。`, 
+      '删除期刊', 
       {
         confirmButtonText: '确定删除',
         cancelButtonText: '取消',
-        type: 'error',
+        type: 'warning',
       }
     )
     
@@ -511,12 +508,7 @@ const handleDelete = async (journal: Journal) => {
     const response = await axios.delete(`http://localhost:5000/api/journals/${journal.id}`)
     
     if (response.data.success) {
-      const deletedPapersCount = response.data.deleted_papers_count || 0
-      if (deletedPapersCount > 0) {
-        ElMessage.success(`期刊删除成功，同时删除了 ${deletedPapersCount} 篇论文`)
-      } else {
-        ElMessage.success('期刊删除成功')
-      }
+      ElMessage.success('期刊删除成功')
       // 刷新期刊列表
       loadJournals()
     } else {
@@ -526,7 +518,7 @@ const handleDelete = async (journal: Journal) => {
     if (error === 'cancel' || error.message === 'cancel') {
       ElMessage.info('取消删除')
     } else if (error.response?.status === 400) {
-      ElMessage.error(error.response.data.message || '期刊删除失败')
+      ElMessage.error(error.response.data.message || '无法删除期刊，该期刊下还有论文')
     } else {
       console.error('删除期刊失败:', error)
       ElMessage.error('期刊删除失败，请检查网络连接')

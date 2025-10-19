@@ -422,30 +422,124 @@ const handleBatchMove = () => {
 }
 
 const handleAddPaper = () => {
-  // 创建文件输入元素
+  // 创建文件输入元素，支持多选
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.pdf'
+  input.multiple = true
   input.style.display = 'none'
   
   input.onchange = async (event: any) => {
-    const file = event.target.files[0]
-    if (!file) return
+    const files = Array.from(event.target.files) as File[]
+    if (!files || files.length === 0) return
     
-    if (file.type !== 'application/pdf') {
+    // 验证文件类型
+    const invalidFiles = files.filter(file => file.type !== 'application/pdf')
+    if (invalidFiles.length > 0) {
       ElMessage.error('请选择PDF文件')
       return
     }
+    
+    // 如果选择了多个文件，使用批量上传
+    if (files.length > 1) {
+      await startBatchUpload(files)
+    } else {
+      // 单个文件上传
+      const file = files[0]
+      try {
+        // 检查论文是否已存在
+        const existingPapers = await checkPaperExists(file.name)
+        if (existingPapers.length > 0) {
+          ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，不可重复上传`)
+          return
+        }
+        
+        // 显示持续的解析提示
+        let loadingMessage = ElMessage({
+          message: '正在上传并解析论文...',
+          type: 'info',
+          duration: 0, // 不自动关闭
+          showClose: false
+        })
+        
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('journalId', '1') // 默认期刊ID
+        
+        const response = await fetch('http://localhost:5000/api/upload', {
+          method: 'POST',
+          body: formData
+        })
+        
+        const result = await response.json()
+        
+        if (response.ok) {
+          // 关闭持续的解析提示
+          loadingMessage.close()
+          
+          if (result.duplicate) {
+            ElMessage.warning(result.message || '文件已存在，跳过重复上传')
+          } else if (result.warning) {
+            ElMessage.warning(result.message || '文件上传成功，但未能解析出论文信息')
+          } else if (result.error) {
+            ElMessage.error(result.message || '文件上传失败')
+          } else {
+            // 检查是否创建了新期刊
+            if (result.journalCreated && result.journalInfo) {
+              const journalTitle = result.journalInfo.title
+              const journalIssue = result.journalInfo.issue
+              ElMessage.success(`已为您在期刊管理页面创建期刊 ${journalTitle}（${journalIssue}）`)
+            } else {
+              ElMessage.success(result.message || '论文添加成功！系统已自动解析论文信息')
+            }
+          }
+        } else {
+          // 关闭持续的解析提示
+          loadingMessage.close()
+          ElMessage.error(result.message || '论文上传失败')
+        }
+        // 刷新论文列表
+        loadPapers()
+      } catch (error) {
+        // 关闭持续的解析提示
+        loadingMessage.close()
+        console.error('上传失败:', error)
+        ElMessage.error('论文上传失败，请检查网络连接')
+      }
+    }
+  }
+  
+  // 触发文件选择
+  document.body.appendChild(input)
+  input.click()
+  document.body.removeChild(input)
+}
+
+
+// 简单的批量上传函数
+const startBatchUpload = async (files: File[]) => {
+  // 显示持续的解析提示
+  let loadingMessage = ElMessage({
+    message: `正在批量上传 ${files.length} 个文件，解析中...`,
+    type: 'info',
+    duration: 0, // 不自动关闭
+    showClose: false
+  })
+  
+  let successCount = 0
+  let failCount = 0
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
     
     try {
       // 检查论文是否已存在
       const existingPapers = await checkPaperExists(file.name)
       if (existingPapers.length > 0) {
-        ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，不可重复上传`)
-        return
+        ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，跳过上传`)
+        failCount++
+        continue
       }
-      
-      ElMessage.info('正在上传并解析论文...')
       
       const formData = new FormData()
       formData.append('file', file)
@@ -460,115 +554,68 @@ const handleAddPaper = () => {
       
       if (response.ok) {
         if (result.duplicate) {
-          ElMessage.warning(result.message || '文件已存在，跳过重复上传')
+          ElMessage.warning(`文件 "${file.name}" 已存在，跳过重复上传`)
+          failCount++
         } else if (result.warning) {
-          ElMessage.warning(result.message || '文件上传成功，但未能解析出论文信息')
+          ElMessage.warning(`文件 "${file.name}" 上传成功，但未能解析出论文信息`)
+          successCount++
+          // 每成功上传一篇论文就刷新论文列表
+          loadPapers()
         } else if (result.error) {
-          ElMessage.error(result.message || '文件上传失败')
+          ElMessage.error(`文件 "${file.name}" 上传失败: ${result.message}`)
+          failCount++
         } else {
+          successCount++
           // 检查是否创建了新期刊
           if (result.journalCreated && result.journalInfo) {
             const journalTitle = result.journalInfo.title
             const journalIssue = result.journalInfo.issue
             ElMessage.success(`已为您在期刊管理页面创建期刊 ${journalTitle}（${journalIssue}）`)
-          } else {
-            ElMessage.success(result.message || '论文添加成功！系统已自动解析论文信息')
           }
-          
-          // 如果上传成功且有期刊ID，开始轮询解析状态
-          if (result.journalId) {
-            startParsingStatusPolling(result.journalId)
-          }
+          // 每成功上传一篇论文就刷新论文列表
+          loadPapers()
         }
-        // 刷新论文列表
-        loadPapers()
       } else {
-        ElMessage.error(result.message || '论文上传失败')
+        ElMessage.error(`文件 "${file.name}" 上传失败: ${result.message}`)
+        failCount++
       }
     } catch (error) {
-      console.error('上传失败:', error)
-      ElMessage.error('论文上传失败，请检查网络连接')
+      console.error(`文件 "${file.name}" 上传失败:`, error)
+      ElMessage.error(`文件 "${file.name}" 上传失败`)
+      failCount++
+    }
+    
+    // 关闭当前消息并显示新的进度消息
+    loadingMessage.close()
+    loadingMessage = ElMessage({
+      message: `正在批量上传 ${files.length} 个文件，已处理 ${i + 1}/${files.length}，解析中...`,
+      type: 'info',
+      duration: 0,
+      showClose: false
+    })
+    
+    // 添加小延迟，避免请求过于频繁
+    if (i < files.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
   
-  // 触发文件选择
-  document.body.appendChild(input)
-  input.click()
-  document.body.removeChild(input)
-}
-
-// 开始解析状态轮询
-const startParsingStatusPolling = (journalId: number) => {
-  const pollingInterval = setInterval(async () => {
-    try {
-      // 获取该期刊的所有论文
-      const response = await fetch(`http://localhost:5000/api/papers?journalId=${journalId}`)
-      const papers = await response.json()
-      
-      if (papers && papers.length > 0) {
-        // 检查是否有正在解析的论文
-        const parsingPapersInJournal = papers.filter((paper: any) => 
-          paper.parsing_status === 'parsing'
-        )
-        
-        if (parsingPapersInJournal.length === 0) {
-          // 所有论文解析完成，停止轮询
-          clearInterval(pollingInterval)
-          ElMessage.success('所有论文解析完成！')
-          // 刷新论文列表显示最终状态
-          loadPapers()
-        } else {
-          // 更新正在解析的论文状态
-          updateParsingPapersStatus(papers)
-        }
-      } else {
-        // 没有论文数据，停止轮询
-        clearInterval(pollingInterval)
-      }
-    } catch (error) {
-      console.error('轮询解析状态失败:', error)
-      // 发生错误时停止轮询
-      clearInterval(pollingInterval)
-    }
-  }, 3000) // 每3秒轮询一次
+  // 关闭持续的解析提示
+  loadingMessage.close()
   
-  // 设置最大轮询时间（5分钟）
-  setTimeout(() => {
-    clearInterval(pollingInterval)
-    ElMessage.warning('论文解析超时，请检查解析状态')
-  }, 5 * 60 * 1000)
+  // 显示批量上传结果
+  if (failCount === 0) {
+    ElMessage.success(`批量上传完成！成功上传 ${successCount} 个文件`)
+  } else if (successCount > 0) {
+    ElMessage.warning(`批量上传完成！成功 ${successCount} 个，失败 ${failCount} 个`)
+  } else {
+    ElMessage.error('批量上传失败')
+  }
+  
+  // 最终刷新论文列表
+  loadPapers()
 }
 
-// 更新正在解析的论文状态
-const updateParsingPapersStatus = (papers: any[]) => {
-  papers.forEach((paper: any) => {
-    if (paper.parsing_status === 'parsing') {
-      // 找到对应的论文并更新状态
-      const existingPaper = allPaperList.value.find(p => p.id === paper.id)
-      if (existingPaper) {
-        existingPaper.parsing_status = paper.parsing_status
-        existingPaper.parsing_progress = paper.parsing_progress || 0
-      } else {
-        // 如果是新论文，添加到列表并标记为解析中
-        const newPaper: Paper = {
-          id: paper.id,
-          title: paper.title || '正在解析中...',
-          author: paper.authors || paper.first_author || '未知作者',
-          journalIssue: paper.issue || '未知刊期',
-          startPage: paper.page_start || 0,
-          endPage: paper.page_end || 0,
-          status: '待审核',
-          submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-          file_path: paper.file_path,
-          stored_filename: paper.stored_filename,
-          parsing_status: paper.parsing_status,
-          parsing_progress: paper.parsing_progress || 0
-        }
-        allPaperList.value.unshift(newPaper)
-      }
-    }
-  })
-}
 
 // 检查论文是否已存在
 const checkPaperExists = async (filename: string): Promise<Paper[]> => {
@@ -623,7 +670,7 @@ const loadJournals = async () => {
 }
 
 // 加载论文列表
-const loadPapers = async () => {
+const loadPapers = async (showSuccessMessage = false) => {
   try {
     const response = await fetch('http://localhost:5000/api/papers')
     const papers = await response.json()
@@ -644,10 +691,16 @@ const loadPapers = async () => {
         parsing_status: paper.parsing_status, // 解析状态
         parsing_progress: paper.parsing_progress || 0 // 解析进度
       }))
-      ElMessage.success(`成功加载 ${papers.length} 篇论文`)
+      
+      // 只在指定情况下显示成功消息
+      if (showSuccessMessage) {
+        ElMessage.success(`成功加载 ${papers.length} 篇论文`)
+      }
     } else {
       allPaperList.value = []
-      ElMessage.info('暂无论文数据')
+      if (showSuccessMessage) {
+        ElMessage.info('暂无论文数据')
+      }
     }
   } catch (error) {
     console.error('加载论文列表失败:', error)
@@ -658,7 +711,7 @@ const loadPapers = async () => {
 // 页面加载时获取数据
 onMounted(() => {
   loadJournals()
-  loadPapers()
+  loadPapers(true) // 只在初始加载时显示成功消息
 })
 </script>
 
