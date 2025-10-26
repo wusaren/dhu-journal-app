@@ -129,85 +129,56 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
-
-interface Journal {
-  id: number
-  title: string
-  issue: string
-  publishDate: string
-  paperCount: number
-  status: string
-  description?: string
-  fileName?: string
-  fileSize?: number
-}
-
-interface FilterForm {
-  issue: string
-}
+import { useJournalStore } from '@/stores/journalStore'
+import type { Journal } from '@/api/journalService'
 
 const router = useRouter()
-const journalList = ref<Journal[]>([])
-const filteredJournalList = ref<Journal[]>([])
-const selectedJournals = ref<Journal[]>([])
-const loading = ref(false)
-const filterForm = ref<FilterForm>({
-  issue: ''
-})
-const currentPage = ref(1)
-const pageSize = ref(10)
+const journalStore = useJournalStore()
 
-// 分页后的期刊列表
-const pagedJournalList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-  return filteredJournalList.value.slice(start, end)
+// 使用store中的状态和计算属性
+const filterForm = computed(() => journalStore.filterForm)
+const selectedJournals = computed(() => journalStore.selectedJournals)
+const loading = computed(() => journalStore.loading)
+const currentPage = computed({
+  get: () => journalStore.currentPage,
+  set: (value) => journalStore.setCurrentPage(value)
 })
-
-// 筛选期刊列表
-const filterJournals = () => {
-  if (!filterForm.value.issue) {
-    // 如果没有筛选条件，显示所有期刊
-    filteredJournalList.value = [...journalList.value]
-  } else {
-    // 根据刊期筛选
-    filteredJournalList.value = journalList.value.filter(journal => 
-      journal.issue === filterForm.value.issue
-    )
-  }
-}
+const pageSize = computed({
+  get: () => journalStore.pageSize,
+  set: (value) => journalStore.setPageSize(value)
+})
+const pagedJournalList = computed(() => journalStore.pagedJournalList)
+const totalJournals = computed(() => journalStore.totalJournals)
+const journalList = computed(() => journalStore.journalList)
+const filteredJournalList = computed(() => journalStore.filteredJournalList)
 
 // 处理筛选
 const handleFilter = () => {
-  filterJournals()
   ElMessage.info('筛选完成')
 }
 
 // 重置筛选
 const resetFilter = () => {
-  filterForm.value.issue = ''
-  filterJournals()
+  journalStore.resetFilter()
   ElMessage.info('筛选已重置')
 }
 
 // 处理选择变化
 const handleSelectionChange = (selection: Journal[]) => {
-  selectedJournals.value = selection
+  journalStore.setSelectedJournals(selection)
 }
 
 // 处理每页数量变化
 const handleSizeChange = (size: number) => {
-  pageSize.value = size
-  currentPage.value = 1
+  journalStore.setPageSize(size)
 }
 
 // 处理当前页变化
 const handleCurrentChange = (page: number) => {
-  currentPage.value = page
+  journalStore.setCurrentPage(page)
 }
 
 // 批量删除期刊
@@ -228,85 +199,20 @@ const handleBatchDelete = async () => {
       }
     )
     
-    // 批量删除选中的期刊
-    const deletePromises = selectedJournals.value.map(journal => 
-      axios.delete(`http://localhost:5000/api/journals/${journal.id}`)
-    )
-    
-    // 等待所有删除操作完成
-    const results = await Promise.allSettled(deletePromises)
-    
-    // 统计成功和失败的数量
-    const successfulDeletes = results.filter(result => result.status === 'fulfilled' && result.value.data.success).length
-    const failedDeletes = results.length - successfulDeletes
-    
-    if (failedDeletes === 0) {
-      ElMessage.success(`批量删除成功，共删除 ${successfulDeletes} 个期刊`)
-    } else if (successfulDeletes > 0) {
-      ElMessage.warning(`部分删除成功：成功 ${successfulDeletes} 个，失败 ${failedDeletes} 个`)
-    } else {
-      ElMessage.error('批量删除失败')
-    }
-    
-    selectedJournals.value = []
-    // 刷新期刊列表
-    loadJournals()
+    await journalStore.batchDeleteJournals()
   } catch (error: any) {
     if (error === 'cancel' || error.message === 'cancel') {
       ElMessage.info('取消批量删除')
     } else {
       console.error('批量删除期刊失败:', error)
-      ElMessage.error('批量删除失败，请检查网络连接')
+      ElMessage.error(error.message)
     }
-  }
-}
-
-
-// 加载期刊列表
-const loadJournals = async () => {
-  loading.value = true
-  try {
-    console.log('开始加载期刊列表...')
-    
-    // 尝试从数据库加载
-    const response = await axios.get('http://localhost:5000/api/journals')
-    console.log('期刊列表响应:', response.data)
-    
-    if (response.data && response.data.length > 0) {
-      // 数据库中有数据，使用数据库数据
-      journalList.value = response.data
-      // 初始化筛选后的列表
-      filterJournals()
-      console.log('使用数据库数据，期刊数量:', response.data.length)
-    } else {
-      // 数据库中没有数据，显示空列表
-      journalList.value = []
-      filteredJournalList.value = []
-      console.log('数据库为空，显示空列表')
-    }
-    
-    ElMessage.success('期刊列表加载成功')
-  } catch (error: any) {
-    console.error('加载期刊列表失败:', error)
-    console.error('错误详情:', error.response?.data)
-    
-    if (error.code === 'ERR_NETWORK' || error.message.includes('ERR_CONNECTION_REFUSED')) {
-      ElMessage.error('无法连接到后端服务，请确保后端服务已启动')
-      journalList.value = []
-      filteredJournalList.value = []
-    } else {
-      ElMessage.error(`加载期刊列表失败: ${error.response?.data?.message || error.message}`)
-      journalList.value = []
-      filteredJournalList.value = []
-    }
-  } finally {
-    loading.value = false
   }
 }
 
 onMounted(() => {
   // 直接加载期刊列表，不需要认证
-  loadJournals()
+  journalStore.loadJournals()
 })
 
 const handleCreateJournal = () => {
@@ -326,8 +232,7 @@ const getStatusType = (status: string) => {
 const handleEdit = async (journal: Journal) => {
   try {
     // 获取该期刊的论文列表
-    const response = await axios.get(`http://localhost:5000/api/papers?journalId=${journal.id}`)
-    const papers = response.data
+    const papers = await journalStore.getPapers(journal.id)
     
     if (papers && papers.length > 0) {
       // 限制显示数量：最多显示10条
@@ -408,87 +313,39 @@ const handleEdit = async (journal: Journal) => {
     }
   } catch (error: any) {
     console.error('获取期刊论文列表失败:', error)
-    ElMessage.error(`获取论文列表失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   }
 }
 
 const handleViewTOC = async (journal: Journal) => {
   try {
-    ElMessage.info(`正在生成目录: ${journal.issue}`)
-    
-    // 调用后端生成目录
-    const response = await axios.post('http://localhost:5000/api/export/toc', {
-      journalId: journal.id
-    })
-    
-    if (response.data.downloadUrl) {
-      // 下载文件
-      const link = document.createElement('a')
-      link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `目录_${journal.issue}.docx`
-      link.click()
-      ElMessage.success('目录生成成功！')
-    }
+    await journalStore.generateTOC(journal.id, journal.issue)
   } catch (error: any) {
     console.error('生成目录失败:', error)
-    ElMessage.error(`生成目录失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   }
 }
 
 const handlePublish = (journal: Journal) => {
   const newStatus = journal.status === '已发布' ? '编辑中' : '已发布'
   ElMessage.success(`期刊 ${journal.issue} ${newStatus === '已发布' ? '已发布' : '已取消发布'}`)
-  
-  // 更新状态
-  const index = journalList.value.findIndex(j => j.id === journal.id)
-  if (index !== -1) {
-    journalList.value[index].status = newStatus
-  }
 }
 
 const handleGenerateWeibo = async (journal: Journal) => {
   try {
-    ElMessage.info(`正在生成推文: ${journal.issue}`)
-    
-    // 调用后端生成推文
-    const response = await axios.post('http://localhost:5000/api/export/tuiwen', {
-      journalId: journal.id
-    })
-    
-    if (response.data.downloadUrl) {
-      // 下载文件
-      const link = document.createElement('a')
-      link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `推文_${journal.issue}.docx`
-      link.click()
-      ElMessage.success('推文生成成功！')
-    }
+    await journalStore.generateWeibo(journal.id, journal.issue)
   } catch (error: any) {
     console.error('生成推文失败:', error)
-    ElMessage.error(`生成推文失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   }
 }
 
 const handleViewStats = async (journal: Journal) => {
   try {
-    ElMessage.info(`正在生成统计表: ${journal.issue}`)
-    
-    // 调用后端生成统计表
-    const response = await axios.post('http://localhost:5000/api/export/excel', {
-      journalId: journal.id
-    })
-    
-    if (response.data.downloadUrl) {
-      // 下载文件
-      const link = document.createElement('a')
-      link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `统计表_${journal.issue}.xlsx`
-      link.click()
-      ElMessage.success('统计表生成成功！')
-    }
+    await journalStore.generateStats(journal.id, journal.issue)
   } catch (error: any) {
     console.error('生成统计表失败:', error)
-    ElMessage.error(`生成统计表失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   }
 }
 
@@ -504,24 +361,13 @@ const handleDelete = async (journal: Journal) => {
       }
     )
     
-    // 调用后端API删除期刊
-    const response = await axios.delete(`http://localhost:5000/api/journals/${journal.id}`)
-    
-    if (response.data.success) {
-      ElMessage.success('期刊删除成功')
-      // 刷新期刊列表
-      loadJournals()
-    } else {
-      ElMessage.error(response.data.message || '期刊删除失败')
-    }
+    await journalStore.deleteJournal(journal.id)
   } catch (error: any) {
     if (error === 'cancel' || error.message === 'cancel') {
       ElMessage.info('取消删除')
-    } else if (error.response?.status === 400) {
-      ElMessage.error(error.response.data.message || '无法删除期刊，该期刊下还有论文')
     } else {
       console.error('删除期刊失败:', error)
-      ElMessage.error('期刊删除失败，请检查网络连接')
+      ElMessage.error(error.message)
     }
   }
 }

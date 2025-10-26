@@ -130,84 +130,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { usePaperStore } from '@/stores/paperStore'
+import type { Paper } from '@/api/paperService'
 
-interface Paper {
-  id: number
-  title: string
-  author: string
-  journalIssue: string
-  startPage: number
-  endPage: number
-  status: string
-  submitDate: string
-  file_path?: string
-  stored_filename?: string
-  parsing_status?: string // 解析状态：parsing, completed, failed
-  parsing_progress?: number // 解析进度 0-100
-}
+const paperStore = usePaperStore()
 
-interface FilterForm {
-  issue: string
-  status: string
-  keyword: string
-}
-
-interface Journal {
-  id: number
-  title: string
-  issue: string
-  status: string
-}
-
-const filterForm = ref<FilterForm>({
-  issue: '',
-  status: '',
-  keyword: ''
+// 使用store中的状态和计算属性
+const filterForm = computed(() => paperStore.filterForm)
+const selectedPapers = computed(() => paperStore.selectedPapers)
+const currentPage = computed({
+  get: () => paperStore.currentPage,
+  set: (value) => paperStore.setCurrentPage(value)
 })
-
-const selectedPapers = ref<Paper[]>([])
-const currentPage = ref(1)
-const pageSize = ref(10)
-const journalList = ref<Journal[]>([])
-
-// 论文列表数据 - 从后端API获取
-const allPaperList = ref<Paper[]>([])
-const parsingPapers = ref<Set<number>>(new Set()) // 正在解析的论文ID集合
-
-// 过滤后的论文列表
-const filteredPaperList = computed(() => {
-  return allPaperList.value.filter(paper => {
-    // 刊期筛选：直接匹配期刊刊期
-    const matchesIssue = !filterForm.value.issue || 
-      paper.journalIssue === filterForm.value.issue
-    
-    // 状态筛选：将英文状态值映射为中文状态
-    const statusMap: Record<string, string> = {
-      'pending': '待审核',
-      'approved': '已通过', 
-      'need_revision': '需修改',
-      'rejected': '已拒绝'
-    }
-    const matchesStatus = !filterForm.value.status || 
-      paper.status === statusMap[filterForm.value.status]
-    
-    // 关键词筛选：不区分大小写
-    const matchesKeyword = !filterForm.value.keyword || 
-      paper.title.toLowerCase().includes(filterForm.value.keyword.toLowerCase()) || 
-      paper.author.toLowerCase().includes(filterForm.value.keyword.toLowerCase())
-    
-    return matchesIssue && matchesStatus && matchesKeyword
-  })
+const pageSize = computed({
+  get: () => paperStore.pageSize,
+  set: (value) => paperStore.setPageSize(value)
 })
-
-// 分页后的论文列表
-const pagedPaperList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-  return filteredPaperList.value.slice(start, end)
-})
+const journalList = computed(() => paperStore.journalList)
+const allPaperList = computed(() => paperStore.allPaperList)
+const filteredPaperList = computed(() => paperStore.filteredPaperList)
+const pagedPaperList = computed(() => paperStore.pagedPaperList)
 
 const getStatusType = (status: string) => {
   const statusMap: Record<string, string> = {
@@ -220,30 +164,25 @@ const getStatusType = (status: string) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1 // 搜索时重置到第一页
+  paperStore.setCurrentPage(1) // 搜索时重置到第一页
   ElMessage.info('搜索完成')
 }
 
 const resetFilter = () => {
-  filterForm.value = {
-    issue: '',
-    status: '',
-    keyword: ''
-  }
-  currentPage.value = 1
+  paperStore.resetFilter()
+  ElMessage.info('筛选已重置')
 }
 
 const handleSelectionChange = (selection: Paper[]) => {
-  selectedPapers.value = selection
+  paperStore.setSelectedPapers(selection)
 }
 
 const handleSizeChange = (size: number) => {
-  pageSize.value = size
-  currentPage.value = 1
+  paperStore.setPageSize(size)
 }
 
 const handleCurrentChange = (page: number) => {
-  currentPage.value = page
+  paperStore.setCurrentPage(page)
 }
 
 const handleView = (paper: Paper) => {
@@ -296,26 +235,13 @@ const handleDelete = async (paper: Paper) => {
       type: 'warning',
     })
     
-    // 调用后端API删除论文
-    const response = await fetch(`http://localhost:5000/api/papers/${paper.id}`, {
-      method: 'DELETE'
-    })
-    
-    const result = await response.json()
-    
-    if (response.ok && result.success) {
-      ElMessage.success('论文删除成功')
-      // 刷新论文列表
-      loadPapers()
-    } else {
-      ElMessage.error(result.message || '论文删除失败')
-    }
+    await paperStore.deletePaper(paper.id)
   } catch (error: any) {
     if (error === 'cancel' || error.message === 'cancel') {
       ElMessage.info('取消删除')
     } else {
       console.error('删除论文失败:', error)
-      ElMessage.error('论文删除失败，请检查网络连接')
+      ElMessage.error(error.message)
     }
   }
 }
@@ -328,93 +254,19 @@ const handleBatchDelete = async () => {
       type: 'warning',
     })
     
-    // 批量删除论文
-    const deletePromises = selectedPapers.value.map(paper => 
-      fetch(`http://localhost:5000/api/papers/${paper.id}`, {
-        method: 'DELETE'
-      })
-    )
-    
-    const responses = await Promise.all(deletePromises)
-    const results = await Promise.all(responses.map(r => r.json()))
-    
-    // 检查是否所有删除都成功
-    const failedCount = results.filter(r => !r.success).length
-    const successCount = results.length - failedCount
-    
-    if (failedCount === 0) {
-      ElMessage.success(`批量删除成功，共删除 ${successCount} 篇论文`)
-    } else {
-      ElMessage.warning(`部分删除失败，成功删除 ${successCount} 篇，失败 ${failedCount} 篇`)
-    }
-    
-    // 刷新论文列表
-    loadPapers()
-    selectedPapers.value = []
+    await paperStore.batchDeletePapers()
   } catch (error: any) {
     if (error === 'cancel' || error.message === 'cancel') {
       ElMessage.info('取消批量删除')
     } else {
       console.error('批量删除失败:', error)
-      ElMessage.error('批量删除失败，请检查网络连接')
+      ElMessage.error(error.message)
     }
   }
 }
 
 const handleBatchDownload = async () => {
-  if (selectedPapers.value.length === 0) {
-    ElMessage.warning('请先选择要下载的论文')
-    return
-  }
-
-  try {
-    ElMessage.info(`正在批量下载 ${selectedPapers.value.length} 篇论文...`)
-    
-    // 检查选中的论文是否有PDF文件
-    const papersWithFiles = selectedPapers.value.filter(paper => 
-      paper.file_path || paper.stored_filename
-    )
-    
-    if (papersWithFiles.length === 0) {
-      ElMessage.warning('选中的论文都没有PDF文件')
-      return
-    }
-    
-    // 逐个下载PDF文件
-    for (const paper of papersWithFiles) {
-      // 从文件路径中提取文件名
-      let filename = ''
-      if (paper.file_path) {
-        const pathParts = paper.file_path.split(/[\\/]/)
-        filename = pathParts[pathParts.length - 1]
-      } else if (paper.stored_filename) {
-        filename = paper.stored_filename
-      }
-      
-      if (filename) {
-        // 使用下载API下载PDF文件
-        const downloadUrl = `http://localhost:5000/api/download/${filename}`
-        
-        // 创建下载链接并触发下载
-        const link = document.createElement('a')
-        link.href = downloadUrl
-        link.download = filename
-        link.style.display = 'none'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        
-        // 添加小延迟避免浏览器限制
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-    }
-    
-    ElMessage.success(`批量下载完成，共下载 ${papersWithFiles.length} 篇论文`)
-    
-  } catch (error) {
-    console.error('批量下载失败:', error)
-    ElMessage.error('批量下载失败，请稍后重试')
-  }
+  await paperStore.batchDownloadPapers()
 }
 
 const handleBatchMove = () => {
@@ -442,70 +294,11 @@ const handleAddPaper = () => {
     
     // 如果选择了多个文件，使用批量上传
     if (files.length > 1) {
-      await startBatchUpload(files)
+      await paperStore.batchUploadPapers(files)
     } else {
       // 单个文件上传
       const file = files[0]
-      try {
-        // 检查论文是否已存在
-        const existingPapers = await checkPaperExists(file.name)
-        if (existingPapers.length > 0) {
-          ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，不可重复上传`)
-          return
-        }
-        
-        // 显示持续的解析提示
-        let loadingMessage = ElMessage({
-          message: '正在上传并解析论文...',
-          type: 'info',
-          duration: 0, // 不自动关闭
-          showClose: false
-        })
-        
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('journalId', '1') // 默认期刊ID
-        
-        const response = await fetch('http://localhost:5000/api/upload', {
-          method: 'POST',
-          body: formData
-        })
-        
-        const result = await response.json()
-        
-        if (response.ok) {
-          // 关闭持续的解析提示
-          loadingMessage.close()
-          
-          if (result.duplicate) {
-            ElMessage.warning(result.message || '文件已存在，跳过重复上传')
-          } else if (result.warning) {
-            ElMessage.warning(result.message || '文件上传成功，但未能解析出论文信息')
-          } else if (result.error) {
-            ElMessage.error(result.message || '文件上传失败')
-          } else {
-            // 检查是否创建了新期刊
-            if (result.journalCreated && result.journalInfo) {
-              const journalTitle = result.journalInfo.title
-              const journalIssue = result.journalInfo.issue
-              ElMessage.success(`已为您在期刊管理页面创建期刊 ${journalTitle}（${journalIssue}）`)
-            } else {
-              ElMessage.success(result.message || '论文添加成功！系统已自动解析论文信息')
-            }
-          }
-        } else {
-          // 关闭持续的解析提示
-          loadingMessage.close()
-          ElMessage.error(result.message || '论文上传失败')
-        }
-        // 刷新论文列表
-        loadPapers()
-      } catch (error) {
-        // 关闭持续的解析提示
-        loadingMessage.close()
-        console.error('上传失败:', error)
-        ElMessage.error('论文上传失败，请检查网络连接')
-      }
+      await paperStore.uploadPaper(file)
     }
   }
   
@@ -515,203 +308,10 @@ const handleAddPaper = () => {
   document.body.removeChild(input)
 }
 
-
-// 简单的批量上传函数
-const startBatchUpload = async (files: File[]) => {
-  // 显示持续的解析提示
-  let loadingMessage = ElMessage({
-    message: `正在批量上传 ${files.length} 个文件，解析中...`,
-    type: 'info',
-    duration: 0, // 不自动关闭
-    showClose: false
-  })
-  
-  let successCount = 0
-  let failCount = 0
-  
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i]
-    
-    try {
-      // 检查论文是否已存在
-      const existingPapers = await checkPaperExists(file.name)
-      if (existingPapers.length > 0) {
-        ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，跳过上传`)
-        failCount++
-        continue
-      }
-      
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('journalId', '1') // 默认期刊ID
-      
-      const response = await fetch('http://localhost:5000/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-      
-      const result = await response.json()
-      
-      if (response.ok) {
-        if (result.duplicate) {
-          ElMessage.warning(`文件 "${file.name}" 已存在，跳过重复上传`)
-          failCount++
-        } else if (result.warning) {
-          ElMessage.warning(`文件 "${file.name}" 上传成功，但未能解析出论文信息`)
-          successCount++
-          // 每成功上传一篇论文就刷新论文列表
-          loadPapers()
-        } else if (result.error) {
-          ElMessage.error(`文件 "${file.name}" 上传失败: ${result.message}`)
-          failCount++
-        } else {
-          successCount++
-          // 检查是否创建了新期刊
-          if (result.journalCreated && result.journalInfo) {
-            const journalTitle = result.journalInfo.title
-            const journalIssue = result.journalInfo.issue
-            ElMessage.success(`已为您在期刊管理页面创建期刊 ${journalTitle}（${journalIssue}）`)
-          }
-          // 每成功上传一篇论文就刷新论文列表
-          loadPapers()
-        }
-      } else {
-        ElMessage.error(`文件 "${file.name}" 上传失败: ${result.message}`)
-        failCount++
-      }
-    } catch (error) {
-      console.error(`文件 "${file.name}" 上传失败:`, error)
-      ElMessage.error(`文件 "${file.name}" 上传失败`)
-      failCount++
-    }
-    
-    // 关闭当前消息并显示新的进度消息
-    loadingMessage.close()
-    loadingMessage = ElMessage({
-      message: `正在批量上传 ${files.length} 个文件，已处理 ${i + 1}/${files.length}，解析中...`,
-      type: 'info',
-      duration: 0,
-      showClose: false
-    })
-    
-    // 添加小延迟，避免请求过于频繁
-    if (i < files.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, 500))
-    }
-  }
-  
-  // 关闭持续的解析提示
-  loadingMessage.close()
-  
-  // 显示批量上传结果
-  if (failCount === 0) {
-    ElMessage.success(`批量上传完成！成功上传 ${successCount} 个文件`)
-  } else if (successCount > 0) {
-    ElMessage.warning(`批量上传完成！成功 ${successCount} 个，失败 ${failCount} 个`)
-  } else {
-    ElMessage.error('批量上传失败')
-  }
-  
-  // 最终刷新论文列表
-  loadPapers()
-}
-
-
-// 检查论文是否已存在
-const checkPaperExists = async (filename: string): Promise<Paper[]> => {
-  try {
-    // 获取所有论文
-    const response = await fetch('http://localhost:5000/api/papers')
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const papers = await response.json()
-    
-    // 检查是否有相同文件名的论文
-    const existingPapers = papers.filter((paper: any) => {
-      // 检查文件路径或存储文件名是否匹配
-      const filePath = paper.file_path || ''
-      const storedFilename = paper.stored_filename || ''
-      return filePath.includes(filename) || storedFilename.includes(filename)
-    })
-    
-    return existingPapers
-  } catch (error) {
-    console.error('检查论文存在性失败:', error)
-    return []
-  }
-}
-
-// 加载期刊列表
-const loadJournals = async () => {
-  try {
-    const response = await fetch('http://localhost:5000/api/journals')
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const journals = await response.json()
-    
-    if (journals && journals.length > 0) {
-      journalList.value = journals.map((journal: any) => ({
-        id: journal.id,
-        title: journal.title,
-        issue: journal.issue,
-        status: journal.status
-      }))
-      console.log('成功加载期刊列表:', journalList.value)
-    } else {
-      journalList.value = []
-      console.log('暂无期刊数据')
-    }
-  } catch (error) {
-    console.error('加载期刊列表失败:', error)
-    journalList.value = []
-  }
-}
-
-// 加载论文列表
-const loadPapers = async (showSuccessMessage = false) => {
-  try {
-    const response = await fetch('http://localhost:5000/api/papers')
-    const papers = await response.json()
-    
-    if (papers && papers.length > 0) {
-      // 将API数据转换为前端格式
-      allPaperList.value = papers.map((paper: any) => ({
-        id: paper.id,
-        title: paper.title || '无标题',
-        author: paper.authors || paper.first_author || '未知作者',
-        journalIssue: paper.issue || '未知刊期',
-        startPage: paper.page_start || 0,
-        endPage: paper.page_end || 0,
-        status: '待审核', // 默认状态，实际应该从数据库获取
-        submitDate: paper.created_at ? paper.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-        file_path: paper.file_path,
-        stored_filename: paper.stored_filename,
-        parsing_status: paper.parsing_status, // 解析状态
-        parsing_progress: paper.parsing_progress || 0 // 解析进度
-      }))
-      
-      // 只在指定情况下显示成功消息
-      if (showSuccessMessage) {
-        ElMessage.success(`成功加载 ${papers.length} 篇论文`)
-      }
-    } else {
-      allPaperList.value = []
-      if (showSuccessMessage) {
-        ElMessage.info('暂无论文数据')
-      }
-    }
-  } catch (error) {
-    console.error('加载论文列表失败:', error)
-    ElMessage.error('加载论文列表失败')
-  }
-}
-
 // 页面加载时获取数据
 onMounted(() => {
-  loadJournals()
-  loadPapers(true) // 只在初始加载时显示成功消息
+  paperStore.loadJournals()
+  paperStore.loadPapers(true) // 只在初始加载时显示成功消息
 })
 </script>
 

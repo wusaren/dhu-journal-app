@@ -99,7 +99,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import axios from 'axios'
+import { journalService } from '@/api/journalService'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -211,8 +211,8 @@ const handleSubmit = async () => {
     // 生成期刊号格式
     const issue = generateIssueFormat()
 
-    // 调用后端API创建期刊
-    const response = await axios.post('http://localhost:5000/api/journals/create', {
+    // 使用服务类创建期刊
+    const response = await journalService.createJournal({
       issue: issue,
       title: form.title,
       publish_date: form.publishDate,
@@ -220,21 +220,15 @@ const handleSubmit = async () => {
       description: form.description
     })
 
-    if (response.data.success) {
+    if (response.success) {
       ElMessage.success('期刊创建成功！')
       router.push('/journal-management')
     } else {
-      ElMessage.error(response.data.message || '期刊创建失败')
+      ElMessage.error(response.message || '期刊创建失败')
     }
   } catch (error: any) {
     console.error('创建期刊失败:', error)
-    if (error.response?.status === 400) {
-      ElMessage.error(`创建失败: ${error.response.data.message}`)
-    } else if (error.code === 'ERR_NETWORK') {
-      ElMessage.error('无法连接到后端服务，请确保后端服务已启动')
-    } else {
-      ElMessage.error(`创建期刊失败: ${error.response?.data?.message || error.message}`)
-    }
+    ElMessage.error(error.message)
   } finally {
     loading.value = false
   }

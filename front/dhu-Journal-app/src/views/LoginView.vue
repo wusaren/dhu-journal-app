@@ -20,7 +20,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
+import { authService } from '@/api/authService'
 
 const router = useRouter()
 const form = ref({
@@ -41,19 +41,18 @@ const handleLogin = async () => {
   try {
     console.log('开始登录...', form.value.username)
     
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
+    const response = await authService.login({
       username: form.value.username,
       password: form.value.password
     })
 
-    console.log('登录响应:', response.data)
+    console.log('登录响应:', response)
 
-    if (response.data.access_token) {
+    if (response.access_token) {
       // 保存token到localStorage
-      localStorage.setItem('token', response.data.access_token)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
+      authService.saveUserInfo(response.access_token, response.user)
       
-      console.log('Token已保存:', response.data.access_token.substring(0, 20) + '...')
+      console.log('Token已保存:', response.access_token.substring(0, 20) + '...')
       
       ElMessage.success('登录成功！')
       router.push('/')
@@ -62,8 +61,7 @@ const handleLogin = async () => {
     }
   } catch (error: any) {
     console.error('登录失败:', error)
-    console.error('错误详情:', error.response?.data)
-    ElMessage.error(`登录失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   } finally {
     loading.value = false
   }

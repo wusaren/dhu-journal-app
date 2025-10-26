@@ -440,7 +440,11 @@ def upload_file():
                 'journalInfo': {
                     'title': journal.title,
                     'issue': journal.issue
-                }
+                },
+                # 添加解析状态信息
+                'parsing_status': 'completed',  # 解析完成状态
+                'parsing_progress': 100,  # 解析进度100%
+                'parsing_success': papers_count > 0  # 解析是否成功（是否解析出论文）
             }
             
             if papers_count == 0:
@@ -817,16 +821,45 @@ def download_file(filename):
     try:
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         logger.info(f"尝试下载文件: {file_path}")
-        
+
         if not os.path.exists(file_path):
             logger.error(f"文件不存在: {file_path}")
             return jsonify({'message': '文件不存在'}), 404
-        
+
         return send_file(file_path, as_attachment=True)
-    
+
     except Exception as e:
         logger.error(f"文件下载错误: {str(e)}")
         return jsonify({'message': f'文件下载失败: {str(e)}'}), 500
+
+# 文件预览
+@app.route('/api/preview/<filename>')
+def preview_file(filename):
+    """文件预览接口 - 不强制下载，在浏览器中预览"""
+    try:
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        logger.info(f"尝试预览文件: {file_path}")
+
+        if not os.path.exists(file_path):
+            logger.error(f"文件不存在: {file_path}")
+            return jsonify({'message': '文件不存在'}), 404
+
+        # 检查文件类型
+        file_type = get_file_type(filename)
+        
+        # 对于PDF文件，让浏览器决定如何处理
+        if file_type == 'pdf':
+            return send_file(file_path, as_attachment=False)
+        # 对于Word和Excel文件，也尝试预览
+        elif file_type in ['docx', 'xlsx']:
+            return send_file(file_path, as_attachment=False)
+        else:
+            # 其他文件类型强制下载
+            return send_file(file_path, as_attachment=True)
+
+    except Exception as e:
+        logger.error(f"文件预览错误: {str(e)}")
+        return jsonify({'message': f'文件预览失败: {str(e)}'}), 500
 
 # PDF预览
 @app.route('/api/preview/<filename>')
