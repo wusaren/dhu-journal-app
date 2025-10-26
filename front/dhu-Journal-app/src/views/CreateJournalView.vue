@@ -224,11 +224,23 @@ const handleSubmit = async () => {
       ElMessage.success('期刊创建成功！')
       router.push('/journal-management')
     } else {
-      ElMessage.error(response.message || '期刊创建失败')
+      // 检查是否有duplicate字段，如果有则显示警告而不是错误
+      if (response.duplicate) {
+        ElMessage.warning(response.message || '期刊创建失败')
+      } else {
+        ElMessage.error(response.message || '期刊创建失败')
+      }
     }
   } catch (error: any) {
     console.error('创建期刊失败:', error)
-    ElMessage.error(error.message)
+    // 检查是否有duplicate字段
+    if (error.response?.data?.duplicate) {
+      ElMessage.warning(error.response.data.message || error.message)
+    } else if (error.message && error.message.includes('已存在')) {
+      ElMessage.warning(error.message)
+    } else {
+      ElMessage.error(error.message)
+    }
   } finally {
     loading.value = false
   }

@@ -69,6 +69,20 @@ export const paperService = {
         })
     },
 
+    // 覆盖上传论文
+    async uploadPaperWithOverwrite(file: File, journalId: string, overwritePaperId: number): Promise<UploadResponse> {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('journalId', journalId)
+        formData.append('overwritePaperId', overwritePaperId.toString())
+
+        return await apiClient.post('/upload/overwrite', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    },
+
     // 检查论文是否存在
     async checkPaperExists(filename: string): Promise<Paper[]> {
         const papers = await this.getPapers()

@@ -184,8 +184,36 @@ export const usePaperStore = defineStore('paper', () => {
             // 关闭持续的解析提示
             loadingMessage.close()
 
+            // 调试信息
+            console.log('响应数据:', response)
+            console.log('duplicate:', response.duplicate)
+            console.log('requires_confirmation:', response.requires_confirmation)
+
+            // 检查重复文件（在success分支处理，就像创建期刊一样）
             if (response.duplicate) {
-                ElMessage.warning(response.message || '文件已存在，跳过重复上传')
+                // 显示确认对话框
+                const shouldOverwrite = await showOverwriteConfirmation(response.existing_paper)
+                if (shouldOverwrite) {
+                    // 执行覆盖上传
+                    const overwriteResponse = await paperService.uploadPaperWithOverwrite(
+                        file, 
+                        journalId, 
+                        response.existing_paper.id
+                    )
+                    
+                    if (overwriteResponse.success) {
+                        ElMessage.success('论文覆盖上传成功！原有论文已被替换。')
+                        // 刷新论文列表
+                        await loadPapers()
+                        return true
+                    } else {
+                        ElMessage.error(overwriteResponse.message || '覆盖上传失败')
+                        return false
+                    }
+                } else {
+                    ElMessage.info('已取消覆盖上传')
+                    return false
+                }
             } else if (response.warning) {
                 ElMessage.warning(response.message || '文件上传成功，但未能解析出论文信息')
             } else if (response.error) {
@@ -221,7 +249,9 @@ export const usePaperStore = defineStore('paper', () => {
             // 关闭持续的解析提示
             loadingMessage.close()
             console.error('上传失败:', error)
-            // 这里不显示错误消息，因为axios拦截器已经显示了
+            
+            // 其他错误，显示错误消息
+            ElMessage.error(error.message || '上传失败')
             return false
         }
     }
@@ -413,3 +443,25 @@ export const usePaperStore = defineStore('paper', () => {
         resetFilter
     }
 })
+
+// 显示覆盖确认对话框
+async function showOverwriteConfirmation(existingPaper: any): Promise<boolean> {
+    try {
+        await ElMessageBox.confirm(
+            `检测到稿件号"${existingPaper.manuscript_id}"已存在：\n\n` +
+            `标题：${existingPaper.title}\n` +
+            `作者：${existingPaper.authors}\n\n` +
+            `是否要覆盖现有论文？此操作将删除原有论文并上传新文件。`,
+            '发现重复论文',
+            {
+                confirmButtonText: '覆盖上传',
+                cancelButtonText: '取消',
+                type: 'warning',
+                dangerouslyUseHTMLString: false
+            }
+        )
+        return true
+    } catch {
+        return false
+    }
+}

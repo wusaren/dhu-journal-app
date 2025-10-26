@@ -66,11 +66,23 @@ export const useJournalStore = defineStore('journal', () => {
                 ElMessage.success('期刊删除成功')
                 await loadJournals()
             } else {
-                ElMessage.error(response.message || '期刊删除失败')
+                // 检查是否有duplicate字段，如果有则显示警告而不是错误
+                if (response.duplicate) {
+                    ElMessage.warning(response.message || '期刊删除失败')
+                } else {
+                    ElMessage.error(response.message || '期刊删除失败')
+                }
             }
         } catch (error: any) {
             console.error('删除期刊失败:', error)
-            ElMessage.error(error.message)
+            // 检查是否有duplicate字段
+            if (error.response?.data?.duplicate) {
+                ElMessage.warning(error.response.data.message || error.message)
+            } else if (error.message && error.message.includes('还有') && error.message.includes('篇论文')) {
+                ElMessage.warning(error.message)
+            } else {
+                ElMessage.error(error.message)
+            }
         }
     }
 

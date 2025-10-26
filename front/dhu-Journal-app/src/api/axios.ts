@@ -61,6 +61,17 @@ apiClient.interceptors.response.use(
         case 500:
           ElMessage.error('服务器内部错误')
           throw new Error('服务器错误')
+        case 400:
+          // 对于400错误，抛出包含完整响应数据的错误
+          const error400 = new Error(message)
+          error400.response = error.response || {}
+          error400.response.data = error.response.data || {}
+          error400.response.data.message = message
+          error400.response.data.duplicate = error.response.data?.duplicate
+          error400.response.data.papers_count = error.response.data?.papers_count
+          error400.response.data.existing_paper = error.response.data?.existing_paper
+          error400.response.data.requires_confirmation = error.response.data?.requires_confirmation
+          throw error400
         default:
           ElMessage.error(message)
           throw new Error(message)
