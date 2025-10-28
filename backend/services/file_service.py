@@ -161,10 +161,10 @@ class FileService:
                     logger.info(f"开始解析PDF文件: {file_path}")
                     try:
                         from services.pdf_parser import parse_pdf_to_papers
-                        
+                        temp_output_dir = "backen/temp_images"
                         # 如果之前没有预解析或预解析失败，现在进行完整解析
                         if not papers_data:
-                            papers_data = parse_pdf_to_papers(file_path, journal.id)
+                            papers_data = parse_pdf_to_papers(file_path, journal.id,temp_output_dir)
                             logger.info(f"完整PDF解析结果: {len(papers_data) if papers_data else 0} 篇论文")
                         
                         # 检查数据库唯一约束冲突
@@ -228,7 +228,9 @@ class FileService:
                                     first_author=paper_data.get('first_author', ''),
                                     corresponding=paper_data.get('corresponding', ''),
                                     issue=paper_data.get('issue', journal.issue),
-                                    is_dhu=paper_data.get('is_dhu', False)
+                                    is_dhu=paper_data.get('is_dhu', False),
+                                    first_image_url=paper_data.get('first_minio_url'),
+                                    second_image_url=paper_data.get('second_minio_url')
                                 )
                                 db.session.add(paper)
                             
@@ -313,7 +315,9 @@ class FileService:
         """文件下载"""
         try:
             from flask import send_file
-            file_path = os.path.join('uploads', filename)
+            # 使用绝对路径构建文件路径
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            file_path = os.path.join(base_dir, 'uploads', filename)
             logger.info(f"尝试下载文件: {file_path}")
 
             if not os.path.exists(file_path):
@@ -329,7 +333,9 @@ class FileService:
         """文件预览"""
         try:
             from flask import send_file
-            file_path = os.path.join('uploads', filename)
+            # 使用绝对路径构建文件路径
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            file_path = os.path.join(base_dir, 'uploads', filename)
             logger.info(f"尝试预览文件: {file_path}")
 
             if not os.path.exists(file_path):

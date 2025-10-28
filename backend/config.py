@@ -37,6 +37,15 @@ class Config:
     
     # 调试模式
     DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+    
+    # MinIO对象存储配置
+    MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', '192.168.0.108:9000')
+    MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', 'admin')
+    MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY', 'admin123')
+    MINIO_SECURE = os.getenv('MINIO_SECURE', 'False').lower() == 'true'
+    MINIO_WEBUI_URL = os.getenv('MINIO_WEBUI_URL', 'http://192.168.0.108:9001')
+    MINIO_API_URL = os.getenv('MINIO_API_URL', 'http://192.168.0.108:9000')
+    MINIO_BUCKET_NAME = os.getenv('MINIO_BUCKET_NAME', 'images')
 
 
 class DevelopmentConfig(Config):

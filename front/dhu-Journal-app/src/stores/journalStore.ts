@@ -134,30 +134,13 @@ export const useJournalStore = defineStore('journal', () => {
             const response = await journalService.generateTOC(journalId)
 
             if (response.downloadUrl) {
-                // 提供下载选项，因为浏览器可能无法预览Word文件
-                const filename = response.downloadUrl.split('/').pop()
+                // 强制弹出下载地址选择窗口
                 const downloadUrl = `http://localhost:5000${response.downloadUrl}`
 
-                // 使用window.open方式强制弹出下载对话框
-                const downloadWindow = window.open(downloadUrl, '_blank')
+                // 直接使用window.open打开下载链接，强制浏览器弹出下载对话框
+                window.open(downloadUrl, '_blank')
 
-                if (downloadWindow) {
-                    // 如果新窗口打开成功，说明浏览器可能会显示下载对话框
-                    setTimeout(() => {
-                        downloadWindow.close()
-                    }, 1000)
-                    ElMessage.success('目录生成成功！请查看浏览器的下载对话框')
-                } else {
-                    // 如果弹窗被阻止，使用备用下载方式
-                    const link = document.createElement('a')
-                    link.href = downloadUrl
-                    link.download = `目录_${journalIssue}.docx`
-                    link.style.display = 'none'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                    ElMessage.success('目录生成成功！文件已开始下载到默认文件夹')
-                }
+                ElMessage.success('目录生成成功！请在弹出的下载对话框中选择保存位置')
             }
         } catch (error: any) {
             console.error('生成目录失败:', error)
@@ -171,30 +154,13 @@ export const useJournalStore = defineStore('journal', () => {
             const response = await journalService.generateWeibo(journalId)
 
             if (response.downloadUrl) {
-                // 提供下载选项，因为浏览器可能无法预览Word文件
-                const filename = response.downloadUrl.split('/').pop()
+                // 强制弹出下载地址选择窗口
                 const downloadUrl = `http://localhost:5000${response.downloadUrl}`
 
-                // 使用window.open方式强制弹出下载对话框
-                const downloadWindow = window.open(downloadUrl, '_blank')
+                // 直接使用window.open打开下载链接，强制浏览器弹出下载对话框
+                window.open(downloadUrl, '_blank')
 
-                if (downloadWindow) {
-                    // 如果新窗口打开成功，说明浏览器可能会显示下载对话框
-                    setTimeout(() => {
-                        downloadWindow.close()
-                    }, 1000)
-                    ElMessage.success('推文生成成功！请查看浏览器的下载对话框')
-                } else {
-                    // 如果弹窗被阻止，使用备用下载方式
-                    const link = document.createElement('a')
-                    link.href = downloadUrl
-                    link.download = `推文_${journalIssue}.docx`
-                    link.style.display = 'none'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                    ElMessage.success('推文生成成功！文件已开始下载到默认文件夹')
-                }
+                ElMessage.success('推文生成成功！请在弹出的下载对话框中选择保存位置')
             }
         } catch (error: any) {
             console.error('生成推文失败:', error)
@@ -208,30 +174,13 @@ export const useJournalStore = defineStore('journal', () => {
             const response = await journalService.generateStats(journalId)
 
             if (response.downloadUrl) {
-                // 提供下载选项，因为浏览器可能无法预览Excel文件
-                const filename = response.downloadUrl.split('/').pop()
+                // 强制弹出下载地址选择窗口
                 const downloadUrl = `http://localhost:5000${response.downloadUrl}`
 
-                // 使用window.open方式强制弹出下载对话框
-                const downloadWindow = window.open(downloadUrl, '_blank')
+                // 直接使用window.open打开下载链接，强制浏览器弹出下载对话框
+                window.open(downloadUrl, '_blank')
 
-                if (downloadWindow) {
-                    // 如果新窗口打开成功，说明浏览器可能会显示下载对话框
-                    setTimeout(() => {
-                        downloadWindow.close()
-                    }, 1000)
-                    ElMessage.success('统计表生成成功！请查看浏览器的下载对话框')
-                } else {
-                    // 如果弹窗被阻止，使用备用下载方式
-                    const link = document.createElement('a')
-                    link.href = downloadUrl
-                    link.download = `统计表_${journalIssue}.xlsx`
-                    link.style.display = 'none'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                    ElMessage.success('统计表生成成功！文件已开始下载到默认文件夹')
-                }
+                ElMessage.success('统计表生成成功！请在弹出的下载对话框中选择保存位置')
             }
         } catch (error: any) {
             console.error('生成统计表失败:', error)

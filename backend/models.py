@@ -110,6 +110,9 @@ class Paper(db.Model):
     abstract = db.Column(db.Text)
     keywords = db.Column(db.Text)
     file_path = db.Column(db.String(500))
+    image_path = db.Column(db.String(500))  # MinIO图片URL（保留用于兼容）
+    first_image_url = db.Column(db.String(500))  # 第一张图片URL（QRcode）
+    second_image_url = db.Column(db.String(500))  # 第二张图片URL
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
