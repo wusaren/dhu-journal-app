@@ -195,6 +195,63 @@ def doi_to_manuscript_id(doi: Optional[str]) -> Optional[str]:
     tail = m.group(1)  # YYYYMMNNN
     return f"E{tail[:4]}-{tail[4:]}"
 
+def extract_citation(text: str) -> Optional[str]:
+    """
+    提取Citation:后的在当前页的所有文本
+    Citation:位于整页的最下面，需要提取Citation:后同一行的内容和当前页Citation行下面的所有内容
+    参数:
+        text: PDF页面的文本内容
+    返回:
+        Citation文本内容，如果没有找到则返回None
+    """
+    try:
+        lines = text.split('\n')
+        citation_lines = []
+        found_citation = False
+        
+        # 从最后一行开始向前搜索，因为Citation在页面底部
+        for i in range(len(lines) - 1, -1, -1):
+            line = lines[i].strip()
+            
+            # 查找包含Citation的行
+            if re.search(r'Citation\s*[:：]', line, re.IGNORECASE):
+                found_citation = True
+                
+                # 提取Citation:后的内容（同一行）
+                citation_part = re.sub(r'Citation\s*[:：]\s*', '', line, flags=re.IGNORECASE)
+                if citation_part:
+                    citation_lines.insert(0, citation_part)  # 插入到列表开头
+                
+                # 继续向前收集Citation行上面的内容（页面底部向上）
+                for j in range(i + 1, len(lines)):
+                    next_line = lines[j].strip()
+                    if next_line:  # 只收集非空行
+                        citation_lines.append(next_line)
+                    else:
+                        # 遇到空行停止收集（可能是页面边界）
+                        break
+                
+                break  # 找到第一个Citation行就停止搜索
+        
+        if citation_lines:
+            citation_text = ' '.join(citation_lines).strip()
+            citation_text = re.sub(r'\s+', ' ', citation_text)  # 清理多余空格
+            
+            # 如果提取的文本太短，可能是匹配不完整
+            if len(citation_text) < 10:
+                logger.info("提取的Citation文本太短，可能不完整")
+                return None
+            
+            logger.info(f"成功提取Citation文本，长度: {len(citation_text)}")
+            return citation_text
+        
+        logger.info("未找到Citation信息")
+        return None
+        
+    except Exception as e:
+        logger.error(f"提取Citation时出错: {str(e)}")
+        return None
+
 def extract_images_from_paper(pdf_path: str, paper_page_range: tuple, output_dir: str, start_page_offset: int = 0) -> Dict[str, Optional[str]]:
     """
     从论文页面范围提取第一张和第二张图片
@@ -656,6 +713,7 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List
                     first_author = first_author_from_authors(authors_line) if authors_line else ""
                     issue = extract_issue_info(text)
                     corresponding = extract_corresponding(text, authors_display)
+                    citation = extract_citation(text)
                     is_dhu = "donghua university" in text.lower() or "东华大学" in text
                     
                     # 计算正确的结束页码（使用期刊实际页码）
@@ -738,6 +796,7 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List
                         "doi": doi,
                         "manuscript_id": doi_to_manuscript_id(doi),
                         "issue": issue,
+                        "citation": citation,  # 新增Citation信息
                         "is_dhu": is_dhu,
                         "page_start": actual_start_page,
                         "page_end": page_end,
