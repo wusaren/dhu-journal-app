@@ -110,6 +110,11 @@ class Paper(db.Model):
     abstract = db.Column(db.Text)
     keywords = db.Column(db.Text)
     file_path = db.Column(db.String(500))
+    
+    # 中文标题和作者字段
+    chinese_title = db.Column(db.Text)  # 中文标题
+    chinese_authors = db.Column(db.Text)  # 中文作者
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

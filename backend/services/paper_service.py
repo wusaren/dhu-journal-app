@@ -37,6 +37,8 @@ class PaperService:
                     'page_end': paper.page_end,
                     'pdf_pages': paper.pdf_pages,
                     'manuscript_id': paper.manuscript_id,
+                    'chinese_title': paper.chinese_title,
+                    'chinese_authors': paper.chinese_authors,
                     'issue': paper.issue,
                     'is_dhu': paper.is_dhu,
                     'abstract': paper.abstract,
@@ -83,7 +85,9 @@ class PaperService:
                 is_dhu=data.get('is_dhu', False),
                 abstract=data.get('abstract', ''),
                 keywords=data.get('keywords', ''),
-                file_path=data.get('file_path', '')
+                file_path=data.get('file_path', ''),
+                chinese_title=data.get('chinese_title', ''),
+                chinese_authors=data.get('chinese_authors', '')
             )
             
             db.session.add(new_paper)

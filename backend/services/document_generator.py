@@ -219,36 +219,48 @@ def generate_tuiwen_content(papers, journal):
                 # 数据库对象
                 title = paper.title
                 authors = paper.authors
+                chinese_title = getattr(paper, 'chinese_title', '') or ''
+                chinese_authors = getattr(paper, 'chinese_authors', '') or ''
                 doi = paper.doi or ''
                 page_start = paper.page_start
                 page_end = paper.page_end
                 # 生成引用信息
                 citation = f"{authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
             
+            # 添加中文标题（如果有）
+            if chinese_title:
+                chinese_title_para = doc.add_paragraph()
+                chinese_title_run = chinese_title_para.runs[0] if chinese_title_para.runs else chinese_title_para.add_run()
+                chinese_title_run.text = f"{i}. {chinese_title}"
+                chinese_title_run.font.size = Pt(12)
+                chinese_title_run.font.bold = True
+            
+            # 添加中文作者（如果有）
+            if chinese_authors:
+                chinese_authors_para = doc.add_paragraph()
+                chinese_authors_run = chinese_authors_para.runs[0] if chinese_authors_para.runs else chinese_authors_para.add_run()
+                chinese_authors_run.text = chinese_authors
+                chinese_authors_run.font.size = Pt(11)
+            
             # 添加论文标题
             paper_title_para = doc.add_paragraph()
             paper_title_run = paper_title_para.runs[0] if paper_title_para.runs else paper_title_para.add_run()
-            paper_title_run.text = f"{i}. {title}"
+            paper_title_run.text = title
             paper_title_run.font.size = Pt(12)
             paper_title_run.font.bold = True
             
-            # 添加作者信息
-            doc.add_paragraph(f"作者: {authors}")
+            # 添加作者信息（去掉"作者："前缀）
+            doc.add_paragraph(authors)
             
-            # 添加页码信息
-            doc.add_paragraph(f"页码: {page_start}-{page_end}")
-            
-            
-            
-            # 添加DOI信息
+            # 添加DOI信息（保留"DOI："前缀）
             if doi:
                 doc.add_paragraph(f"DOI: {doi}")
             
-            # 添加引用信息
+            # 添加引用信息（添加"Citation:"前缀，调整字体大小）
             citation_para = doc.add_paragraph()
             citation_run = citation_para.runs[0] if citation_para.runs else citation_para.add_run()
-            citation_run.text = citation
-            citation_run.font.size = Pt(9)
+            citation_run.text = f"Citation: {citation}"
+            citation_run.font.size = Pt(11)  # 调整字体大小和其他内容一样
             
             # 添加空行分隔
             doc.add_paragraph()

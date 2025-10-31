@@ -228,7 +228,9 @@ class FileService:
                                     first_author=paper_data.get('first_author', ''),
                                     corresponding=paper_data.get('corresponding', ''),
                                     issue=paper_data.get('issue', journal.issue),
-                                    is_dhu=paper_data.get('is_dhu', False)
+                                    is_dhu=paper_data.get('is_dhu', False),
+                                    chinese_title=paper_data.get('chinese_title', ''),
+                                    chinese_authors=paper_data.get('chinese_authors', '')
                                 )
                                 db.session.add(paper)
                             
