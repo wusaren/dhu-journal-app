@@ -59,14 +59,17 @@ def generate_toc_docx(papers: List[Any], journal: Any) -> str:
         # 保存文件
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"目录_{journal.issue}_{timestamp}.docx"
-        output_path = os.path.join('uploads', filename)
         
+        # 使用项目根目录的uploads文件夹
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        output_path = os.path.join(base_dir, 'uploads', filename)
+
         # 确保目录存在
-        os.makedirs('uploads', exist_ok=True)
-        
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
         doc.save(output_path)
         logger.info(f"目录文档已生成: {output_path}")
-        
+
         return output_path
         
     except Exception as e:
@@ -112,9 +115,12 @@ def generate_excel_stats(articles, journal) -> str:
         # 保存文件
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"统计表_{journal.issue}_{timestamp}.xlsx"
-        output_path = os.path.join('uploads', filename)
         
-        os.makedirs('uploads', exist_ok=True)
+        # 使用项目根目录的uploads文件夹
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        output_path = os.path.join(base_dir, 'uploads', filename)
+        
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         wb.save(output_path)
         
         logger.info(f"统计表已生成: {output_path}")
@@ -280,10 +286,13 @@ def generate_tuiwen_content(papers, journal):
         # 保存Word文档
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"推文_{journal.issue}_{timestamp}.docx"
-        output_path = os.path.join('uploads', filename)
+        
+        # 使用项目根目录的uploads文件夹
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        output_path = os.path.join(base_dir, 'uploads', filename)
         
         # 确保目录存在
-        os.makedirs('uploads', exist_ok=True)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         doc.save(output_path)
         logger.info(f"推文Word文档已生成: {output_path}")

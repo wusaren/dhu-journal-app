@@ -115,6 +115,9 @@ class Paper(db.Model):
     chinese_title = db.Column(db.Text)  # 中文标题
     chinese_authors = db.Column(db.Text)  # 中文作者
     
+    image_path = db.Column(db.String(500))  # MinIO图片URL（保留用于兼容）
+    first_image_url = db.Column(db.String(500))  # 第一张图片URL（QRcode）
+    second_image_url = db.Column(db.String(500))  # 第二张图片URL
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
