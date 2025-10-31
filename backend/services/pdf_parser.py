@@ -249,48 +249,6 @@ def extract_title_authors_with_line_count(text: str, doi_idx: int, title_line_co
 def extract_title_authors(text: str) -> tuple[str, str]:
     """提取标题和作者 - 保持向后兼容的接口"""
     return extract_title_authors_with_fontsize(text, None)
-# def extract_title_authors(text: str) -> tuple[str, str]:
-#     """提取标题和作者 - 先找作者行，再提取标题"""
-#     lines = [l.strip() for l in text.splitlines() if l.strip()]
-#     doi_idx = None
-#     author_idx = None
-    
-#     # 1. 先找到DOI行
-#     for i, l in enumerate(lines[:15]):
-#         if re.search(r"\bDOI\b", l, re.I):
-#             doi_idx = i
-#             break
-    
-#     title = authors = ""
-#     if doi_idx is not None:
-#         # 2. 在DOI行之后寻找作者行
-#         for i in range(doi_idx + 1, min(doi_idx + 10, len(lines))):
-#             line = lines[i]
-#             # 跳过分隔符行
-#             if line in (":", "：", ""):
-#                 continue
-            
-#             # 检查是否符合作者行特征：2-5个连续大写字母开头，逗号分隔
-#             # 匹配模式：大写字母开头，包含逗号分隔的名字
-#             if re.search(r'^[A-Z]{2,5}\b.*?,.*?[A-Z]', line):
-#                 author_idx = i
-#                 # 提取作者
-#                 authors = re.sub(r"\s{2,}", ", ", re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", line)).strip(" ,")
-#                 break
-        
-#         # 3. 提取标题（DOI行和作者行之间的内容）
-#         if author_idx is not None:
-#             title_lines = []
-#             for i in range(doi_idx + 1, author_idx):
-#                 line = lines[i]
-#                 # 跳过分隔符行
-#                 if line in (":", "：", ""):
-#                     continue
-#                 title_lines.append(line)
-            
-#             title = re.sub(r"\s+", " ", " ".join(title_lines)).strip(" :")
-    
-#     return title, authors
 
 def normalize_authors_for_display(authors_line: str) -> str:
     """鲁棒作者规范化 - 完全照搬参考代码"""
@@ -785,17 +743,19 @@ def batch_extract_images_for_journal(journal_papers: List[Dict], pdf_path: str, 
     logger.info("批量图片提取完成")
     return journal_papers
 
-def upload_images_to_minio(journal_papers: List[Dict], journal_issue: str) -> List[Dict]:
+def save_images_locally(journal_papers: List[Dict], journal_issue: str, local_storage_path: str) -> List[Dict]:
     """
-    将提取的两张图片上传到MinIO，但不立即更新数据库
+    将提取的两张图片保存到本地存储
     journal_papers: 论文列表，包含first_image_path和second_image_path字段
     journal_issue: 期刊期号
-    返回: 更新后的论文列表，包含两张图片的minio_url字段
+    local_storage_path: 本地存储路径
+    返回: 更新后的论文列表，包含两张图片的本地路径字段
     """
     try:
-        from services.minio_service import minio_service
+        logger.info(f"开始保存两张图片到本地存储，期刊期号: {journal_issue}")
         
-        logger.info(f"开始上传两张图片到MinIO，期刊期号: {journal_issue}")
+        # 确保本地存储目录存在
+        os.makedirs(local_storage_path, exist_ok=True)
         
         for i, paper in enumerate(journal_papers):
             try:
@@ -808,78 +768,84 @@ def upload_images_to_minio(journal_papers: List[Dict], journal_issue: str) -> Li
                 page_end = paper.get('page_end')
                 
                 if not page_start or not page_end:
-                    logger.warning(f"论文 {i+1} 缺少页码范围，跳过上传")
+                    logger.warning(f"论文 {i+1} 缺少页码范围，跳过保存")
                     continue
                 
                 # 清理期刊期号中的特殊字符，使其适合作为文件名
                 clean_journal_issue = journal_issue.replace(',', '_').replace('(', '_').replace(')', '')
                 
-                # 上传第一张图片（QRcode）
+                # 保存第一张图片（QRcode）
                 if first_image_path and os.path.exists(first_image_path):
-                    # 生成第一张图片的对象名称：期刊号+页码范围+QRcode
+                    # 生成第一张图片的文件名：期刊号+页码范围+QRcode
                     file_extension = Path(first_image_path).suffix.lower()
-                    first_object_name = f"papers/{clean_journal_issue}/pages_{page_start}-{page_end}_image_QRcode{file_extension}"
+                    first_local_filename = f"papers_{clean_journal_issue}_pages_{page_start}-{page_end}_image_QRcode{file_extension}"
+                    first_local_path = os.path.join(local_storage_path, first_local_filename)
                     
-                    logger.info(f"处理论文 {i+1} 第一张图片(QRcode): 期刊期号={journal_issue}, 页码范围={page_start}-{page_end}, 对象名称={first_object_name}")
+                    logger.info(f"处理论文 {i+1} 第一张图片(QRcode): 期刊期号={journal_issue}, 页码范围={page_start}-{page_end}, 本地路径={first_local_path}")
                     
-                    # 上传第一张图片到MinIO
-                    first_minio_url = minio_service.upload_image(first_image_path, first_object_name)
+                    # 复制图片到本地存储
+                    import shutil
+                    shutil.copy2(first_image_path, first_local_path)
                     
-                    if first_minio_url:
-                        logger.info(f"论文 {i+1} 第一张图片(QRcode) MinIO上传成功: {first_minio_url}")
-                        paper['first_minio_url'] = first_minio_url
-                        paper['first_minio_upload_success'] = True
+                    if os.path.exists(first_local_path):
+                        logger.info(f"论文 {i+1} 第一张图片(QRcode) 本地保存成功: {first_local_path}")
+                        # 使用相对路径存储到数据库
+                        paper['first_local_path'] = first_local_path
+                        paper['first_local_save_success'] = True
                     else:
-                        logger.error(f"论文 {i+1} 第一张图片(QRcode) 上传到MinIO失败")
-                        paper['first_minio_url'] = None
-                        paper['first_minio_upload_success'] = False
+                        logger.error(f"论文 {i+1} 第一张图片(QRcode) 保存到本地失败")
+                        paper['first_local_path'] = None
+                        paper['first_local_save_success'] = False
                 else:
                     logger.warning(f"论文 {i+1} 第一张图片不存在或路径无效: {first_image_path}")
-                    paper['first_minio_url'] = None
-                    paper['first_minio_upload_success'] = False
+                    paper['first_local_path'] = None
+                    paper['first_local_save_success'] = False
                 
-                # 上传第二张图片
+                # 保存第二张图片
                 if second_image_path and os.path.exists(second_image_path):
-                    # 生成第二张图片的对象名称：期刊号+页码范围
+                    # 生成第二张图片的文件名：期刊号+页码范围
                     file_extension = Path(second_image_path).suffix.lower()
-                    second_object_name = f"papers/{clean_journal_issue}/pages_{page_start}-{page_end}_image{file_extension}"
+                    second_local_filename = f"papers_{clean_journal_issue}_pages_{page_start}-{page_end}_image{file_extension}"
+                    second_local_path = os.path.join(local_storage_path, second_local_filename)
                     
-                    logger.info(f"处理论文 {i+1} 第二张图片: 期刊期号={journal_issue}, 页码范围={page_start}-{page_end}, 对象名称={second_object_name}")
+                    logger.info(f"处理论文 {i+1} 第二张图片: 期刊期号={journal_issue}, 页码范围={page_start}-{page_end}, 本地路径={second_local_path}")
                     
-                    # 上传第二张图片到MinIO
-                    second_minio_url = minio_service.upload_image(second_image_path, second_object_name)
+                    # 复制图片到本地存储
+                    import shutil
+                    shutil.copy2(second_image_path, second_local_path)
                     
-                    if second_minio_url:
-                        logger.info(f"论文 {i+1} 第二张图片 MinIO上传成功: {second_minio_url}")
-                        paper['second_minio_url'] = second_minio_url
-                        paper['second_minio_upload_success'] = True
+                    if os.path.exists(second_local_path):
+                        logger.info(f"论文 {i+1} 第二张图片 本地保存成功: {second_local_path}")
+                        # 使用相对路径存储到数据库
+                        paper['second_local_path'] = second_local_path
+                        paper['second_local_save_success'] = True
                     else:
-                        logger.error(f"论文 {i+1} 第二张图片 上传到MinIO失败")
-                        paper['second_minio_url'] = None
-                        paper['second_minio_upload_success'] = False
+                        logger.error(f"论文 {i+1} 第二张图片 保存到本地失败")
+                        paper['second_local_path'] = None
+                        paper['second_local_save_success'] = False
                 else:
                     logger.warning(f"论文 {i+1} 第二张图片不存在或路径无效: {second_image_path}")
-                    paper['second_minio_url'] = None
-                    paper['second_minio_upload_success'] = False
+                    paper['second_local_path'] = None
+                    paper['second_local_save_success'] = False
                     
-            except Exception as upload_error:
-                logger.error(f"论文 {i+1} 上传过程出错: {str(upload_error)}")
-                paper['first_minio_url'] = None
-                paper['second_minio_url'] = None
-                paper['first_minio_upload_success'] = False
-                paper['second_minio_upload_success'] = False
+            except Exception as save_error:
+                logger.error(f"论文 {i+1} 保存过程出错: {str(save_error)}")
+                paper['first_local_path'] = None
+                paper['second_local_path'] = None
+                paper['first_local_save_success'] = False
+                paper['second_local_save_success'] = False
         
-        logger.info("两张图片的MinIO上传完成")
+        logger.info("两张图片的本地保存完成")
         return journal_papers
         
     except Exception as e:
-        logger.error(f"MinIO上传失败: {str(e)}")
+        logger.error(f"本地保存失败: {str(e)}")
         return journal_papers
 
-def update_paper_images_in_db(journal_papers: List[Dict]) -> int:
+def update_paper_local_images_in_db(journal_papers: List[Dict]) -> int:
     """
-    将两张图片的MinIO URL批量更新到数据库
-    journal_papers: 论文列表，包含first_minio_url和second_minio_url字段
+    将两张图片的本地路径批量更新到数据库
+    journal_papers: 论文列表，包含first_local_path和second_local_path字段
     返回: 成功更新的论文数量
     """
     try:
@@ -891,14 +857,14 @@ def update_paper_images_in_db(journal_papers: List[Dict]) -> int:
         
         from models import Paper, db
         
-        logger.info("开始批量更新数据库中的两张图片URL")
+        logger.info("开始批量更新数据库中的两张图片本地路径")
         
         updated_count = 0
         
         for i, paper in enumerate(journal_papers):
             try:
-                first_minio_url = paper.get('first_minio_url')
-                second_minio_url = paper.get('second_minio_url')
+                first_local_path = paper.get('first_local_path')
+                second_local_path = paper.get('second_local_path')
                 page_start = paper.get('page_start')
                 page_end = paper.get('page_end')
                 
@@ -913,15 +879,15 @@ def update_paper_images_in_db(journal_papers: List[Dict]) -> int:
                 ).first()
                 
                 if paper_record:
-                    # 更新第一张图片URL（QRcode）
-                    if first_minio_url:
-                        paper_record.first_image_url = first_minio_url
-                        logger.info(f"论文 {i+1} 第一张图片(QRcode) URL更新准备: {first_minio_url}")
+                    # 更新第一张图片路径（QRcode）
+                    if first_local_path:
+                        paper_record.first_image_url = first_local_path
+                        logger.info(f"论文 {i+1} 第一张图片(QRcode) 本地路径更新准备: {first_local_path}")
                     
-                    # 更新第二张图片URL
-                    if second_minio_url:
-                        paper_record.second_image_url = second_minio_url
-                        logger.info(f"论文 {i+1} 第二张图片 URL更新准备: {second_minio_url}")
+                    # 更新第二张图片路径
+                    if second_local_path:
+                        paper_record.second_image_url = second_local_path
+                        logger.info(f"论文 {i+1} 第二张图片 本地路径更新准备: {second_local_path}")
                     
                     updated_count += 1
                 else:
@@ -933,7 +899,7 @@ def update_paper_images_in_db(journal_papers: List[Dict]) -> int:
         # 批量提交数据库更新
         if updated_count > 0:
             db.session.commit()
-            logger.info(f"✅ 成功批量更新 {updated_count} 篇论文的两张图片URL到数据库")
+            logger.info(f"✅ 成功批量更新 {updated_count} 篇论文的两张图片本地路径到数据库")
         else:
             logger.info("没有需要更新的论文记录")
         
@@ -944,13 +910,14 @@ def update_paper_images_in_db(journal_papers: List[Dict]) -> int:
         db.session.rollback()
         return 0
 
-def process_journal_with_images(pdf_path: str, journal_id: int, journal_issue: str, output_dir: str) -> List[Dict]:
+def process_journal_with_local_images(pdf_path: str, journal_id: int, journal_issue: str, output_dir: str, local_storage_path: str) -> List[Dict]:
     """
-    完整的期刊处理流程：解析PDF、提取图片、上传MinIO、更新数据库
+    完整的期刊处理流程：解析PDF、提取图片、保存到本地、更新数据库
     pdf_path: PDF文件路径
     journal_id: 期刊ID
     journal_issue: 期刊期号
     output_dir: 临时图片输出目录
+    local_storage_path: 本地存储路径
     返回: 处理后的论文列表
     """
     logger.info(f"开始完整期刊处理流程: {pdf_path}")
@@ -966,21 +933,21 @@ def process_journal_with_images(pdf_path: str, journal_id: int, journal_issue: s
     # 2. 批量提取图片（如果需要额外的图片处理）
     papers_with_images = batch_extract_images_for_journal(papers, pdf_path, output_dir, journal_issue)
     
-    # 3. 上传图片到MinIO（不立即更新数据库）
-    papers_with_minio_urls = upload_images_to_minio(papers_with_images, journal_issue)
+    # 3. 保存图片到本地存储
+    papers_with_local_paths = save_images_locally(papers_with_images, journal_issue, local_storage_path)
     
     # 4. 批量更新数据库（在最后统一更新）
-    updated_count = update_paper_images_in_db(papers_with_minio_urls)
+    updated_count = update_paper_local_images_in_db(papers_with_local_paths)
     
     # 统计结果
-    first_images_extracted = sum(1 for p in papers_with_minio_urls if p.get('has_first_image', False))
-    second_images_extracted = sum(1 for p in papers_with_minio_urls if p.get('has_second_image', False))
-    first_images_uploaded = sum(1 for p in papers_with_minio_urls if p.get('first_minio_upload_success', False))
-    second_images_uploaded = sum(1 for p in papers_with_minio_urls if p.get('second_minio_upload_success', False))
+    first_images_extracted = sum(1 for p in papers_with_local_paths if p.get('has_first_image', False))
+    second_images_extracted = sum(1 for p in papers_with_local_paths if p.get('has_second_image', False))
+    first_images_saved = sum(1 for p in papers_with_local_paths if p.get('first_local_save_success', False))
+    second_images_saved = sum(1 for p in papers_with_local_paths if p.get('second_local_save_success', False))
     
-    logger.info(f"处理完成: 提取第一张图片 {first_images_extracted}/{len(papers_with_minio_urls)}，第二张图片 {second_images_extracted}/{len(papers_with_minio_urls)}，上传成功 {first_images_uploaded}/{first_images_extracted} + {second_images_uploaded}/{second_images_extracted}，数据库更新 {updated_count}/{len(papers_with_minio_urls)}")
+    logger.info(f"处理完成: 提取第一张图片 {first_images_extracted}/{len(papers_with_local_paths)}，第二张图片 {second_images_extracted}/{len(papers_with_local_paths)}，保存成功 {first_images_saved}/{first_images_extracted} + {second_images_saved}/{second_images_extracted}，数据库更新 {updated_count}/{len(papers_with_local_paths)}")
     
-    return papers_with_minio_urls
+    return papers_with_local_paths
 def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List[Dict[str, Any]]:
     """
     解析PDF文件并提取图片，构建完整的论文记录（包含图片URL）
@@ -1077,55 +1044,46 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List
                     paper_page_range = (actual_start_page, page_end)
                     image_paths = extract_images_from_paper(pdf_path, paper_page_range, output_dir, actual_start_page - 1)
                     
-                    # 上传图片到MinIO并获取URL
-                    first_minio_url = None
-                    second_minio_url = None
-                    first_upload_success = False
-                    second_upload_success = False
+                    # 将图片保存到本地存储
+                    # 创建本地存储目录
+                    local_storage_path = "images"
+                    os.makedirs(local_storage_path, exist_ok=True)
                     
-                    # 上传第一张图片（QRcode）
+                    # 保存第一张图片（QRcode）
+                    first_local_path = None
                     if image_paths['first_image'] and os.path.exists(image_paths['first_image']):
-                        try:
-                            from services.minio_service import minio_service
-                            # 使用解析出的issue信息来构建MinIO对象名称
-                            if issue:
-                                clean_journal_issue = issue.replace(',', '_').replace('(', '_').replace(')', '')
-                            else:
-                                clean_journal_issue = "unknown_issue"
-                            file_extension = Path(image_paths['first_image']).suffix.lower()
-                            first_object_name = f"papers/{clean_journal_issue}/pages_{actual_start_page}-{page_end}_image_QRcode{file_extension}"
-                            
-                            first_minio_url = minio_service.upload_image(image_paths['first_image'], first_object_name)
-                            if first_minio_url:
-                                first_upload_success = True
-                                logger.info(f"论文 {i+1} 第一张图片(QRcode) MinIO上传成功: {first_minio_url}")
-                            else:
-                                logger.error(f"论文 {i+1} 第一张图片(QRcode) 上传到MinIO失败")
-                        except Exception as upload_error:
-                            logger.error(f"论文 {i+1} 第一张图片上传失败: {str(upload_error)}")
+                        # 生成第一张图片的文件名：期刊号+页码范围+QRcode
+                        file_extension = Path(image_paths['first_image']).suffix.lower()
+                        first_local_filename = f"papers_{issue.replace(',', '_').replace('(', '_').replace(')', '')}_pages_{actual_start_page}-{page_end}_image_QRcode{file_extension}"
+                        first_local_path = os.path.join(local_storage_path, first_local_filename)
+                        
+                        # 复制图片到本地存储
+                        import shutil
+                        shutil.copy2(image_paths['first_image'], first_local_path)
+                        
+                        if os.path.exists(first_local_path):
+                            logger.info(f"论文 {i+1} 第一张图片(QRcode) 本地保存成功: {first_local_path}")
+                        else:
+                            logger.error(f"论文 {i+1} 第一张图片(QRcode) 保存到本地失败")
+                            first_local_path = None
                     
-                    # 上传第二张图片
+                    # 保存第二张图片
+                    second_local_path = None
                     if image_paths['second_image'] and os.path.exists(image_paths['second_image']):
-                        try:
-                            from services.minio_service import minio_service
-                            # 使用解析出的issue信息来构建MinIO对象名称
-                            if issue:
-                                clean_journal_issue = issue.replace(',', '_').replace('(', '_').replace(')', '')
-                            else:
-                                clean_journal_issue = "unknown_issue"
-                            file_extension = Path(image_paths['second_image']).suffix.lower()
-                            second_object_name = f"papers/{clean_journal_issue}/pages_{actual_start_page}-{page_end}_image{file_extension}"
-                            
-                            second_minio_url = minio_service.upload_image(image_paths['second_image'], second_object_name)
-                            if second_minio_url:
-                                second_upload_success = True
-                                logger.info(f"论文 {i+1} 第二张图片 MinIO上传成功: {second_minio_url}")
-                            else:
-                                logger.error(f"论文 {i+1} 第二张图片 上传到MinIO失败")
-                        except Exception as upload_error:
-                            logger.error(f"论文 {i+1} 第二张图片上传失败: {str(upload_error)}")
-                    
-                    # 构建完整的论文记录（只保留URL信息）
+                        # 生成第二张图片的文件名：期刊号+页码范围
+                        file_extension = Path(image_paths['second_image']).suffix.lower()
+                        second_local_filename = f"papers_{issue.replace(',', '_').replace('(', '_').replace(')', '')}_pages_{actual_start_page}-{page_end}_image{file_extension}"
+                        second_local_path = os.path.join(local_storage_path, second_local_filename)
+                        
+                        # 复制图片到本地存储
+                        import shutil
+                        shutil.copy2(image_paths['second_image'], second_local_path)
+                        
+                        if os.path.exists(second_local_path):
+                            logger.info(f"论文 {i+1} 第二张图片 本地保存成功: {second_local_path}")
+                        else:
+                            logger.error(f"论文 {i+1} 第二张图片 保存到本地失败")
+                            second_local_path = None
                     record = {
                         "file_name": os.path.basename(pdf_path),
                         "pdf_pages": page_end - actual_start_page + 1 if page_end and actual_start_page else None,
@@ -1147,18 +1105,12 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List
                         "keywords": "解析出的关键词...",  # 简化处理
                         
                         # MinIO图片URL信息
-                        "first_minio_url": first_minio_url,
-                        "second_minio_url": second_minio_url,
-                        "first_minio_upload_success": first_upload_success,
-                        "second_minio_upload_success": second_upload_success
+                        "first_local_path": first_local_path,
+                        "second_local_path": second_local_path,
+                        
                     }
                     
-                    # 调试信息
-                    logger.info(f"解析结果: 标题={title[:30]}, 作者={authors_display[:30]}, 期刊页码={actual_start_page}-{page_end}, 期号={issue}")
-                    if first_upload_success:
-                        logger.info(f"第一张图片URL: {first_minio_url}")
-                    if second_upload_success:
-                        logger.info(f"第二张图片URL: {second_minio_url}")
+                    
                     
                     records.append(record)
                     logger.info(f"提取论文 {i+1}: {title[:50]}...")

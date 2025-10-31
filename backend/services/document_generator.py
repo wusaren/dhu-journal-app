@@ -18,6 +18,51 @@ def _get(a: Any, key: str):
         return a.get(key)
     return getattr(a, key)
 
+def format_authors_for_citation(authors: str, max_authors: int = 3) -> str:
+    """
+    格式化作者信息用于citation
+    规则：
+    1. 最多显示3个作者
+    2. 作者的名只取首字母（如 "HUANG Jiacui" -> "HUANG J"）
+    3. 如果超过3个作者，在第三个作者后加上 ", et al."
+    
+    示例：
+    - "HUANG Jiacui, ZHAO Mingbo, ZHANG Hongtao, WANG Li" 
+      -> "HUANG J, ZHAO M, ZHANG H, et al."
+    - "HUANG Jiacui, ZHAO Mingbo, ZHANG Hongtao" 
+      -> "HUANG J, ZHAO M, ZHANG H"
+    """
+    if not authors:
+        return ""
+    
+    # 分割作者（支持逗号或中文逗号分隔）
+    author_list = [a.strip() for a in re.split(r'[,，]', authors) if a.strip()]
+    
+    if not author_list:
+        return ""
+    
+    # 格式化每个作者：名字只取首字母
+    formatted_authors = []
+    for author in author_list[:max_authors]:
+        # 分割姓和名（通常格式：姓 名，如 "HUANG Jiacui"）
+        parts = author.split()
+        if len(parts) >= 2:
+            # 有姓和名：姓 + 名的首字母
+            last_name = parts[0]
+            first_name = parts[1]
+            formatted_author = f"{last_name} {first_name[0] if first_name else ''}"
+            formatted_authors.append(formatted_author.strip())
+        else:
+            # 只有一个部分，可能是只有姓或者格式不对，保持原样
+            formatted_authors.append(author)
+    
+    # 如果超过max_authors个作者，添加 ", et al."
+    if len(author_list) > max_authors:
+        formatted_authors.append("et al.")
+    
+    # 用逗号和空格连接
+    return ", ".join(formatted_authors)
+
 def generate_toc_docx(papers: List[Any], journal: Any) -> str:
     """
     生成目录Word文档 - 导出期刊内所有论文
@@ -59,17 +104,14 @@ def generate_toc_docx(papers: List[Any], journal: Any) -> str:
         # 保存文件
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"目录_{journal.issue}_{timestamp}.docx"
+        output_path = os.path.join('uploads', filename)
         
-        # 使用项目根目录的uploads文件夹
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_path = os.path.join(base_dir, 'uploads', filename)
-
         # 确保目录存在
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
+        os.makedirs('uploads', exist_ok=True)
+        
         doc.save(output_path)
         logger.info(f"目录文档已生成: {output_path}")
-
+        
         return output_path
         
     except Exception as e:
@@ -115,12 +157,9 @@ def generate_excel_stats(articles, journal) -> str:
         # 保存文件
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"统计表_{journal.issue}_{timestamp}.xlsx"
+        output_path = os.path.join('uploads', filename)
         
-        # 使用项目根目录的uploads文件夹
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_path = os.path.join(base_dir, 'uploads', filename)
-        
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        os.makedirs('uploads', exist_ok=True)
         wb.save(output_path)
         
         logger.info(f"统计表已生成: {output_path}")
@@ -143,9 +182,31 @@ def generate_excel_stats(articles, journal) -> str:
     except Exception as e:
         logger.error(f"生成统计表Excel失败: {str(e)}")
         raise Exception(f"生成统计表Excel失败: {str(e)}")
+def get_local_image_path(image_path: str, temp_dir: str) -> Optional[str]:
+    """
+    获取本地图片路径，如果图片存在则返回路径，否则返回None
+    返回: 本地图片路径，如果图片不存在则返回None
+    """
+    try:
+        # 检查图片路径是否存在
+        if image_path and os.path.exists(image_path):
+            logger.info(f"本地图片存在: {image_path}")
+            return image_path
+        else:
+            logger.warning(f"本地图片不存在: {image_path}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"检查本地图片时出错: {str(e)}")
+        return None
+
 def generate_tuiwen_content(papers, journal):
     """生成秀米推文内容 - Word文档格式"""
     try:
+        # 创建临时目录用于存储下载的图片
+        temp_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
+        os.makedirs(temp_dir, exist_ok=True)
+        
         # 创建Word文档
         doc = Document()
         
@@ -230,8 +291,13 @@ def generate_tuiwen_content(papers, journal):
                 doi = paper.doi or ''
                 page_start = paper.page_start
                 page_end = paper.page_end
+                # 获取图片URL
+                first_image_url = getattr(paper, 'first_image_url', '') or ''
+                second_image_url = getattr(paper, 'second_image_url', '') or ''
+                # 格式化作者用于citation（最多3个，名字只取首字母）
+                formatted_authors = format_authors_for_citation(authors, max_authors=3)
                 # 生成引用信息
-                citation = f"{authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+                citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
             
             # 添加中文标题（如果有）
             if chinese_title:
@@ -247,6 +313,39 @@ def generate_tuiwen_content(papers, journal):
                 chinese_authors_run = chinese_authors_para.runs[0] if chinese_authors_para.runs else chinese_authors_para.add_run()
                 chinese_authors_run.text = chinese_authors
                 chinese_authors_run.font.size = Pt(11)
+            
+            # 添加第二张图片（在中文标题和中文作者下面）
+            if second_image_url:
+                try:
+                    logger.info(f"开始处理第二张图片: {second_image_url}")
+                    # 获取本地图片路径
+                    local_image_path = get_local_image_path(second_image_url, temp_dir)
+                    logger.info(f"本地图片路径检查结果: {local_image_path}, 文件存在: {os.path.exists(local_image_path) if local_image_path else False}")
+                    
+                    if local_image_path and os.path.exists(local_image_path):
+                        # 添加图片描述
+                        # image_desc_para = doc.add_paragraph()
+                        # image_desc_run = image_desc_para.runs[0] if image_desc_para.runs else image_desc_para.add_run()
+                        # image_desc_run.text = "论文配图:"
+                        # image_desc_run.font.size = Pt(10)
+                        # image_desc_run.font.italic = True
+                        
+                        # 插入图片到Word文档 - 添加异常处理
+                        try:
+                            logger.info(f"尝试插入图片到Word: {local_image_path}")
+                            doc.add_picture(local_image_path, width=Pt(300))  # 设置图片宽度为300磅
+                            logger.info(f"✅ 为论文 {i} 成功插入第二张图片: {second_image_url}")
+                        except Exception as picture_error:
+                            logger.error(f"❌ 插入图片到Word失败: {str(picture_error)}")
+                            # 如果插入失败，添加图片路径作为替代
+                            url_para = doc.add_paragraph()
+                            url_run = url_para.runs[0] if url_para.runs else url_para.add_run()
+                            url_run.text = f"图片路径: {second_image_url}"
+                            url_run.font.size = Pt(9)
+                    else:
+                        logger.warning(f"❌ 无法找到第二张图片: {second_image_url}")
+                except Exception as img_error:
+                    logger.error(f"❌ 处理第二张图片失败: {str(img_error)}")
             
             # 添加论文标题
             paper_title_para = doc.add_paragraph()
@@ -268,6 +367,43 @@ def generate_tuiwen_content(papers, journal):
             citation_run.text = f"Citation: {citation}"
             citation_run.font.size = Pt(11)  # 调整字体大小和其他内容一样
             
+            # 在论文版块最后添加"作者说链接/OSID"文字和第一张图片
+            # 添加分隔线
+            doc.add_paragraph("─" * 20)
+            
+            # 添加"作者说链接/OSID"文字
+            osid_para = doc.add_paragraph()
+            osid_run = osid_para.runs[0] if osid_para.runs else osid_para.add_run()
+            osid_run.text = "作者说链接/OSID"
+            osid_run.font.size = Pt(10)
+            osid_run.font.bold = True
+            
+            # 添加第一张图片（QRcode）
+            if first_image_url:
+                try:
+                    logger.info(f"开始处理第一张图片(QRcode): {first_image_url}")
+                    # 获取本地图片路径
+                    local_image_path = get_local_image_path(first_image_url, temp_dir)
+                    logger.info(f"本地图片路径检查结果: {local_image_path}, 文件存在: {os.path.exists(local_image_path) if local_image_path else False}")
+                    
+                    if local_image_path and os.path.exists(local_image_path):
+                        # 插入图片到Word文档 - 添加异常处理
+                        try:
+                            logger.info(f"尝试插入第一张图片到Word: {local_image_path}")
+                            doc.add_picture(local_image_path, width=Pt(100))  # 设置较小的宽度用于二维码
+                            logger.info(f"✅ 为论文 {i} 成功插入第一张图片(QRcode): {first_image_url}")
+                        except Exception as picture_error:
+                            logger.error(f"❌ 插入第一张图片到Word失败: {str(picture_error)}")
+                            # 如果插入失败，添加图片路径作为替代
+                            url_para = doc.add_paragraph()
+                            url_run = url_para.runs[0] if url_para.runs else url_para.add_run()
+                            url_run.text = f"二维码路径: {first_image_url}"
+                            url_run.font.size = Pt(9)
+                    else:
+                        logger.warning(f"❌ 无法找到第一张图片(QRcode): {first_image_url}")
+                except Exception as qrcode_error:
+                    logger.error(f"❌ 处理第一张图片(QRcode)失败: {str(qrcode_error)}")
+            
             # 添加空行分隔
             doc.add_paragraph()
         
@@ -286,13 +422,10 @@ def generate_tuiwen_content(papers, journal):
         # 保存Word文档
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"推文_{journal.issue}_{timestamp}.docx"
-        
-        # 使用项目根目录的uploads文件夹
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_path = os.path.join(base_dir, 'uploads', filename)
+        output_path = os.path.join('uploads', filename)
         
         # 确保目录存在
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        os.makedirs('uploads', exist_ok=True)
         
         doc.save(output_path)
         logger.info(f"推文Word文档已生成: {output_path}")
