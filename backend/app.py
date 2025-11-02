@@ -36,7 +36,20 @@ jwt = JWTManager(app)
 CORS(app)
 
 # 配置日志
-logging.basicConfig(level=logging.INFO)
+# 创建logs目录（如果不存在）
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# 配置日志：同时输出到控制台和文件
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8'),
+        logging.StreamHandler()  # 输出到控制台
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # 文件上传配置
@@ -227,19 +240,50 @@ def export_tuiwen():
     except Exception as e:
         logger.error(f"推文生成错误: {str(e)}")
         return jsonify({'message': f'推文生成失败: {str(e)}'}), 500
+# 获取可用列定义
+@app.route('/api/export/columns', methods=['GET'])
+def get_available_columns():
+    """获取所有可用的统计表列定义"""
+    try:
+        # 定义所有可用的列
+        available_columns = [
+            {'key': 'manuscript_id', 'label': '稿件号', 'category': '基本信息'},
+            {'key': 'pdf_pages', 'label': '页数', 'category': '基本信息'},
+            {'key': 'first_author', 'label': '一作', 'category': '作者信息'},
+            {'key': 'corresponding', 'label': '通讯', 'category': '作者信息'},
+            {'key': 'authors', 'label': '作者', 'category': '作者信息'},
+            {'key': 'issue', 'label': '刊期', 'category': '基本信息'},
+            {'key': 'is_dhu', 'label': '是否东华大学', 'category': '基本信息'},
+            {'key': 'title', 'label': '标题', 'category': '论文信息'},
+            {'key': 'chinese_title', 'label': '中文标题', 'category': '论文信息'},
+            {'key': 'chinese_authors', 'label': '中文作者', 'category': '作者信息'},
+            {'key': 'doi', 'label': 'DOI', 'category': '论文信息'},
+            {'key': 'page_start', 'label': '起始页码', 'category': '基本信息'},
+            {'key': 'page_end', 'label': '结束页码', 'category': '基本信息'},
+        ]
+        
+        return jsonify({
+            'success': True,
+            'columns': available_columns
+        })
+    except Exception as e:
+        logger.error(f"获取可用列失败: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # 生成统计表
 @app.route('/api/export/excel', methods=['POST'])
 def export_excel():
-    """生成统计表Excel"""
+    """生成统计表Excel - 支持自定义列配置"""
     try:
         data = request.get_json()
         journal_id = data.get('journalId')
+        columns_config = data.get('columns', None)  # 接收列配置
         
         if not journal_id:
             return jsonify({'message': '缺少期刊ID'}), 400
         
         export_service = ExportService()
-        result = export_service.export_excel(journal_id)
+        result = export_service.export_excel(journal_id, columns_config)
         
         if result['success']:
             return jsonify(result)

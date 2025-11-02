@@ -52,6 +52,17 @@ export interface ApiResponse<T> {
     data?: T
 }
 
+export interface ColumnDefinition {
+    key: string
+    label: string
+    category: string
+}
+
+export interface ColumnConfig {
+    key: string
+    order: number
+}
+
 class JournalService {
     /**
      * 获取期刊列表
@@ -135,10 +146,21 @@ class JournalService {
     }
 
     /**
-     * 生成统计表
+     * 获取可用列定义
      */
-    async generateStats(journalId: number): Promise<ExportResponse> {
-        return await apiClient.post('/export/excel', { journalId })
+    async getAvailableColumns(): Promise<{ success: boolean; columns: ColumnDefinition[] }> {
+        return await apiClient.get('/export/columns')
+    }
+
+    /**
+     * 生成统计表（支持自定义列配置）
+     */
+    async generateStats(journalId: number, columns?: ColumnConfig[]): Promise<ExportResponse> {
+        const data: any = { journalId }
+        if (columns) {
+            data.columns = columns
+        }
+        return await apiClient.post('/export/excel', data)
     }
 
     /**

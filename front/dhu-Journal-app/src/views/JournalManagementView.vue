@@ -125,15 +125,22 @@
         <p>点击"创建期刊"按钮来添加新的期刊记录</p>
       </div>
     </el-card>
+
+    <!-- 列配置对话框 -->
+    <ColumnConfigDialog
+      v-model="showColumnConfig"
+      @confirm="handleColumnConfigConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useJournalStore } from '@/stores/journalStore'
-import type { Journal } from '@/api/journalService'
+import type { Journal, ColumnConfig } from '@/api/journalService'
+import ColumnConfigDialog from '@/components/ColumnConfigDialog.vue'
 
 const router = useRouter()
 const journalStore = useJournalStore()
@@ -340,9 +347,30 @@ const handleGenerateWeibo = async (journal: Journal) => {
   }
 }
 
+// 列配置相关状态
+const showColumnConfig = ref(false)
+const currentJournalForStats = ref<Journal | null>(null)
+
 const handleViewStats = async (journal: Journal) => {
+  // 打开列配置对话框
+  currentJournalForStats.value = journal
+  showColumnConfig.value = true
+}
+
+// 确认列配置后生成统计表
+const handleColumnConfigConfirm = async (columns: ColumnConfig[]) => {
+  if (!currentJournalForStats.value) {
+    return
+  }
+  
   try {
-    await journalStore.generateStats(journal.id, journal.issue)
+    await journalStore.generateStats(
+      currentJournalForStats.value.id, 
+      currentJournalForStats.value.issue,
+      columns
+    )
+    // 重置状态
+    currentJournalForStats.value = null
   } catch (error: any) {
     console.error('生成统计表失败:', error)
     ElMessage.error(error.message)

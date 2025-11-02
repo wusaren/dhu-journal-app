@@ -118,9 +118,16 @@ def generate_toc_docx(papers: List[Any], journal: Any) -> str:
         logger.error(f"生成目录文档失败: {str(e)}")
         raise Exception(f"生成目录文档失败: {str(e)}")
 
-def generate_excel_stats(articles, journal) -> str:
+def generate_excel_stats(articles, journal, columns_config=None) -> str:
     """
     生成统计表Excel - 导出期刊内所有论文的统计信息
+    支持自定义列配置
+    
+    Args:
+        articles: 论文列表
+        journal: 期刊对象
+        columns_config: 列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
+                       如果为None，使用默认配置
     """
     try:
         wb = Workbook()
@@ -132,26 +139,98 @@ def generate_excel_stats(articles, journal) -> str:
         ws.cell(row=2, column=1, value=f"论文总数: {len(articles)}")
         ws.cell(row=3, column=1, value="")  # 空行
         
-        # 表头
-        headers = ['稿件号','页数','一作','通讯','刊期','是否东华大学']
+        # 如果没有提供列配置，使用默认配置
+        if not columns_config:
+            columns_config = [
+                {'key': 'manuscript_id', 'order': 1},
+                {'key': 'pdf_pages', 'order': 2},
+                {'key': 'first_author', 'order': 3},
+                {'key': 'corresponding', 'order': 4},
+                {'key': 'issue', 'order': 5},
+                {'key': 'is_dhu', 'order': 6},
+            ]
+        
+        # 按order排序
+        columns_config = sorted(columns_config, key=lambda x: x.get('order', 999))
+        
+        # 定义所有可用列的映射（key -> 显示标签和数据获取函数）
+        column_definitions = {
+            'manuscript_id': {
+                'label': '稿件号',
+                'get_value': lambda a: _get(a, 'manuscript_id') or ''
+            },
+            'pdf_pages': {
+                'label': '页数',
+                'get_value': lambda a: _get(a, 'pdf_pages') or 0
+            },
+            'first_author': {
+                'label': '一作',
+                'get_value': lambda a: _get(a, 'first_author') or ''
+            },
+            'corresponding': {
+                'label': '通讯',
+                'get_value': lambda a: _get(a, 'corresponding') or ''
+            },
+            'authors': {
+                'label': '作者',
+                'get_value': lambda a: _get(a, 'authors') or ''
+            },
+            'issue': {
+                'label': '刊期',
+                'get_value': lambda a: _get(a, 'issue') or ''
+            },
+            'is_dhu': {
+                'label': '是否东华大学',
+                'get_value': lambda a: '是' if _get(a, 'is_dhu') else '否'
+            },
+            'title': {
+                'label': '标题',
+                'get_value': lambda a: _get(a, 'title') or ''
+            },
+            'chinese_title': {
+                'label': '中文标题',
+                'get_value': lambda a: _get(a, 'chinese_title') or ''
+            },
+            'chinese_authors': {
+                'label': '中文作者',
+                'get_value': lambda a: _get(a, 'chinese_authors') or ''
+            },
+            'doi': {
+                'label': 'DOI',
+                'get_value': lambda a: _get(a, 'doi') or ''
+            },
+            'page_start': {
+                'label': '起始页码',
+                'get_value': lambda a: _get(a, 'page_start') or ''
+            },
+            'page_end': {
+                'label': '结束页码',
+                'get_value': lambda a: _get(a, 'page_end') or ''
+            },
+        }
+        
+        # 生成表头（只包含配置中存在的列）
+        valid_columns = []
+        for col_config in columns_config:
+            key = col_config.get('key')
+            if key in column_definitions:
+                valid_columns.append({
+                    'key': key,
+                    'label': column_definitions[key]['label'],
+                    'get_value': column_definitions[key]['get_value']
+                })
+        
+        headers = [col['label'] for col in valid_columns]
         ws.append(headers)
-
-        col_pos = {name: idx+1 for idx, name in enumerate(headers)}
-        r = 5  # 从第5行开始（前面有标题）
         
         # 添加所有论文数据
+        r = 5  # 从第5行开始（前面有标题）
         for a in articles:
-            values = {
-                '稿件号': _get(a, 'manuscript_id'),
-                '页数': _get(a, 'pdf_pages'),
-                '一作': _get(a, 'first_author'),
-                '通讯': (_get(a, 'corresponding') or ''),
-                '刊期': _get(a, 'issue'),
-                '是否东华大学': '是' if _get(a, 'is_dhu') else '否',
-            }
-            for k, v in values.items():
-                if k in col_pos:
-                    ws.cell(row=r, column=col_pos[k], value=v)
+            col_idx = 1
+            for col in valid_columns:
+                value = col['get_value'](a)
+                ws.cell(row=r, column=col_idx, value=value)
+                col_idx += 1
             r += 1
 
         # 保存文件
@@ -163,19 +242,16 @@ def generate_excel_stats(articles, journal) -> str:
         wb.save(output_path)
         
         logger.info(f"统计表已生成: {output_path}")
+        logger.info(f"使用的列配置: {[col['key'] for col in valid_columns]}")
         
         # 记录生成的数据用于调试
         debug_data = []
         for a in articles:
-            debug_data.append({
-                '稿件号': _get(a, 'manuscript_id'),
-                '页数': _get(a, 'pdf_pages'),
-                '一作': _get(a, 'first_author'),
-                '通讯': (_get(a, 'corresponding') or ''),
-                '刊期': _get(a, 'issue'),
-                '是否东华大学': '是' if _get(a, 'is_dhu') else '否'
-            })
-        logger.info(f"生成的数据: {debug_data}")
+            row_data = {}
+            for col in valid_columns:
+                row_data[col['label']] = col['get_value'](a)
+            debug_data.append(row_data)
+        logger.info(f"生成的数据（前3条）: {debug_data[:3]}")
         
         return output_path
         
