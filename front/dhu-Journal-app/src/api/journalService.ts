@@ -146,7 +146,7 @@ class JournalService {
      */
     async downloadFile(filename: string): Promise<void> {
         const link = document.createElement('a')
-        link.href = `http://localhost:5000/api/download/${filename}`
+        link.href = `/api/download/${filename}`
         link.download = filename
         link.click()
     }

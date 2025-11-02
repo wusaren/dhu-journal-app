@@ -95,11 +95,11 @@ export const paperService = {
 
     // 预览PDF
     getPreviewUrl(filename: string): string {
-        return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/preview/${filename}`
+        return `/api/preview/${filename}`
     },
 
     // 下载PDF
     getDownloadUrl(filename: string): string {
-        return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/download/${filename}`
+        return `/api/download/${filename}`
     }
 }
