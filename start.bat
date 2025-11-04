@@ -29,16 +29,16 @@ if errorlevel 1 (
 )
 echo OK: Node.js environment is ready
 
-echo.
-echo [3/6] Rebuilding database...
-cd /d %~dp0
-python rebuild_database.py
-if errorlevel 1 (
-    echo ERROR: Database rebuild failed
-    pause
-    exit /b 1
-)
-echo OK: Database rebuild completed
+@REM echo.
+@REM echo [3/6] Rebuilding database...
+@REM cd /d %~dp0
+@REM python rebuild_database.py
+@REM if errorlevel 1 (
+@REM     echo ERROR: Database rebuild failed
+@REM     pause
+@REM     exit /b 1
+@REM )
+@REM echo OK: Database rebuild completed
 
 echo.
 echo [4/6] Checking upload files...

@@ -1,0 +1,84 @@
+{
+  "formula_rule": "公式字体为小四号(12pt)，编号为Times New Roman，公式内容为Cambria Math，设置制表位：20字符居中对齐，40字符右对齐",
+  "formula_detection_rules": {
+    "tab_stops": [
+      {
+        "position_chars": 20,
+        "alignment": "center",
+        "description": "公式居中对齐位置"
+      },
+      {
+        "position_chars": 40,
+        "alignment": "right",
+        "description": "编号右对齐位置"
+      }
+    ],
+    "font_requirements": {
+      "formula_content": "Cambria Math",
+      "formula_number": "Times New Roman",
+      "font_size_pt": 12
+    },
+    "math_object_detection": {
+      "required": false,
+      "namespaces": ["w:oMath", "m:oMath", "oMath"],
+      "fallback_patterns": [
+        "[=<>≤≥≠±∞∑∏∫]",
+        "[α-ωΑ-Ω]",
+        "[₀-₉⁰-⁹]"
+      ]
+    }
+  },
+  "format_rules": {
+    "formula_paragraph": {
+      "font_size_pt": 12,
+      "tab_stops_required": true,
+      "math_object_preferred": true,
+      "alignment": "left"
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "tab_position_tolerance": 2,
+    "font_detection_strict": false
+  },
+  "messages": {
+    "formula_detection_ok": "公式格式检查通过",
+    "formula_detection_error": "公式格式检查发现问题",
+    "tab_stops_ok": "制表位设置正确（20字符居中，40字符右对齐）",
+    "tab_stops_error": "制表位设置不正确",
+    "tab_stops_missing": "未检测到制表位设置",
+    "tab_stops_position_error": "制表位位置不正确，应为20字符居中和40字符右对齐",
+    "tab_stops_alignment_error": "制表位对齐方式不正确",
+    "math_object_ok": "检测到数学对象",
+    "math_object_missing": "未检测到Office Math对象，可能是手动输入的公式",
+    "math_object_error": "数学对象检测异常",
+    "font_formula_ok": "公式内容字体正确（Cambria Math）",
+    "font_formula_error": "公式内容字体应为Cambria Math",
+    "font_number_ok": "公式编号字体正确（Times New Roman）",
+    "font_number_error": "公式编号字体应为Times New Roman",
+    "font_size_ok": "字体大小正确（小四号）",
+    "font_size_error": "字体大小应为小四号(12pt)",
+    "formula_complete_ok": "公式格式完全正确：制表位设置正确，包含数学对象，字体符合要求",
+    "formula_partial_ok": "公式格式基本正确：制表位和字体符合要求",
+    "formula_pattern_detected": "检测到公式模式",
+    "formula_number_detected": "检测到公式编号",
+    "summary_overall": "公式格式检查结果: {ok}"
+  },
+  "notes": [
+    "公式检查重点：1) 制表位设置(20字符居中，40字符右对齐) 2) 公式内容字体(Cambria Math) 3) 编号字体(Times New Roman) 4) 字体大小(小四号12pt)",
+    "Word公式默认使用Cambria Math字体，编号部分可以设置为Times New Roman",
+    "制表位通过段落样式或直接格式设置，用于实现公式居中和编号右对齐",
+    "支持Office Math对象检测和启发式公式模式识别"
+  ],
+  "generated_from": "用户提供的公式格式要求：公式字体小四，编号Times New Roman，公式内容Cambria Math，制表位20字符居中40字符右对齐"
+}

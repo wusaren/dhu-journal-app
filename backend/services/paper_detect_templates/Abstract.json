@@ -1,0 +1,68 @@
+{
+  "abstract_rule": "Abstract字段后紧接冒号，冒号后紧接摘要内容，不分段",
+  "structure_rules": {
+    "header_pattern": "^\\s*Abstract\\s*:\\s*(.+)$",
+    "no_paragraph_breaks": true,
+    "min_content_length": 50,
+    "max_content_length": 2000
+  },
+  "format_rules": {
+    "abstract": {
+      "font_size_pt": 12,
+      "font_name": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.5,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "justify",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号", 
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐", 
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_header_ok": "摘要标题格式正确（Abstract: 格式）",
+    "structure_header_error": "摘要标题格式错误，应为 'Abstract: 内容' 格式",
+    "structure_no_paragraph_ok": "摘要内容为单一段落，符合要求",
+    "structure_paragraph_error": "摘要内容不应分段，检测到多个段落",
+    "structure_length_ok": "摘要长度适中",
+    "structure_length_short": "摘要内容过短（少于{min}字符）",
+    "structure_length_long": "摘要内容过长（超过{max}字符）",
+    "format_abstract_issue_header": "摘要格式问题：",
+    "format_abstract_ok": "摘要格式检查通过",
+    "format_alignment_ok": "摘要段落对齐正确（两端对齐）",
+    "format_indent_ok": "摘要缩进正确（顶格书写）",
+    "summary_overall": "摘要检查结果: {ok}"
+  },
+  "notes": [
+    "摘要检查重点：1) Abstract:冒号格式 2) 不分段 3) Times New Roman加粗 4) 1.5倍行间距 5) 两端对齐 6) 无缩进（顶格书写）",
+    "摘要应为单一段落，包含研究目的、方法、结果和结论的简要描述"
+  ],
+  "generated_from": "用户提供的摘要格式要求"
+}

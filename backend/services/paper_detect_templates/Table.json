@@ -1,0 +1,101 @@
+{
+  "table_rule": "表格采用三线表格式，表格标题格式为：Table X 表名，加粗，居中，字体大小与正文一致；表格内容格式与正文一致，单行居中对齐，多行左对齐",
+  "table_detection_rules": {
+    "caption_pattern": "^\\s*Table\\s+(\\d+)\\s+(.+)$",
+    "caption_format": {
+      "prefix": "Table",
+      "numbering_required": true,
+      "title_case": true,
+      "bold": true,
+      "alignment": "center"
+    },
+    "table_style": {
+      "type": "three_line",
+      "description": "三线表：仅有顶线、底线和表头底线",
+      "border_width": {
+        "top_line": 1.5,
+        "bottom_line": 1.5,
+        "header_line": 0.75,
+        "unit": "pt"
+      }
+    },
+    "content_alignment": {
+      "header_row": "center",
+      "content_long": "left",
+      "content_short": "center",
+      "description": "表头行居中对齐，内容行根据长度判断（较长左对齐，较短居中对齐）"
+    }
+  },
+  "format_rules": {
+    "caption": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 0
+    },
+    "table_content": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman",
+      "bold": false,
+      "italic": false
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "caption_numbering_check": true,
+    "caption_sequential_check": true,
+    "table_style_check": true,
+    "border_width_check": true,
+    "border_width_tolerance": 0.1,
+    "alignment_check": true,
+    "alignment_length_threshold": 20
+  },
+  "messages": {
+    "table_detection_ok": "表格格式检查通过",
+    "table_detection_error": "表格格式检查发现问题",
+    "caption_format_ok": "表格标题格式正确",
+    "caption_format_error": "表格标题格式不正确",
+    "caption_missing": "未找到表格标题",
+    "caption_pattern_error": "表格标题格式应为：Table X 表名（X为数字编号）",
+    "caption_bold_error": "表格标题应加粗",
+    "caption_alignment_error": "表格标题应居中对齐",
+    "caption_font_size_error": "表格标题字体大小应为五号(10.5pt)",
+    "caption_title_case_error": "表格名称首字母应大写",
+    "caption_numbering_error": "表格编号不连续，发现编号：{numbers}",
+    "table_style_ok": "表格为三线表格式",
+    "table_style_error": "表格应为三线表格式（仅顶线、底线和表头底线）",
+    "border_width_ok": "表格边框粗细正确（顶线和底线1.5磅，表头线0.75磅）",
+    "border_width_error": "表格边框粗细不正确",
+    "top_border_width_error": "顶线宽度应为1.5磅，实际为{actual}磅",
+    "bottom_border_width_error": "底线宽度应为1.5磅，实际为{actual}磅",
+    "header_border_width_error": "表头底线宽度应为0.75磅，实际为{actual}磅",
+    "table_not_found": "未在标题下方找到表格",
+    "table_content_alignment_ok": "表格内容对齐方式正确",
+    "table_content_alignment_error": "表格内容对齐方式不正确（表头行居中对齐，内容行根据长度判断）",
+    "table_content_font_ok": "表格内容字体格式正确",
+    "table_content_font_error": "表格内容字体格式应与正文一致",
+    "summary_overall": "表格格式检查结果: {ok}",
+    "table_count": "检测到 {count} 个表格"
+  },
+  "notes": [
+    "表格检查重点：1) 表格标题格式(Table X 表名，加粗，居中，五号) 2) 表格编号连续性 3) 三线表格式（顶线和底线1.5磅，表头线0.75磅） 4) 内容对齐方式（表头行居中，内容行根据长度判断）",
+    "表格标题必须在表格上方，格式为：Table 1 Description，字号为五号(10.5pt)",
+    "三线表只有三条横线：表格顶部（1.5磅）、表头底部（0.75磅）、表格底部（1.5磅）",
+    "表格内容字体：Times New Roman，五号(10.5pt)",
+    "对齐规则：表头行所有单元格居中对齐；内容行中较长文本（>20字符）左对齐，较短文本居中对齐"
+  ],
+  "generated_from": "用户要求：表格采用三线表，标题为Table X 表名（加粗、居中、首字母大写），内容单行居中、多行左对齐"
+}

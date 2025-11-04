@@ -1,0 +1,46 @@
+{
+  "description": "A template for checking paragraph formatting in a Word document.",
+  "format_rules": {
+    "font_size_pt": 12,
+    "font_name": "Times New Roman",
+    "bold": false,
+    "italic": false,
+    "alignment": "left",
+    "first_line_indent": 0,
+    "left_indent": 0,
+    "right_indent": 0,
+    "space_before": 0,
+    "space_after": 1,
+    "line_spacing": 1.5
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    }
+  },
+  "messages": {
+    "report_header": "段落格式检查报告",
+    "details_header": "格式详情：",
+    "issues_header": "发现格式问题："
+  }
+}
