@@ -3543,3 +3543,233 @@
 2025-11-05 01:00:44,198 - services.paper_format_service - INFO - 开始生成检测报告
 2025-11-05 01:00:44,199 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_010044_format_report.txt
 2025-11-05 01:00:44,201 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:00:44] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 01:15:19,628 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-05 01:15:19,629 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-05 01:15:19,656 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 01:15:22,583 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 01:15:22,621 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 01:15:33,079 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:15:33] "GET /api/papers HTTP/1.1" 200 -
+2025-11-05 01:15:33,115 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:15:33] "GET /api/journals HTTP/1.1" 200 -
+2025-11-05 01:15:35,602 - services.file_service - INFO - 尝试预览文件: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\uploads\test.pdf
+2025-11-05 01:15:35,603 - services.file_service - ERROR - 文件不存在: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\uploads\test.pdf
+2025-11-05 01:15:35,763 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:15:35] "[33mGET /api/preview/test.pdf HTTP/1.1[0m" 404 -
+2025-11-05 01:15:38,690 - services.file_service - INFO - 尝试预览文件: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\uploads\20251103_104737_细菌纤维素_ 透明质酸口腔速溶膜的制备及性能.pdf
+2025-11-05 01:15:38,700 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:15:38] "GET /api/preview/20251103_104737_细菌纤维素_%20透明质酸口腔速溶膜的制备及性能.pdf HTTP/1.1" 200 -
+2025-11-05 01:15:42,116 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:15:42] "GET /api/journals HTTP/1.1" 200 -
+2025-11-05 01:16:03,596 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_011603_New.docx
+2025-11-05 01:16:03,598 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 01:16:08,945 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 01:16:08,945 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 01:16:08,945 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_011603_New.docx
+2025-11-05 01:16:08,946 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-05 01:16:09,000 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-05 01:16:09,006 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-05 01:16:09,011 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-05 01:16:09,018 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-05 01:16:09,025 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-05 01:16:09,030 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-05 01:16:09,037 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:16:09] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-05 01:16:13,979 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_011613_format_report.txt
+2025-11-05 01:16:13,980 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 01:16:13,980 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 01:16:13,980 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 01:16:13,981 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 01:16:13,982 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_011613_format_report.txt
+2025-11-05 01:16:13,985 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 01:16:13] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 11:36:09,926 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-05 11:36:09,927 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-05 11:36:09,941 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 11:36:11,929 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 11:36:11,953 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 11:36:50,588 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_113650_paper1.docx
+2025-11-05 11:36:50,602 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 11:37:37,993 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 11:37:37,994 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 11:37:37,994 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_113650_paper1.docx
+2025-11-05 11:37:37,995 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-05 11:37:38,401 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-05 11:37:38,542 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-05 11:37:38,702 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 11:37:38,710 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_113738_format_report.txt
+2025-11-05 11:37:38,711 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251105_113738_format_report.txt
+2025-11-05 11:37:38,715 - __main__ - INFO - 已删除临时文件: uploads/format_check/temp\20251105_113650_paper1.docx
+2025-11-05 11:37:38,729 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 11:37:38] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-05 11:38:00,498 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_113800_format_report.txt
+2025-11-05 11:38:00,524 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 11:38:00,567 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 11:38:00,589 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 11:38:00,595 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 11:38:00,640 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_113800_format_report.txt
+2025-11-05 11:38:00,655 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 11:38:00] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 11:38:44,206 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_113844_format_report.txt
+2025-11-05 11:38:44,240 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 11:38:44,244 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 11:38:44,244 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 11:38:44,244 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 11:38:44,246 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_113844_format_report.txt
+2025-11-05 11:38:44,248 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 11:38:44] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 19:21:57,820 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-05 19:21:57,820 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-05 19:21:57,830 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 19:21:59,022 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 19:21:59,042 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 19:25:15,110 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_192515_paper1_annotated.docx
+2025-11-05 19:25:15,118 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 19:26:15,990 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 19:26:16,050 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 19:26:16,050 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_192515_paper1_annotated.docx
+2025-11-05 19:26:16,050 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-05 19:26:16,241 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-05 19:26:16,264 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 19:26:16,264 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_192616_format_report.txt
+2025-11-05 19:26:16,274 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251105_192616_format_report.txt
+2025-11-05 19:26:16,314 - __main__ - INFO - 已删除临时文件: uploads/format_check/temp\20251105_192515_paper1_annotated.docx
+2025-11-05 19:26:16,314 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 19:26:16] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-05 19:28:57,860 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_192857_paper1_annotated.docx
+2025-11-05 19:29:02,516 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 19:29:02,517 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 19:29:02,517 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 19:29:02,517 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_192857_paper1_annotated.docx
+2025-11-05 19:29:02,518 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-05 19:29:02,752 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 19:29:02,752 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_192902_format_report.txt
+2025-11-05 19:29:02,752 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251105_192902_format_report.txt
+2025-11-05 19:29:02,757 - __main__ - INFO - 已删除临时文件: uploads/format_check/temp\20251105_192857_paper1_annotated.docx
+2025-11-05 19:29:02,760 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 19:29:02] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-05 20:15:02,360 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_201502_New.docx
+2025-11-05 20:15:15,600 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:15:15,600 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:15:15,600 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:15:15,600 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_201502_New.docx
+2025-11-05 20:15:15,600 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-05 20:15:15,660 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:15:15,660 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_201515_format_report.txt
+2025-11-05 20:15:15,660 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251105_201515_format_report.txt
+2025-11-05 20:15:15,660 - __main__ - INFO - 已删除临时文件: uploads/format_check/temp\20251105_201502_New.docx
+2025-11-05 20:15:15,660 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:15:15] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-05 20:15:22,231 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-05 20:15:22,905 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 20:15:24,110 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 20:15:24,128 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 20:15:53,308 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_201553_format_report.txt
+2025-11-05 20:15:53,308 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:15:55,037 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_201555_format_report.txt
+2025-11-05 20:15:55,038 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:15:57,127 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:15:57,127 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:15:57,130 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:15:57,130 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:15:57,130 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:15:57,130 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:15:57,130 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_201553_format_report.txt
+2025-11-05 20:15:57,130 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:15:57] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 20:15:57,130 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_201555_format_report.txt
+2025-11-05 20:15:57,130 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:15:57] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 20:16:11,827 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_201611_format_report.txt
+2025-11-05 20:16:11,828 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:16:11,829 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:16:11,829 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:16:11,830 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:16:11,831 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_201611_format_report.txt
+2025-11-05 20:16:11,832 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:16:11] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 20:16:27,470 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_201627_format_report.txt
+2025-11-05 20:16:27,470 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:16:27,471 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:16:27,472 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:16:27,472 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:16:27,473 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_201627_format_report.txt
+2025-11-05 20:16:27,474 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:16:27] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 20:22:54,793 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-05 20:22:54,794 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-05 20:22:54,795 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 20:22:55,902 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 20:22:55,917 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 20:45:50,471 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_204550_template1.docx
+2025-11-05 20:45:50,477 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:45:55,755 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:45:55,755 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:45:55,755 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_204550_template1.docx
+2025-11-05 20:45:55,755 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-05 20:45:55,916 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-05 20:45:55,976 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-05 20:45:56,036 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-05 20:45:56,126 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-05 20:45:56,226 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-05 20:45:56,286 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-05 20:45:56,336 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:45:56,336 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_204556_format_report.txt
+2025-11-05 20:45:56,346 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251105_204556_format_report.txt
+2025-11-05 20:45:56,347 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:45:56] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-05 20:46:08,499 - __main__ - INFO - 生成报告文件: uploads/format_check/reports\20251105_204608_format_report.txt
+2025-11-05 20:46:08,499 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 20:46:08,501 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 20:46:08,501 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 20:46:08,502 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 20:46:08,503 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_204608_format_report.txt
+2025-11-05 20:46:08,504 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 20:46:08] "POST /api/paper-format/generate-report HTTP/1.1" 200 -
+2025-11-05 21:10:59,238 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-05 21:11:00,479 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 21:11:02,330 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 21:11:02,355 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 21:47:55,586 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_detector.py', reloading
+2025-11-05 21:47:56,069 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 21:47:58,102 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 21:47:58,119 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 22:52:00,526 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-05 22:52:01,266 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 22:52:04,896 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 22:57:18,179 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-05 22:57:18,180 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-05 22:57:18,182 - werkzeug - INFO -  * Restarting with stat
+2025-11-05 22:57:19,340 - werkzeug - WARNING -  * Debugger is active!
+2025-11-05 22:57:19,360 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-05 23:03:27,315 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:27] "GET /api/journals HTTP/1.1" 200 -
+2025-11-05 23:03:29,372 - services.document_generator - INFO - 目录文档已生成: uploads\目录_测试期刊-2025_20251105_230329.docx
+2025-11-05 23:03:29,373 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:29] "POST /api/export/toc HTTP/1.1" 200 -
+2025-11-05 23:03:29,441 - services.file_service - INFO - 尝试下载文件: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\uploads\目录_测试期刊-2025_20251105_230329.docx
+2025-11-05 23:03:29,444 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:29] "GET /api/download/目录_测试期刊-2025_20251105_230329.docx HTTP/1.1" 200 -
+2025-11-05 23:03:33,455 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:33] "GET /api/journals HTTP/1.1" 200 -
+2025-11-05 23:03:36,723 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:36] "GET /api/journals HTTP/1.1" 200 -
+2025-11-05 23:03:36,732 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:36] "GET /api/papers HTTP/1.1" 200 -
+2025-11-05 23:03:49,637 - services.file_service - INFO - 尝试预览文件: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\uploads\20251103_104737_细菌纤维素_ 透明质酸口腔速溶膜的制备及性能.pdf
+2025-11-05 23:03:49,640 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:03:49] "[36mGET /api/preview/20251103_104737_细菌纤维素_%20透明质酸口腔速溶膜的制备及性能.pdf HTTP/1.1[0m" 304 -
+2025-11-05 23:05:08,823 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:05:08] "GET /api/journals HTTP/1.1" 200 -
+2025-11-05 23:05:30,347 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251105_230530_paper1_annotated.docx
+2025-11-05 23:05:30,349 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-05 23:06:12,540 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-05 23:06:12,595 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-05 23:06:12,600 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251105_230530_paper1_annotated.docx
+2025-11-05 23:06:12,600 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-05 23:06:12,790 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-05 23:06:12,820 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-05 23:06:12,865 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-05 23:06:13,011 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-05 23:06:13,175 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-05 23:06:13,200 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-05 23:06:13,230 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-05 23:06:13,230 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251105_230613_format_report.txt
+2025-11-05 23:06:13,230 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251105_230613_format_report.txt
+2025-11-05 23:06:13,235 - werkzeug - INFO - 127.0.0.1 - - [05/Nov/2025 23:06:13] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-07 00:57:03,628 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-07 00:57:03,628 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-07 00:57:03,638 - werkzeug - INFO -  * Restarting with stat
+2025-11-07 00:57:05,031 - werkzeug - WARNING -  * Debugger is active!
+2025-11-07 00:57:05,063 - werkzeug - INFO -  * Debugger PIN: 640-321-877

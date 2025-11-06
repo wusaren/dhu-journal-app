@@ -539,31 +539,31 @@ class PaperFormatService:
         except Exception as e:
             return self._handle_exception(e, 'ReportGeneration')
     
-    def get_available_modules(self) -> List[str]:
-        """获取可用的检测模块列表"""
-        return self.detector.get_available_modules()
+    # def get_available_modules(self) -> List[str]:
+    #     """获取可用的检测模块列表"""
+    #     return self.detector.get_available_modules()
     
-    def get_module_info(self, module_name: str) -> Dict[str, Any]:
-        """获取指定模块的信息"""
-        descriptions = {
-            'Title': '标题、作者、单位格式检测',
-            'Abstract': '摘要格式检测',
-            'Keywords': '关键词格式检测',
-            'Content': '正文格式检测',
-            'Figure': '图片格式检测',
-            'Formula': '公式格式检测',
-            'Table': '表格格式检测'
-        }
-        
-        if module_name not in self.get_available_modules():
-            return {
-                'exists': False,
-                'message': f'模块不存在: {module_name}'
-            }
-        
-        return {
-            'exists': True,
-            'module_name': module_name,
-            'default_template': f'{module_name}.json',
-            'description': descriptions.get(module_name, '未知模块')
-        }
+    # def get_module_info(self, module_name: str) -> Dict[str, Any]:
+    #     """获取指定模块的信息"""
+    #     descriptions = {
+    #         'Title': '标题、作者、单位格式检测',
+    #         'Abstract': '摘要格式检测',
+    #         'Keywords': '关键词格式检测',
+    #         'Content': '正文格式检测',
+    #         'Figure': '图片格式检测',
+    #         'Formula': '公式格式检测',
+    #         'Table': '表格格式检测'
+    #     }
+    #
+    #     if module_name not in self.get_available_modules():
+    #         return {
+    #             'exists': False,
+    #             'message': f'模块不存在: {module_name}'
+    #         }
+    #
+    #     return {
+    #         'exists': True,
+    #         'module_name': module_name,
+    #         'default_template': f'{module_name}.json',
+    #         'description': descriptions.get(module_name, '未知模块')
+    #     }

@@ -188,19 +188,18 @@
           />
         </el-form-item>
         <el-form-item label="上传文件">
-          <el-upload
-            ref="uploadRef"
-            :auto-upload="false"
-            :limit="1"
-            :on-exceed="handleExceed"
-            accept=".doc,.docx"
-            :on-change="handleFileChange"
-          >
-            <el-button class="upload-btn" type="primary">选择文件</el-button>
-            <template #tip>
-              <div class="el-upload__tip">只能上传Word文档，且不超过10MB</div>
-            </template>
-          </el-upload>
+           <el-upload
+             ref="uploadRef"
+             :auto-upload="false"
+             :limit="1"
+             accept=".doc,.docx"
+             :on-change="handleFileChange"
+           >
+             <el-button class="upload-btn" type="primary">选择文件</el-button>
+             <template #tip>
+               <div class="el-upload__tip">只能上传Word文档，且不超过10MB</div>
+             </template>
+           </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -214,22 +213,22 @@
       <div class="review-content">
         <p class="paper-title-display"><strong>论文标题：</strong>{{ currentPaper?.title }}</p>
         
-        <!-- 格式检测区域 -->
-        <el-card class="format-check-card" shadow="never">
-          <template #header>
-            <div class="card-header-format">
-              <span>论文格式检测</span>
-              <el-button 
-                v-if="!isFormatChecking && !formatCheckResult"
-                class="check-format-btn" 
-                size="small"
-                @click="startFormatCheck"
-                :disabled="!currentPaper?.file"
-              >
-                开始检测
-              </el-button>
-            </div>
-          </template>
+         <!-- 格式检测区域 -->
+         <el-card class="format-check-card" shadow="never">
+           <template #header>
+             <div class="card-header-format">
+               <span>论文格式检测</span>
+               <el-button 
+                 v-if="!isFormatChecking && !formatCheckResult"
+                 class="check-format-btn" 
+                 size="small"
+                 @click="showModuleSelector"
+                 :disabled="!currentPaper?.file"
+               >
+                 选择检测模块
+               </el-button>
+             </div>
+           </template>
           
           <!-- 检测状态提示 -->
           <div v-if="!currentPaper?.file" class="format-hint">
@@ -348,6 +347,68 @@
         <el-button class="download-report-btn" type="primary" @click="downloadReport">下载报告</el-button>
       </template>
     </el-dialog>
+    
+    <!-- 检测模块选择对话框 -->
+    <el-dialog v-model="showModuleSelectorDialog" title="选择检测模块" width="600px">
+      <div class="module-selector-content">
+        <el-alert 
+          title="请选择需要检测的内容模块" 
+          type="info" 
+          :closable="false"
+          style="margin-bottom: 20px;"
+        />
+        
+        <!-- 全选选项 -->
+        <div class="module-option">
+          <el-checkbox 
+            v-model="selectAllModules" 
+            @change="handleSelectAll"
+            :indeterminate="isIndeterminate"
+          >
+            <span class="module-label">全部检测</span>
+          </el-checkbox>
+        </div>
+        
+        <el-divider />
+        
+        <!-- 各检测模块 -->
+        <el-checkbox-group v-model="selectedModules" @change="handleModuleChange">
+          <div class="module-option" v-for="module in availableModules" :key="module.value">
+            <el-checkbox :value="module.value">
+              <span class="module-label">{{ module.label }}</span>
+              <span class="module-description">{{ module.description }}</span>
+            </el-checkbox>
+          </div>
+        </el-checkbox-group>
+        
+        <!-- 图片内容检测选项 -->
+        <div v-if="selectedModules.includes('Figure')" class="figure-api-option">
+          <!-- <el-divider /> -->
+          <el-alert 
+            title="图片检测选项" 
+            type="warning" 
+            :closable="false"
+            style="margin-bottom: 10px;padding: 0"
+          />
+          <el-checkbox v-model="enableFigureApi" style="padding-bottom: 10px;">
+            <span class="module-label">启用图片内容检测</span>
+            <span class="module-description">*需要调用API，检测时间较长</span>
+          </el-checkbox>
+        </div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="showModuleSelectorDialog = false">取消</el-button>
+        <el-button 
+          class="confirm-btn" 
+          type="primary" 
+          @click="confirmModuleSelection"
+          :disabled="selectedModules.length === 0"
+        >
+          开始检测
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
   </el-config-provider>   
 </template>
@@ -355,8 +416,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import { paperFormatService, type ApiResponse, type CheckAllResult } from '@/api/paperFormatService'
+import { paperFormatService } from '@/api/paperFormatService'
+import type { ApiResponse, CheckAllResult } from '@/api/paperFormatService'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 
@@ -439,6 +500,7 @@ const reviewedPagination = ref({
 const showAddDialog = ref(false)
 const showReviewDialog = ref(false)
 const showReportDialog = ref(false)
+const showModuleSelectorDialog = ref(false)
 
 // 表单数据
 const newPaper = ref({
@@ -460,6 +522,29 @@ const formatCheckProgress = ref(0)
 const formatCheckResult = ref<ApiResponse<CheckAllResult> | null>(null)
 const activeModules = ref<string>('')
 const reportText = ref('')
+
+// 模块选择相关状态
+const selectedModules = ref<string[]>([])
+const selectAllModules = ref(false)
+const enableFigureApi = ref(false)
+
+// 可用的检测模块列表
+const availableModules = [
+  { value: 'Title', label: '标题格式检测', description: '检测标题、作者、单位格式' },
+  { value: 'Abstract', label: '摘要格式检测', description: '检测摘要结构和格式' },
+  { value: 'Keywords', label: '关键词格式检测', description: '检测关键词格式' },
+  { value: 'Content', label: '正文格式检测', description: '检测正文格式' },
+  { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
+  { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
+  { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' }
+]
+
+// 计算是否为半选状态
+const isIndeterminate = computed(() => {
+  const selected = selectedModules.value.length
+  const total = availableModules.length
+  return selected > 0 && selected < total
+})
 
 // 计算属性：筛选后的待审核列表
 const filteredPendingList = computed(() => {
@@ -627,6 +712,52 @@ const confirmReview = () => {
   showReviewDialog.value = false
 }
 
+// 模块选择相关方法
+const showModuleSelector = () => {
+  if (!currentPaper.value?.file) {
+    ElMessage.error('请先选择论文文件')
+    return
+  }
+  
+  // 重置选择状态
+  selectedModules.value = []
+  selectAllModules.value = false
+  enableFigureApi.value = false
+  
+  // 显示选择对话框
+  showModuleSelectorDialog.value = true
+}
+
+const handleSelectAll = (value: boolean) => {
+  if (value) {
+    selectedModules.value = availableModules.map(m => m.value)
+  } else {
+    selectedModules.value = []
+  }
+}
+
+const handleModuleChange = (value: string[]) => {
+  selectAllModules.value = value.length === availableModules.length
+  
+  // 如果取消了图片检测，也取消图片内容检测
+  if (!value.includes('Figure')) {
+    enableFigureApi.value = false
+  }
+}
+
+const confirmModuleSelection = () => {
+  if (selectedModules.value.length === 0) {
+    ElMessage.warning('请至少选择一个检测模块')
+    return
+  }
+  
+  // 关闭选择对话框
+  showModuleSelectorDialog.value = false
+  
+  // 开始检测
+  startFormatCheck()
+}
+
 // 格式检测相关方法
 const startFormatCheck = async () => {
   if (!currentPaper.value?.file) {
@@ -646,17 +777,26 @@ const startFormatCheck = async () => {
     }, 500)
     
     // 执行格式检测
-    const result = await paperFormatService.checkAll(currentPaper.value.file, false)
+    const result = await paperFormatService.checkAll(
+      currentPaper.value.file, 
+      enableFigureApi.value,
+      selectedModules.value
+    )
     
     clearInterval(progressInterval)
     formatCheckProgress.value = 100
     
     // 保存检测结果
     formatCheckResult.value = result
-    console.log(formatCheckResult)
     
     if (result.success) {
-      ElMessage.success('格式检测完成')
+      ElMessage.success('格式检测完成，报告已自动保存')
+      
+      // 如果返回了报告信息，可以提示用户
+      if (result.data?.report_saved) {
+        console.log('报告已保存:', result.data.report_filename)
+        reportText.value = result.data.report_text
+      }
     } else {
       ElMessage.error(result.message || '格式检测失败')
     }
@@ -676,6 +816,9 @@ const resetFormatCheck = () => {
   formatCheckProgress.value = 0
   activeModules.value = ''
   isFormatChecking.value = false
+  
+  // 显示模块选择对话框
+  showModuleSelector()
 }
 
 // 查看详细报告
@@ -684,19 +827,25 @@ const viewDetailReport = async () => {
     ElMessage.error('无检测结果')
     return
   }
-  
-  try {
-    const reportResult = await paperFormatService.generateReport(formatCheckResult.value)
-    
-    if (reportResult.success && reportResult.data) {
-      reportText.value = reportResult.data.report_text
-      showReportDialog.value = true
-    } else {
-      ElMessage.error('生成报告失败')
-    }
-  } catch (error) {
-    ElMessage.error('生成报告失败：' + (error as Error).message)
+  if(!reportText.value){
+    ElMessage.error('无检测报告')
+    return
   }
+
+  showReportDialog.value = true
+  
+  // try {
+  //   const reportResult = await paperFormatService.generateReport(formatCheckResult.value)
+  //
+  //   if (reportResult.success && reportResult.data) {
+  //     reportText.value = reportResult.data.report_text
+  //     showReportDialog.value = true
+  //   } else {
+  //     ElMessage.error('生成报告失败')
+  //   }
+  // } catch (error) {
+  //   ElMessage.error('生成报告失败：' + (error as Error).message)
+  // }
 }
 
 // 下载报告
@@ -1156,5 +1305,52 @@ const resetFilter = () => {
 .download-report-btn:hover {
   background-color: #7a0b0b !important;
   border-color: #7a0b0b !important;
+}
+
+/* 模块选择器样式 */
+.module-selector-content {
+  padding: 10px 0;
+}
+
+.module-option {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.module-option:last-child {
+  border-bottom: none;
+}
+
+.module-label {
+  font-weight: 500;
+  color: #303133;
+  font-size: 14px;
+}
+
+.module-description {
+  margin-left: 0;
+  color: #909399;
+  font-size: 13px;
+}
+
+.figure-api-option {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #fdf6ec;
+  border-radius: 4px;
+}
+
+:deep(.el-checkbox) {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+:deep(.el-checkbox__label) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: normal;
+  line-height: 1.5;
 }
 </style>

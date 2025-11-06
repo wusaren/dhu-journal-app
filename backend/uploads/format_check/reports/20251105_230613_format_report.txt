@@ -1,0 +1,203 @@
+================================================================================
+论文格式检测综合报告
+================================================================================
+生成时间: 2025-11-05 23:06:13
+
+【总体评估】
+总检测项数: 22
+通过项数: 10
+失败项数: 12
+通过率: 45.45%
+
+--------------------------------------------------------------------------------
+【Title 检测报告】
+--------------------------------------------------------------------------------
+
+  [title] ✓ 通过
+    • 标题通过 Title-Case 检查。
+
+  [authors] ✓ 通过
+    • 作者格式检查通过（姓氏全大写 / 英文名首字母大写 / 可含括号中文名）。
+
+  [affiliations] ✓ 通过
+    • 作者引用的单位编号在模板或文档中存在。
+
+  [format] ✗ 失败
+    • 作者格式问题：
+    •   - 字体应为不加粗，实际为加粗
+    • 单位格式问题（第3段）：
+    •   - 字体应为正体，实际为斜体
+    •   - 段后间距应为1.0行，实际为0.5行
+
+  【总结】
+    Overall OK: False
+
+--------------------------------------------------------------------------------
+【Abstract 检测报告】
+--------------------------------------------------------------------------------
+
+  [structure] ✓ 通过
+    • 摘要标题格式正确（Abstract: 格式）
+    • 摘要长度适中
+
+  [paragraphs] ✓ 通过
+    • 摘要内容为单一段落，符合要求
+
+  [format] ✗ 失败
+    • 摘要格式问题：
+    •   - 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+
+  【总结】
+    摘要检查结果: False
+
+--------------------------------------------------------------------------------
+【Keywords 检测报告】
+--------------------------------------------------------------------------------
+
+  [structure] ✓ 通过
+    • 关键词标题格式正确（Keywords: 格式）
+    • 关键词分隔符正确（使用分号分割）
+    • 关键词数量适中（3个关键词）
+    • 关键词内容长度适中
+
+  [paragraphs] ✓ 通过
+    • 找到关键词段落
+
+  [format] ✗ 失败
+    • 关键词格式问题：
+    •   - 字体应为正体，实际为斜体
+    •   - 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+
+  [clc_structure] ✗ 失败
+    • CLC number和Document code格式错误，应为 'CLC number: xxx    Document code: A' 格式
+
+  [clc_format] ✗ 失败
+    • 无法检测CLC和Document code格式
+
+  [footnote_structure] ✗ 失败
+    • Received date格式正确
+    • Foundation item格式正确
+    • Correspondence格式正确
+    • 脚注中未找到citation项目
+
+  [footnote_format] ✓ 通过
+    • 脚注格式检查通过
+
+  【总结】
+    关键词、CLC和脚注检查结果: False
+
+--------------------------------------------------------------------------------
+【Content 检测报告】
+--------------------------------------------------------------------------------
+
+  [hierarchy] ✗ 失败
+    • 发现 7 个使用Word自动编号的标题，应改为文本形式的编号（如 '1 Title'，而非使用Word编号库）
+    •   - 段落 10: 'Calculation method of sound absorption coefficient...'
+    •   - 段落 30: 'Calculating the flow resistance of sound absorbing materials...'
+    •   - 段落 42: 'Theoretical calculation and experimental verification...'
+    •   - 段落 43: 'Experimental measurement of sound absorption coefficient...'
+    •   - 段落 62: 'The theoretical calculation is verified by experiment...'
+    • Introduction标题缺少编号，应为 '0 Introduction'（0后恰好1个空格）
+    • 标题编号不连续或格式错误
+
+  [format] ✗ 失败
+    • 标题格式问题：
+    •   - 标题 'Introduction' 字体大小应为四号（14.0pt），实际为四号（15.0pt）
+    •   - [使用Word自动编号] 标题 'Calculation method of sound absorption coefficient' 字体大小应为四号（14.0pt），实际为小四（12.0pt）
+    •   - [使用Word自动编号] 标题 'Calculating the flow resistance of sound absorbing materials using MATLAB cycles' 字体大小应为四号（14.0pt），实际为小四（12.0pt）
+    •   - [使用Word自动编号] 标题 'Theoretical calculation and experimental verification' 字体大小应为四号（14.0pt），实际为小四（12.0pt）
+    •   - [使用Word自动编号] 标题 'Experimental measurement of sound absorption coefficient' 字体大小应为四号（14.0pt），实际为小四（12.0pt）
+    •   - [使用Word自动编号] 标题 'Experimental measurement of sound absorption coefficient' 段后间距应为1.0行，实际为0.0行
+    •   - [使用Word自动编号] 标题 'The theoretical calculation is verified by experiment' 字体大小应为四号（14.0pt），实际为小四（12.0pt）
+    •   - [使用Word自动编号] 标题 'The theoretical calculation is verified by experiment' 段后间距应为1.0行，实际为0.0行
+    •   - [使用Word自动编号] 标题 'MATLAB inverse flow resistance and porosity of sound absorbing material program' 字体大小应为四号（14.0pt），实际为小五（9.0pt）
+    •   - [使用Word自动编号] 标题 'MATLAB inverse flow resistance and porosity of sound absorbing material program' 应为加粗，实际为不加粗
+    •   - [使用Word自动编号] 标题 'MATLAB inverse flow resistance and porosity of sound absorbing material program' 段前间距应为1.0行，实际为0.0行
+    •   - [使用Word自动编号] 标题 'Conclusions' 字体大小应为四号（14.0pt），实际为小四（12.0pt）
+
+  [case] ✗ 失败
+    • 一级标题大小写错误，实词应首字母大写
+    •   - [使用Word自动编号] 一级标题 'Calculation method of sound absorption coefficient' 大小写不正确，应为 'Calculation Method of Sound Absorption Coefficient'
+    •   - [使用Word自动编号] 一级标题 'Calculating the flow resistance of sound absorbing materials using MATLAB cycles' 大小写不正确，应为 'Calculating the Flow Resistance of Sound Absorbing Materials Using Matlab Cycles'
+    •   - [使用Word自动编号] 一级标题 'Theoretical calculation and experimental verification' 大小写不正确，应为 'Theoretical Calculation and Experimental Verification'
+    •   - [使用Word自动编号] 一级标题 'Experimental measurement of sound absorption coefficient' 大小写不正确，应为 'Experimental Measurement of Sound Absorption Coefficient'
+    •   - [使用Word自动编号] 一级标题 'The theoretical calculation is verified by experiment' 大小写不正确，应为 'The Theoretical Calculation Is Verified by Experiment'
+    •   - [使用Word自动编号] 一级标题 'MATLAB inverse flow resistance and porosity of sound absorbing material program' 大小写不正确，应为 'Matlab Inverse Flow Resistance and Porosity of Sound Absorbing Material Program'
+
+  [content_format] ✗ 失败
+    • 正文内容格式问题：
+    •   - 正文段落 1 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 2 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 3 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 4 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 5 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 6 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 7 应为正体，实际为斜体
+    •   - 正文段落 7 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 8 应为正体，实际为斜体
+    •   - 正文段落 8 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 9 应为正体，实际为斜体
+    •   - 正文段落 9 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 10 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 11 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 12 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 13 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 14 字体大小应为五号（10.5pt），实际为小四（12.0pt）
+    •   - 正文段落 14 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 14 对齐方式应为两端对齐，实际为左对齐
+    •   - 正文段落 15 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 16 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 17 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 18 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 19 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 20 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 21 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 22 字体大小应为五号（10.5pt），实际为小五（9.0pt）
+    •   - 正文段落 22 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 22 对齐方式应为两端对齐，实际为左对齐
+    •   - 正文段落 22 首行缩进应为21.0pt（约2字符），实际为94.5pt
+    •   - 正文段落 23 字体大小应为五号（10.5pt），实际为小五（9.0pt）
+    •   - 正文段落 23 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 23 首行缩进应为21.0pt（约2字符），实际为94.5pt
+    •   - 正文段落 24 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 25 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 26 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+    •   - 正文段落 27 行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）
+
+  【总结】
+    正文格式检查结果: False
+
+--------------------------------------------------------------------------------
+【Formula 检测报告】
+--------------------------------------------------------------------------------
+
+  [formula_detection] ✗ 失败
+    • 公式检测过程中发生异常: <docx.text.paragraph.Paragraph object at 0x00000169CCD42C90> is not in list
+
+  【总结】
+    检查失败: <docx.text.paragraph.Paragraph object at 0x00000169CCD42C90> is not in list
+
+--------------------------------------------------------------------------------
+【Figure 检测报告】
+--------------------------------------------------------------------------------
+
+  [overall] ✗ 失败
+
+  [numbering] ✓ 通过
+
+  【总结】
+    figure_count
+
+--------------------------------------------------------------------------------
+【Table 检测报告】
+--------------------------------------------------------------------------------
+
+  [numbering] ✓ 通过
+
+  【总结】
+    表格格式检查结果: 通过
+    检测到 0 个表格
+
+================================================================================
+报告结束
+================================================================================
