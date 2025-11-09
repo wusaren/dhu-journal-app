@@ -63,6 +63,21 @@ export interface ColumnConfig {
     order: number
 }
 
+export interface HeaderMapping {
+    template_header: string
+    system_key: string | null
+    system_label: string | null
+    order: number
+    is_custom: boolean
+    matched: boolean
+}
+
+export interface SystemField {
+    key: string
+    label: string
+    keywords: string[]
+}
+
 class JournalService {
     /**
      * 获取期刊列表
@@ -171,6 +186,54 @@ class JournalService {
         link.href = `/api/download/${filename}`
         link.download = filename
         link.click()
+    }
+
+    /**
+     * 上传模板文件
+     */
+    async uploadTemplate(journalId: number, formData: FormData): Promise<ApiResponse<{ headers: HeaderMapping[]; template_id: number }>> {
+        return await apiClient.post(`/journal/${journalId}/template`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    }
+
+    /**
+     * 获取模板表头
+     */
+    async getTemplateHeaders(journalId: number): Promise<ApiResponse<{ headers: HeaderMapping[]; template_file_path?: string; has_template: boolean }>> {
+        return await apiClient.get(`/journal/${journalId}/template/headers`)
+    }
+
+    /**
+     * 保存表头映射配置
+     */
+    async saveTemplateMapping(journalId: number, columnMapping: HeaderMapping[]): Promise<ApiResponse<void>> {
+        return await apiClient.put(`/journal/${journalId}/template/mapping`, {
+            column_mapping: columnMapping
+        })
+    }
+
+    /**
+     * 获取模板配置
+     */
+    async getTemplate(journalId: number): Promise<ApiResponse<{ template: any; has_template: boolean }>> {
+        return await apiClient.get(`/journal/${journalId}/template`)
+    }
+
+    /**
+     * 获取可用系统字段
+     */
+    async getSystemFields(): Promise<ApiResponse<{ fields: SystemField[] }>> {
+        return await apiClient.get('/template/system-fields')
+    }
+
+    /**
+     * 删除模板
+     */
+    async deleteTemplate(journalId: number): Promise<ApiResponse<void>> {
+        return await apiClient.delete(`/journal/${journalId}/template`)
     }
 }
 

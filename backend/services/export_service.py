@@ -2,8 +2,8 @@
 导出服务
 从 app.py 中提取导出相关业务逻辑，保持完全兼容
 """
-from models import Journal, Paper
-from services.document_generator import generate_toc_docx, generate_excel_stats, generate_tuiwen_content
+from models import Journal, Paper, JournalTemplate
+from services.document_generator import generate_toc_docx, generate_excel_stats, generate_excel_stats_from_template, generate_tuiwen_content
 import os
 import logging
 
@@ -78,14 +78,18 @@ class ExportService:
     
     def export_excel(self, journal_id, columns_config=None):
         """
-        生成统计表 - 支持自定义列配置
+        生成统计表 - 支持自定义列配置和模板生成
         columns_config: 列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
+                       如果期刊有模板，此参数会被忽略，使用模板配置
         """
         try:
             # 获取期刊信息
             journal = Journal.query.get(journal_id)
             if not journal:
                 return {'success': False, 'message': '期刊不存在', 'status_code': 404}
+            
+            # 检查是否有模板
+            template = JournalTemplate.query.filter_by(journal_id=journal_id).first()
             
             # 获取论文信息，按页码排序
             papers = Paper.query.filter_by(journal_id=journal_id).order_by(Paper.page_start).all()
@@ -116,8 +120,19 @@ class ExportService:
                 }
                 articles.append(article)
             
-            # 生成统计表Excel（传递列配置）
-            output_path = generate_excel_stats(articles, journal, columns_config)
+            # 如果有模板，使用模板生成
+            if template and template.template_file_path and template.column_mapping:
+                logger.info(f"使用模板生成统计表: {template.template_file_path}")
+                output_path = generate_excel_stats_from_template(
+                    articles, 
+                    journal, 
+                    template.template_file_path, 
+                    template.column_mapping
+                )
+            else:
+                # 否则使用原来的逻辑
+                logger.info("使用默认方式生成统计表")
+                output_path = generate_excel_stats(articles, journal, columns_config)
             
             return {
                 'success': True,

@@ -10,7 +10,7 @@ import bcrypt
 
 # 导入配置和模型
 from config import current_config
-from models import User, Journal, Paper, FileUpload, db
+from models import User, Journal, Paper, FileUpload, JournalTemplate, db
 
 # 导入封装后的模块
 from services.auth_service import AuthService
@@ -307,6 +307,10 @@ def export_excel():
     except Exception as e:
         logger.error(f"统计表生成错误: {str(e)}")
         return jsonify({'message': f'统计表生成失败: {str(e)}'}), 500
+
+# 注册Blueprint
+from blueprints.templates import templates_bp
+app.register_blueprint(templates_bp)
 
 # 获取论文列表
 @app.route('/api/papers', methods=['GET'])

@@ -2,13 +2,14 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Dict
 import logging
 
 from docx import Document
 from docx.shared import Pt
 from docx.oxml.ns import qn
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
 logger = logging.getLogger(__name__)
 
@@ -134,11 +135,6 @@ def generate_excel_stats(articles, journal, columns_config=None) -> str:
         ws = wb.active
         ws.title = '期刊统计表'
         
-        # 添加期刊信息标题
-        ws.cell(row=1, column=1, value=f"{journal.title} - {journal.issue}")
-        ws.cell(row=2, column=1, value=f"论文总数: {len(articles)}")
-        ws.cell(row=3, column=1, value="")  # 空行
-        
         # 如果没有提供列配置，使用默认配置
         if not columns_config:
             columns_config = [
@@ -221,10 +217,82 @@ def generate_excel_stats(articles, journal, columns_config=None) -> str:
                 })
         
         headers = [col['label'] for col in valid_columns]
-        ws.append(headers)
         
-        # 添加所有论文数据
-        r = 5  # 从第5行开始（前面有标题）
+        # 应用表头样式（使用用户上传的模板文件作为默认格式）
+        header_style = None
+        template_path = r'C:\Users\57189\Desktop\论文检测系统\附件3-稿件信息清单.xlsx'
+        
+        try:
+            if os.path.exists(template_path):
+                template_wb = load_workbook(template_path)
+                template_ws = template_wb.active
+                # 找到第一个有内容的行作为表头
+                for row_idx in range(1, min(10, template_ws.max_row + 1)):
+                    if any(cell.value for cell in template_ws[row_idx]):
+                        # 使用第一个表头单元格的样式作为参考
+                        template_header_cell = template_ws[row_idx][0]
+                        # 创建新的样式对象（不能直接复制）
+                        header_style = {
+                            'font': Font(
+                                name=template_header_cell.font.name if template_header_cell.font else '宋体',
+                                size=template_header_cell.font.size if template_header_cell.font else 11,
+                                bold=template_header_cell.font.bold if template_header_cell.font else True,
+                                color=template_header_cell.font.color if template_header_cell.font else '000000'
+                            ),
+                            'fill': PatternFill(
+                                start_color=template_header_cell.fill.fgColor.rgb if template_header_cell.fill and template_header_cell.fill.fgColor and hasattr(template_header_cell.fill.fgColor, 'rgb') else 'D3D3D3',
+                                end_color=template_header_cell.fill.bgColor.rgb if template_header_cell.fill and template_header_cell.fill.bgColor and hasattr(template_header_cell.fill.bgColor, 'rgb') else 'D3D3D3',
+                                fill_type=template_header_cell.fill.patternType if template_header_cell.fill else 'solid'
+                            ) if template_header_cell.fill else None,
+                            'alignment': Alignment(
+                                horizontal=template_header_cell.alignment.horizontal if template_header_cell.alignment else 'center',
+                                vertical=template_header_cell.alignment.vertical if template_header_cell.alignment else 'center'
+                            ) if template_header_cell.alignment else None,
+                            'border': template_header_cell.border if template_header_cell.border else None
+                        }
+                        logger.info(f"成功读取默认模板文件样式: {template_path}")
+                        break
+                template_wb.close()
+        except Exception as e:
+            logger.warning(f"无法读取默认模板文件样式 {template_path}: {str(e)}")
+        
+        # 如果没有读取到样式，使用默认的表头样式
+        if not header_style:
+            header_style = {
+                'font': Font(name='宋体', size=11, bold=True, color='000000'),
+                'fill': PatternFill(start_color='D3D3D3', end_color='D3D3D3', fill_type='solid'),
+                'alignment': Alignment(horizontal='center', vertical='center'),
+                'border': Border(
+                    left=Side(style='thin'),
+                    right=Side(style='thin'),
+                    top=Side(style='thin'),
+                    bottom=Side(style='thin')
+                )
+            }
+        
+        # 写入表头并应用样式
+        for col_idx, header in enumerate(headers, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            try:
+                if header_style.get('font'):
+                    cell.font = header_style['font']
+                if header_style.get('fill'):
+                    cell.fill = header_style['fill']
+                if header_style.get('alignment'):
+                    cell.alignment = header_style['alignment']
+                if header_style.get('border'):
+                    cell.border = header_style['border']
+            except Exception as e:
+                logger.warning(f"应用表头样式失败: {str(e)}")
+                # 如果应用样式失败，至少应用基本样式
+                try:
+                    cell.font = Font(name='宋体', size=11, bold=True)
+                    cell.alignment = Alignment(horizontal='center', vertical='center')
+                except Exception as e2:
+                    logger.warning(f"应用基本样式也失败: {str(e2)}")
+        
+        # 添加所有论文数据（从第2行开始，数据行不应用表头样式）
+        r = 2  # 从第2行开始（第1行是表头）
         for a in articles:
             col_idx = 1
             for col in valid_columns:
@@ -258,6 +326,111 @@ def generate_excel_stats(articles, journal, columns_config=None) -> str:
     except Exception as e:
         logger.error(f"生成统计表Excel失败: {str(e)}")
         raise Exception(f"生成统计表Excel失败: {str(e)}")
+
+def generate_excel_stats_from_template(articles, journal, template_file_path: str, column_mapping: List[Dict]) -> str:
+    """
+    基于模板生成统计表Excel
+    
+    Args:
+        articles: 论文列表
+        journal: 期刊对象
+        template_file_path: 模板文件路径
+        column_mapping: 表头映射配置，格式：
+            [
+                {'template_header': '稿件号', 'system_key': 'manuscript_id', 'order': 1, 'is_custom': False},
+                ...
+            ]
+    """
+    try:
+        from services.template_service import copy_cell_style
+        
+        # 加载模板文件
+        wb = load_workbook(template_file_path)
+        ws = wb.active
+        
+        # 定义所有可用列的映射（key -> 数据获取函数）
+        column_definitions = {
+            'manuscript_id': lambda a: _get(a, 'manuscript_id') or '',
+            'pdf_pages': lambda a: _get(a, 'pdf_pages') or 0,
+            'first_author': lambda a: _get(a, 'first_author') or '',
+            'corresponding': lambda a: _get(a, 'corresponding') or '',
+            'authors': lambda a: _get(a, 'authors') or '',
+            'issue': lambda a: _get(a, 'issue') or '',
+            'is_dhu': lambda a: '是' if _get(a, 'is_dhu') else '否',
+            'title': lambda a: _get(a, 'title') or '',
+            'chinese_title': lambda a: _get(a, 'chinese_title') or '',
+            'chinese_authors': lambda a: _get(a, 'chinese_authors') or '',
+            'doi': lambda a: _get(a, 'doi') or '',
+            'page_start': lambda a: _get(a, 'page_start') or '',
+            'page_end': lambda a: _get(a, 'page_end') or '',
+        }
+        
+        # 按order排序
+        column_mapping = sorted(column_mapping, key=lambda x: x.get('order', 999))
+        
+        # 找到表头行（假设第一行是表头，如果第一行是空的，尝试第二行）
+        header_row = 1
+        for row_idx in range(1, min(10, ws.max_row + 1)):
+            if any(cell.value for cell in ws[row_idx]):
+                header_row = row_idx
+                break
+        
+        logger.info(f"模板表头行: {header_row}")
+        
+        # 构建列索引映射：template_header -> column_index
+        header_to_col = {}
+        for col_idx, cell in enumerate(ws[header_row], start=1):
+            header_text = str(cell.value).strip() if cell.value else ''
+            if header_text:
+                header_to_col[header_text] = col_idx
+        
+        # 确定数据起始行（表头行+1）
+        data_start_row = header_row + 1
+        
+        # 如果模板中已有数据行，先删除（保留表头）
+        if ws.max_row >= data_start_row:
+            ws.delete_rows(data_start_row, ws.max_row - data_start_row + 1)
+        
+        # 填充数据
+        for article_idx, article in enumerate(articles, start=0):
+            row_num = data_start_row + article_idx
+            
+            for mapping in column_mapping:
+                template_header = mapping.get('template_header')
+                system_key = mapping.get('system_key')
+                col_idx = header_to_col.get(template_header)
+                
+                if col_idx:
+                    # 获取单元格
+                    cell = ws.cell(row=row_num, column=col_idx)
+                    
+                    # 如果是系统字段，填充数据
+                    if system_key and system_key in column_definitions:
+                        value = column_definitions[system_key](article)
+                        cell.value = value
+                    elif mapping.get('is_custom', False):
+                        # 自定义字段，留空
+                        cell.value = ''
+                    
+                    # 数据行保持默认格式，不复制表头样式
+        
+        # 保存文件
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"统计表_{journal.issue}_{timestamp}.xlsx"
+        output_path = os.path.join('uploads', filename)
+        
+        os.makedirs('uploads', exist_ok=True)
+        wb.save(output_path)
+        
+        logger.info(f"基于模板生成统计表: {output_path}")
+        logger.info(f"使用的列映射: {len(column_mapping)} 列")
+        
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"基于模板生成统计表Excel失败: {str(e)}")
+        raise Exception(f"基于模板生成统计表Excel失败: {str(e)}")
+
 def get_local_image_path(image_path: str, temp_dir: str) -> Optional[str]:
     """
     获取本地图片路径，如果图片存在则返回路径，否则返回None

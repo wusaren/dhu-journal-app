@@ -83,6 +83,13 @@
             >
               查看统计表
             </el-button>
+            <el-button 
+              class="template-btn"
+              size="small" 
+              @click="handleUploadTemplate(scope.row)"
+            >
+              模板配置
+            </el-button>
             <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
               删除
             </el-button>
@@ -126,10 +133,11 @@
       </div>
     </el-card>
 
-    <!-- 列配置对话框 -->
-    <ColumnConfigDialog
-      v-model="showColumnConfig"
-      @confirm="handleColumnConfigConfirm"
+    <!-- 模板配置对话框 -->
+    <TemplateConfigDialog
+      v-model="showTemplateConfig"
+      :journal="currentJournalForTemplate"
+      @saved="handleTemplateSaved"
     />
   </div>
 </template>
@@ -139,8 +147,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useJournalStore } from '@/stores/journalStore'
-import type { Journal, ColumnConfig } from '@/api/journalService'
-import ColumnConfigDialog from '@/components/ColumnConfigDialog.vue'
+import type { Journal } from '@/api/journalService'
+import TemplateConfigDialog from '@/components/TemplateConfigDialog.vue'
 
 const router = useRouter()
 const journalStore = useJournalStore()
@@ -348,33 +356,31 @@ const handleGenerateWeibo = async (journal: Journal) => {
 }
 
 // 列配置相关状态
-const showColumnConfig = ref(false)
-const currentJournalForStats = ref<Journal | null>(null)
+const showTemplateConfig = ref(false)
+const currentJournalForTemplate = ref<Journal | null>(null)
 
+// 查看统计表：直接生成（有模板用模板，没有模板用默认）
 const handleViewStats = async (journal: Journal) => {
-  // 打开列配置对话框
-  currentJournalForStats.value = journal
-  showColumnConfig.value = true
-}
-
-// 确认列配置后生成统计表
-const handleColumnConfigConfirm = async (columns: ColumnConfig[]) => {
-  if (!currentJournalForStats.value) {
-    return
-  }
-  
   try {
     await journalStore.generateStats(
-      currentJournalForStats.value.id, 
-      currentJournalForStats.value.issue,
-      columns
+      journal.id, 
+      journal.issue
     )
-    // 重置状态
-    currentJournalForStats.value = null
   } catch (error: any) {
     console.error('生成统计表失败:', error)
     ElMessage.error(error.message)
   }
+}
+
+// 处理上传模板
+const handleUploadTemplate = (journal: Journal) => {
+  currentJournalForTemplate.value = journal
+  showTemplateConfig.value = true
+}
+
+// 模板保存后的回调
+const handleTemplateSaved = () => {
+  ElMessage.success('模板配置已保存')
 }
 
 const handleDelete = async (journal: Journal) => {
@@ -559,6 +565,19 @@ const handleDelete = async (journal: Journal) => {
   border-color: #3f4041ff !important;
   color: #7a7d80ff !important;
 }
+
+/* 模板配置按钮自定义样式 */
+.template-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+.template-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
 /* 筛选区域样式 */
 .filter-card {
   margin-bottom: 20px;

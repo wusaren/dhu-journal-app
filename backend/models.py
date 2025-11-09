@@ -149,3 +149,27 @@ class FileUpload(db.Model):
     upload_status = db.Column(db.Enum('uploading', 'processing', 'completed', 'failed'), default='uploading')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class JournalTemplate(db.Model):
+    """期刊统计表模板表"""
+    __tablename__ = 'journal_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'), nullable=False, unique=True)
+    template_file_path = db.Column(db.String(500))  # 模板文件路径
+    column_mapping = db.Column(db.JSON)  # 表头映射配置
+    # 格式示例：
+    # [
+    #   {'template_header': '稿件号', 'system_key': 'manuscript_id', 'order': 1, 'is_custom': False},
+    #   {'template_header': '标题', 'system_key': 'title', 'order': 2, 'is_custom': False},
+    #   {'template_header': '备注', 'system_key': None, 'order': 3, 'is_custom': True}
+    # ]
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关系
+    journal = db.relationship('Journal', backref=db.backref('template', uselist=False))
+    
+    __table_args__ = (
+        db.Index('idx_journal_id', 'journal_id'),
+    )
