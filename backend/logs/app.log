@@ -14436,3 +14436,5 @@
 2025-11-11 15:27:37,375 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:27:37] "GET /api/journals HTTP/1.1" 200 -
 2025-11-11 15:27:40,160 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:27:40] "GET /api/journals HTTP/1.1" 200 -
 2025-11-11 15:27:41,295 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:27:41] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-11 15:50:20,573 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_format_detector.py', reloading
+2025-11-11 15:50:20,755 - werkzeug - INFO -  * Restarting with stat
