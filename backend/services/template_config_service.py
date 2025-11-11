@@ -1,0 +1,190 @@
+"""
+模板配置服务 - 使用 JSON 文件存储每个期刊的模板配置
+"""
+import os
+import json
+import logging
+import shutil
+from typing import List, Dict, Optional
+from pathlib import Path
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+# 配置存储目录（相对于 backend 目录）
+CONFIG_DIR = Path(__file__).parent.parent / 'configs'
+TEMPLATE_DIR = CONFIG_DIR / 'templates'
+CONFIG_DIR.mkdir(exist_ok=True)
+TEMPLATE_DIR.mkdir(exist_ok=True)
+
+class TemplateConfigService:
+    """模板配置服务类"""
+    
+    def get_config_file_path(self, journal_id: int) -> Path:
+        """获取配置文件的路径"""
+        return CONFIG_DIR / f"journal_{journal_id}_template.json"
+    
+    def get_template_file_path(self, journal_id: int, filename: str) -> Path:
+        """获取模板文件的路径"""
+        return TEMPLATE_DIR / f"journal_{journal_id}_{filename}"
+    
+    def save_template(self, journal_id: int, template_file_path: str, column_mapping: List[Dict]) -> Dict:
+        """
+        保存模板配置到 JSON 文件，并复制模板文件到配置目录
+        
+        Args:
+            journal_id: 期刊ID
+            template_file_path: 上传的模板文件路径（临时路径）
+            column_mapping: 列映射配置，格式: [
+                {'template_header': '稿件号', 'system_key': 'manuscript_id', 'order': 1, 'is_custom': False},
+                ...
+            ]
+        
+        Returns:
+            {'success': True/False, 'message': '...', 'template_file_path': '...'}
+        """
+        try:
+            config_file = self.get_config_file_path(journal_id)
+            
+            # 复制模板文件到配置目录
+            source_path = Path(template_file_path)
+            if not source_path.exists():
+                return {
+                    'success': False,
+                    'message': f'模板文件不存在: {template_file_path}'
+                }
+            
+            # 生成目标文件名
+            target_filename = f"template_{journal_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{source_path.suffix}"
+            target_path = self.get_template_file_path(journal_id, target_filename)
+            
+            # 复制文件
+            shutil.copy2(source_path, target_path)
+            logger.info(f"已复制模板文件: {source_path} -> {target_path}")
+            
+            # 准备保存的数据
+            config_data = {
+                'journal_id': journal_id,
+                'template_file_path': str(target_path),
+                'column_mapping': column_mapping,
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            # 保存到 JSON 文件
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, ensure_ascii=False, indent=2)
+            
+            logger.info(f"已保存期刊 {journal_id} 的模板配置到 {config_file}")
+            return {
+                'success': True,
+                'message': '模板配置保存成功',
+                'template_file_path': str(target_path)
+            }
+        
+        except Exception as e:
+            logger.error(f"保存模板配置失败: {str(e)}")
+            return {
+                'success': False,
+                'message': f'保存配置失败: {str(e)}'
+            }
+    
+    def load_config(self, journal_id: int) -> Optional[Dict]:
+        """
+        从 JSON 文件加载期刊的模板配置
+        
+        Args:
+            journal_id: 期刊ID
+        
+        Returns:
+            配置字典，如果文件不存在则返回 None
+        """
+        try:
+            config_file = self.get_config_file_path(journal_id)
+            
+            if not config_file.exists():
+                logger.info(f"期刊 {journal_id} 的配置文件不存在: {config_file}")
+                return None
+            
+            # 读取 JSON 文件
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+            
+            # 检查模板文件是否存在
+            template_file_path = config_data.get('template_file_path')
+            if template_file_path and not Path(template_file_path).exists():
+                logger.warning(f"模板文件不存在: {template_file_path}")
+                return None
+            
+            logger.info(f"已加载期刊 {journal_id} 的模板配置")
+            return config_data
+        
+        except Exception as e:
+            logger.error(f"加载模板配置失败: {str(e)}")
+            return None
+    
+    def delete_config(self, journal_id: int) -> Dict:
+        """
+        删除期刊的模板配置文件和模板文件
+        
+        Args:
+            journal_id: 期刊ID
+        
+        Returns:
+            {'success': True/False, 'message': '...'}
+        """
+        try:
+            config_file = self.get_config_file_path(journal_id)
+            
+            if not config_file.exists():
+                return {
+                    'success': False,
+                    'message': '配置文件不存在'
+                }
+            
+            # 读取配置，删除模板文件
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                
+                template_file_path = config_data.get('template_file_path')
+                if template_file_path and Path(template_file_path).exists():
+                    Path(template_file_path).unlink()
+                    logger.info(f"已删除模板文件: {template_file_path}")
+            except Exception as e:
+                logger.warning(f"删除模板文件时出错: {str(e)}")
+            
+            # 删除配置文件
+            config_file.unlink()
+            logger.info(f"已删除期刊 {journal_id} 的配置文件: {config_file}")
+            return {
+                'success': True,
+                'message': '模板配置删除成功'
+            }
+        
+        except Exception as e:
+            logger.error(f"删除模板配置失败: {str(e)}")
+            return {
+                'success': False,
+                'message': f'删除配置失败: {str(e)}'
+            }
+    
+    def has_config(self, journal_id: int) -> bool:
+        """
+        检查期刊是否有保存的模板配置
+        
+        Args:
+            journal_id: 期刊ID
+        
+        Returns:
+            True 如果有配置，False 如果没有
+        """
+        config_file = self.get_config_file_path(journal_id)
+        if not config_file.exists():
+            return False
+        
+        # 检查配置是否有效（模板文件是否存在）
+        config = self.load_config(journal_id)
+        return config is not None
+
+

@@ -168,10 +168,11 @@ export const useJournalStore = defineStore('journal', () => {
         }
     }
 
-    const generateStats = async (journalId: number, journalIssue: string, columns?: any[]) => {
+    const generateStats = async (journalId: number, journalIssue: string) => {
         try {
             ElMessage.info(`正在生成统计表: ${journalIssue}`)
-            const response = await journalService.generateStats(journalId, columns)
+            // 不传 columns 参数，让后端自动判断：有模板配置就用模板，没有就用默认配置
+            const response = await journalService.generateStats(journalId)
 
             if (response.downloadUrl) {
                 // 强制弹出下载地址选择窗口

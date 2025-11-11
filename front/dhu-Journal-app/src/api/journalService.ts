@@ -164,6 +164,106 @@ class JournalService {
     }
 
     /**
+     * 保存列配置到 JSON 文件
+     */
+    async saveColumnConfig(journalId: number, columns: ColumnConfig[]): Promise<ApiResponse<void>> {
+        return await apiClient.post('/export/columns/config', {
+            journalId,
+            columns
+        })
+    }
+
+    /**
+     * 从 JSON 文件加载列配置
+     */
+    async getColumnConfig(journalId: number): Promise<{ success: boolean; has_config: boolean; columns: ColumnConfig[] | null }> {
+        return await apiClient.get(`/export/columns/config/${journalId}`)
+    }
+
+    /**
+     * 上传Excel模板文件
+     */
+    async uploadTemplate(journalId: number, formData: FormData): Promise<any> {
+        return await apiClient.post(`/journal/${journalId}/template`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    }
+
+    /**
+     * 获取模板表头识别结果
+     */
+    async getTemplateHeaders(journalId: number): Promise<{ success: boolean; has_template: boolean; headers: any[]; template_file_path?: string }> {
+        return await apiClient.get(`/journal/${journalId}/template/headers`)
+    }
+
+    /**
+     * 保存模板映射配置
+     */
+    async saveTemplateMapping(journalId: number, templateFilePath: string, columnMapping: any[]): Promise<ApiResponse<void>> {
+        return await apiClient.put(`/journal/${journalId}/template/mapping`, {
+            template_file_path: templateFilePath,
+            column_mapping: columnMapping
+        })
+    }
+
+    /**
+     * 获取模板配置
+     */
+    async getTemplate(journalId: number): Promise<any> {
+        return await apiClient.get(`/journal/${journalId}/template`)
+    }
+
+    /**
+     * 删除模板
+     */
+    async deleteTemplate(journalId: number): Promise<ApiResponse<void>> {
+        return await apiClient.delete(`/journal/${journalId}/template`)
+    }
+
+    /**
+     * 获取系统字段列表
+     */
+    async getSystemFields(): Promise<{ success: boolean; fields: Array<{ key: string; label: string; keywords: string[] }> }> {
+        return await apiClient.get('/template/system-fields')
+    }
+
+    /**
+     * 上传推文模板文件
+     */
+    async uploadTuiwenTemplate(journalId: number, formData: FormData): Promise<any> {
+        return await apiClient.post(`/journal/${journalId}/tuiwen-template`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    }
+
+    /**
+     * 保存推文模板字段配置
+     */
+    async saveTuiwenTemplateConfig(journalId: number, fields: Array<{ key: string; label: string; order: number }>): Promise<ApiResponse<void>> {
+        return await apiClient.put(`/journal/${journalId}/tuiwen-template`, {
+            fields
+        })
+    }
+
+    /**
+     * 获取推文模板配置
+     */
+    async getTuiwenTemplate(journalId: number): Promise<{ success: boolean; has_template: boolean; template_file_path?: string }> {
+        return await apiClient.get(`/journal/${journalId}/tuiwen-template`)
+    }
+
+    /**
+     * 删除推文模板
+     */
+    async deleteTuiwenTemplate(journalId: number): Promise<ApiResponse<void>> {
+        return await apiClient.delete(`/journal/${journalId}/tuiwen-template`)
+    }
+
+    /**
      * 下载文件
      */
     async downloadFile(filename: string): Promise<void> {

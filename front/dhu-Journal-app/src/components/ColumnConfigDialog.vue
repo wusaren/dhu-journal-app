@@ -101,6 +101,7 @@ import { journalService, type ColumnDefinition, type ColumnConfig } from '@/api/
 
 const props = defineProps<{
   modelValue: boolean
+  journalId?: number
 }>()
 
 const emit = defineEmits<{
@@ -143,16 +144,42 @@ const isSelected = (col: ColumnDefinition) => {
   return selectedColumns.value.some(sc => sc.key === col.key)
 }
 
-// 加载可用列
+// 加载可用列和已保存的配置
 const loadColumns = async () => {
   try {
+    // 加载可用列
     const res = await journalService.getAvailableColumns()
     if (res.success) {
       availableColumns.value = res.columns
-      // 如果没有已选列，初始化默认配置
-      if (selectedColumns.value.length === 0) {
-        resetToDefault()
+    }
+    
+    // 如果有期刊ID，尝试加载已保存的配置
+    if (props.journalId) {
+      try {
+        const configRes = await journalService.getColumnConfig(props.journalId)
+        if (configRes.success && configRes.has_config && configRes.columns) {
+          // 加载已保存的配置
+          selectedColumns.value = configRes.columns.map(col => {
+            const colDef = availableColumns.value.find(ac => ac.key === col.key)
+            return {
+              key: col.key,
+              label: colDef?.label || col.key,
+              order: col.order
+            }
+          })
+          updateOrders()
+          ElMessage.success('已加载保存的配置')
+          return
+        }
+      } catch (error) {
+        console.warn('加载已保存配置失败:', error)
+        // 如果加载失败，继续使用默认配置
       }
+    }
+    
+    // 如果没有已选列，初始化默认配置
+    if (selectedColumns.value.length === 0) {
+      resetToDefault()
     }
   } catch (error) {
     console.error('加载可用列失败:', error)
@@ -271,6 +298,9 @@ const handleConfirm = () => {
 
 // 关闭
 const handleClose = () => {
+  // 重置状态
+  selectedColumns.value = []
+  searchText.value = ''
   dialogVisible.value = false
 }
 
