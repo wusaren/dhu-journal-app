@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-
+import secrets
 # 加载环境变量
 load_dotenv()
 
@@ -8,8 +8,8 @@ class Config:
     """应用配置类"""
     
     # Flask配置
-    SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
-    
+    SECRET_KEY = os.getenv('SECRET_KEY', secrets.token_urlsafe(32))
+    SECURITY_PASSWORD_SALT=os.getenv('SECURITY_PASSWORD_SALT',secrets.SystemRandom().getrandbits(128))
     # 数据库配置 - 使用MySQL
     DB_TYPE = os.getenv('DB_TYPE', 'sqlite')  # sqlite 或 mysql
     

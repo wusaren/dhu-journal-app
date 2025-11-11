@@ -9,7 +9,7 @@ import logging
 import bcrypt
 
 # 导入配置和模型
-from config import current_config
+from backend.config.config import current_config
 from models import User, Journal, Paper, FileUpload, db
 
 app = Flask(__name__)

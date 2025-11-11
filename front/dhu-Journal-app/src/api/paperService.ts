@@ -48,12 +48,12 @@ export interface FilterForm {
 export const paperService = {
     // 获取所有论文
     async getPapers(): Promise<Paper[]> {
-        return await apiClient.get('/papers')
+        return await apiClient.get('/api/papers')
     },
 
     // 删除论文
     async deletePaper(paperId: number): Promise<DeleteResponse> {
-        return await apiClient.delete(`/papers/${paperId}`)
+        return await apiClient.delete(`/api/papers/${paperId}`)
     },
 
     // 上传论文
@@ -62,7 +62,7 @@ export const paperService = {
         formData.append('file', file)
         formData.append('journalId', journalId)
 
-        return await apiClient.post('/upload', formData, {
+        return await apiClient.post('/api/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -76,7 +76,7 @@ export const paperService = {
         formData.append('journalId', journalId)
         formData.append('overwritePaperId', overwritePaperId.toString())
 
-        return await apiClient.post('/upload/overwrite', formData, {
+        return await apiClient.post('/api/upload/overwrite', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

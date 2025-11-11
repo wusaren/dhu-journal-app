@@ -3,19 +3,27 @@ import { ElMessage } from 'element-plus'
 
 // 创建axios实例
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
   timeout: 100000,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true  // 允许发送和接收cookies
 })
 
-// 请求拦截器
+// 请求拦截器 - 添加认证信息
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    // 检查用户是否已登录，添加必要的认证信息
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        // 对于session认证，确保withCredentials为true
+        config.withCredentials = true
+      } catch {
+        // 忽略解析错误
+      }
     }
     return config
   },
@@ -52,9 +60,9 @@ apiClient.interceptors.response.use(
           ElMessage.error('登录已过期，请重新登录')
           window.location.href = '/login'
           throw new Error('登录已过期')
-        case 403:
-          ElMessage.error('权限不足')
-          throw new Error('权限不足')
+        // case 403:
+        //   ElMessage.error('权限不足')
+        //   throw new Error('权限不足')
         case 404:
           ElMessage.error('请求的资源不存在')
           throw new Error('资源不存在')
@@ -63,7 +71,7 @@ apiClient.interceptors.response.use(
           throw new Error('服务器错误')
         case 400:
           // 对于400错误，抛出包含完整响应数据的错误
-          const error400 = new Error(message)
+          const error400 = new Error(message) as any
           error400.response = error.response || {}
           error400.response.data = error.response.data || {}
           error400.response.data.message = message

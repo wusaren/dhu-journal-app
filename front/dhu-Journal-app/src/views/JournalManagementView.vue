@@ -59,10 +59,10 @@
             {{ scope.row.paperCount }} 篇
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="500">
+        <el-table-column label="操作" width="600">
           <template #default="scope">
             <el-button class="edit-btn" size="small" type="primary" @click="handleEdit(scope.row)">
-              编辑
+              预览内容
             </el-button>
             <el-button class="view-btn" size="small" @click="handleViewTOC(scope.row)">
               查看目录
@@ -76,14 +76,22 @@
               生成推文
             </el-button>
             <el-button 
-              class="stats-btn"
+              class="excel-btn"
               size="small" 
               type="success"
               @click="handleViewStats(scope.row)"
             >
               查看统计表
             </el-button>
-            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
+            <el-button 
+              class="distribute-btn"
+              size="small"
+              v-if="IsManaging"
+              @click="handleDistribute(scope.row)"
+            >
+              分配任务
+            </el-button>
+            <el-button v-if="IsManaging" class="delete-btn" size="small" @click="handleDelete(scope.row)"> 
               删除
             </el-button>
           </template>
@@ -125,18 +133,61 @@
         <p>点击"创建期刊"按钮来添加新的期刊记录</p>
       </div>
     </el-card>
+
+    <!-- 分配任务对话框 -->
+    <el-dialog
+      v-model="showDistributeDialog"
+      title="分配任务 - 选择编辑"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <div>
+        <el-form label-position="top">
+          <el-form-item label="选择编辑">
+            <el-select
+              v-model="selectedAssignee"
+              placeholder="请选择编辑"
+              :loading="loadingEditors"
+              filterable
+              clearable
+            >
+              <el-option
+                v-for="u in editorUsers"
+                :key="u.id"
+                :label="u.username + (u.email ? ' <' + u.email + '>' : '')"
+                :value="u.id"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <el-button @click="showDistributeDialog = false">取消</el-button>
+        <el-button class="assgin-btn" type="primary" :loading="assigning" @click="confirmDistribute">确认分配</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useJournalStore } from '@/stores/journalStore'
 import type { Journal } from '@/api/journalService'
-
+import { journalService } from '@/api/journalService'   // <- 使用封装的服务
+import apiClient from '@/api/axios'
+ 
 const router = useRouter()
 const journalStore = useJournalStore()
+
+const currentUser = ref<any>(null)
+
+// 检查是否为总编角色
+const IsManaging = computed(() => {
+  return currentUser.value?.role === 'managing_editor' || currentUser.value?.roles?.includes('managing_editor')
+})
 
 // 使用store中的状态和计算属性
 const filterForm = computed(() => journalStore.filterForm)
@@ -154,6 +205,14 @@ const pagedJournalList = computed(() => journalStore.pagedJournalList)
 const totalJournals = computed(() => journalStore.totalJournals)
 const journalList = computed(() => journalStore.journalList)
 const filteredJournalList = computed(() => journalStore.filteredJournalList)
+
+// 新增：分配任务相关状态
+const showDistributeDialog = ref(false)
+const editorUsers = ref<Array<{ id: number; username: string; email?: string }>>([])
+const loadingEditors = ref(false)
+const selectedAssignee = ref<number | null>(null)
+const assigning = ref(false)
+const currentJournalForAssign = ref<Journal | null>(null)
 
 // 处理筛选
 const handleFilter = () => {
@@ -349,6 +408,59 @@ const handleViewStats = async (journal: Journal) => {
   }
 }
 
+// 点击分配按钮时打开对话框并加载 role=editor 的用户
+const handleDistribute = async (journal: Journal) => {
+  currentJournalForAssign.value = journal
+  selectedAssignee.value = null
+  showDistributeDialog.value = true
+  await loadEditorUsers()
+}
+
+const loadEditorUsers = async () => {
+  loadingEditors.value = true
+  try {
+    // 使用 journalService 封装调用
+    const users = await journalService.getUsersByRole('editor')
+    console.log('加载到的编辑用户:', users) // 调试日志
+    editorUsers.value = users || []
+    if (users.length === 0) {
+      console.warn('编辑用户列表为空，请检查API返回数据')
+    }
+  } catch (err: any) {
+    console.error('加载编辑用户失败:', err)
+    ElMessage.error(err?.response?.data?.message || '加载编辑用户失败')
+    editorUsers.value = []
+  } finally {
+    loadingEditors.value = false
+  }
+}
+
+const confirmDistribute = async () => {
+  if (!currentJournalForAssign.value) {
+    ElMessage.error('未选择期刊')
+    return
+  }
+  if (!selectedAssignee.value) {
+    ElMessage.warning('请先选择一名编辑')
+    return
+  }
+
+  assigning.value = true
+  try {
+    // 使用 journalService 进行分配
+    await journalService.assignJournal(currentJournalForAssign.value.id, selectedAssignee.value)
+    ElMessage.success('任务已分配')
+    showDistributeDialog.value = false
+    // 刷新列表或局部数据
+    journalStore.loadJournals()
+  } catch (err: any) {
+    console.error('分配任务失败:', err)
+    ElMessage.error(err?.response?.data?.message || '分配任务失败')
+  } finally {
+    assigning.value = false
+  }
+}
+
 const handleDelete = async (journal: Journal) => {
   try {
     await ElMessageBox.confirm(
@@ -509,13 +621,25 @@ const handleDelete = async (journal: Journal) => {
 }
 
 /* 统计表按钮自定义样式 */
-.stats-btn {
+.excel-btn {
   background-color: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
   color: #333 !important;
 }
 
-.stats-btn:hover {
+.excel-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+/* 分配按钮自定义样式 */
+.distribute-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.distribute-btn:hover {
   background-color: #e6f7ff !important;
   border-color: #3f4041ff !important;
   color: #7a7d80ff !important;
@@ -530,6 +654,16 @@ const handleDelete = async (journal: Journal) => {
   background-color: #e6f7ff !important;
   border-color: #3f4041ff !important;
   color: #7a7d80ff !important;
+}
+.assgin-btn {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+.assgin-btn:hover {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+  color: white !important;
 }
 /* 筛选区域样式 */
 .filter-card {
