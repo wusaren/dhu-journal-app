@@ -149,3 +149,36 @@ class FileUpload(db.Model):
     upload_status = db.Column(db.Enum('uploading', 'processing', 'completed', 'failed'), default='uploading')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class FormatCheckFile(db.Model):
+    """格式审查文件表"""
+    __tablename__ = 'format_check_files'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(500), nullable=False)  # 论文标题
+    submit_date = db.Column(db.Date, nullable=False)  # 提交日期
+    
+    # 文件路径
+    temp_file_path = db.Column(db.String(500), nullable=False)  # 临时文件路径（原始文档）
+    report_path = db.Column(db.String(500))  # 检测报告路径
+    annotated_path = db.Column(db.String(500))  # 批注文档路径
+    content_details_path = db.Column(db.String(500))  # content_details文件路径
+    
+    # 检测状态
+    check_status = db.Column(db.Enum('pending', 'completed', 'failed'), default='pending')  # 检测状态
+    
+    # 检测结果摘要（可选，用于快速查询）
+    total_checks = db.Column(db.Integer)  # 总检测项数
+    passed_checks = db.Column(db.Integer)  # 通过项数
+    failed_checks = db.Column(db.Integer)  # 失败项数
+    pass_rate = db.Column(db.Float)  # 通过率
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_title', 'title'),
+        db.Index('idx_submit_date', 'submit_date'),
+        db.Index('idx_check_status', 'check_status'),
+    )

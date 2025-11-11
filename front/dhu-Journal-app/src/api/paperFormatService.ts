@@ -40,6 +40,9 @@ export interface CheckAllResult {
     report_filename?: string
     report_download_url?: string
     report_text?: string
+    annotated_saved?: boolean
+    annotated_filename?: string
+    annotated_download_url?: string
 }
 
 // API响应接口
@@ -52,62 +55,34 @@ export interface ApiResponse<T = any> {
 
 export const paperFormatService = {
     /**
-     * 获取所有可用的检测模块
+     * 获取所有格式审查文件列表
      */
-    // async getModules(): Promise<{ modules: FormatModule[]; total: number }> {
-    //     const response = await apiClient.get<ApiResponse<{
-    //         modules: FormatModule[]
-    //         total: number
-    //     }>>('/paper-format/modules')
-    //     return response.data!
-    // },
-
-    // /**
-    //  * 检测单个模块
-    //  * @param moduleName 模块名称（如：Title, Abstract等）
-    //  * @param file 要检测的docx文件
-    //  * @param enableApi 是否启用API检测（仅对Figure模块有效）
-    //  */
-    // async checkModule(
-    //     moduleName: string,
-    //     file: File,
-    //     enableApi: boolean = false
-    // ): Promise<ApiResponse<ModuleCheckResult>> {
-    //     const formData = new FormData()
-    //     formData.append('file', file)
-    //     formData.append('enableApi', enableApi.toString())
-
-    //     return await apiClient.post(
-    //         `/paper-format/check/${moduleName}`,
-    //         formData,
-    //         {
-    //             headers: {
-    //                 'Content-Type': 'multipart/form-data'
-    //             }
-    //         }
-    //     )
-    // },
+    async getFiles(): Promise<ApiResponse<any[]>> {
+        return await apiClient.get('/paper-format/files')
+    },
 
     /**
-     * 执行检测任务
-     * @param file 要检测的docx文件
-     * @param enableFigureApi 是否启用图片内容API检测
-     * @param modules 指定检测的模块列表（可选）
+     * 检查标题是否重复
+     * @param title 论文标题
      */
-    async checkAll(
-        file: File,
-        enableFigureApi: boolean = false,
-        modules?: string[]
-    ): Promise<ApiResponse<CheckAllResult>> {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('enableFigureApi', enableFigureApi.toString())
+    async checkDuplicate(title: string): Promise<ApiResponse<any>> {
+        return await apiClient.post('/paper-format/check-duplicate', { title })
+    },
 
-        if (modules && modules.length > 0) {
-            formData.append('modules', modules.join(','))
-        }
+    /**
+     * 删除格式审查文件记录
+     * @param fileId 文件ID
+     */
+    async deleteFile(fileId: number): Promise<ApiResponse<any>> {
+        return await apiClient.delete(`/paper-format/delete/${fileId}`)
+    },
 
-        return await apiClient.post('/paper-format/check-all', formData, {
+    /**
+     * 保存临时文件
+     * @param formData 包含文件的FormData
+     */
+    async saveTempFile(formData: FormData): Promise<ApiResponse<{ temp_file_path: string; file_id: number }>> {
+        return await apiClient.post('/paper-format/save-temp', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -115,23 +90,60 @@ export const paperFormatService = {
     },
 
     /**
+     * 执行检测任务
+     * @param tempFilePath 临时文件路径
+     * @param enableFigureApi 是否启用图片内容API检测
+     * @param modules 指定检测的模块列表（可选）
+     * @param fileId 文件数据库ID（可选）
+     */
+    async checkAll(
+        tempFilePath: string,
+        enableFigureApi: boolean = false,
+        modules?: string[],
+        fileId?: number
+    ): Promise<ApiResponse<CheckAllResult>> {
+        const data: any = {
+            temp_file_path: tempFilePath,
+            enableFigureApi: enableFigureApi
+        }
+
+        if (modules && modules.length > 0) {
+            data.modules = modules.join(',')
+        }
+
+        if (fileId) {
+            data.file_id = fileId
+        }
+
+        return await apiClient.post('/paper-format/check-all', data)
+    },
+
+    /**
      * 生成检测报告
      * @param checkResults 检测结果数据
      */
-    // async generateReport(
-    //     checkResults: ApiResponse<CheckAllResult>
-    // ): Promise<ApiResponse<{ report_text: string; download_url: string }>> {
-    //     return await apiClient.post('/paper-format/generate-report', {
-    //         checkResults: checkResults
-    //     })
-    // },
+    async generateReport(
+        checkResults: ApiResponse<CheckAllResult>
+    ): Promise<ApiResponse<{ report_text: string; download_url: string }>> {
+        return await apiClient.post('/paper-format/generate-report', {
+            checkResults: checkResults
+        })
+    },
+
+    /**
+     * 获取报告文本内容
+     * @param fileId 文件ID
+     */
+    async getReportText(fileId: number): Promise<ApiResponse<{ report_text: string }>> {
+        return await apiClient.get(`/paper-format/get-report-text/${fileId}`)
+    },
 
     /**
      * 下载报告文件
      * @param filename 报告文件名
      */
-    // getReportDownloadUrl(filename: string): string {
-    //     return `/api/download/${filename}`
-    // }
+    getReportDownloadUrl(filename: string): string {
+        return `/api/download/${filename}`
+    }
 }
 

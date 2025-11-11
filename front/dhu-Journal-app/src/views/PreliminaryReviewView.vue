@@ -50,13 +50,29 @@
       <el-table :data="paginatedPendingList" style="width: 100%">
         <el-table-column prop="title" label="论文标题" width="300" />
         <el-table-column prop="submitDate" label="提交日期" width="120" />
-        <el-table-column label="操作" width="250">
+        <el-table-column label="操作" width="400">
           <template #default="scope">
-            <el-button class="view-btn" size="small" @click="handleView(scope.row)">
-              查看
+            <el-button class="view-btn" size="small" @click="openOriginalDoc(scope.row)">
+              原文档
             </el-button>
             <el-button class="audit-btn" size="small" @click="handleReview(scope.row)">
               审核
+            </el-button>
+            <el-button 
+              v-if="scope.row.formatCheckResult?.success"
+              class="report-btn" 
+              size="small" 
+              @click="openReportDoc(scope.row)"
+            >
+              检测报告
+            </el-button>
+            <el-button 
+              v-if="scope.row.formatCheckResult?.success"
+              class="annotated-btn" 
+              size="small" 
+              @click="openAnnotatedDoc(scope.row)"
+            >
+              标记文档
             </el-button>
             <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
               删除
@@ -194,10 +210,12 @@
              :limit="1"
              accept=".doc,.docx"
              :on-change="handleFileChange"
+             :on-exceed="handleFileExceed"
+             :file-list="fileList"
            >
              <el-button class="upload-btn" type="primary">选择文件</el-button>
              <template #tip>
-               <div class="el-upload__tip">只能上传Word文档，且不超过10MB</div>
+               <div class="el-upload__tip">只能上传Word文档，且不超过10MB（再次选择会覆盖）</div>
              </template>
            </el-upload>
         </el-form-item>
@@ -223,7 +241,7 @@
                  class="check-format-btn" 
                  size="small"
                  @click="showModuleSelector"
-                 :disabled="!currentPaper?.file"
+                 :disabled="!currentPaper?.tempFilePath"
                >
                  选择检测模块
                </el-button>
@@ -231,7 +249,7 @@
            </template>
           
           <!-- 检测状态提示 -->
-          <div v-if="!currentPaper?.file" class="format-hint">
+          <div v-if="!currentPaper?.tempFilePath" class="format-hint">
             <el-alert title="请先上传论文文件才能进行格式检测" type="info" :closable="false" />
           </div>
           
@@ -306,12 +324,20 @@
               </el-collapse-item>
             </el-collapse>
             
-            <div class="format-actions">
-              <el-button size="small" @click="resetFormatCheck">重新检测</el-button>
-              <el-button class="view-report-btn" size="small" @click="viewDetailReport">查看详细报告</el-button>
-            </div>
-          </div>
-        </el-card>
+           <div class="format-actions">
+             <el-button size="small" @click="resetFormatCheck">重新检测</el-button>
+             <el-button class="view-report-btn" size="small" @click="viewDetailReport">查看详细报告</el-button>
+             <el-button 
+               v-if="formatCheckResult?.data?.annotated_saved"
+               class="download-annotated-btn" 
+               size="small" 
+               @click="downloadAnnotatedDocument"
+             >
+               下载批注文档
+             </el-button>
+           </div>
+         </div>
+       </el-card>
         
         <!-- 审核表单 -->
         <el-form :model="reviewForm" label-width="80px" style="margin-top: 20px;">
@@ -414,8 +440,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { paperFormatService } from '@/api/paperFormatService'
 import type { ApiResponse, CheckAllResult } from '@/api/paperFormatService'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
@@ -425,6 +451,8 @@ interface Paper {
   id: number
   title: string
   file?: File
+  tempFilePath?: string
+  fileId?: number  // 数据库记录ID
   submitDate?: string
   reviewDate?: string
   reviewStatus?: string
@@ -439,18 +467,7 @@ interface FilterForm {
 }
 
 // 数据定义
-const pendingList = ref<Paper[]>([
-  {
-    id: 1,
-    title: '基于深度学习的图像识别技术研究',
-    submitDate: '2024-01-15'
-  },
-  {
-    id: 2,
-    title: '人工智能在医疗诊断中的应用',
-    submitDate: '2024-01-12'
-  }
-])
+const pendingList = ref<Paper[]>([])
 
 const reviewedList = ref<Paper[]>([
   {
@@ -515,6 +532,10 @@ const reviewForm = ref({
 })
 
 const currentPaper = ref<Paper | null>(null)
+
+// 文件列表
+const fileList = ref<any[]>([])
+const uploadRef = ref()
 
 // 格式检测相关状态
 const isFormatChecking = ref(false)
@@ -630,13 +651,69 @@ const getReviewStatusType = (status: string) => {
 }
 
 // 文件选择处理
-const handleFileChange = (file: any) => {
+const handleFileChange = (file: any, fileListParam: any[]) => {
   newPaper.value.file = file.raw
   newPaper.value.title = file.name.split('.')[0]
+  fileList.value = fileListParam
+}
+
+// 文件超出限制处理 - 替换文件
+const handleFileExceed = (files: any[]) => {
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles()
+    const file = files[0]
+    uploadRef.value.handleStart(file)
+    newPaper.value.file = file
+    newPaper.value.title = file.name.split('.')[0]
+    fileList.value = [file]
+    ElMessage.info('已替换为新文件')
+  }
+}
+
+// 从数据库加载论文列表
+const loadPaperList = async () => {
+  try {
+    const response = await paperFormatService.getFiles()
+    
+    if (response.success && response.data) {
+      // 将数据库记录转换为Paper对象
+      pendingList.value = response.data.map((file: any) => ({
+        id: file.id,
+        fileId: file.fileId,
+        title: file.title,
+        submitDate: file.submitDate,
+        tempFilePath: file.tempFilePath,
+        // 如果已完成检测，标记有检测结果
+        formatCheckResult: file.checkStatus === 'completed' ? {
+          success: true,
+          data: {
+            summary: {
+              total_checks: file.totalChecks || 0,
+              passed_checks: file.passedChecks || 0,
+              failed_checks: file.failedChecks || 0,
+              pass_rate: file.passRate || 0
+            },
+            report_saved: !!file.reportPath,
+            report_filename: file.reportPath ? file.reportPath.split(/[\\/]/).pop() : undefined,
+            annotated_saved: !!file.annotatedPath,
+            annotated_filename: file.annotatedPath ? file.annotatedPath.split(/[\\/]/).pop() : undefined,
+            annotated_download_url: file.annotatedPath ? `/api/paper-format/download-annotated/${file.annotatedPath.split(/[\\/]/).pop()}` : undefined
+          }
+        } : undefined
+      }))
+      
+      console.log('论文列表加载成功:', pendingList.value)
+    } else {
+      ElMessage.error('加载论文列表失败：' + response.message)
+    }
+  } catch (error) {
+    console.error('加载论文列表错误:', error)
+    ElMessage.error('加载论文列表失败：' + (error as Error).message)
+  }
 }
 
 // 添加论文
-const handleAddPaper = () => {
+const handleAddPaper = async () => {
   if (!newPaper.value.title.trim()) {
     ElMessage.error('请输入论文标题')
     return
@@ -652,19 +729,69 @@ const handleAddPaper = () => {
     return
   }
   
-  const paper: Paper = {
-    id: Date.now(),
-    title: newPaper.value.title,
-    submitDate: newPaper.value.submitDate,
-    file: newPaper.value.file
+  // 检查标题是否重复
+  try {
+    const duplicateResponse = await paperFormatService.checkDuplicate(newPaper.value.title)
+    
+    if (duplicateResponse.success && duplicateResponse.data.exists) {
+      // 标题已存在，询问是否覆盖
+      try {
+        await ElMessageBox.confirm(
+          `已存在标题为"${newPaper.value.title}"的论文（提交日期：${duplicateResponse.data.submit_date}），是否覆盖？`,
+          '标题重复',
+          {
+            confirmButtonText: '覆盖',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+        )
+        
+        // 用户确认覆盖，先删除旧记录
+        const deleteResponse = await paperFormatService.deleteFile(duplicateResponse.data.file_id)
+        if (!deleteResponse.success) {
+          ElMessage.error('删除旧记录失败：' + deleteResponse.message)
+          return
+        }
+      } catch {
+        // 用户取消覆盖
+        ElMessage.info('已取消添加')
+        return
+      }
+    }
+  } catch (error) {
+    console.error('检查标题重复错误:', error)
+    ElMessage.error('检查标题失败：' + (error as Error).message)
+    return
   }
   
-  pendingList.value.push(paper)
-  ElMessage.success('论文添加成功')
-  
-  // 重置表单
-  newPaper.value = { title: '', submitDate: new Date().toISOString().split('T')[0], file: null }
-  showAddDialog.value = false
+  try {
+    // 上传文件到临时目录
+    const formData = new FormData()
+    formData.append('file', newPaper.value.file)
+    formData.append('title', newPaper.value.title)
+    formData.append('submit_date', newPaper.value.submitDate)
+    
+    const response = await paperFormatService.saveTempFile(formData)
+    
+    if (response.success) {
+      ElMessage.success('论文添加成功')
+      
+      // 重新加载论文列表
+      await loadPaperList()
+      
+      // 重置表单和文件列表
+      newPaper.value = { title: '', submitDate: new Date().toISOString().split('T')[0], file: null }
+      fileList.value = []
+      if (uploadRef.value) {
+        uploadRef.value.clearFiles()
+      }
+      showAddDialog.value = false
+    } else {
+      ElMessage.error('保存临时文件失败：' + response.message)
+    }
+  } catch (error) {
+    ElMessage.error('添加论文失败：' + (error as Error).message)
+  }
 }
 
 // 审核论文
@@ -672,10 +799,28 @@ const handleReview = (paper: Paper) => {
   console.log(paper)
   currentPaper.value = paper
   reviewForm.value = { status: '', comment: '' }
-  // 重置格式检测状态
-  formatCheckResult.value = null
-  isFormatChecking.value = false
-  formatCheckProgress.value = 0
+  
+  // 如果论文已有格式检测结果，直接显示
+  if (paper.formatCheckResult) {
+    formatCheckResult.value = paper.formatCheckResult
+    isFormatChecking.value = false
+    formatCheckProgress.value = 100
+    
+    // 加载报告文本（如果有）- 优先使用缓存的报告文本
+    if (paper.formatCheckResult.data?.report_text) {
+      reportText.value = paper.formatCheckResult.data.report_text
+    } else {
+      // 从数据库加载的数据没有报告文本，将在用户点击"查看详细报告"时按需加载
+      reportText.value = ''
+    }
+  } else {
+    // 重置格式检测状态（未检测过）
+    formatCheckResult.value = null
+    isFormatChecking.value = false
+    formatCheckProgress.value = 0
+    reportText.value = ''
+  }
+  
   activeModules.value = ''
   showReviewDialog.value = true
 }
@@ -714,8 +859,8 @@ const confirmReview = () => {
 
 // 模块选择相关方法
 const showModuleSelector = () => {
-  if (!currentPaper.value?.file) {
-    ElMessage.error('请先选择论文文件')
+  if (!currentPaper.value?.tempFilePath) {
+    ElMessage.error('论文文件未上传到服务器')
     return
   }
   
@@ -760,8 +905,8 @@ const confirmModuleSelection = () => {
 
 // 格式检测相关方法
 const startFormatCheck = async () => {
-  if (!currentPaper.value?.file) {
-    ElMessage.error('请先选择论文文件')
+  if (!currentPaper.value?.tempFilePath) {
+    ElMessage.error('论文文件未上传到服务器')
     return
   }
   
@@ -778,9 +923,10 @@ const startFormatCheck = async () => {
     
     // 执行格式检测
     const result = await paperFormatService.checkAll(
-      currentPaper.value.file, 
+      currentPaper.value.tempFilePath, 
       enableFigureApi.value,
-      selectedModules.value
+      selectedModules.value,
+      currentPaper.value.fileId
     )
     
     clearInterval(progressInterval)
@@ -788,6 +934,7 @@ const startFormatCheck = async () => {
     
     // 保存检测结果
     formatCheckResult.value = result
+    console.log(result)
     
     if (result.success) {
       ElMessage.success('格式检测完成，报告已自动保存')
@@ -796,6 +943,17 @@ const startFormatCheck = async () => {
       if (result.data?.report_saved) {
         console.log('报告已保存:', result.data.report_filename)
         reportText.value = result.data.report_text
+      }
+      
+      // 重新加载论文列表以同步检测结果
+      await loadPaperList()
+      
+      // 更新当前论文的检测结果
+      if (currentPaper.value) {
+        const updatedPaper = pendingList.value.find(p => p.id === currentPaper.value?.id)
+        if (updatedPaper) {
+          currentPaper.value = updatedPaper
+        }
       }
     } else {
       ElMessage.error(result.message || '格式检测失败')
@@ -827,25 +985,31 @@ const viewDetailReport = async () => {
     ElMessage.error('无检测结果')
     return
   }
-  if(!reportText.value){
+  
+  // 如果没有报告文本，但有fileId，尝试从服务器加载
+  if (!reportText.value && currentPaper.value?.fileId) {
+    try {
+      ElMessage.info('正在加载报告内容...')
+      const response = await paperFormatService.getReportText(currentPaper.value.fileId)
+      
+      if (response.success && response.data?.report_text) {
+        reportText.value = response.data.report_text
+        ElMessage.success('报告加载成功')
+      } else {
+        ElMessage.error('无法加载报告内容：' + response.message)
+        return
+      }
+    } catch (error) {
+      ElMessage.error('加载报告失败：' + (error as Error).message)
+      return
+    }
+  } else if (!reportText.value) {
     ElMessage.error('无检测报告')
     return
   }
 
+  // 显示报告内容
   showReportDialog.value = true
-  
-  // try {
-  //   const reportResult = await paperFormatService.generateReport(formatCheckResult.value)
-  //
-  //   if (reportResult.success && reportResult.data) {
-  //     reportText.value = reportResult.data.report_text
-  //     showReportDialog.value = true
-  //   } else {
-  //     ElMessage.error('生成报告失败')
-  //   }
-  // } catch (error) {
-  //   ElMessage.error('生成报告失败：' + (error as Error).message)
-  // }
 }
 
 // 下载报告
@@ -871,6 +1035,27 @@ const downloadReport = () => {
   window.URL.revokeObjectURL(url)
   
   ElMessage.success('报告下载成功')
+}
+
+const downloadAnnotatedDocument = () => {
+  if (!formatCheckResult.value?.data?.annotated_download_url) {
+    ElMessage.error('批注文档不可用')
+    return
+  }
+  
+  try {
+    const downloadUrl = formatCheckResult.value.data.annotated_download_url
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = formatCheckResult.value.data.annotated_filename || 'annotated.docx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    ElMessage.success('批注文档下载成功')
+  } catch (error) {
+    ElMessage.error('下载批注文档失败：' + (error as Error).message)
+  }
 }
 
 const getPassRateType = (passRate: number) => {
@@ -904,27 +1089,102 @@ const getModuleStatusType = (moduleResult: any) => {
 }
 
 // 删除论文
-const handleDelete = (paper: Paper) => {
-  // 从待审核列表删除
-  const pendingIndex = pendingList.value.findIndex(p => p.id === paper.id)
-  if (pendingIndex > -1) {
-    pendingList.value.splice(pendingIndex, 1)
-    ElMessage.success('论文已删除')
+const handleDelete = async (paper: Paper) => {
+  // 检查是否有fileId（数据库记录）
+  if (!paper.fileId) {
+    ElMessage.warning('无法删除：论文记录不存在')
     return
   }
   
-  // 从已审核列表删除
-  const reviewedIndex = reviewedList.value.findIndex(p => p.id === paper.id)
-  if (reviewedIndex > -1) {
-    reviewedList.value.splice(reviewedIndex, 1)
-    ElMessage.success('论文已删除')
-    return
+  try {
+    // 确认删除
+    await ElMessageBox.confirm(
+      `确定要删除论文"${paper.title}"吗？\n\n删除后将无法恢复，包括临时文件、检测报告和批注文档。`,
+      '删除论文',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+    
+    // 调用后端API删除数据库记录和物理文件
+    const response = await paperFormatService.deleteFile(paper.fileId)
+    
+    if (response.success) {
+      ElMessage.success('论文已成功删除')
+      
+      // 重新从数据库加载论文列表
+      await loadPaperList()
+    } else {
+      ElMessage.error('删除失败：' + response.message)
+    }
+  } catch (error: any) {
+    if (error === 'cancel' || error.message === 'cancel') {
+      ElMessage.info('已取消删除')
+    } else {
+      console.error('删除论文失败:', error)
+      ElMessage.error('删除失败：' + (error as Error).message)
+    }
   }
 }
 
 // 查看论文
 const handleView = (paper: Paper) => {
   ElMessage.info('查看功能待实现')
+}
+
+// 打开原文档
+const openOriginalDoc = (paper: Paper) => {
+  if (!paper.fileId) {
+    ElMessage.error('文件记录不存在')
+    return
+  }
+  
+  try {
+    // 直接打开下载链接
+    window.open(`/api/paper-format/open-original/${paper.fileId}`, '_blank')
+  } catch (error) {
+    ElMessage.error('打开文档失败：' + (error as Error).message)
+  }
+}
+
+// 打开检测报告
+const openReportDoc = (paper: Paper) => {
+  if (!paper.fileId) {
+    ElMessage.error('文件记录不存在')
+    return
+  }
+  
+  if (!paper.formatCheckResult?.success) {
+    ElMessage.error('检测报告不存在')
+    return
+  }
+  
+  try {
+    window.open(`/api/paper-format/open-report/${paper.fileId}`, '_blank')
+  } catch (error) {
+    ElMessage.error('打开报告失败：' + (error as Error).message)
+  }
+}
+
+// 打开标记文档
+const openAnnotatedDoc = (paper: Paper) => {
+  if (!paper.fileId) {
+    ElMessage.error('文件记录不存在')
+    return
+  }
+  
+  if (!paper.formatCheckResult?.success) {
+    ElMessage.error('标记文档不存在')
+    return
+  }
+  
+  try {
+    window.open(`/api/paper-format/open-annotated/${paper.fileId}`, '_blank')
+  } catch (error) {
+    ElMessage.error('打开文档失败：' + (error as Error).message)
+  }
 }
 
 // 修改论文
@@ -988,6 +1248,11 @@ const resetFilter = () => {
   
   ElMessage.info('筛选已重置')
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadPaperList()
+})
 
 </script>
 
@@ -1305,6 +1570,41 @@ const resetFilter = () => {
 .download-report-btn:hover {
   background-color: #7a0b0b !important;
   border-color: #7a0b0b !important;
+}
+
+.download-annotated-btn {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  color: white !important;
+}
+
+.download-annotated-btn:hover {
+  background-color: #218838 !important;
+  border-color: #218838 !important;
+}
+
+/* 检测报告按钮样式 */
+.report-btn {
+  background-color: #17a2b8 !important;
+  border-color: #17a2b8 !important;
+  color: white !important;
+}
+
+.report-btn:hover {
+  background-color: #138496 !important;
+  border-color: #138496 !important;
+}
+
+/* 标记文档按钮样式 */
+.annotated-btn {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #333 !important;
+}
+
+.annotated-btn:hover {
+  background-color: #e0a800 !important;
+  border-color: #e0a800 !important;
 }
 
 /* 模块选择器样式 */
