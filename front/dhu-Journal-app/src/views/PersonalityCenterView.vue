@@ -1,11 +1,12 @@
 <template>
   <div class="personality-center">
 
-    <!-- 格式配置下拉框 -->
+    <!-- 用户模板配置 -->
     <el-card class="config-card">
       <template #header>
         <div class="card-header">
-          <h3>格式配置</h3>
+          <h3>用户模板配置</h3>
+          <span class="total-count">个性化导出模板设置</span>
         </div>
       </template>
       
@@ -18,8 +19,8 @@
               @change="handleConfigTypeChange"
               style="width: 100%"
             >
-              <el-option label="统计表格式配置" value="stats" />
-              <el-option label="推文格式配置" value="weibo" />
+              <el-option label="统计表模板配置" value="stats" />
+              <el-option label="推文模板配置" value="tuiwen" />
             </el-select>
           </el-form-item>
         </el-form>
@@ -63,10 +64,42 @@
               </div>
             </div>
           </el-card>
+
+          <!-- 用户统计表模板配置 -->
+          <el-card class="template-card">
+            <template #header>
+              <div class="card-header">
+                <h3>用户统计表模板配置</h3>
+                <span class="total-count">个性化导出设置</span>
+              </div>
+            </template>
+
+            <div class="template-body">
+              <div v-if="loadingUserConfig" class="loading">
+                <p>加载用户配置中...</p>
+              </div>
+              <div v-else>
+                <div v-if="userStatsTemplate" class="config-info">
+                  <p><strong>当前配置状态：</strong>已配置</p>
+                  <p><strong>列映射数量：</strong>{{ userStatsTemplate.column_mapping.length }}</p>
+                  <div class="template-actions">
+                    <el-button type="primary" @click="saveUserStatsTemplate">保存配置</el-button>
+                  </div>
+                </div>
+                <div v-else class="config-info">
+                  <p><strong>当前配置状态：</strong>未配置</p>
+                  <p>您还没有设置用户级别的统计表模板配置。</p>
+                  <div class="template-actions">
+                    <el-button type="primary" @click="createDefaultStatsTemplate">创建默认配置</el-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-card>
         </el-col>
 
         <!-- 推文格式配置 -->
-        <el-col :span="12" v-if="selectedConfigType === 'weibo'">
+        <el-col :span="12" v-if="selectedConfigType === 'tuiwen'">
           <el-card class="upload-card">
             <template #header>
               <div class="card-header">
@@ -79,23 +112,55 @@
               <p class="hint">支持格式：.txt .docx .doc。请确保包含推文正文与可选的摘要信息。</p>
 
               <div class="file-row">
-                <input ref="weiboFileInput" type="file" accept=".txt,.md" @change="onWeiboFileChange" hidden />
+                <input ref="tuiwenFileInput" type="file" accept=".txt,.md" @change="ontuiwenFileChange" hidden />
                 <!-- 合并按钮：上传格式文件（红色主题） -->
-                <el-button class="upload-btn" type="primary" size="mid" @click="triggerWeiboFile" :loading="uploadingWeibo">上传格式文件</el-button>
-                <span class="file-name" v-if="weiboFileName">{{ weiboFileName }}</span>
+                <el-button class="upload-btn" type="primary" size="mid" @click="triggertuiwenFile" :loading="uploadingtuiwen">上传格式文件</el-button>
+                <span class="file-name" v-if="tuiwenFileName">{{ tuiwenFileName }}</span>
                 <span class="file-empty" v-else>尚未选择文件</span>
               </div>
 
               <div class="actions">
                 <!-- 保留确认格式按钮 -->
-                <el-button :disabled="!weiboFile" size="small" @click="checkWeiboFormat">确认格式</el-button>
+                <el-button :disabled="!tuiwenFile" size="small" @click="checktuiwenFormat">确认格式</el-button>
               </div>
 
-              <div class="result" v-if="weiboResult">
-                <p :class="{'ok': weiboResult.ok, 'warn': !weiboResult.ok}">{{ weiboResult.message }}</p>
-                <ul v-if="weiboResult.errors && weiboResult.errors.length">
-                  <li v-for="(e, idx) in weiboResult.errors" :key="idx">{{ e }}</li>
+              <div class="result" v-if="tuiwenResult">
+                <p :class="{'ok': tuiwenResult.ok, 'warn': !tuiwenResult.ok}">{{ tuiwenResult.message }}</p>
+                <ul v-if="tuiwenResult.errors && tuiwenResult.errors.length">
+                  <li v-for="(e, idx) in tuiwenResult.errors" :key="idx">{{ e }}</li>
                 </ul>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 用户推文模板配置 -->
+          <el-card class="template-card">
+            <template #header>
+              <div class="card-header">
+                <h3>用户推文模板配置</h3>
+                <span class="total-count">个性化导出设置</span>
+              </div>
+            </template>
+
+            <div class="template-body">
+              <div v-if="loadingUserConfig" class="loading">
+                <p>加载用户配置中...</p>
+              </div>
+              <div v-else>
+                <div v-if="userTuiwenTemplate" class="config-info">
+                  <p><strong>当前配置状态：</strong>已配置</p>
+                  <p><strong>字段数量：</strong>{{ userTuiwenTemplate.fields.length }}</p>
+                  <div class="template-actions">
+                    <el-button type="primary" @click="saveUserTuiwenTemplate">保存配置</el-button>
+                  </div>
+                </div>
+                <div v-else class="config-info">
+                  <p><strong>当前配置状态：</strong>未配置</p>
+                  <p>您还没有设置用户级别的推文模板配置。</p>
+                  <div class="template-actions">
+                    <el-button type="primary" @click="createDefaultTuiwenTemplate">创建默认配置</el-button>
+                  </div>
+                </div>
               </div>
             </div>
           </el-card>
@@ -106,9 +171,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import apiClient from '@/api/axios'
+import { formatService, type UserTemplateConfig, type UserTuiwenTemplateConfig } from '../api/formatService'
 
 // 配置类型状态
 const selectedConfigType = ref<string>('')
@@ -116,35 +181,144 @@ const showConfigPanel = computed(() => selectedConfigType.value !== '')
 
 // 文件与状态
 const statsFile = ref<File | null>(null)
-const weiboFile = ref<File | null>(null)
+const tuiwenFile = ref<File | null>(null)
 const statsFileName = ref('')
-const weiboFileName = ref('')
+const tuiwenFileName = ref('')
 
 const uploadingStats = ref(false)
-const uploadingWeibo = ref(false)
+const uploadingtuiwen = ref(false)
 
 const statsResult = ref<{ ok: boolean; message: string; errors?: string[] } | null>(null)
-const weiboResult = ref<{ ok: boolean; message: string; errors?: string[] } | null>(null)
+const tuiwenResult = ref<{ ok: boolean; message: string; errors?: string[] } | null>(null)
 
 const statsFileInput = ref<HTMLInputElement | null>(null)
-const weiboFileInput = ref<HTMLInputElement | null>(null)
+const tuiwenFileInput = ref<HTMLInputElement | null>(null)
 
 const triggerStatsFile = () => statsFileInput.value?.click()
-const triggerWeiboFile = () => weiboFileInput.value?.click()
+const triggertuiwenFile = () => tuiwenFileInput.value?.click()
+
+// 用户模板配置状态
+const userStatsTemplate = ref<UserTemplateConfig | null>(null)
+const userTuiwenTemplate = ref<UserTuiwenTemplateConfig | null>(null)
+const loadingUserConfig = ref(false)
 
 // 配置类型变更处理
-const handleConfigTypeChange = (value: string) => {
+const handleConfigTypeChange = async (value: string) => {
   selectedConfigType.value = value
   // 重置文件状态
   if (value === 'stats') {
-    weiboFile.value = null
-    weiboFileName.value = ''
-    weiboResult.value = null
-  } else if (value === 'weibo') {
+    tuiwenFile.value = null
+    tuiwenFileName.value = ''
+    tuiwenResult.value = null
+    await loadUserStatsTemplate()
+  } else if (value === 'tuiwen') {
     statsFile.value = null
     statsFileName.value = ''
     statsResult.value = null
+    await loadUserTuiwenTemplate()
   }
+}
+
+// 加载用户统计表模板配置
+const loadUserStatsTemplate = async () => {
+  loadingUserConfig.value = true
+  try {
+    const result = await formatService.getUserTemplate()
+    if (result.success && result.has_template) {
+      userStatsTemplate.value = {
+        template_file_path: result.template_file_path,
+        column_mapping: result.column_mapping || []
+      }
+    } else {
+      userStatsTemplate.value = null
+    }
+  } catch (err: any) {
+    console.error('加载用户统计表模板配置失败:', err)
+    userStatsTemplate.value = null
+  } finally {
+    loadingUserConfig.value = false
+  }
+}
+
+// 加载用户推文模板配置
+const loadUserTuiwenTemplate = async () => {
+  loadingUserConfig.value = true
+  try {
+    const result = await formatService.getUserTuiwenTemplate()
+    if (result.success && result.has_template) {
+      userTuiwenTemplate.value = {
+        fields: result.fields || []
+      }
+    } else {
+      userTuiwenTemplate.value = null
+    }
+  } catch (err: any) {
+    console.error('加载用户推文模板配置失败:', err)
+    userTuiwenTemplate.value = null
+  } finally {
+    loadingUserConfig.value = false
+  }
+}
+
+// 保存用户统计表模板配置
+const saveUserStatsTemplate = async () => {
+  if (!userStatsTemplate.value) return
+  
+  try {
+    const result = await formatService.saveUserTemplate(userStatsTemplate.value)
+    if (result.success) {
+      ElMessage.success('用户统计表模板配置保存成功')
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (err: any) {
+    console.error('保存用户统计表模板配置失败:', err)
+    ElMessage.error(err?.response?.data?.message || '保存失败')
+  }
+}
+
+// 保存用户推文模板配置
+const saveUserTuiwenTemplate = async () => {
+  if (!userTuiwenTemplate.value) return
+  
+  try {
+    const result = await formatService.saveUserTuiwenTemplate(userTuiwenTemplate.value)
+    if (result.success) {
+      ElMessage.success('用户推文模板配置保存成功')
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (err: any) {
+    console.error('保存用户推文模板配置失败:', err)
+    ElMessage.error(err?.response?.data?.message || '保存失败')
+  }
+}
+
+// 创建默认统计表模板配置
+const createDefaultStatsTemplate = () => {
+  userStatsTemplate.value = {
+    column_mapping: [
+      { system_field: 'manuscript_id', template_header: '稿件号', order: 1 },
+      { system_field: 'title', template_header: '标题', order: 2 },
+      { system_field: 'authors', template_header: '作者', order: 3 },
+      { system_field: 'first_author', template_header: '一作', order: 4 },
+      { system_field: 'corresponding', template_header: '通讯', order: 5 }
+    ]
+  }
+  ElMessage.success('已创建默认统计表模板配置')
+}
+
+// 创建默认推文模板配置
+const createDefaultTuiwenTemplate = () => {
+  userTuiwenTemplate.value = {
+    fields: [
+      { field: 'title', label: '标题', required: true },
+      { field: 'authors', label: '作者', required: true },
+      { field: 'abstract', label: '摘要', required: false },
+      { field: 'doi', label: 'DOI', required: false }
+    ]
+  }
+  ElMessage.success('已创建默认推文模板配置')
 }
 
 // 选择文件后立即上传
@@ -159,28 +333,24 @@ const onStatsFileChange = async (e: Event) => {
   }
 }
 
-const onWeiboFileChange = async (e: Event) => {
+const ontuiwenFileChange = async (e: Event) => {
   const t = e.target as HTMLInputElement
   const f = t.files?.[0] || null
-  weiboFile.value = f
-  weiboFileName.value = f ? f.name : ''
-  weiboResult.value = null
+  tuiwenFile.value = f
+  tuiwenFileName.value = f ? f.name : ''
+  tuiwenResult.value = null
   if (f) {
-    await uploadWeibo()
+    await uploadtuiwen()
   }
 }
 
-// 上传函数（示例 API 路径，可根据后端调整）
+// 上传函数 - 使用封装的API服务
 const uploadStats = async () => {
   if (!statsFile.value) return
   uploadingStats.value = true
   try {
-    const fd = new FormData()
-    fd.append('file', statsFile.value)
-    const resp = await apiClient.post('/api/upload/stats-format', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    ElMessage.success(resp.data?.message || '上传成功')
+    const result = await formatService.uploadStatsFormat(statsFile.value)
+    ElMessage.success(result.message || '上传成功')
   } catch (err: any) {
     console.error(err)
     ElMessage.error(err?.response?.data?.message || '上传失败')
@@ -189,67 +359,46 @@ const uploadStats = async () => {
   }
 }
 
-const uploadWeibo = async () => {
-  if (!weiboFile.value) return
-  uploadingWeibo.value = true
+const uploadtuiwen = async () => {
+  if (!tuiwenFile.value) return
+  uploadingtuiwen.value = true
   try {
-    const fd = new FormData()
-    fd.append('file', weiboFile.value)
-    const resp = await apiClient.post('/api/upload/weibo-format', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    ElMessage.success(resp.data?.message || '上传成功')
+    const result = await formatService.uploadWeiboFormat(tuiwenFile.value)
+    ElMessage.success(result.message || '上传成功')
   } catch (err: any) {
     console.error(err)
     ElMessage.error(err?.response?.data?.message || '上传失败')
   } finally {
-    uploadingWeibo.value = false
+    uploadingtuiwen.value = false
   }
 }
 
-// 简单的格式确认：调用后端校验接口，或做客户端预校验
+// 格式确认 - 使用封装的API服务
 const checkStatsFormat = async () => {
   if (!statsFile.value) return
   const ext = statsFile.value.name.split('.').pop()?.toLowerCase()
-  const allowed = ['xlsx', 'xls', 'csv']
+  const allowed = ['xlsx', 'xls']
   if (!ext || !allowed.includes(ext)) {
-    statsResult.value = { ok: false, message: '不支持的文件格式', errors: ['请上传 xlsx / xls / csv 文件'] }
+    statsResult.value = { ok: false, message: '不支持的文件格式', errors: ['请上传 xlsx / xls 文件'] }
     return
-  }
-
-  // 调用后端格式校验（若后端未实现，可只做客户端提示）
-  try {
-    const fd = new FormData()
-    fd.append('file', statsFile.value)
-    const resp = await apiClient.post('/api/validate/stats-format', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    statsResult.value = resp.data || { ok: true, message: '格式检查通过' }
-  } catch (err: any) {
-    statsResult.value = { ok: false, message: err?.response?.data?.message || '格式校验失败', errors: err?.response?.data?.errors || [] }
   }
 }
 
-const checkWeiboFormat = async () => {
-  if (!weiboFile.value) return
-  const ext = weiboFile.value.name.split('.').pop()?.toLowerCase()
-  const allowed = ['txt', 'md']
+const checktuiwenFormat = async () => {
+  if (!tuiwenFile.value) return
+  const ext = tuiwenFile.value.name.split('.').pop()?.toLowerCase()
+  const allowed = ['docx', 'doc']
   if (!ext || !allowed.includes(ext)) {
-    weiboResult.value = { ok: false, message: '不支持的文件格式', errors: ['请上传 txt 或 md 文件'] }
+    tuiwenResult.value = { ok: false, message: '不支持的文件格式', errors: ['请上传 docx 或 doc 文件'] }
     return
   }
-
-  try {
-    const fd = new FormData()
-    fd.append('file', weiboFile.value)
-    const resp = await apiClient.post('/api/validate/weibo-format', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    weiboResult.value = resp.data || { ok: true, message: '格式检查通过' }
-  } catch (err: any) {
-    weiboResult.value = { ok: false, message: err?.response?.data?.message || '格式校验失败', errors: err?.response?.data?.errors || [] }
-  }
 }
+
+// 初始化加载用户配置
+onMounted(async () => {
+  await loadUserStatsTemplate()
+  await loadUserTuiwenTemplate()
+})
 </script>
 
 <style scoped>
@@ -482,6 +631,66 @@ const checkWeiboFormat = async () => {
   .total-count {
     font-size: 12px;
   }
+}
+
+/* 模板卡片样式 */
+.template-card {
+  margin-bottom: 20px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.template-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.template-card .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e4e7ed;
+  padding: 16px 20px;
+}
+
+.template-card .card-header h3 {
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.template-body {
+  padding: 20px;
+}
+
+.journal-selection {
+  margin-bottom: 20px;
+}
+
+.template-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.template-actions .el-button {
+  background-color: #9c0e0e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.template-actions .el-button:hover {
+  background-color: #7a0b0b;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.template-actions .el-button:active {
+  transform: translateY(0);
 }
 
 /* 动画效果 */

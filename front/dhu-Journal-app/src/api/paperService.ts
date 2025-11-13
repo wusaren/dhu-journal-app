@@ -48,12 +48,12 @@ export interface FilterForm {
 export const paperService = {
     // 获取所有论文
     async getPapers(): Promise<Paper[]> {
-        return await apiClient.get('/api/papers')
+        return await apiClient.get('/papers')
     },
 
     // 删除论文
     async deletePaper(paperId: number): Promise<DeleteResponse> {
-        return await apiClient.delete(`/api/papers/${paperId}`)
+        return await apiClient.delete(`/papers/${paperId}`)
     },
 
     // 上传论文
@@ -62,7 +62,7 @@ export const paperService = {
         formData.append('file', file)
         formData.append('journalId', journalId)
 
-        return await apiClient.post('/api/upload', formData, {
+        return await apiClient.post('/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -76,7 +76,7 @@ export const paperService = {
         formData.append('journalId', journalId)
         formData.append('overwritePaperId', overwritePaperId.toString())
 
-        return await apiClient.post('/api/upload/overwrite', formData, {
+        return await apiClient.post('/upload/overwrite', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -95,11 +95,11 @@ export const paperService = {
 
     // 预览PDF
     getPreviewUrl(filename: string): string {
-        return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/preview/${filename}`
+        return `/api/preview/${filename}`
     },
 
     // 下载PDF
     getDownloadUrl(filename: string): string {
-        return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/download/${filename}`
+        return `/api/download/${filename}`
     }
 }

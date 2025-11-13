@@ -2,13 +2,13 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Dict
 import logging
 
 from docx import Document
 from docx.shared import Pt
 from docx.oxml.ns import qn
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 logger = logging.getLogger(__name__)
 
@@ -118,40 +118,114 @@ def generate_toc_docx(papers: List[Any], journal: Any) -> str:
         logger.error(f"生成目录文档失败: {str(e)}")
         raise Exception(f"生成目录文档失败: {str(e)}")
 
-def generate_excel_stats(articles, journal) -> str:
+def generate_excel_stats(articles, journal, columns_config=None) -> str:
     """
     生成统计表Excel - 导出期刊内所有论文的统计信息
+    支持自定义列配置
+    
+    Args:
+        articles: 论文列表
+        journal: 期刊对象
+        columns_config: 列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
+                       如果为None，使用默认配置
     """
     try:
         wb = Workbook()
         ws = wb.active
         ws.title = '期刊统计表'
         
-        # 添加期刊信息标题
-        ws.cell(row=1, column=1, value=f"{journal.title} - {journal.issue}")
-        ws.cell(row=2, column=1, value=f"论文总数: {len(articles)}")
-        ws.cell(row=3, column=1, value="")  # 空行
+        # 如果没有提供列配置，使用默认配置
+        if not columns_config:
+            columns_config = [
+                {'key': 'manuscript_id', 'order': 1},
+                {'key': 'pdf_pages', 'order': 2},
+                {'key': 'first_author', 'order': 3},
+                {'key': 'corresponding', 'order': 4},
+                {'key': 'issue', 'order': 5},
+                {'key': 'is_dhu', 'order': 6},
+            ]
         
-        # 表头
-        headers = ['稿件号','页数','一作','通讯','刊期','是否东华大学']
+        # 按order排序
+        columns_config = sorted(columns_config, key=lambda x: x.get('order', 999))
+        
+        # 定义所有可用列的映射（key -> 显示标签和数据获取函数）
+        column_definitions = {
+            'manuscript_id': {
+                'label': '稿件号',
+                'get_value': lambda a: _get(a, 'manuscript_id') or ''
+            },
+            'pdf_pages': {
+                'label': '页数',
+                'get_value': lambda a: _get(a, 'pdf_pages') or 0
+            },
+            'first_author': {
+                'label': '一作',
+                'get_value': lambda a: _get(a, 'first_author') or ''
+            },
+            'corresponding': {
+                'label': '通讯',
+                'get_value': lambda a: _get(a, 'corresponding') or ''
+            },
+            'authors': {
+                'label': '作者',
+                'get_value': lambda a: _get(a, 'authors') or ''
+            },
+            'issue': {
+                'label': '刊期',
+                'get_value': lambda a: _get(a, 'issue') or ''
+            },
+            'is_dhu': {
+                'label': '是否东华大学',
+                'get_value': lambda a: '是' if _get(a, 'is_dhu') else '否'
+            },
+            'title': {
+                'label': '标题',
+                'get_value': lambda a: _get(a, 'title') or ''
+            },
+            'chinese_title': {
+                'label': '中文标题',
+                'get_value': lambda a: _get(a, 'chinese_title') or ''
+            },
+            'chinese_authors': {
+                'label': '中文作者',
+                'get_value': lambda a: _get(a, 'chinese_authors') or ''
+            },
+            'doi': {
+                'label': 'DOI',
+                'get_value': lambda a: _get(a, 'doi') or ''
+            },
+            'page_start': {
+                'label': '起始页码',
+                'get_value': lambda a: _get(a, 'page_start') or ''
+            },
+            'page_end': {
+                'label': '结束页码',
+                'get_value': lambda a: _get(a, 'page_end') or ''
+            },
+        }
+        
+        # 生成表头（只包含配置中存在的列）
+        valid_columns = []
+        for col_config in columns_config:
+            key = col_config.get('key')
+            if key in column_definitions:
+                valid_columns.append({
+                    'key': key,
+                    'label': column_definitions[key]['label'],
+                    'get_value': column_definitions[key]['get_value']
+                })
+        
+        headers = [col['label'] for col in valid_columns]
         ws.append(headers)
-
-        col_pos = {name: idx+1 for idx, name in enumerate(headers)}
-        r = 5  # 从第5行开始（前面有标题）
         
         # 添加所有论文数据
+        r = 2  # 从第2行开始（第1行是表头）
         for a in articles:
-            values = {
-                '稿件号': _get(a, 'manuscript_id'),
-                '页数': _get(a, 'pdf_pages'),
-                '一作': _get(a, 'first_author'),
-                '通讯': (_get(a, 'corresponding') or ''),
-                '刊期': _get(a, 'issue'),
-                '是否东华大学': '是' if _get(a, 'is_dhu') else '否',
-            }
-            for k, v in values.items():
-                if k in col_pos:
-                    ws.cell(row=r, column=col_pos[k], value=v)
+            col_idx = 1
+            for col in valid_columns:
+                value = col['get_value'](a)
+                ws.cell(row=r, column=col_idx, value=value)
+                col_idx += 1
             r += 1
 
         # 保存文件
@@ -163,25 +237,184 @@ def generate_excel_stats(articles, journal) -> str:
         wb.save(output_path)
         
         logger.info(f"统计表已生成: {output_path}")
+        logger.info(f"使用的列配置: {[col['key'] for col in valid_columns]}")
         
         # 记录生成的数据用于调试
         debug_data = []
         for a in articles:
-            debug_data.append({
-                '稿件号': _get(a, 'manuscript_id'),
-                '页数': _get(a, 'pdf_pages'),
-                '一作': _get(a, 'first_author'),
-                '通讯': (_get(a, 'corresponding') or ''),
-                '刊期': _get(a, 'issue'),
-                '是否东华大学': '是' if _get(a, 'is_dhu') else '否'
-            })
-        logger.info(f"生成的数据: {debug_data}")
+            row_data = {}
+            for col in valid_columns:
+                row_data[col['label']] = col['get_value'](a)
+            debug_data.append(row_data)
+        logger.info(f"生成的数据（前3条）: {debug_data[:3]}")
         
         return output_path
         
     except Exception as e:
         logger.error(f"生成统计表Excel失败: {str(e)}")
         raise Exception(f"生成统计表Excel失败: {str(e)}")
+
+def generate_excel_stats_from_template(articles, journal, template_file_path: str, column_mapping: List[Dict]) -> str:
+    """
+    基于模板生成统计表Excel
+    
+    Args:
+        articles: 论文列表
+        journal: 期刊对象
+        template_file_path: 模板文件路径
+        column_mapping: 列映射配置，格式: [
+            {'template_header': '稿件号', 'system_key': 'manuscript_id', 'order': 1, 'is_custom': False},
+            ...
+        ]
+    """
+    try:
+        from services.template_service import TemplateService
+        
+        # 加载模板文件
+        wb = load_workbook(template_file_path)
+        ws = wb.active
+        
+        # 找到表头行（第一个有内容的行）
+        template_service = TemplateService()
+        headers = template_service.extract_headers_from_excel(template_file_path)
+        
+        if not headers:
+            raise Exception("无法从模板文件中提取表头")
+        
+        # 找到表头行号
+        header_row = None
+        for row_idx in range(1, min(10, ws.max_row + 1)):
+            row = ws[row_idx]
+            has_content = False
+            for cell in row:
+                if cell.value and str(cell.value).strip():
+                    has_content = True
+                    break
+            if has_content:
+                header_row = row_idx
+                break
+        
+        if header_row is None:
+            raise Exception("无法找到表头行")
+        
+        # 建立表头文本到列索引的映射，同时找到最后一个有内容的列
+        header_to_col = {}
+        last_content_col = 0
+        for col_idx, cell in enumerate(ws[header_row], start=1):
+            header_text = str(cell.value).strip() if cell.value else ''
+            if header_text:
+                header_to_col[header_text] = col_idx
+                last_content_col = col_idx  # 更新最后一个有内容的列
+        
+        # 按 order 排序 column_mapping
+        column_mapping = sorted(column_mapping, key=lambda x: x.get('order', 999))
+        
+        # 保存原始表头样式（用于新列）
+        source_header_cell = None
+        if header_row > 0:
+            try:
+                source_header_cell = ws.cell(row=header_row, column=1)
+            except:
+                pass
+        
+        # 检查 column_mapping 中是否有模板文件中不存在的字段，如果有则添加
+        # 从最后一个有内容的列之后开始添加，避免中间有空列
+        next_col = last_content_col + 1
+        for mapping in column_mapping:
+            template_header = mapping.get('template_header')
+            if template_header and template_header not in header_to_col:
+                # 在表头行添加新列
+                cell = ws.cell(row=header_row, column=next_col)
+                cell.value = template_header
+                # 复制表头行的样式（如果有）
+                if source_header_cell:
+                    try:
+                        if source_header_cell.font:
+                            from openpyxl.styles import Font
+                            cell.font = Font(
+                                name=source_header_cell.font.name,
+                                size=source_header_cell.font.size,
+                                bold=source_header_cell.font.bold,
+                                color=source_header_cell.font.color
+                            )
+                        if source_header_cell.fill:
+                            from openpyxl.styles import PatternFill
+                            cell.fill = PatternFill(
+                                start_color=source_header_cell.fill.start_color,
+                                end_color=source_header_cell.fill.end_color,
+                                fill_type=source_header_cell.fill.fill_type
+                            )
+                        if source_header_cell.alignment:
+                            from openpyxl.styles import Alignment
+                            cell.alignment = Alignment(
+                                horizontal=source_header_cell.alignment.horizontal,
+                                vertical=source_header_cell.alignment.vertical
+                            )
+                        if source_header_cell.border:
+                            from openpyxl.styles import Border
+                            cell.border = source_header_cell.border
+                    except Exception as e:
+                        logger.warning(f"复制表头样式失败: {str(e)}")
+                header_to_col[template_header] = next_col
+                next_col += 1
+                logger.info(f"添加新列到模板: {template_header} (列 {header_to_col[template_header]})")
+        
+        # 删除表头行之后的所有数据行（保留表头）
+        data_start_row = header_row + 1
+        if ws.max_row >= data_start_row:
+            ws.delete_rows(data_start_row, ws.max_row - header_row)
+        
+        # 定义所有可用列的映射
+        column_definitions = {
+            'manuscript_id': lambda a: _get(a, 'manuscript_id') or '',
+            'pdf_pages': lambda a: _get(a, 'pdf_pages') or 0,
+            'first_author': lambda a: _get(a, 'first_author') or '',
+            'corresponding': lambda a: _get(a, 'corresponding') or '',
+            'authors': lambda a: _get(a, 'authors') or '',
+            'issue': lambda a: _get(a, 'issue') or '',
+            'is_dhu': lambda a: '是' if _get(a, 'is_dhu') else '否',
+            'title': lambda a: _get(a, 'title') or '',
+            'chinese_title': lambda a: _get(a, 'chinese_title') or '',
+            'chinese_authors': lambda a: _get(a, 'chinese_authors') or '',
+            'doi': lambda a: _get(a, 'doi') or '',
+            'page_start': lambda a: _get(a, 'page_start') or '',
+            'page_end': lambda a: _get(a, 'page_end') or '',
+        }
+        
+        # 填充数据
+        for article_idx, article in enumerate(articles, start=0):
+            row_num = data_start_row + article_idx
+            
+            for mapping in column_mapping:
+                template_header = mapping.get('template_header')
+                system_key = mapping.get('system_key')
+                col_idx = header_to_col.get(template_header)
+                
+                if col_idx:
+                    cell = ws.cell(row=row_num, column=col_idx)
+                    
+                    if system_key and system_key in column_definitions:
+                        value = column_definitions[system_key](article)
+                        cell.value = value
+                    elif mapping.get('is_custom', False):
+                        cell.value = ''
+                    # 数据行保持默认格式，不复制表头样式
+        
+        # 保存文件
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"统计表_{journal.issue}_{timestamp}.xlsx"
+        output_path = os.path.join('uploads', filename)
+        
+        os.makedirs('uploads', exist_ok=True)
+        wb.save(output_path)
+        
+        logger.info(f"基于模板生成统计表: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"基于模板生成统计表Excel失败: {str(e)}")
+        raise Exception(f"基于模板生成统计表Excel失败: {str(e)}")
+
 def get_local_image_path(image_path: str, temp_dir: str) -> Optional[str]:
     """
     获取本地图片路径，如果图片存在则返回路径，否则返回None
@@ -436,3 +669,409 @@ def generate_tuiwen_content(papers, journal):
     except Exception as e:
         logger.error(f"生成推文Word文档失败: {str(e)}")
         raise Exception(f"生成推文Word文档失败: {str(e)}")
+
+def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> str:
+    """
+    根据字段配置生成推文内容
+    
+    Args:
+        papers: 论文列表
+        journal: 期刊对象
+        fields_config: 字段配置列表，格式: [{'key': 'title', 'label': '标题', 'order': 1}, ...]
+    """
+    try:
+        # 创建Word文档
+        doc = Document()
+        
+        # 设置样式
+        style = doc.styles['Normal']
+        style.font.name = 'Times New Roman'
+        style._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+        style.font.size = Pt(11)
+        
+        # 获取当前日期
+        current_date = datetime.now().strftime('%Y年%m月%d日')
+        issue = journal.issue
+        
+        # 转换期刊号格式
+        def convert_issue_format(issue_str):
+            try:
+                match = re.match(r'(\d{4}),\s*(\d+)\(([^)]+)\)', issue_str)
+                if match:
+                    year = match.group(1)
+                    volume = match.group(2)
+                    issue_num = match.group(3).replace(',', '-')
+                    return f"{year}年第{volume}卷第{issue_num}期"
+                return issue_str
+            except:
+                return issue_str
+        
+        issue_info = convert_issue_format(issue)
+        
+        # 添加期刊标题
+        title_para = doc.add_paragraph()
+        title_run = title_para.runs[0] if title_para.runs else title_para.add_run()
+        title_run.text = journal.title or "东华大学学报"
+        title_run.font.size = Pt(16)
+        title_run.font.bold = True
+        
+        # 添加期刊号
+        issue_para = doc.add_paragraph()
+        issue_run = issue_para.runs[0] if issue_para.runs else issue_para.add_run()
+        issue_run.text = issue_info
+        issue_run.font.size = Pt(12)
+        
+        # 添加分隔线
+        doc.add_paragraph("─" * 30)
+        
+        # 添加编辑信息
+        editor_para = doc.add_paragraph()
+        editor_run = editor_para.runs[0] if editor_para.runs else editor_para.add_run()
+        editor_run.text = f"本期责编: 编辑部 | {current_date}"
+        editor_run.font.size = Pt(10)
+        editor_run.font.italic = True
+        
+        # 添加空行
+        doc.add_paragraph()
+        
+        # 按配置的字段顺序生成每篇论文的内容
+        for paper_idx, paper in enumerate(papers, 1):
+            # 处理数据库Paper对象或字典
+            if hasattr(paper, 'title'):
+                title = paper.title
+                authors = paper.authors
+                chinese_title = getattr(paper, 'chinese_title', '') or ''
+                chinese_authors = getattr(paper, 'chinese_authors', '') or ''
+                doi = paper.doi or ''
+                page_start = paper.page_start
+                page_end = paper.page_end
+                formatted_authors = format_authors_for_citation(authors, max_authors=3)
+                citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+            else:
+                title = paper.get('title', '')
+                authors = paper.get('authors', '')
+                chinese_title = paper.get('chinese_title', '') or ''
+                chinese_authors = paper.get('chinese_authors', '') or ''
+                doi = paper.get('doi', '')
+                page_start = paper.get('page_start')
+                page_end = paper.get('page_end')
+                formatted_authors = format_authors_for_citation(authors, max_authors=3)
+                citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+            
+            # 字段值映射
+            field_values = {
+                'chinese_title': chinese_title,
+                'chinese_authors': chinese_authors,
+                'title': title,
+                'authors': authors,
+                'doi': doi,
+                'citation': citation,
+                'page_start': str(page_start) if page_start else '',
+                'page_end': str(page_end) if page_end else '',
+            }
+            
+            # 按配置的字段顺序添加内容
+            for field_config in sorted(fields_config, key=lambda x: x.get('order', 999)):
+                field_key = field_config.get('key')
+                field_label = field_config.get('label', '')
+                
+                if field_key in field_values:
+                    value = field_values[field_key]
+                    if value:
+                        # 添加字段标签和值
+                        para = doc.add_paragraph()
+                        run = para.runs[0] if para.runs else para.add_run()
+                        
+                        # 根据字段类型设置格式
+                        if field_key in ['chinese_title', 'title']:
+                            run.text = f"{paper_idx}. {value}"
+                            run.font.size = Pt(12)
+                            run.font.bold = True
+                        elif field_key in ['chinese_authors', 'authors']:
+                            run.text = value
+                            run.font.size = Pt(11)
+                        elif field_key == 'doi':
+                            run.text = f"DOI: {value}"
+                            run.font.size = Pt(11)
+                        elif field_key == 'citation':
+                            run.text = f"Citation: {value}"
+                            run.font.size = Pt(11)
+                        else:
+                            run.text = f"{field_label}: {value}"
+                            run.font.size = Pt(11)
+            
+            # 添加空行分隔
+            doc.add_paragraph()
+        
+        # 添加页脚信息
+        doc.add_paragraph("─" * 30)
+        footer_para = doc.add_paragraph()
+        footer_run = footer_para.runs[0] if footer_para.runs else footer_para.add_run()
+        footer_run.text = "感谢您的阅读！欢迎引用本文内容"
+        footer_run.font.size = Pt(10)
+        
+        copyright_para = doc.add_paragraph()
+        copyright_run = copyright_para.runs[0] if copyright_para.runs else copyright_para.add_run()
+        copyright_run.text = "© 2025 东华大学学报 版权所有"
+        copyright_run.font.size = Pt(9)
+        
+        # 保存文件
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"推文_{journal.issue}_{timestamp}.docx"
+        output_path = os.path.join('uploads', filename)
+        
+        os.makedirs('uploads', exist_ok=True)
+        doc.save(output_path)
+        
+        logger.info(f"根据字段配置生成推文: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"根据字段配置生成推文失败: {str(e)}")
+        raise Exception(f"根据字段配置生成推文失败: {str(e)}")
+
+def generate_tuiwen_from_template(papers, journal, template_file_path: str) -> str:
+    """
+    基于Word模板生成推文内容
+    
+    Args:
+        papers: 论文列表
+        journal: 期刊对象
+        template_file_path: 模板文件路径
+    """
+    try:
+        import re
+        from docx import Document
+        from docx.shared import Pt
+        from docx.oxml.ns import qn
+        
+        # 创建临时目录用于存储下载的图片
+        temp_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        # 加载模板文件
+        doc = Document(template_file_path)
+        
+        # 获取当前日期
+        current_date = datetime.now().strftime('%Y年%m月%d日')
+        issue = journal.issue
+        
+        # 转换期刊号格式
+        def convert_issue_format(issue_str):
+            try:
+                match = re.match(r'(\d{4}),\s*(\d+)\(([^)]+)\)', issue_str)
+                if match:
+                    year = match.group(1)
+                    volume = match.group(2)
+                    issue_num = match.group(3).replace(',', '-')
+                    return f"{year}年第{volume}卷第{issue_num}期"
+                return issue_str
+            except:
+                return issue_str
+        
+        issue_info = convert_issue_format(issue)
+        
+        # 定义占位符映射
+        placeholders = {
+            '{journal_title}': journal.title or '东华大学学报',
+            '{issue}': issue_info,
+            '{current_date}': current_date,
+        }
+        
+        # 替换文档中的占位符（全局替换）
+        def replace_placeholders_in_document(doc, placeholders):
+            """在文档中替换占位符"""
+            for paragraph in doc.paragraphs:
+                for run in paragraph.runs:
+                    text = run.text
+                    for placeholder, value in placeholders.items():
+                        if placeholder in text:
+                            text = text.replace(placeholder, str(value))
+                    run.text = text
+            
+            # 也处理表格中的占位符
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        for paragraph in cell.paragraphs:
+                            for run in paragraph.runs:
+                                text = run.text
+                                for placeholder, value in placeholders.items():
+                                    if placeholder in text:
+                                        text = text.replace(placeholder, str(value))
+                                run.text = text
+        
+        # 先替换全局占位符
+        replace_placeholders_in_document(doc, placeholders)
+        
+        # 查找论文循环标记（例如：{paper_loop_start} 和 {paper_loop_end}）
+        # 如果没有找到循环标记，则在整个文档中查找论文相关的占位符
+        paper_loop_start_idx = None
+        paper_loop_end_idx = None
+        
+        for i, para in enumerate(doc.paragraphs):
+            text = para.text
+            if '{paper_loop_start}' in text or '{paper_start}' in text:
+                paper_loop_start_idx = i
+            if '{paper_loop_end}' in text or '{paper_end}' in text:
+                paper_loop_end_idx = i
+        
+        # 如果找到了循环标记，在循环区域内为每篇论文生成内容
+        if paper_loop_start_idx is not None and paper_loop_end_idx is not None and paper_loop_end_idx > paper_loop_start_idx:
+            # 保存循环模板段落的内容（在删除前）
+            loop_template_data = []
+            for para_idx in range(paper_loop_start_idx + 1, paper_loop_end_idx):
+                template_para = doc.paragraphs[para_idx]
+                para_data = {
+                    'text': template_para.text,
+                    'style': template_para.style.name if template_para.style else None,
+                    'runs': []
+                }
+                # 保存每个run的信息
+                for run in template_para.runs:
+                    run_data = {
+                        'text': run.text,
+                        'font_name': run.font.name if run.font and run.font.name else None,
+                        'font_size': run.font.size if run.font and run.font.size else None,
+                        'bold': run.font.bold if run.font else None,
+                        'italic': run.font.italic if run.font else None,
+                        'color': run.font.color.rgb if run.font and run.font.color and run.font.color.rgb else None,
+                    }
+                    para_data['runs'].append(run_data)
+                loop_template_data.append(para_data)
+            
+            # 删除循环标记段落和模板段落（从后往前删除，避免索引变化）
+            # 先收集要删除的段落元素
+            paras_to_remove = []
+            for para_idx in range(paper_loop_start_idx, paper_loop_end_idx + 1):
+                paras_to_remove.append(doc.paragraphs[para_idx]._element)
+            
+            # 删除段落元素
+            for para_element in paras_to_remove:
+                para_element.getparent().remove(para_element)
+            
+            # 为每篇论文生成内容
+            for paper_idx, paper in enumerate(papers):
+                # 处理数据库Paper对象或字典
+                if hasattr(paper, 'title'):
+                    title = paper.title
+                    authors = paper.authors
+                    chinese_title = getattr(paper, 'chinese_title', '') or ''
+                    chinese_authors = getattr(paper, 'chinese_authors', '') or ''
+                    doi = paper.doi or ''
+                    page_start = paper.page_start
+                    page_end = paper.page_end
+                    formatted_authors = format_authors_for_citation(authors, max_authors=3)
+                    citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+                else:
+                    # 字典格式
+                    title = paper.get('title', '')
+                    authors = paper.get('authors', '')
+                    chinese_title = paper.get('chinese_title', '') or ''
+                    chinese_authors = paper.get('chinese_authors', '') or ''
+                    doi = paper.get('doi', '')
+                    page_start = paper.get('page_start')
+                    page_end = paper.get('page_end')
+                    formatted_authors = format_authors_for_citation(authors, max_authors=3)
+                    citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+                
+                # 论文占位符映射
+                paper_placeholders = {
+                    '{title}': title or '',
+                    '{chinese_title}': chinese_title or '',
+                    '{authors}': authors or '',
+                    '{chinese_authors}': chinese_authors or '',
+                    '{doi}': doi or '',
+                    '{citation}': citation or '',
+                    '{page_start}': str(page_start) if page_start else '',
+                    '{page_end}': str(page_end) if page_end else '',
+                    '{paper_index}': str(paper_idx + 1),
+                }
+                
+                # 根据模板数据创建新段落并替换占位符
+                for para_data in loop_template_data:
+                    new_para = doc.add_paragraph()
+                    
+                    # 设置段落样式
+                    if para_data['style']:
+                        try:
+                            new_para.style = para_data['style']
+                        except:
+                            pass
+                    
+                    # 创建runs并替换占位符
+                    text = para_data['text']
+                    # 替换占位符
+                    for placeholder, value in paper_placeholders.items():
+                        if placeholder in text:
+                            text = text.replace(placeholder, str(value))
+                    
+                    # 如果有多个runs，尝试保持原有格式
+                    if para_data['runs']:
+                        # 简化处理：将所有文本合并为一个run
+                        new_run = new_para.add_run(text)
+                        # 使用第一个run的样式（如果有）
+                        first_run_data = para_data['runs'][0]
+                        try:
+                            if first_run_data['font_name']:
+                                new_run.font.name = first_run_data['font_name']
+                            if first_run_data['font_size']:
+                                new_run.font.size = first_run_data['font_size']
+                            if first_run_data['bold'] is not None:
+                                new_run.font.bold = first_run_data['bold']
+                            if first_run_data['italic'] is not None:
+                                new_run.font.italic = first_run_data['italic']
+                            if first_run_data['color']:
+                                new_run.font.color.rgb = first_run_data['color']
+                        except Exception as style_error:
+                            logger.warning(f"应用run样式失败: {str(style_error)}")
+                    else:
+                        # 没有runs，直接添加文本
+                        new_para.add_run(text)
+                
+                # 论文之间添加空行（可选）
+                if paper_idx < len(papers) - 1:
+                    doc.add_paragraph()
+                
+        else:
+            # 没有找到循环标记，在整个文档中替换论文占位符（只替换第一篇论文）
+            if papers:
+                paper = papers[0]
+                if hasattr(paper, 'title'):
+                    title = paper.title
+                    authors = paper.authors
+                    chinese_title = getattr(paper, 'chinese_title', '') or ''
+                    chinese_authors = getattr(paper, 'chinese_authors', '') or ''
+                    doi = paper.doi or ''
+                    page_start = paper.page_start
+                    page_end = paper.page_end
+                    formatted_authors = format_authors_for_citation(authors, max_authors=3)
+                    citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+                
+                paper_placeholders = {
+                    '{title}': title or '',
+                    '{chinese_title}': chinese_title or '',
+                    '{authors}': authors or '',
+                    '{chinese_authors}': chinese_authors or '',
+                    '{doi}': doi or '',
+                    '{citation}': citation or '',
+                    '{page_start}': str(page_start) if page_start else '',
+                    '{page_end}': str(page_end) if page_end else '',
+                }
+                
+                replace_placeholders_in_document(doc, paper_placeholders)
+        
+        # 保存文件
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"推文_{journal.issue}_{timestamp}.docx"
+        output_path = os.path.join('uploads', filename)
+        
+        os.makedirs('uploads', exist_ok=True)
+        doc.save(output_path)
+        
+        logger.info(f"基于模板生成推文: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"基于模板生成推文失败: {str(e)}")
+        raise Exception(f"基于模板生成推文失败: {str(e)}")

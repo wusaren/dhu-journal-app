@@ -210,7 +210,7 @@ const handleView = (paper: Paper) => {
   }
   
   // 使用预览API访问PDF文件 - 不强制下载
-  const pdfUrl = `http://localhost:5000/api/preview/${filename}`
+  const pdfUrl = `/api/preview/${filename}`
   console.log('PDF预览URL:', pdfUrl)
   
   // 在新窗口打开PDF预览

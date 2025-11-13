@@ -28,15 +28,15 @@ class FileService:
             is_valid, error_msg = validate_file_upload(file)
             if not is_valid:
                 return {'success': False, 'message': error_msg, 'status_code': 400}
-            
+
             filename = file.filename
             logger.info(f"文件名: {filename}, 期刊ID: {journal_id}")
-            
+
             # 保存文件
             from werkzeug.utils import secure_filename
-            secure_filename_str = secure_filename(filename)
+            # secure_filename_str = secure_filename(filename)
             timestamp = generate_timestamp()
-            stored_filename = f"{timestamp}_{secure_filename_str}"
+            stored_filename = f"{timestamp}_{filename}"
             
             # 确保上传目录存在
             upload_folder = ensure_upload_directory('uploads')

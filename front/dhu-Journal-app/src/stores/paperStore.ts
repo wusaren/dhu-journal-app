@@ -163,12 +163,12 @@ export const usePaperStore = defineStore('paper', () => {
     }
 
     const uploadPaper = async (file: File, journalId: string = '1') => {
-        // 检查论文是否已存在
-        const existingPapers = await paperService.checkPaperExists(file.name)
-        if (existingPapers.length > 0) {
-            ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，不可重复上传`)
-            return false
-        }
+        // // 检查论文是否已存在
+        // const existingPapers = await paperService.checkPaperExists(file.name)
+        // if (existingPapers.length > 0) {
+        //     ElMessage.warning(`论文 "${file.name}" 已存在于数据库中，不可重复上传`)
+        //     return false
+        // }
 
         // 显示持续的解析提示
         let loadingMessage = ElMessage({

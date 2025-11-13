@@ -91,7 +91,7 @@
             >
               分配任务
             </el-button>
-            <el-button v-if="IsManaging" class="delete-btn" size="small" @click="handleDelete(scope.row)"> 
+            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
               删除
             </el-button>
           </template>
@@ -176,9 +176,9 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useJournalStore } from '@/stores/journalStore'
 import type { Journal } from '@/api/journalService'
-import { journalService } from '@/api/journalService'   // <- 使用封装的服务
+import { journalService } from '@/api/journalService'
 import apiClient from '@/api/axios'
- 
+
 const router = useRouter()
 const journalStore = useJournalStore()
 
@@ -400,6 +400,8 @@ const handleGenerateWeibo = async (journal: Journal) => {
 }
 
 const handleViewStats = async (journal: Journal) => {
+  // 直接生成统计表，不打开配置对话框
+  // 后端会自动判断：有模板配置就用模板，没有就用默认配置
   try {
     await journalStore.generateStats(journal.id, journal.issue)
   } catch (error: any) {
@@ -460,6 +462,7 @@ const confirmDistribute = async () => {
     assigning.value = false
   }
 }
+
 
 const handleDelete = async (journal: Journal) => {
   try {
@@ -644,6 +647,20 @@ const handleDelete = async (journal: Journal) => {
   border-color: #3f4041ff !important;
   color: #7a7d80ff !important;
 }
+
+/* 模板配置按钮自定义样式 */
+.template-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.template-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
 /* 删除按钮自定义样式 */
 .delete-btn {
   background-color: #f5f5f5 !important;

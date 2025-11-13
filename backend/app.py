@@ -21,6 +21,11 @@ from services.journal_service import JournalService
 from services.paper_service import PaperService
 from services.file_service import FileService
 from services.export_service import ExportService
+from services.paper_format_service import PaperFormatService
+from services.column_config_service import ColumnConfigService
+from services.template_service import TemplateService
+from services.template_config_service import TemplateConfigService
+from services.tuiwen_template_service import TuiwenTemplateService
 
 # 导入管理蓝图
 from blueprints.admin import admin_bp
@@ -100,13 +105,43 @@ CORS(app,
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 # 配置日志
-logging.basicConfig(level=logging.INFO)
+# 创建logs目录（如果不存在）
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# 配置日志：同时输出到控制台和文件
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8'),
+        logging.StreamHandler()  # 输出到控制台
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # 文件上传配置
 UPLOAD_FOLDER = 'uploads'
+FORMAT_CHECK_FOLDER = 'uploads/format_check'
+FORMAT_CHECK_TEMP_FOLDER = 'uploads/format_check/temp'
+FORMAT_CHECK_REPORTS_FOLDER = 'uploads/format_check/reports'
+# 新增：用户配置目录（用于用户模板、用户配置文件等，和 uploads 分离）
+USER_CONFIG_FOLDER = 'user_configs'
+
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'xlsx'}
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['FORMAT_CHECK_FOLDER'] = FORMAT_CHECK_FOLDER
+app.config['FORMAT_CHECK_TEMP_FOLDER'] = FORMAT_CHECK_TEMP_FOLDER
+app.config['FORMAT_CHECK_REPORTS_FOLDER'] = FORMAT_CHECK_REPORTS_FOLDER
+app.config['USER_CONFIG_FOLDER'] = USER_CONFIG_FOLDER
+
+# 创建必要的目录
+for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER, USER_CONFIG_FOLDER]:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+        logger.info(f"创建目录: {folder}")
 
 # 设置 Flask-Security
 security = Security(app, user_datastore)
@@ -405,11 +440,11 @@ def export_toc():
         logger.error(f"目录生成错误: {str(e)}")
         return jsonify({'message': f'目录生成失败: {str(e)}'}), 500
 
-# 生成推文 - 基于数据权限控制，无需额外权限检查
+# 生成推文 - 基于数据权限控制，支持用户模板配置
 @app.route('/api/export/tuiwen', methods=['POST'])
 @auth_required()
 def export_tuiwen():
-    """生成推文Word文档"""
+    """生成推文Word文档 - 优先使用用户模板，否则使用期刊模板"""
     try:
         data = request.get_json()
         journal_id = data.get('journalId')
@@ -418,7 +453,19 @@ def export_tuiwen():
             return jsonify({'message': '缺少期刊ID'}), 400
         
         export_service = ExportService()
-        result = export_service.export_tuiwen(journal_id)
+        
+        # 优先检查用户级别的推文模板配置
+        user_id = current_user.id
+        tuiwen_template_service = TuiwenTemplateService()
+        user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+        
+        if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+            # 使用用户模板生成
+            logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+            result = export_service.export_tuiwen(journal_id, user_id)
+        else:
+            # 使用期刊模板生成
+            result = export_service.export_tuiwen(journal_id)
         
         if result['success']:
             return jsonify(result)
@@ -429,20 +476,505 @@ def export_tuiwen():
         logger.error(f"推文生成错误: {str(e)}")
         return jsonify({'message': f'推文生成失败: {str(e)}'}), 500
 
-# 生成统计表 - 基于数据权限控制，无需额外权限检查
-@app.route('/api/export/excel', methods=['POST'])
-@auth_required()
-def export_excel():
-    """生成统计表Excel"""
+# 获取可用列定义
+@app.route('/api/export/columns', methods=['GET'])
+def get_available_columns():
+    """获取所有可用的统计表列定义"""
+    try:
+        # 定义所有可用的列
+        available_columns = [
+            {'key': 'manuscript_id', 'label': '稿件号', 'category': '基本信息'},
+            {'key': 'pdf_pages', 'label': '页数', 'category': '基本信息'},
+            {'key': 'first_author', 'label': '一作', 'category': '作者信息'},
+            {'key': 'corresponding', 'label': '通讯', 'category': '作者信息'},
+            {'key': 'authors', 'label': '作者', 'category': '作者信息'},
+            {'key': 'issue', 'label': '刊期', 'category': '基本信息'},
+            {'key': 'is_dhu', 'label': '是否东华大学', 'category': '基本信息'},
+            {'key': 'title', 'label': '标题', 'category': '论文信息'},
+            {'key': 'chinese_title', 'label': '中文标题', 'category': '论文信息'},
+            {'key': 'chinese_authors', 'label': '中文作者', 'category': '作者信息'},
+            {'key': 'doi', 'label': 'DOI', 'category': '论文信息'},
+            {'key': 'page_start', 'label': '起始页码', 'category': '基本信息'},
+            {'key': 'page_end', 'label': '结束页码', 'category': '基本信息'},
+        ]
+        
+        return jsonify({
+            'success': True,
+            'columns': available_columns
+        })
+    except Exception as e:
+        logger.error(f"获取可用列失败: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# 保存列配置
+@app.route('/api/export/columns/config', methods=['POST'])
+def save_column_config():
+    """保存期刊的列配置到 JSON 文件"""
     try:
         data = request.get_json()
         journal_id = data.get('journalId')
+        columns_config = data.get('columns', [])
+        
+        if not journal_id:
+            return jsonify({'success': False, 'message': '缺少期刊ID'}), 400
+        
+        if not columns_config:
+            return jsonify({'success': False, 'message': '列配置不能为空'}), 400
+        
+        config_service = ColumnConfigService()
+        result = config_service.save_config(journal_id, columns_config)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 500
+    
+    except Exception as e:
+        logger.error(f"保存列配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'保存配置失败: {str(e)}'}), 500
+
+# 获取列配置
+@app.route('/api/export/columns/config/<int:journal_id>', methods=['GET'])
+def get_column_config(journal_id):
+    """从 JSON 文件加载期刊的列配置"""
+    try:
+        config_service = ColumnConfigService()
+        columns_config = config_service.load_config(journal_id)
+        
+        if columns_config is None:
+            return jsonify({
+                'success': True,
+                'has_config': False,
+                'columns': None
+            })
+        
+        return jsonify({
+            'success': True,
+            'has_config': True,
+            'columns': columns_config
+        })
+    
+    except Exception as e:
+        logger.error(f"获取列配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取配置失败: {str(e)}'}), 500
+
+# 上传统计表模板文件
+@app.route('/api/upload/stats-format', methods=['POST'])
+def upload_template():
+    """上传Excel模板文件并识别表头"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': '没有上传文件'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': '文件名为空'}), 400
+
+        # 检查文件类型
+        if not file.filename.endswith(('.xlsx', '.xls')):
+            return jsonify({'success': False, 'message': '只支持Excel文件（.xlsx, .xls）'}), 400
+
+        # 保存临时文件到用户配置目录（以 user_id 为单位）
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        try:
+            uid = getattr(current_user, 'id', None)
+        except Exception:
+            uid = None
+        uid_str = str(uid) if uid else 'anon'
+        safe_name = secure_filename(file.filename)
+        user_dir = os.path.join(app.config['USER_CONFIG_FOLDER'], f'user_{uid_str}')
+        os.makedirs(user_dir, exist_ok=True)
+        temp_filename = f"template_user_{uid_str}_{timestamp}_{safe_name}"
+        temp_path = os.path.join(user_dir, temp_filename)
+        file.save(temp_path)
+
+        # 提取表头
+        template_service = TemplateService()
+        headers = template_service.extract_headers_from_excel(temp_path)
+
+        if not headers:
+            return jsonify({'success': False, 'message': '无法从Excel文件中提取表头'}), 400
+
+        # 匹配表头
+        matched_headers = template_service.match_headers(headers)
+
+        return jsonify({
+            'success': True,
+            'message': '模板上传成功',
+            'headers': matched_headers,
+            'template_file_path': temp_path
+        })
+
+    except Exception as e:
+        logger.error(f"上传模板错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'上传模板失败: {str(e)}'}), 500
+
+# 上传推文模板文件（亦改为用户配置目录）
+@app.route('/api/upload/tuiwen-format', methods=['POST'])
+def upload_tuiwen_template():
+    """上传Word推文模板文件"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': '没有上传文件'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': '文件名为空'}), 400
+
+        # 检查文件类型
+        if not file.filename.endswith(('.docx', '.doc')):
+            return jsonify({'success': False, 'message': '只支持Word文件（.docx, .doc）'}), 400
+
+        # 保存到用户配置目录
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        try:
+            uid = getattr(current_user, 'id', None)
+        except Exception:
+            uid = None
+        uid_str = str(uid) if uid else 'anon'
+        safe_name = secure_filename(file.filename)
+        user_dir = os.path.join(app.config['USER_CONFIG_FOLDER'], f'user_{uid_str}')
+        os.makedirs(user_dir, exist_ok=True)
+        temp_filename = f"tuiwen_user_{uid_str}_{timestamp}_{safe_name}"
+        temp_path = os.path.join(user_dir, temp_filename)
+        file.save(temp_path)
+
+        return jsonify({
+            'success': True,
+            'message': '推文模板上传成功',
+            'template_file_path': temp_path
+        })
+
+    except Exception as e:
+        logger.error(f"上传推文模板错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'上传模板失败: {str(e)}'}), 500
+
+# 获取模板表头识别结果
+@app.route('/api/journal/<int:journal_id>/template/headers', methods=['GET'])
+def get_template_headers(journal_id):
+    """获取模板表头识别结果（如果已保存）"""
+    try:
+        config_service = TemplateConfigService()
+        config = config_service.load_config(journal_id)
+        
+        if not config:
+            return jsonify({
+                'success': True,
+                'has_template': False,
+                'headers': [],
+                'message': '该期刊没有模板配置'
+            })
+        
+        return jsonify({
+            'success': True,
+            'has_template': True,
+            'headers': config.get('column_mapping', []),
+            'template_file_path': config.get('template_file_path')
+        })
+    
+    except Exception as e:
+        logger.error(f"获取模板表头错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取模板表头失败: {str(e)}'}), 500
+
+# 保存用户模板配置
+@app.route('/api/user/template', methods=['POST'])
+@auth_required()
+def save_user_template():
+    """保存用户模板配置"""
+    try:
+        data = request.get_json()
+        template_file_path = data.get('template_file_path')
+        column_mapping = data.get('column_mapping', [])
+        
+        if not template_file_path:
+            return jsonify({'success': False, 'message': '缺少模板文件路径'}), 400
+        
+        if not column_mapping:
+            return jsonify({'success': False, 'message': '列映射配置不能为空'}), 400
+        
+        user_id = current_user.id
+        config_service = TemplateConfigService()
+        result = config_service.save_user_template(user_id, template_file_path, column_mapping)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 500
+    
+    except Exception as e:
+        logger.error(f"保存用户模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'保存用户模板配置失败: {str(e)}'}), 500
+
+# 保存模板映射配置
+@app.route('/api/journal/<int:journal_id>/template/mapping', methods=['PUT'])
+def save_template_mapping(journal_id):
+    """保存模板表头映射配置"""
+    try:
+        data = request.get_json()
+        template_file_path = data.get('template_file_path')
+        column_mapping = data.get('column_mapping', [])
+        
+        if not template_file_path:
+            return jsonify({'success': False, 'message': '缺少模板文件路径'}), 400
+        
+        if not column_mapping:
+            return jsonify({'success': False, 'message': '列映射配置不能为空'}), 400
+        
+        config_service = TemplateConfigService()
+        result = config_service.save_template(journal_id, template_file_path, column_mapping)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 500
+    
+    except Exception as e:
+        logger.error(f"保存模板映射错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'保存映射失败: {str(e)}'}), 500
+
+# 获取用户模板配置
+@app.route('/api/user/template', methods=['GET'])
+@auth_required()
+def get_user_template():
+    """获取用户模板配置"""
+    try:
+        user_id = current_user.id
+        config_service = TemplateConfigService()
+        config = config_service.load_user_config(user_id)
+        
+        if not config:
+            return jsonify({
+                'success': True,
+                'has_template': False,
+                'message': '用户没有模板配置'
+            })
+        
+        return jsonify({
+            'success': True,
+            'has_template': True,
+            'template_file_path': config.get('template_file_path'),
+            'column_mapping': config.get('column_mapping', []),
+            'created_at': config.get('created_at'),
+            'updated_at': config.get('updated_at')
+        })
+    
+    except Exception as e:
+        logger.error(f"获取用户模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取用户模板配置失败: {str(e)}'}), 500
+
+# 删除模板
+@app.route('/api/journal/<int:journal_id>/template', methods=['DELETE'])
+def delete_template(journal_id):
+    """删除模板配置"""
+    try:
+        config_service = TemplateConfigService()
+        result = config_service.delete_config(journal_id)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 404
+    
+    except Exception as e:
+        logger.error(f"删除模板错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'删除模板失败: {str(e)}'}), 500
+
+# 获取系统字段列表
+@app.route('/api/template/system-fields', methods=['GET'])
+def get_system_fields():
+    """获取所有可用的系统字段"""
+    try:
+        template_service = TemplateService()
+        fields = template_service.get_available_system_fields()
+        
+        return jsonify({
+            'success': True,
+            'fields': fields
+        })
+    
+    except Exception as e:
+        logger.error(f"获取系统字段错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取系统字段失败: {str(e)}'}), 500
+
+
+# 保存用户推文模板配置
+@app.route('/api/user/tuiwen-template', methods=['POST'])
+@auth_required()
+def save_user_tuiwen_template():
+    """保存用户推文模板字段配置"""
+    try:
+        data = request.get_json()
+        fields = data.get('fields', [])
+        
+        if not fields:
+            return jsonify({'success': False, 'message': '字段配置不能为空'}), 400
+        
+        user_id = current_user.id
+        config_service = TuiwenTemplateService()
+        result = config_service.save_user_template_config(user_id, fields)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 500
+    
+    except Exception as e:
+        logger.error(f"保存用户推文模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'保存用户推文模板配置失败: {str(e)}'}), 500
+
+# 获取用户推文模板配置
+@app.route('/api/user/tuiwen-template', methods=['GET'])
+@auth_required()
+def get_user_tuiwen_template():
+    """获取用户推文模板配置"""
+    try:
+        user_id = current_user.id
+        config_service = TuiwenTemplateService()
+        config = config_service.load_user_config(user_id)
+        
+        if not config:
+            return jsonify({
+                'success': True,
+                'has_template': False,
+                'message': '用户没有推文模板配置'
+            })
+        
+        return jsonify({
+            'success': True,
+            'has_template': True,
+            'fields': config.get('fields', []),
+            'created_at': config.get('created_at'),
+            'updated_at': config.get('updated_at')
+        })
+    
+    except Exception as e:
+        logger.error(f"获取用户推文模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取用户推文模板配置失败: {str(e)}'}), 500
+
+# 保存推文模板配置
+@app.route('/api/journal/<int:journal_id>/tuiwen-template', methods=['PUT'])
+def save_tuiwen_template(journal_id):
+    """保存推文模板字段配置"""
+    try:
+        data = request.get_json()
+        fields = data.get('fields', [])
+        
+        if not fields:
+            return jsonify({'success': False, 'message': '字段配置不能为空'}), 400
+        
+        config_service = TuiwenTemplateService()
+        result = config_service.save_template_config(journal_id, fields)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 500
+    
+    except Exception as e:
+        logger.error(f"保存推文模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'保存配置失败: {str(e)}'}), 500
+
+# 获取推文模板配置
+@app.route('/api/journal/<int:journal_id>/tuiwen-template', methods=['GET'])
+def get_tuiwen_template(journal_id):
+    """获取推文模板配置"""
+    try:
+        config_service = TuiwenTemplateService()
+        config = config_service.load_config(journal_id)
+        
+        if not config:
+            return jsonify({
+                'success': True,
+                'has_template': False,
+                'message': '该期刊没有推文模板配置'
+            })
+        
+        # 新格式：返回字段配置
+        if 'fields' in config:
+            return jsonify({
+                'success': True,
+                'has_template': True,
+                'fields': config.get('fields', []),
+                'created_at': config.get('created_at'),
+                'updated_at': config.get('updated_at')
+            })
+        # 旧格式：兼容处理
+        else:
+            return jsonify({
+                'success': True,
+                'has_template': True,
+                'template_file_path': config.get('template_file_path'),
+                'created_at': config.get('created_at'),
+                'updated_at': config.get('updated_at')
+            })
+    
+    except Exception as e:
+        logger.error(f"获取推文模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取模板配置失败: {str(e)}'}), 500
+
+# 删除推文模板
+@app.route('/api/journal/<int:journal_id>/tuiwen-template', methods=['DELETE'])
+def delete_tuiwen_template(journal_id):
+    """删除推文模板配置"""
+    try:
+        config_service = TuiwenTemplateService()
+        result = config_service.delete_config(journal_id)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 404
+    
+    except Exception as e:
+        logger.error(f"删除推文模板错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'删除模板失败: {str(e)}'}), 500
+
+# 生成统计表
+@app.route('/api/export/excel', methods=['POST'])
+@auth_required()
+def export_excel():
+    """生成统计表Excel - 优先使用用户模板，否则使用期刊模板或列配置"""
+    try:
+        data = request.get_json()
+        journal_id = data.get('journalId')
+        columns_config = data.get('columns', None)  # 接收列配置
         
         if not journal_id:
             return jsonify({'message': '缺少期刊ID'}), 400
         
         export_service = ExportService()
-        result = export_service.export_excel(journal_id)
+        
+        # 优先检查用户级别的模板配置
+        user_id = current_user.id
+        template_config_service = TemplateConfigService()
+        user_template_config = template_config_service.load_user_config(user_id)
+        
+        if user_template_config and user_template_config.get('template_file_path') and user_template_config.get('column_mapping'):
+            # 使用用户模板生成
+            logger.info(f"使用用户模板生成统计表: {user_template_config.get('template_file_path')}")
+            result = export_service.export_excel(journal_id, columns_config, user_id)
+        else:
+            # 检查期刊级别的模板配置
+            template_config = template_config_service.load_config(journal_id)
+            
+            if template_config and template_config.get('template_file_path') and template_config.get('column_mapping'):
+                # 使用期刊模板生成
+                logger.info(f"使用期刊模板生成统计表: {template_config.get('template_file_path')}")
+                result = export_service.export_excel_with_template(
+                    journal_id,
+                    template_config['template_file_path'],
+                    template_config['column_mapping']
+                )
+            else:
+                # 使用列配置生成
+                # 如果没有传入配置，尝试从 JSON 文件加载
+                if columns_config is None:
+                    config_service = ColumnConfigService()
+                    columns_config = config_service.load_config(journal_id)
+                    if columns_config:
+                        logger.info(f"从配置文件加载了期刊 {journal_id} 的列配置")
+                
+                result = export_service.export_excel(journal_id, columns_config)
         
         if result['success']:
             return jsonify(result)
@@ -643,6 +1175,261 @@ def assign_journal(journal_id):
     except Exception as e:
         logger.exception("分配任务错误")
         return jsonify({'message': f'分配失败: {str(e)}'}), 500
+# ==================== 论文格式检测 API ====================
+
+# # 获取可用的检测模块
+# @app.route('/api/paper-format/modules', methods=['GET'])
+# def get_format_modules():
+#     """获取所有可用的论文格式检测模块"""
+#     try:
+#         paper_format_service = PaperFormatService()
+#         modules = paper_format_service.get_available_modules()
+        
+#         # 获取每个模块的详细信息
+#         modules_info = []
+#         for module_name in modules:
+#             info = paper_format_service.get_module_info(module_name)
+#             modules_info.append(info)
+        
+#         return jsonify({
+#             'success': True,
+#             'data': {
+#                 'modules': modules_info,
+#                 'total': len(modules_info)
+#             }
+#         })
+    
+#     except Exception as e:
+#         logger.error(f"获取检测模块列表错误: {str(e)}")
+#         return jsonify({
+#             'success': False, 
+#             'message': f'获取检测模块列表失败: {str(e)}'
+#         }), 500
+
+
+# # 检测单个模块
+# @app.route('/api/paper-format/check/<module_name>', methods=['POST'])
+# def check_format_module(module_name):
+#     """检测论文格式（单个模块）"""
+#     try:
+#         # 获取上传的文件
+#         if 'file' not in request.files:
+#             return jsonify({
+#                 'success': False, 
+#                 'message': '未上传文件'
+#             }), 400
+        
+#         file = request.files['file']
+#         if file.filename == '':
+#             return jsonify({
+#                 'success': False, 
+#                 'message': '文件名为空'
+#             }), 400
+        
+#         # 检查文件类型
+#         if not file.filename.endswith('.docx'):
+#             return jsonify({
+#                 'success': False, 
+#                 'message': '只支持 .docx 格式的文件'
+#             }), 400
+        
+#         # 保存临时文件到temp目录
+#         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+#         temp_filename = f"{timestamp}_{secure_filename(file.filename)}"
+#         temp_path = os.path.join(app.config['FORMAT_CHECK_TEMP_FOLDER'], temp_filename)
+#         logger.info(f"保存临时文件: {temp_path}")
+#         file.save(temp_path)
+        
+#         # 执行检测
+#         paper_format_service = PaperFormatService()
+        
+#         # 根据模块名称调用相应的检测方法
+#         if module_name.lower() == 'title':
+#             result = paper_format_service.check_title(temp_path)
+#         elif module_name.lower() == 'abstract':
+#             result = paper_format_service.check_abstract(temp_path)
+#         elif module_name.lower() == 'keywords':
+#             result = paper_format_service.check_keywords(temp_path)
+#         elif module_name.lower() == 'content':
+#             result = paper_format_service.check_content(temp_path)
+#         elif module_name.lower() == 'figure':
+#             enable_api = request.form.get('enableApi', 'false').lower() == 'true'
+#             result = paper_format_service.check_figure(temp_path, enable_content_check=enable_api)
+#         elif module_name.lower() == 'formula':
+#             result = paper_format_service.check_formula(temp_path)
+#         elif module_name.lower() == 'table':
+#             result = paper_format_service.check_table(temp_path)
+#         else:
+#             return jsonify({
+#                 'success': False, 
+#                 'message': f'未知的检测模块: {module_name}'
+#             }), 400
+        
+#         return jsonify(result)
+
+#     except Exception as e:
+#         logger.error(f"单模块检测错误: {str(e)}")
+#         return jsonify({
+#             'success': False, 
+#             'message': f'检测失败: {str(e)}'
+#         }), 500
+
+
+# 全量检测
+@app.route('/api/paper-format/check-all', methods=['POST'])
+def check_format_all():
+    """执行论文格式全量检测"""
+    try:
+        # 获取上传的文件
+        if 'file' not in request.files:
+            return jsonify({
+                'success': False, 
+                'message': '未上传文件'
+            }), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({
+                'success': False, 
+                'message': '文件名为空'
+            }), 400
+        
+        # 检查文件类型
+        if not file.filename.endswith('.docx'):
+            return jsonify({
+                'success': False, 
+                'message': '只支持 .docx 格式的文件'
+            }), 400
+        
+        # 保存临时文件到temp目录
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        temp_filename = f"{timestamp}_{secure_filename(file.filename)}"
+        temp_path = os.path.join(app.config['FORMAT_CHECK_TEMP_FOLDER'], temp_filename)
+        logger.info(f"保存临时文件: {temp_path}")
+        file.save(temp_path)
+        
+        # 获取参数
+        enable_figure_api = request.form.get('enableFigureApi', 'false').lower() == 'true'
+        modules = request.form.get('modules')  # 可选，逗号分隔的模块名称
+        
+        if modules:
+            modules_list = [m.strip() for m in modules.split(',')]
+        else:
+            modules_list = None
+        
+        # 执行检测
+        paper_format_service = PaperFormatService()
+        result = paper_format_service.check_all(
+            temp_path,
+            enable_figure_api=enable_figure_api,
+            modules=modules_list
+        )
+        
+        # 自动生成并保存报告
+        if result.get('success'):
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            report_filename = f"{timestamp}_format_report.txt"
+            report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], report_filename)
+            
+            try:
+                report_result = paper_format_service.generate_report(result, output_path=report_path)
+                if report_result.get('success'):
+                    # 将报告信息添加到返回结果中
+                    result['data']['report_saved'] = True
+                    result['data']['report_filename'] = report_filename
+                    result['data']['report_download_url'] = f'/api/paper-format/download-report/{report_filename}'
+                    result['data']['report_text'] = report_result['data']['report_text']
+
+                    logger.info(f"检测报告已自动保存: {report_path}")
+            except Exception as e:
+                logger.warning(f"自动保存报告失败: {e}")
+                # 不影响检测结果的返回
+        
+        return jsonify(result)
+            
+        
+    
+    except Exception as e:
+        logger.error(f"全量检测错误: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'message': f'检测失败: {str(e)}'
+        }), 500
+
+
+# 生成检测报告
+# @app.route('/api/paper-format/generate-report', methods=['POST'])
+# def generate_format_report():
+#     """生成论文格式检测报告"""
+#     try:
+#         data = request.get_json()
+#         check_results = data.get('checkResults')
+#
+#         if not check_results:
+#             return jsonify({
+#                 'success': False,
+#                 'message': '缺少检测结果数据'
+#             }), 400
+#
+#         # 生成报告文件名，保存到reports目录
+#         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+#         report_filename = f"{timestamp}_format_report.txt"
+#         report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], report_filename)
+#         logger.info(f"生成报告文件: {report_path}")
+#
+#         # 生成报告
+#         paper_format_service = PaperFormatService()
+#         result = paper_format_service.generate_report(check_results, output_path=report_path)
+#
+#         if result['success']:
+#             # 返回报告文本和下载链接
+#             return jsonify({
+#                 'success': True,
+#                 'data': {
+#                     'report_text': result['data']['report_text'],
+#                     'download_url': f'/api/paper-format/download-report/{report_filename}'
+#                 },
+#                 'message': '报告生成成功'
+#             })
+#         else:
+#             return jsonify(result), result.get('status_code', 500)
+#
+#     except Exception as e:
+#         logger.error(f"生成报告错误: {str(e)}")
+#         return jsonify({
+#             'success': False,
+#             'message': f'生成报告失败: {str(e)}'
+#         }), 500
+
+
+# 下载格式检测报告
+# @app.route('/api/paper-format/download-report/<filename>')
+# def download_format_report(filename):
+#     """下载论文格式检测报告"""
+#     try:
+#         report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], filename)
+#
+#         if not os.path.exists(report_path):
+#             return jsonify({
+#                 'success': False,
+#                 'message': '报告文件不存在'
+#             }), 404
+#
+#         logger.info(f"下载报告: {report_path}")
+#         return send_file(
+#             report_path,
+#             as_attachment=True,
+#             download_name=filename,
+#             mimetype='text/plain'
+#         )
+#
+#     except Exception as e:
+#         logger.error(f"下载报告错误: {str(e)}")
+#         return jsonify({
+#             'success': False,
+#             'message': f'下载失败: {str(e)}'
+#         }), 500
+
 
 if __name__ == '__main__':
     init_db()

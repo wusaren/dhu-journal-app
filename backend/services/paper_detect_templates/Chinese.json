@@ -1,0 +1,102 @@
+{
+  "chinese_section_rule": "参考文献后的中文部分包括：中文标题、中文作者、中文单位、中文摘要、中文关键词。中文使用宋体，英文使用Times New Roman，格式要求与英文部分一致。",
+  "format_rules": {
+    "title": {
+      "font_size_pt": 14,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 1.0,
+      "space_after": 1.0
+    },
+    "author": {
+      "font_size_pt": 12,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "justify",
+      "space_before": 0,
+      "space_after": 0
+    },
+    "affiliation": {
+      "font_size_pt": 12,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "justify",
+      "space_before": 0,
+      "space_after": 1
+    },
+    "abstract": {
+      "font_size_pt": 12,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.5,
+      "alignment": "justify",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "keywords": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.5,
+      "alignment": "justify",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号"
+    },
+    "require_chinese_font": true,
+    "chinese_font_name": "宋体",
+    "english_font_name": "Times New Roman",
+    "affiliation_rules": {
+      "check_single_affiliation": true,
+      "description": "如果只有一个单位，不应使用编号（如'1.'），应直接写单位名称"
+    },
+    "keywords_rules": {
+      "check_separator": true,
+      "separator": "；",
+      "description": "中文关键词应使用中文分号分隔"
+    }
+  },
+  "messages": {
+    "chinese_section_ok": "中文部分格式检查通过",
+    "chinese_section_error": "中文部分格式检查发现问题",
+    "chinese_title_missing": "未找到中文标题",
+    "chinese_abstract_missing": "未找到中文摘要",
+    "chinese_keywords_missing": "未找到中文关键词",
+    "references_not_found": "未找到参考文献（References）部分",
+    "font_error": "字体应为：中文宋体，英文Times New Roman"
+  },
+  "notes": [
+    "中文部分位于参考文献（References）之后",
+    "中文标题：宋体，四号(14pt)，加粗，两端对齐",
+    "中文作者：宋体，小四(12pt)，两端对齐",
+    "中文单位：宋体，小四(12pt)，两端对齐",
+    "中文摘要：宋体，小四(12pt)，加粗，1.5倍行距，两端对齐",
+    "中文关键词：宋体，五号(10.5pt)，1.5倍行距，两端对齐",
+    "英文部分（如有）使用Times New Roman字体"
+  ],
+  "generated_from": "用户要求：参考文献后的中文部分，中文用宋体，英文用Times New Roman，格式与英文部分一致"
+}
+

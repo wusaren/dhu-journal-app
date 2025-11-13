@@ -33,25 +33,22 @@ export interface User {
 }
 
 export const authService = {
-    // 用户注册
-    async register(credentials: RegisterRequest): Promise<RegisterResponse> {
-        return await apiClient.post('/api/register', credentials)
-    },
+    
 
     // 用户登录
     async login(credentials: LoginRequest): Promise<LoginResponse> {
-        return await apiClient.post('/api/login', credentials)
+        return await apiClient.post('/login', credentials)
     },
 
     // 用户登出
     async logout(): Promise<void> {
-        return await apiClient.post('/api/logout')
+        return await apiClient.post('/logout')
     },
 
     // 获取当前用户信息
     async getCurrentUser(): Promise<User> {
         try {
-            const resp = await apiClient.get('/api/me')
+            const resp = await apiClient.get('/me')
             if (resp && resp.data && resp.data.user) {
                 // 同步本地存储以保持兼容
                 localStorage.setItem('user', JSON.stringify(resp.data.user))

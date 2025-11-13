@@ -78,7 +78,7 @@ def extract_doi(text: str) -> Optional[str]:
 def extract_font_sizes_from_pdf_page(pdf_page) -> List[Dict[str, Any]]:
     """
     从PDF页面提取文本及其字号信息
-    返回格式: [{"text": "文本内容", "fontsize": 字号, "line_number": 行号}]
+    返回格式: [{"text": "文本内容", "fontsize": 字号, "line_number": 行号, "y_coord": y坐标}]
     """
     try:
         import pdfplumber
@@ -87,12 +87,27 @@ def extract_font_sizes_from_pdf_page(pdf_page) -> List[Dict[str, Any]]:
             return []
         
         # 按y坐标分组，相同y坐标的字符在同一行
+        # 使用阈值方法：如果两个字符的y坐标差值小于阈值，认为是同一行
+        Y_COORD_THRESHOLD = 10.75  # y坐标差值阈值，可以调整这个值来控制同一行的判断
+        # 值越大，越宽松（更多字符会被归为同一行）
+        # 值越小，越严格（只有y坐标非常接近的字符才会被归为同一行）
+        # 建议范围：0.1 - 2.0
+        
         lines = {}
         for char in chars:
-            y = round(char['top'], 1)  # 四舍五入到小数点后1位，避免浮点误差
-            if y not in lines:
-                lines[y] = []
-            lines[y].append(char)
+            y_original = char['top']
+            # 找到最接近的已存在的y坐标（在阈值范围内）
+            matched_y = None
+            for existing_y in lines.keys():
+                if abs(y_original - existing_y) < Y_COORD_THRESHOLD:
+                    matched_y = existing_y
+                    break
+            
+            # 如果找到匹配的y坐标，归入该行；否则创建新行
+            if matched_y is not None:
+                lines[matched_y].append(char)
+            else:
+                lines[y_original] = [char]
         
         # 处理每一行
         line_data = []
@@ -123,8 +138,21 @@ def extract_font_sizes_from_pdf_page(pdf_page) -> List[Dict[str, Any]]:
             line_data.append({
                 "text": line_text.strip(),
                 "fontsize": most_common_size,
-                "line_number": line_num
+                "line_number": line_num,
+                "y_coord": y  # 添加y坐标
             })
+            
+            # 输出日志：显示每行的y坐标和文本内容
+            logger.info(f"行{line_num+1} - y坐标: {y}, 字号: {most_common_size:.1f}, 文本: '{line_text.strip()[:80]}'")
+            
+            # 输出字符级别的y坐标信息（仅对前20行或包含DOI的行）
+            if line_num < 20 or "DOI" in line_text or "doi" in line_text.lower():
+                char_y_coords = []
+                for char in chars_in_line[:50]:  # 只显示前50个字符，避免日志过长
+                    char_y_coords.append(f"{char['text']}(y={char['top']:.2f})")
+                if len(chars_in_line) > 50:
+                    char_y_coords.append(f"...(共{len(chars_in_line)}个字符)")
+                logger.info(f"行{line_num+1} 字符y坐标详情: {' '.join(char_y_coords)}")
         
         return line_data
     except Exception as e:
@@ -152,14 +180,20 @@ def extract_title_authors_with_fontsize(text: str, pdf_page=None) -> tuple[str, 
         try:
             line_data = extract_font_sizes_from_pdf_page(pdf_page)
             if line_data:
-                # 使用字号信息确定标题行数量，但完全使用原方法的文本处理逻辑
+                # 使用字号信息确定标题行数量
                 title_line_count = get_title_line_count_by_fontsize(line_data, doi_idx)
                 if title_line_count > 0:
-                    return extract_title_authors_with_line_count(text, doi_idx, title_line_count)
+                    if title_line_count != 2:
+                        logger.info(f"使用字号检测方法：标题行数={title_line_count}")
+                    else:
+                        logger.info(f"字号检测结果：标题行数=2（与默认值相同）")
+                    # 使用line_data直接提取标题和作者，保证分行一致性
+                    return extract_title_authors_from_line_data(line_data, title_line_count)
         except Exception as e:
             logger.warning(f"字号检测失败，回退到原方法: {e}")
     
-    # 回退到原来的方法
+    # 回退到原来的方法（固定2行）
+    logger.info("使用旧方法（固定2行标题）")
     return extract_title_authors_with_line_count(text, doi_idx, 2)
 
 def get_title_line_count_by_fontsize(line_data: List[Dict[str, Any]], doi_line_idx: int) -> int:
@@ -218,9 +252,95 @@ def get_title_line_count_by_fontsize(line_data: List[Dict[str, Any]], doi_line_i
     
     return title_line_count if title_line_count > 0 else 2
 
+def extract_title_authors_from_line_data(line_data: List[Dict[str, Any]], title_line_count: int) -> tuple[str, str]:
+    """
+    使用line_data（基于y坐标分行的结果）提取标题和作者
+    直接使用第一次分行的结果，保证分行一致性
+    """
+    if not line_data:
+        return "", ""
+    
+    # 找到DOI行在line_data中的对应位置
+    doi_line_in_data = None
+    for i, line_info in enumerate(line_data):
+        if re.search(r"\bDOI\b", line_info["text"], re.I):
+            doi_line_in_data = i
+            break
+    
+    if doi_line_in_data is None:
+        return "", ""
+    
+    # 调试：记录line_data中的行信息
+    logger.info(f"使用line_data提取标题和作者，DOI行索引: {doi_line_in_data}, 标题行数: {title_line_count}")
+    logger.info(f"line_data总行数: {len(line_data)}")
+    for idx, line_info in enumerate(line_data[doi_line_in_data:doi_line_in_data+10] if doi_line_in_data < len(line_data) else []):
+        logger.info(f"line_data行{doi_line_in_data+idx+1}: y坐标={line_info.get('y_coord', 'N/A')}, 文本: '{line_info['text'][:80]}'")
+    
+    # 从DOI行之后提取标题行
+    i = doi_line_in_data + 1
+    title_lines = []
+    while i < len(line_data) and len(title_lines) < title_line_count:
+        line_text = line_data[i]["text"].strip()
+        if line_text in (":", "：", ""): 
+            i += 1
+            continue
+        title_lines.append(line_text)
+        i += 1
+    
+    title = re.sub(r"\s+", " ", " ".join(title_lines)).strip(" :")
+    
+    # 提取作者行（在标题行之后）
+    authors = ""
+    logger.info(f"开始提取作者，当前行索引i={i}，总行数={len(line_data)}")
+    if i < len(line_data):
+        start_idx = max(0, i - 2)
+        end_idx = min(len(line_data), i + 5)
+        logger.info(f"作者行附近的上下文（行{start_idx+1}到行{end_idx}）:")
+        for idx in range(start_idx, end_idx):
+            marker = ">>>" if idx == i else "   "
+            logger.info(f"{marker} 行{idx+1}: y坐标={line_data[idx].get('y_coord', 'N/A')}, 文本: '{line_data[idx]['text'][:80]}'")
+    
+    while i < len(line_data):
+        line_text = line_data[i]["text"].strip()
+        if line_text in (":", "：", ""): 
+            i += 1
+            continue
+        
+        # 优化作者行提取：保护逗号分隔符
+        # 先清理数字和特殊符号
+        authors_raw = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", line_text)
+        
+        # 调试：记录原始提取的文本
+        logger.info(f"原始作者行（第{i+1}行）: '{line_text}'")
+        logger.info(f"清理数字后: '{authors_raw}'")
+        
+        # 统一逗号周围的空格：", " 或 " , " 或 ", " 或 "," 都统一为 ", "
+        authors_raw = re.sub(r'\s*,\s*', ', ', authors_raw)
+        
+        # 处理多个空格：只在没有逗号的情况下才转换，避免破坏已有逗号
+        if "," not in authors_raw:
+            authors_raw = re.sub(r"\s{2,}", ", ", authors_raw)
+        
+        authors = authors_raw.strip()
+        logger.info(f"最终提取的authors_line: '{authors}'")
+        break
+    
+    return title, authors
+
 def extract_title_authors_with_line_count(text: str, doi_idx: int, title_line_count: int) -> tuple[str, str]:
     """使用指定标题行数量提取标题和作者 - 完全使用原方法逻辑"""
+    # 调试：记录splitlines()后的原始行（去除空行前的状态）
+    raw_lines = text.splitlines()
+    logger.info(f"splitlines()后的原始行数: {len(raw_lines)}")
+    for idx, line in enumerate(raw_lines[doi_idx:doi_idx+10] if doi_idx < len(raw_lines) else []):
+        logger.info(f"原始行{doi_idx+idx+1}: '{line}'")
+    
     lines = [l.strip() for l in text.splitlines() if l.strip()]
+    
+    # 调试：记录去除空行后的行
+    logger.info(f"去除空行后的行数: {len(lines)}")
+    for idx, line in enumerate(lines[doi_idx:doi_idx+10] if doi_idx < len(lines) else []):
+        logger.info(f"处理后的行{doi_idx+idx+1}: '{line}'")
     
     # 完全使用原来的逻辑，只是把2改为title_line_count
     i = doi_idx + 1
@@ -235,12 +355,38 @@ def extract_title_authors_with_line_count(text: str, doi_idx: int, title_line_co
     
     # 完全使用原来的作者提取逻辑
     authors = ""
+    # 调试：记录作者行附近的上下文（前后各2行）
+    logger.info(f"开始提取作者，当前行索引i={i}，总行数={len(lines)}")
+    if i < len(lines):
+        start_idx = max(0, i - 2)
+        end_idx = min(len(lines), i + 5)
+        logger.info(f"作者行附近的上下文（行{start_idx+1}到行{end_idx}）:")
+        for idx in range(start_idx, end_idx):
+            marker = ">>>" if idx == i else "   "
+            logger.info(f"{marker} 行{idx+1}: '{lines[idx]}'")
+    
     while i < len(lines):
         if lines[i] in (":", "："): 
             i += 1
             continue
-        # 允许单空格、多空格、或逗号的作者行
-        authors = re.sub(r"\s{2,}", ", ", re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", lines[i])).strip(" ,")
+        # 优化作者行提取：保护逗号分隔符
+        # 先清理数字和特殊符号
+        authors_raw = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", lines[i])
+        
+        # 调试：记录原始提取的文本
+        logger.info(f"原始作者行（第{i+1}行）: '{lines[i]}'")
+        logger.info(f"清理数字后: '{authors_raw}'")
+        
+        # 统一逗号周围的空格：", " 或 " , " 或 ", " 或 "," 都统一为 ", "
+        authors_raw = re.sub(r'\s*,\s*', ', ', authors_raw)
+        
+        # 处理多个空格：只在没有逗号的情况下才转换，避免破坏已有逗号
+        # （PDF原文应该有逗号，如果没有可能是提取时丢失）
+        if "," not in authors_raw:
+            authors_raw = re.sub(r"\s{2,}", ", ", authors_raw)
+        
+        authors = authors_raw.strip()
+        logger.info(f"最终提取的authors_line: '{authors}'")
         break
     
     return title, authors
@@ -251,22 +397,44 @@ def extract_title_authors(text: str) -> tuple[str, str]:
     return extract_title_authors_with_fontsize(text, None)
 
 def normalize_authors_for_display(authors_line: str) -> str:
-    """鲁棒作者规范化 - 完全照搬参考代码"""
-    if "," in authors_line:
-        parts = [p.strip() for p in re.split(r",\s*", authors_line) if p.strip()]
-        pairs, i = [], 0
-        while i < len(parts):
-            if i + 1 < len(parts):
-                pairs.append(f"{parts[i]} {parts[i+1]}")
-                i += 2
-            else:
-                pairs.append(parts[i])
-                i += 1
-        return ", ".join(pairs)
+    """
+    鲁棒作者规范化 - 改进版本
+    修复两两配对逻辑：如果逗号分隔的部分已经是完整格式（包含空格），直接使用
+    """
+    # 调试：记录输入的authors_line
+    logger.info(f"normalize_authors_for_display 输入: '{authors_line}'")
     
+    if "," in authors_line:
+        # 统一逗号格式：中文逗号、分号等统一为英文逗号
+        authors_line = authors_line.replace('，', ',').replace(';', ',')
+        # 统一逗号周围的空格
+        authors_line = re.sub(r'\s*,\s*', ', ', authors_line)
+        
+        # 按逗号分割
+        parts = [p.strip() for p in re.split(r",\s*", authors_line) if p.strip()]
+        
+        # 检查每个部分：如果已经包含空格（即已经是完整的"姓 名"格式），直接使用
+        # 如果只有一个词，可能是姓或名的一部分，但根据用户确认PDF用逗号分隔，
+        # 这种情况应该很少，如果出现则保留原样
+        normalized_parts = []
+        for part in parts:
+            # 清理数字和特殊符号
+            cleaned_part = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", part).strip()
+            if cleaned_part:
+                normalized_parts.append(cleaned_part)
+        
+        result = ", ".join(normalized_parts)
+        logger.info(f"normalize_authors_for_display 输出（有逗号）: '{result}'")
+        return result
+    
+    # 如果没有逗号，记录警告（PDF原文应该有逗号，可能是提取时丢失）
+    logger.warning(f"作者行没有逗号分隔符（可能PDF提取时丢失）: '{authors_line}'")
+    # 简单处理：按空格分割后两两配对（保持向后兼容）
     tokens = [t for t in re.split(r"\s+", authors_line.strip()) if t]
     pairs = [" ".join(tokens[i:i+2]) for i in range(0, len(tokens), 2)]
-    return ", ".join(pairs)
+    result = ", ".join(pairs)
+    logger.info(f"normalize_authors_for_display 输出（无逗号，配对）: '{result}'")
+    return result
 
 def first_author_from_authors(authors_line: str) -> str:
     """提取第一作者 - 完全照搬参考代码"""
@@ -304,137 +472,83 @@ def contains_chinese(text: str) -> bool:
 def extract_chinese_title_authors_from_page(pdf_page, page_start: int, page_end: int) -> tuple[str, str]:
     """
     从指定页面提取中文标题和作者
-    结合字号判断和文本提取
+    使用基于y坐标的分行结果（与英文提取保持一致）
     """
     try:
-        # 提取文本
-        text = pdf_page.extract_text() or ""
-        
-        if not text:
+        # 使用基于y坐标的分行方法（与英文提取保持一致）
+        line_data = extract_font_sizes_from_pdf_page(pdf_page)
+        if not line_data:
             return "", ""
         
-        # 按行分割
-        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        # 找到包含中文的行（使用line_data，而不是text.split('\n')）
+        chinese_line_data = []
+        for line_info in line_data:
+            text = line_info["text"].strip()
+            if text and contains_chinese(text):
+                chinese_line_data.append(line_info)
         
-        # 找到包含中文的行
-        chinese_lines = []
-        for line in lines:
-            if contains_chinese(line):
-                chinese_lines.append(line)
-        
-        if not chinese_lines:
+        if not chinese_line_data:
             return "", ""
+        
+        logger.info(f"中文提取：使用line_data分行，找到 {len(chinese_line_data)} 行包含中文的内容")
         
         # 提取标题和作者
         chinese_title = ""
         chinese_authors = ""
         
-        # 策略1：使用字号判断（暂时禁用，因为可能丢失逗号）
-        # try:
-        #     line_data = extract_font_sizes_from_pdf_page(pdf_page)
-        #     if line_data:
-        #         chinese_line_data = []
-        #         for line_info in line_data:
-        #             text = line_info["text"].strip()
-        #             if text and contains_chinese(text):
-        #                 chinese_line_data.append(line_info)
-        #         
-        #         if chinese_line_data:
-        #             # 计算字号统计信息
-        #             font_sizes = [line["fontsize"] for line in chinese_line_data if line["fontsize"] > 1]
-        #             if font_sizes:
-        #                 max_font_size = max(font_sizes)
-        #                 avg_font_size = sum(font_sizes) / len(font_sizes)
-        #                 font_size_threshold = max_font_size * 0.9 if max_font_size > avg_font_size * 1.2 else avg_font_size * 1.1
-        #                 
-        #                 # 提取标题和作者
-        #                 title_lines = []
-        #                 author_started = False
-        #                 
-        #                 for line_info in chinese_line_data:
-        #                     text = line_info["text"].strip()
-        #                     fontsize = line_info["fontsize"]
-        #                     
-        #                     if not text or fontsize < 1:
-        #                         continue
-        #                     
-        #                     if fontsize >= font_size_threshold and not author_started:
-        #                         title_lines.append(text)
-        #                     else:
-        #                         if title_lines and not author_started:
-        #                             author_started = True
-        #                             if fontsize < font_size_threshold:
-        #                                 chinese_authors = text
-        #                                 break
-        #                             else:
-        #                                 title_lines.append(text)
-        #                         elif not title_lines:
-        #                             title_lines.append(text)
-        #                 
-        #                 if title_lines:
-        #                     chinese_title = " ".join(title_lines)
-        # except:
-        #     pass
-        
-        # 策略2：使用文本提取 + 字号判断标题行数
-        if not chinese_title or not chinese_authors:
-            # 使用字号判断来确定标题有几行
-            title_line_count = 1  # 默认1行
-            try:
-                line_data = extract_font_sizes_from_pdf_page(pdf_page)
-                if line_data:
-                    chinese_line_data = []
-                    for line_info in line_data:
-                        text = line_info["text"].strip()
-                        if text and contains_chinese(text):
-                            chinese_line_data.append(line_info)
+        # 使用字号判断来确定标题有几行
+        title_line_count = 1  # 默认1行
+        try:
+            if chinese_line_data:
+                # 计算字号统计信息
+                font_sizes = [line["fontsize"] for line in chinese_line_data if line["fontsize"] > 1]
+                if font_sizes:
+                    max_font_size = max(font_sizes)
+                    avg_font_size = sum(font_sizes) / len(font_sizes)
+                    font_size_threshold = max_font_size * 0.9 if max_font_size > avg_font_size * 1.2 else avg_font_size * 1.1
                     
-                    if chinese_line_data:
-                        # 计算字号统计信息
-                        font_sizes = [line["fontsize"] for line in chinese_line_data if line["fontsize"] > 1]
-                        if font_sizes:
-                            max_font_size = max(font_sizes)
-                            avg_font_size = sum(font_sizes) / len(font_sizes)
-                            font_size_threshold = max_font_size * 0.9 if max_font_size > avg_font_size * 1.2 else avg_font_size * 1.1
-                            
-                            # 计算标题行数
-                            title_line_count = 0
-                            for line_info in chinese_line_data:
-                                text = line_info["text"].strip()
-                                fontsize = line_info["fontsize"]
-                                if text and fontsize >= font_size_threshold:
-                                    title_line_count += 1
-                                else:
-                                    break
-                            if title_line_count == 0:
-                                title_line_count = 1
-            except:
-                pass
-            
-            # 根据字号判断的结果，合并相应行数的标题
-            title_lines = []
-            for i, line in enumerate(chinese_lines):
-                if i < title_line_count:
-                    title_lines.append(line)
-                else:
-                    # 查找包含逗号的中文行作为作者
-                    if (',' in line or '，' in line) and not chinese_authors:
-                        chinese_authors = line
-                        break
-            
-            # 合并标题行
-            if title_lines:
-                chinese_title = "".join(title_lines)
+                    # 计算标题行数
+                    title_line_count = 0
+                    for line_info in chinese_line_data:
+                        text = line_info["text"].strip()
+                        fontsize = line_info["fontsize"]
+                        if text and fontsize >= font_size_threshold:
+                            title_line_count += 1
+                        else:
+                            break
+                    if title_line_count == 0:
+                        title_line_count = 1
+        except Exception as e:
+            logger.warning(f"中文标题行数判断失败: {e}")
+            title_line_count = 1
+        
+        logger.info(f"中文提取：判断标题行数为 {title_line_count}")
+        
+        # 根据字号判断的结果，合并相应行数的标题（使用line_data中的文本）
+        title_lines = []
+        for i, line_info in enumerate(chinese_line_data):
+            if i < title_line_count:
+                title_lines.append(line_info["text"].strip())
+            else:
+                # 查找包含逗号的中文行作为作者
+                line_text = line_info["text"].strip()
+                if (',' in line_text or '，' in line_text) and not chinese_authors:
+                    chinese_authors = line_text
+                    break
+        
+        # 合并标题行
+        if title_lines:
+            chinese_title = "".join(title_lines)
         
         # 如果还是没有作者，尝试合并多行标题
-        if not chinese_authors and len(chinese_lines) > 1:
+        if not chinese_authors and len(chinese_line_data) > 1:
             # 合并前几行作为标题，最后一行作为作者
             title_lines = []
-            for i, line in enumerate(chinese_lines):
-                if i < len(chinese_lines) - 1:
-                    title_lines.append(line)
+            for i, line_info in enumerate(chinese_line_data):
+                if i < len(chinese_line_data) - 1:
+                    title_lines.append(line_info["text"].strip())
                 else:
-                    chinese_authors = line
+                    chinese_authors = line_info["text"].strip()
                     break
             if title_lines:
                 chinese_title = "".join(title_lines)
@@ -443,16 +557,32 @@ def extract_chinese_title_authors_from_page(pdf_page, page_start: int, page_end:
         chinese_title = re.sub(r"\s+", " ", chinese_title).strip()
         
         if chinese_authors:
-            # 先移除数字和特殊符号
-            chinese_authors = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", chinese_authors)
-            # 将中文逗号转换为英文逗号
+            # 步骤1：统一逗号格式（先做这个，保护逗号）
             chinese_authors = chinese_authors.replace('，', ',')
-            # 处理两字人名中间的空格（如"张 煊" -> "张煊"）
+            chinese_authors = chinese_authors.replace(';', ',')
+            
+            # 步骤2：统一逗号周围的空格
+            chinese_authors = re.sub(r'\s*,\s*', ', ', chinese_authors)
+            
+            # 步骤3：清理数字和特殊符号
+            chinese_authors = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", chinese_authors)
+            
+            # 步骤4：处理两字人名中间的空格（如"张 煊" -> "张煊"）
             chinese_authors = re.sub(r'([\u4e00-\u9fff])\s+([\u4e00-\u9fff])', r'\1\2', chinese_authors)
-            # 按逗号分离，清理每个部分的空格
+            
+            # 步骤5：按逗号分割并清理每个部分
             author_parts = [part.strip() for part in chinese_authors.split(',') if part.strip()]
-            # 重新用英文逗号连接
-            chinese_authors = ', '.join(author_parts)
+            
+            # 步骤6：清理每个部分的多余空格（但保留正常的格式）
+            cleaned_parts = []
+            for part in author_parts:
+                # 清理多余空格，但保留正常的作者名格式
+                cleaned = re.sub(r'\s+', ' ', part).strip()
+                if cleaned:
+                    cleaned_parts.append(cleaned)
+            
+            # 步骤7：重新用英文逗号连接
+            chinese_authors = ', '.join(cleaned_parts)
         
         return chinese_title, chinese_authors
         
@@ -994,6 +1124,20 @@ def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List
                 try:
                     # 获取当前论文的起始页文本
                     text = pdf.pages[page_index].extract_text() or ""
+                    
+                    # 调试：记录PDF提取的原始文本（DOI附近的内容）
+                    lines_raw = text.splitlines()
+                    doi_line_raw = None
+                    doi_line_idx = None
+                    for idx, line in enumerate(lines_raw[:20]):  # 只看前20行
+                        if "DOI" in line or "doi" in line.lower():
+                            doi_line_raw = line
+                            doi_line_idx = idx
+                            logger.info(f"PDF提取的DOI行（第{idx+1}行）: '{line}'")
+                            # 记录DOI行及其后5行
+                            for j in range(max(0, idx), min(len(lines_raw), idx + 6)):
+                                logger.info(f"PDF提取的原始行{j+1}: '{lines_raw[j]}'")
+                            break
                     
                     logger.info(f"处理第 {i+1} 篇论文，期刊起始页码: {actual_start_page}")
                     

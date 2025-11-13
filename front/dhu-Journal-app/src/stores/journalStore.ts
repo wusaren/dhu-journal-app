@@ -135,7 +135,7 @@ export const useJournalStore = defineStore('journal', () => {
 
             if (response.downloadUrl) {
                 // 强制弹出下载地址选择窗口
-                const downloadUrl = `http://localhost:5000${response.downloadUrl}`
+                const downloadUrl = `${response.downloadUrl}`
 
                 // 直接使用window.open打开下载链接，强制浏览器弹出下载对话框
                 window.open(downloadUrl, '_blank')
@@ -155,7 +155,7 @@ export const useJournalStore = defineStore('journal', () => {
 
             if (response.downloadUrl) {
                 // 强制弹出下载地址选择窗口
-                const downloadUrl = `http://localhost:5000${response.downloadUrl}`
+                const downloadUrl = `${response.downloadUrl}`
 
                 // 直接使用window.open打开下载链接，强制浏览器弹出下载对话框
                 window.open(downloadUrl, '_blank')
@@ -171,11 +171,12 @@ export const useJournalStore = defineStore('journal', () => {
     const generateStats = async (journalId: number, journalIssue: string) => {
         try {
             ElMessage.info(`正在生成统计表: ${journalIssue}`)
+            // 不传 columns 参数，让后端自动判断：有模板配置就用模板，没有就用默认配置
             const response = await journalService.generateStats(journalId)
 
             if (response.downloadUrl) {
                 // 强制弹出下载地址选择窗口
-                const downloadUrl = `http://localhost:5000${response.downloadUrl}`
+                const downloadUrl = `${response.downloadUrl}`
 
                 // 直接使用window.open打开下载链接，强制浏览器弹出下载对话框
                 window.open(downloadUrl, '_blank')

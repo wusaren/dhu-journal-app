@@ -1,0 +1,66 @@
+====================================================================================================
+分行方法对比测试
+PDF文件: 20251110_040741_JDHUE2025.5目录+全文.pdf
+页面: 第 3 页
+====================================================================================================
+
+【方法1: text.split('\n')】
+总行数: 94
+
+【方法2: y坐标分行 (阈值=10.0)】
+总行数: 51
+
+====================================================================================================
+差异统计:
+====================================================================================================
+相同行数: 0
+不同行数: 51
+行数差异: 方法1有 94 行，方法2有 51 行
+差异: 43 行
+
+====================================================================================================
+DOI附近的详细对比（DOI行及其后15行）:
+====================================================================================================
+DOI行位置 - 方法1: 第3行, 方法2: 第2行
+行号     方法1 (split)                                                                 方法2 (y坐标)                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+2      ( ) , ( ) 449                                                               DOI:  10.19884/ j.1672-5220.202405003                                       [DOI]
+                                                                                   y=52.7, 字号=9.7
+3      DOI 10.19884/j.1672-5220.202405003                                          Poly Octamethylene  Citrate -Based  Elastomer  Microspheres  via  Spray-D   [DOI]
+                                                                                   y=88.8, 字号=14.0
+4      :                                                                           Chiti(n  Nanocrystal  Construct)ed  Pickering  Emulsion                     [标题]
+                                                                                   y=99.2, 字号=14.0
+5      Poly Octamethylene Citrate -Based Elastomer Microspheres via Spray-Drying   GUAN  Yu1,  GUO  Furong2,  LIANG  Kai1∗,  JI  Yali2                         [标题]
+                                                                                   y=139.0, 字号=10.3
+6      ( )                                                                         1. College  of  Chemistry  and  Chemical  Engineering,  Donghua  Universi   [作者]
+                                                                                   y=151.2, 字号=9.7
+7      Chitin Nanocrystal Constructed Pickering Emulsion                           2. State  Key  Laboratory  of  Advanced  Fiber  Materials,  College  of     [作者]
+                                                                                   y=162.9, 字号=9.7
+8      GUAN Yu1 GUO Furong2 LIANG Kai1 ∗ JI Yali2                                  University,  Shanghai  201620,  China                                       [作者]
+                                                                                   y=174.7, 字号=9.7
+9      , , ,                                                                       Abstract:   Po  ly(octam eth ylen e  citrate)  ( POC)  is  a  promis ing    ⚠
+                                                                                   y=198.1, 字号=8.8
+10     1.College of Chemistry and Chemical Engineering Donghua University Shangh   bioelastomer m  aterial  in the  biom  edical field . However,  its  ther   ⚠
+                                                                                   y=208.9, 字号=8.8
+11     , , ,                                                                       thermosett ing   nature p  oses a  significant cha  llen ge to the  requi   ⚠
+                                                                                   y=219.7, 字号=8.8
+12     2. State Key Laboratory of Advanced Fiber Materials College of Materials    proces  sing and m  olding, es  peci ally manufa  cturing the  POC-  pre-   ⚠
+                                                                                   y=230.4, 字号=8.8
+13     , ,                                                                         based ela stomer   particles    as potent ial, degr  adab le  and (design   ⚠
+                                                                                   y=241.2, 字号=9.7
+14     University Shanghai 201620 China                                            toughene  d fillers. Fir stly, a P icke  ring emul  sion with a  pr  e-     ⚠
+                                                                                   y=252.0, 字号=8.8
+15     , ,                                                                         polymer  (pr  e-POC )   solution  in dim ethyl car  bonate  as   a  engin   ⚠
+                                                                                   y=262.8, 字号=9.7
+16     Abstract Poly octamethylene citrate POC is a promising potentials as an i   dispersed o il phas  e, a Pu  llula n (PU L) aqueous  solution a s a  org   ⚠
+                                                                                   y=273.5, 字号=8.8
+
+====================================================================================================
+关键信息提取对比:
+====================================================================================================
+
+方法1标题: Poly Octamethylene Citrate -Based Elastomer Microspheres via Spray-Drying of
+方法2标题: Poly Octamethylene  Citrate -Based  Elastomer  Microspheres  via  Spray-Drying  of Chiti(n  Nanocrystal  Construct)ed  Pickering  Emulsion
+
+方法1作者: ( )
+方法2作者: GUAN  Yu1,  GUO  Furong2,  LIANG  Kai1∗,  JI  Yali2
