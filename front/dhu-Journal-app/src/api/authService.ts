@@ -32,6 +32,13 @@ export interface User {
     role?: string
 }
 
+export interface UserDetail {
+    id: number
+    username: string
+    email: string | null
+    role: string | null
+}
+
 export const authService = {
     
 
@@ -96,5 +103,29 @@ export const authService = {
             }
         }
         return null
+    },
+
+    // 获取当前用户的详细信息（用户名和邮箱）
+    async getCurrentUserDetail(): Promise<UserDetail> {
+        try {
+            console.log('🟡 开始调用 /api/me 接口')
+            const response = await apiClient.get('/me')
+            console.log('🟢 API 响应状态:', response.status)
+            console.log('🟢 API 响应数据:', response.data)
+            if (response.data && response.data.user) {
+                console.log('🟢 成功获取用户数据:', response.data.user)
+                return response.data.user
+            }else {
+                console.log('🔴 响应数据格式不正确:', response.data)
+            }
+            throw new Error('获取用户详细信息失败')
+        } catch (error: any) {
+            console.log('🔴 API 调用错误详情:')
+            console.log('错误对象:', error)
+            console.log('错误消息:', error.message)
+            console.log('响应数据:', error?.response?.data)
+            console.log('状态码:', error?.response?.status)
+            throw new Error(error?.response?.data?.message || '获取用户信息失败')
+        }
     }
 }

@@ -187,13 +187,10 @@ class JournalService {
     async generateWeibo(journalId: number): Promise<ExportResponse> {
         return await apiClient.post('/export/tuiwen', { journalId })
     }
-
     /**
      * 获取可用列定义
      */
-    // async generateStats(journalId: number): Promise<ExportResponse> {
-    //     return await apiClient.post('/api/export/excel', { journalId })
-    // }
+    
     async getAvailableColumns(): Promise<{ success: boolean; columns: ColumnDefinition[] }> {
         return await apiClient.get('/export/columns')
     }

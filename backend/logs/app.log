@@ -14556,3 +14556,570 @@
 2025-11-13 15:04:34,165 - werkzeug - WARNING -  * Debugger is active!
 2025-11-13 15:04:34,187 - werkzeug - INFO -  * Debugger PIN: 514-742-416
 2025-11-13 15:04:59,120 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 15:04:59] "[31m[1mPOST /api/user/template HTTP/1.1[0m" 400 -
+2025-11-13 20:15:08,970 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 20:15:09,040 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 20:15:09,040 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 20:15:09,040 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 20:15:11,153 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 20:15:11,179 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 20:15:11,198 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 20:15:23,820 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:23] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-13 20:15:25,683 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:25] "[31m[1mGET /api/user/template HTTP/1.1[0m" 401 -
+2025-11-13 20:15:25,708 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:25] "[31m[1mGET /api/user/tuiwen-template HTTP/1.1[0m" 401 -
+2025-11-13 20:15:35,014 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:35] "POST /api/login HTTP/1.1" 200 -
+2025-11-13 20:15:36,332 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 20:15:36,332 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:36] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 20:15:36,342 - services.tuiwen_template_service - INFO - 用户 2 的推文模板配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\weibo_template.json
+2025-11-13 20:15:36,342 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:36] "GET /api/user/tuiwen-template HTTP/1.1" 200 -
+2025-11-13 20:15:38,627 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 20:15:38,629 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:38] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 20:15:41,719 - services.tuiwen_template_service - INFO - 用户 2 的推文模板配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\weibo_template.json
+2025-11-13 20:15:41,719 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:15:41] "GET /api/user/tuiwen-template HTTP/1.1" 200 -
+2025-11-13 20:29:47,721 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 20:29:47,728 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:29:47] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 20:29:52,853 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 20:29:52,853 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 20:29:52] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 21:14:40,976 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:14:41,029 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 21:14:41,030 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 21:14:41,032 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 21:14:43,042 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:14:43,070 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 21:14:43,089 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 21:15:08,802 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:15:08] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 21:15:11,121 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 21:15:11,122 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:15:11] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 21:15:16,400 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 21:15:16,400 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:15:16] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 21:38:19,973 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:38:20,019 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 21:38:20,019 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 21:38:20,019 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 21:38:22,141 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:38:22,169 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 21:38:22,189 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 21:38:25,362 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:38:25] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 21:38:27,275 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 21:38:27,276 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:38:27] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 21:38:33,138 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 21:38:33,138 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:38:33] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 21:39:10,327 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 21:39:10,333 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:39:10] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 21:43:01,397 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:43:01,451 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 21:43:01,451 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 21:43:01,454 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 21:43:03,944 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:43:03,972 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 21:43:03,992 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 21:43:12,506 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:43:12] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 21:43:14,290 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 21:43:14,291 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:43:14] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 21:43:20,402 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 21:43:20,409 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:43:20] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 21:51:56,279 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:51:56,323 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 21:51:56,324 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 21:51:56,326 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 21:51:58,572 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 21:51:58,602 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 21:51:58,622 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 21:52:03,554 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:52:03] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 21:52:05,516 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 21:52:05,517 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:52:05] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 21:52:11,080 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 21:52:11,082 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 21:52:11] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:02:02,372 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:02:02,372 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:02:02] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:02:08,929 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:02:08,929 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:02:08] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:03:28,745 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:03:28,747 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:03:28] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:03:33,411 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:03:33,411 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:03:33] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:03:42,369 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:03:42] "[31m[1mPOST /api/user/template HTTP/1.1[0m" 400 -
+2025-11-13 22:08:22,817 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:08:22,819 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:08:22] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:08:27,563 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:08:27,565 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:08:27] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:08:29,291 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:08:29] "[31m[1mPOST /api/user/template HTTP/1.1[0m" 400 -
+2025-11-13 22:08:51,379 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:08:51] "[31m[1mPOST /api/user/template HTTP/1.1[0m" 400 -
+2025-11-13 22:12:01,332 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 22:12:01,378 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 22:12:01,378 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 22:12:01,380 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 22:12:03,695 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 22:12:03,722 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 22:12:03,741 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 22:12:07,353 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:12:07] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 22:12:09,285 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:12:09,286 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:12:09] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:12:13,668 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:12:13,671 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:12:13] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:12:14,934 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:12:14] "[35m[1mPOST /api/user/template HTTP/1.1[0m" 500 -
+2025-11-13 22:16:24,908 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-13 22:16:25,200 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 22:16:27,386 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 22:16:27,422 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 22:16:27,436 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 22:19:03,927 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-13 22:19:04,119 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 22:19:06,466 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 22:19:06,488 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 22:19:06,512 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 22:19:47,318 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:19:47,319 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:19:47] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:19:51,433 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:19:51,434 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:19:51] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:19:52,676 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:19:52] "[35m[1mPUT /api/user/template HTTP/1.1[0m" 500 -
+2025-11-13 22:35:29,540 - services.template_config_service - INFO - 用户 2 的配置文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:35:29,545 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:35:29] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:35:33,901 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:35:33,901 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:35:33] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:35:35,611 - services.template_config_service - INFO - 已复制用户模板文件: user_configs\user_2\template_user_2_20251113_223533_-_1.xlsx -> D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_223535.xlsx
+2025-11-13 22:35:35,611 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:35:35,611 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:35:35] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:52:26,181 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 22:52:26,225 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 22:52:26,225 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 22:52:26,228 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 22:52:28,304 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 22:52:28,335 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 22:52:28,358 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 22:52:31,651 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:31] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 22:52:32,896 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:32] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 22:52:34,535 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 22:52:34,536 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:34] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:52:40,155 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:52:40,155 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:40] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 22:52:46,980 - services.template_config_service - INFO - 已复制用户模板文件: user_configs\user_2\template_user_2_20251113_225240_-_1.xlsx -> D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_225246.xlsx
+2025-11-13 22:52:46,981 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 22:52:46,982 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:46] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-13 22:52:49,678 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:49] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:52:49,683 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:49] "GET /api/papers HTTP/1.1" 200 -
+2025-11-13 22:52:51,557 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:51] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:52:53,658 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 22:52:53,658 - __main__ - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_225246.xlsx
+2025-11-13 22:52:53,661 - services.export_service - INFO - 期刊 1 找到 1 篇论文
+2025-11-13 22:52:53,662 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 22:52:53,663 - services.export_service - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_225246.xlsx
+2025-11-13 22:52:53,669 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:52:53,683 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(3)_20251113_225253.xlsx
+2025-11-13 22:52:53,683 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:53] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-13 22:52:53,749 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\统计表_2025, 42(3)_20251113_225253.xlsx
+2025-11-13 22:52:53,751 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:52:53] "GET /api/download/统计表_2025,%2042(3)_20251113_225253.xlsx HTTP/1.1" 200 -
+2025-11-13 22:53:09,580 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:09] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:53:09,892 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:09] "GET /api/papers HTTP/1.1" 200 -
+2025-11-13 22:53:13,768 - services.paper_service - INFO - 期刊 东华学报 论文数量已更新为: 0
+2025-11-13 22:53:13,768 - services.paper_service - INFO - 论文删除成功: ROSGPT Natural Language Control of Mobile Robots Navigation via Large Language Model (删除者: 2)
+2025-11-13 22:53:13,768 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:13] "DELETE /api/papers/1 HTTP/1.1" 200 -
+2025-11-13 22:53:14,010 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:14] "GET /api/papers HTTP/1.1" 200 -
+2025-11-13 22:53:15,047 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:15] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:53:18,006 - services.journal_service - INFO - 期刊删除成功: 东华学报 - 2025, 42(3) (删除者: 2)
+2025-11-13 22:53:18,006 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:18] "DELETE /api/journals/1 HTTP/1.1" 200 -
+2025-11-13 22:53:18,254 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:18] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:53:19,117 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:19] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:53:19,427 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:19] "GET /api/papers HTTP/1.1" 200 -
+2025-11-13 22:53:25,017 - services.file_service - INFO - 收到文件上传请求
+2025-11-13 22:53:25,017 - services.file_service - INFO - 文件名: 基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄 抗生素电化学传感器.pdf, 期刊ID: 1
+2025-11-13 22:53:25,046 - services.file_service - INFO - 文件已保存到: uploads\20251113_225325_基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄 抗生素电化学传感器.pdf
+2025-11-13 22:53:25,071 - services.file_service - INFO - 开始预解析PDF文件获取期刊信息: uploads\20251113_225325_基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄 抗生素电化学传感器.pdf
+2025-11-13 22:53:25,173 - services.pdf_parser - INFO - PDF总页数: 10
+2025-11-13 22:53:26,288 - services.pdf_parser - INFO - 发现DOI页: PDF第 1 页，期刊页码 348
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - 共发现 1 篇论文
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的DOI行（第3行）: 'DOI 10.19884/j.1672-5220.202406006'
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的原始行3: 'DOI 10.19884/j.1672-5220.202406006'
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的原始行4: ':'
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的原始行5: 'Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on'
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的原始行6: 'Conductive Carbon Black Decorated with Tetrabutylammonium Tetrafluoroborate'
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的原始行7: 'ZHU Zongxian1 ZHANG Xuan1 , 2 ∗'
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - PDF提取的原始行8: ','
+2025-11-13 22:53:32,159 - services.pdf_parser - INFO - 处理第 1 篇论文，期刊起始页码: 348
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行1 - y坐标: 25.36695999999995, 字号: 8.8, 文本: '348 Journal  of  Donghua  University  (Eng.  Ed. )  Vol.  42,  No.4  (2025)'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行1 字符y坐标详情: 3(y=31.73) 4(y=31.73) 8(y=31.73) J(y=25.37) o(y=25.37) u(y=25.37) r(y=25.37) n(y=25.37) a(y=25.37) l(y=25.37)  (y=24.14) o(y=25.37) f(y=25.37)  (y=24.14) D(y=25.37) o(y=25.37) n(y=25.37) g(y=25.37) h(y=25.37) u(y=25.37) a(y=25.37)  (y=24.14) U(y=25.37) n(y=25.37) i(y=25.37) v(y=25.37) e(y=25.37) r(y=25.37) s(y=25.37) i(y=25.37) t(y=25.37) y(y=25.37)  (y=24.14) ((y=31.73) E(y=25.37) n(y=25.37) g(y=25.37) .(y=25.37)  (y=24.14) E(y=25.37) d(y=25.37) .(y=25.37) )(y=31.73)  (y=24.14) V(y=25.37) o(y=25.37) l(y=25.37) .(y=25.37)  (y=24.14) 4(y=25.37) ...(共64个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行2 - y坐标: 51.24434399999984, 字号: 9.7, 文本: 'DOI:   10.19884/ j.1672-5220.202406006'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行2 字符y坐标详情: D(y=51.24) O(y=51.24) I(y=51.24) :(y=58.49)  (y=50.15)  (y=50.15) 1(y=51.24) 0(y=51.24) .(y=51.24) 1(y=51.24) 9(y=51.24) 8(y=51.24) 8(y=51.24) 4(y=51.24) /(y=51.24) j(y=51.24) .(y=51.24) 1(y=51.24) 6(y=51.24) 7(y=51.24) 2(y=51.24) -(y=51.24) 5(y=51.24) 2(y=51.24) 2(y=51.24) 0(y=51.24) .(y=51.24) 2(y=51.24) 0(y=51.24) 2(y=51.24) 4(y=51.24) 0(y=51.24) 6(y=51.24) 0(y=51.24) 0(y=51.24) 6(y=51.24)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行3 - y坐标: 87.35427800000002, 字号: 14.0, 文本: 'Development  of  Electrochemical  Sensor  for  Cefadroxil  Antibiotic  Based  on'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行3 字符y坐标详情: D(y=87.35) e(y=87.35) v(y=87.35) e(y=87.35) l(y=87.35) o(y=87.35) p(y=87.35) m(y=87.35) e(y=87.35) n(y=87.35) t(y=87.35)  (y=85.77) o(y=87.35) f(y=87.35)  (y=85.77) E(y=87.35) l(y=87.35) e(y=87.35) c(y=87.35) t(y=87.35) r(y=87.35) o(y=87.35) c(y=87.35) h(y=87.35) e(y=87.35) m(y=87.35) i(y=87.35) c(y=87.35) a(y=87.35) l(y=87.35)  (y=85.77) S(y=87.35) e(y=87.35) n(y=87.35) s(y=87.35) o(y=87.35) r(y=87.35)  (y=85.77) f(y=87.35) o(y=87.35) r(y=87.35)  (y=85.77) C(y=87.35) e(y=87.35) f(y=87.35) a(y=87.35) d(y=87.35) r(y=87.35) o(y=87.35) x(y=87.35) ...(共73个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行4 - y坐标: 104.04427799999996, 字号: 14.0, 文本: 'Conductive  Carbon  Black  Decorated  with  Tetrabutylammonium  Tetrafluoroborat'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行4 字符y坐标详情: C(y=104.04) o(y=104.04) n(y=104.04) d(y=104.04) u(y=104.04) c(y=104.04) t(y=104.04) i(y=104.04) v(y=104.04) e(y=104.04)  (y=102.46) C(y=104.04) a(y=104.04) r(y=104.04) b(y=104.04) o(y=104.04) n(y=104.04)  (y=102.46) B(y=104.04) l(y=104.04) a(y=104.04) c(y=104.04) k(y=104.04)  (y=102.46) D(y=104.04) e(y=104.04) c(y=104.04) o(y=104.04) r(y=104.04) a(y=104.04) t(y=104.04) e(y=104.04) d(y=104.04)  (y=102.46) w(y=104.04) i(y=104.04) t(y=104.04) h(y=104.04)  (y=102.46) T(y=104.04) e(y=104.04) t(y=104.04) r(y=104.04) a(y=104.04) b(y=104.04) u(y=104.04) t(y=104.04) y(y=104.04) l(y=104.04) a(y=104.04) ...(共75个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行5 - y坐标: 137.57579599999997, 字号: 10.3, 文本: 'ZHU  Zongxian1,  ZHANG  Xuan1, 2∗'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行5 字符y坐标详情: Z(y=137.58) H(y=137.58) U(y=137.58)  (y=136.41) Z(y=137.58) o(y=137.58) n(y=137.58) g(y=137.58) x(y=137.58) i(y=137.58) a(y=137.58) n(y=137.58) 1(y=136.00) ,(y=145.26)  (y=136.41) Z(y=137.58) H(y=137.58) A(y=137.58) N(y=137.58) G(y=137.58)  (y=136.41) X(y=137.58) u(y=137.58) a(y=137.58) n(y=137.58) 1(y=136.00) ,(y=140.42)  (y=135.33) 2(y=136.00) ∗(y=140.42)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行6 - y坐标: 149.73534399999983, 字号: 9.7, 文本: '1. Key  Labo  ratory  of  Sc ience  and   Technology    of  Eco- Textiles,   Min'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行6 字符y坐标详情: 1(y=149.74) .(y=149.74) K(y=149.74) e(y=149.74) y(y=149.74)  (y=148.64) L(y=149.74) a(y=149.74) b(y=149.74) o(y=149.74)  (y=160.38) r(y=149.74) a(y=149.74) t(y=149.74) o(y=149.74) r(y=149.74) y(y=149.74)  (y=148.64) o(y=149.74) f(y=149.74)  (y=148.64) S(y=149.74) c(y=149.74)  (y=160.38) i(y=149.74) e(y=149.74) n(y=149.74) c(y=149.74) e(y=149.74)  (y=148.64) a(y=149.74) n(y=149.74) d(y=149.74)  (y=160.38)  (y=148.64) T(y=149.74) e(y=149.74) c(y=149.74) h(y=149.74) n(y=149.74) o(y=149.74) l(y=149.74) o(y=149.74) g(y=149.74) y(y=149.74)  (y=160.38)  (y=148.64) o(y=149.74) f(y=149.74)  (y=148.64) ...(共115个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行7 - y坐标: 161.4763439999998, 字号: 9.7, 文本: 'Chemica  l Engineeri ng, Do ngh  ua Univer sity, Sh an ghai 2016 20, China'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行7 字符y坐标详情: C(y=161.48) h(y=161.48) e(y=161.48) m(y=161.48) i(y=161.48) c(y=161.48) a(y=161.48)  (y=172.12) l(y=161.48) E(y=161.48) n(y=161.48) g(y=161.48) i(y=161.48) n(y=161.48) e(y=161.48) e(y=161.48) r(y=161.48) i(y=161.48)  (y=172.12) n(y=161.48) g(y=161.48) ,(y=168.73) D(y=161.48) o(y=161.48)  (y=172.12) n(y=161.48) g(y=161.48) h(y=161.48)  (y=172.12) u(y=161.48) a(y=161.48) U(y=161.48) n(y=161.48) i(y=161.48) v(y=161.48) e(y=161.48) r(y=161.48)  (y=172.12) s(y=161.48) i(y=161.48) t(y=161.48) y(y=161.48) ,(y=168.73) S(y=161.48) h(y=161.48)  (y=172.12) a(y=161.48) n(y=161.48)  (y=172.12) g(y=161.48) ...(共69个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行8 - y坐标: 173.2173439999998, 字号: 9.7, 文本: '2. National Innovation Center of Advanced Dyeing &Finishing Technology, Tai’an 2'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行8 字符y坐标详情: 2(y=173.22) .(y=173.22) N(y=173.22) a(y=173.22) t(y=173.22) i(y=173.22) o(y=173.22) n(y=173.22) a(y=173.22) l(y=173.22) I(y=173.22) n(y=173.22) n(y=173.22) o(y=173.22) v(y=173.22) a(y=173.22) t(y=173.22) i(y=173.22) o(y=173.22) n(y=173.22) C(y=173.22) e(y=173.22) n(y=173.22) t(y=173.22) e(y=173.22) r(y=173.22) o(y=173.22) f(y=173.22) A(y=173.22) d(y=173.22) v(y=173.22) a(y=173.22) n(y=173.22) c(y=173.22) e(y=173.22) d(y=173.22) D(y=173.22) y(y=173.22) e(y=173.22) i(y=173.22) n(y=173.22) g(y=173.22) &(y=173.22) F(y=173.22) i(y=173.22) n(y=173.22) i(y=173.22) s(y=173.22) h(y=173.22) i(y=173.22) ...(共81个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行9 - y坐标: 196.67784999999992, 字号: 8.8, 文本: 'Abstract:    The  de velo pment   of  ana lytic  al  me  thods  f  or   electrop'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行9 字符y坐标详情: A(y=196.68) b(y=196.68) s(y=196.68) t(y=196.68) r(y=196.68) a(y=196.68) c(y=196.68) t(y=196.68) :(y=203.19)  (y=206.37)  (y=195.60)  (y=195.60) T(y=196.68) h(y=196.68) e(y=196.68)  (y=195.60) d(y=196.68) e(y=196.68)  (y=206.37) v(y=196.68) e(y=196.68) l(y=196.68) o(y=196.68)  (y=206.37) p(y=196.68) m(y=196.68) e(y=196.68) n(y=196.68) t(y=196.68)  (y=195.60)  (y=206.37) o(y=196.68) f(y=196.68)  (y=195.60) a(y=196.68) n(y=196.68) a(y=196.68)  (y=206.37) l(y=196.68) y(y=196.68) t(y=196.68) i(y=196.68) c(y=196.68)  (y=206.37) a(y=196.68) l(y=196.68)  (y=195.60) m(y=196.68) e(y=196.68)  (y=206.37) ...(共115个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行10 - y坐标: 207.4478499999999, 字号: 8.8, 文本: 'anti biotic dete ct ion ha s bec  ome cr  ucial for public health.  In  However,'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行10 字符y坐标详情: a(y=207.45) n(y=207.45) t(y=207.45) i(y=207.45)  (y=217.14) b(y=207.45) i(y=207.45) o(y=207.45) t(y=207.45) i(y=207.45) c(y=207.45) d(y=207.45) e(y=207.45) t(y=207.45) e(y=207.45)  (y=217.14) c(y=207.45) t(y=207.45)  (y=217.14) i(y=207.45) o(y=207.45) n(y=207.45) h(y=207.45) a(y=207.45)  (y=217.14) s(y=207.45) b(y=207.45) e(y=207.45) c(y=207.45)  (y=217.14) o(y=207.45) m(y=207.45) e(y=207.45) c(y=207.45) r(y=207.45)  (y=217.14) u(y=207.45) c(y=207.45) i(y=207.45) a(y=207.45) l(y=207.45) f(y=207.45) o(y=207.45) r(y=207.45) p(y=207.45) u(y=207.45) b(y=207.45) l(y=207.45) i(y=207.45) c(y=207.45) ...(共111个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行11 - y坐标: 218.21884999999997, 字号: 8.8, 文本: 'this resea  rch, a no vel and simple electroche mical senso  r for  expensive  i'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行11 字符y坐标详情: t(y=218.22) h(y=218.22) i(y=218.22) s(y=218.22) r(y=218.22) e(y=218.22) s(y=218.22) e(y=218.22) a(y=218.22)  (y=227.91) r(y=218.22) c(y=218.22) h(y=218.22) ,(y=224.74) a(y=218.22) n(y=218.22) o(y=218.22)  (y=227.91) v(y=218.22) e(y=218.22) l(y=218.22)  (y=227.91) a(y=218.22) n(y=218.22) d(y=218.22) s(y=218.22) i(y=218.22) m(y=218.22) p(y=218.22) l(y=218.22) e(y=218.22)  (y=227.91) e(y=218.22) l(y=218.22) e(y=218.22) c(y=218.22) t(y=218.22) r(y=218.22) o(y=218.22) c(y=218.22) h(y=218.22) e(y=218.22)  (y=227.91) m(y=218.22) i(y=218.22) c(y=218.22) a(y=218.22) l(y=218.22) s(y=218.22) e(y=218.22) ...(共104个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行12 - y坐标: 228.98985, 字号: 9.7, 文本: 'sensitive de  tecti on of  cefadr oxil ( CF L) ant ibiot ic was  pretreatment.  '
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行12 字符y坐标详情: s(y=228.99) e(y=228.99) n(y=228.99) s(y=228.99) i(y=228.99) t(y=228.99) i(y=228.99) v(y=228.99) e(y=228.99) d(y=228.99) e(y=228.99)  (y=238.68) t(y=228.99) e(y=228.99) c(y=228.99) t(y=228.99) i(y=228.99)  (y=238.68) o(y=228.99) n(y=228.99) o(y=228.99) f(y=228.99)  (y=238.68) c(y=228.99) e(y=228.99) f(y=228.99) a(y=228.99) d(y=228.99) r(y=228.99)  (y=238.68) o(y=228.99) x(y=228.99) i(y=228.99) l(y=228.99) ((y=235.51) C(y=228.99) F(y=228.99)  (y=238.68) L(y=228.99) )(y=235.51) a(y=228.99) n(y=228.99) t(y=228.99)  (y=238.68) i(y=228.99) b(y=228.99) i(y=228.99) o(y=228.99) t(y=228.99)  (y=238.68) ...(共111个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行13 - y坐标: 239.76084999999995, 字号: 8.8, 文本: 'deve loped.  The glassy c  arbon e lectrod e (GCE) w  as co  ated  studied  and '
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行13 字符y坐标详情: d(y=239.76) e(y=239.76) v(y=239.76) e(y=239.76)  (y=249.45) l(y=239.76) o(y=239.76) p(y=239.76) e(y=239.76) d(y=239.76) .(y=239.76)  (y=249.45) T(y=239.76) h(y=239.76) e(y=239.76) g(y=239.76) l(y=239.76) a(y=239.76) s(y=239.76) s(y=239.76) y(y=239.76) c(y=239.76)  (y=249.45) a(y=239.76) r(y=239.76) b(y=239.76) o(y=239.76) n(y=239.76) e(y=239.76)  (y=249.45) l(y=239.76) e(y=239.76) c(y=239.76) t(y=239.76) r(y=239.76) o(y=239.76) d(y=239.76)  (y=249.45) e(y=239.76) ((y=246.28) G(y=239.76) C(y=239.76) E(y=239.76) )(y=246.28) w(y=239.76)  (y=249.45) a(y=239.76) s(y=239.76) c(y=239.76) o(y=239.76) ...(共104个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行14 - y坐标: 250.53185000000002, 字号: 9.7, 文本: 'with chea p cond  uctive carbon black V  XC-72R that was  biomedicine  and  food'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行14 字符y坐标详情: w(y=250.53) i(y=250.53) t(y=250.53) h(y=250.53) c(y=250.53) h(y=250.53) e(y=250.53) a(y=250.53)  (y=260.22) p(y=250.53) c(y=250.53) o(y=250.53) n(y=250.53) d(y=250.53)  (y=260.22) u(y=250.53) c(y=250.53) t(y=250.53) i(y=250.53) v(y=250.53) e(y=250.53) c(y=250.53) a(y=250.53) r(y=250.53) b(y=250.53) o(y=250.53) n(y=250.53) b(y=250.53) l(y=250.53) a(y=250.53) c(y=250.53) k(y=250.53) V(y=250.53)  (y=260.22) X(y=250.53) C(y=250.53) -(y=250.53) 7(y=250.53) 2(y=250.53) R(y=250.53) t(y=250.53) h(y=250.53) a(y=250.53) t(y=250.53) w(y=250.53) a(y=250.53) s(y=250.53)  (y=260.22) b(y=258.22) i(y=258.22) ...(共104个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行15 - y坐标: 261.30285, 字号: 8.8, 文本: 'decorated w ith   tetrabutyla  mmo  nium tetrafluor  oborate  simplicity   low  '
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行15 字符y坐标详情: d(y=261.30) e(y=261.30) c(y=261.30) o(y=261.30) r(y=261.30) a(y=261.30) t(y=261.30) e(y=261.30) d(y=261.30) w(y=261.30)  (y=270.99) i(y=261.30) t(y=261.30) h(y=261.30)  (y=270.99) t(y=261.30) e(y=261.30) t(y=261.30) r(y=261.30) a(y=261.30) b(y=261.30) u(y=261.30) t(y=261.30) y(y=261.30) l(y=261.30) a(y=261.30)  (y=270.99) m(y=261.30) m(y=261.30) o(y=261.30)  (y=270.99) n(y=261.30) i(y=261.30) u(y=261.30) m(y=261.30) t(y=261.30) e(y=261.30) t(y=261.30) r(y=261.30) a(y=261.30) f(y=261.30) l(y=261.30) u(y=261.30) o(y=261.30) r(y=261.30)  (y=270.99) o(y=261.30) b(y=261.30) o(y=261.30) r(y=261.30) ...(共108个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行16 - y坐标: 278.59038999999996, 字号: 8.8, 文本: '(TBTABBAFB4F/4V)X,C-7to2Rc/oGnCstEru.  ct Itt hewaesl ectfrooucnhde mitchaalt  s'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行16 字符y坐标详情: ((y=278.59) T(y=283.43) B(y=283.43) T(y=272.07) A(y=283.43) B(y=272.07) B(y=283.43) A(y=272.07) F(y=283.43) B(y=272.07) 4(y=288.11) F(y=272.07) /(y=283.43) 4(y=276.75) V(y=283.43) )(y=278.59) X(y=283.43) ,(y=278.59) C(y=283.43) -(y=283.43) 7(y=283.43) t(y=272.07) o(y=272.07) 2(y=283.43) R(y=283.43) c(y=272.07) /(y=283.43) o(y=272.07) G(y=283.43) n(y=272.07) C(y=283.43) s(y=272.07) t(y=272.07) E(y=283.43) r(y=272.07) u(y=272.07) .(y=283.43)  (y=282.35) c(y=272.07) t(y=272.07) I(y=283.43) t(y=283.43) t(y=272.07)  (y=282.35) h(y=272.07) e(y=272.07) w(y=283.43) a(y=283.43) e(y=272.07) s(y=283.43) ...(共145个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行17 - y坐标: 294.77984999999995, 字号: 8.8, 文本: 'exhibited  a  reduction  pea  k  at  approximately  0. 2 2  V  on    CFL  detect'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行17 字符y坐标详情: e(y=294.78) x(y=294.78) h(y=294.78) i(y=294.78) b(y=294.78) i(y=294.78) t(y=294.78) e(y=294.78) d(y=294.78)  (y=293.70) a(y=294.78)  (y=293.70) r(y=294.78) e(y=294.78) d(y=294.78) u(y=294.78) c(y=294.78) t(y=294.78) i(y=294.78) o(y=294.78) n(y=294.78)  (y=293.70) p(y=294.78) e(y=294.78) a(y=294.78)  (y=304.47) k(y=294.78)  (y=293.70) a(y=294.78) t(y=294.78)  (y=293.70) a(y=294.78) p(y=294.78) p(y=294.78) r(y=294.78) o(y=294.78) x(y=294.78) i(y=294.78) m(y=294.78) a(y=294.78) t(y=294.78) e(y=294.78) l(y=294.78) y(y=294.78)  (y=293.70) 0(y=294.78) .(y=294.78) 2(y=294.78)  (y=304.47) 2(y=294.78) ...(共112个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行18 - y坐标: 305.55084999999997, 字号: 9.7, 文本: 'T BABF4 /VXC-72R  /GC  E. T BAB  F4  /VXC-72R/GC  E show  ed   sensors  have  sh'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行18 字符y坐标详情: T(y=305.55)  (y=315.82) B(y=305.55) A(y=305.55) B(y=305.55) F(y=305.55) 4(y=310.23)  (y=315.82) /(y=305.55) V(y=305.55) X(y=305.55) C(y=305.55) -(y=305.55) 7(y=305.55) 2(y=305.55) R(y=305.55)  (y=315.82) /(y=305.55) G(y=305.55) C(y=305.55)  (y=315.82) E(y=305.55) .(y=305.55) T(y=305.55)  (y=315.82) B(y=305.55) A(y=305.55) B(y=305.55)  (y=315.82) F(y=305.55) 4(y=310.23)  (y=315.82) /(y=305.55) V(y=305.55) X(y=305.55) C(y=305.55) -(y=305.55) 7(y=305.55) 2(y=305.55) R(y=305.55) /(y=305.55) G(y=305.55) C(y=305.55)  (y=315.82) E(y=305.55) s(y=305.55) h(y=305.55) o(y=305.55) w(y=305.55)  (y=315.82) ...(共103个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行19 - y坐标: 316.90385, 字号: 9.7, 文本: 'a linear  response   to C FL  in a co  ncent rati on r  ange of  detection  in  '
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行19 字符y坐标详情: a(y=316.90) l(y=316.90) i(y=316.90) n(y=316.90) e(y=316.90) a(y=316.90) r(y=316.90)  (y=326.60) r(y=316.90) e(y=316.90) s(y=316.90) p(y=316.90) o(y=316.90) n(y=316.90) s(y=316.90) e(y=316.90)  (y=326.60) t(y=316.90) o(y=316.90) C(y=316.90)  (y=326.60) F(y=316.90) L(y=316.90)  (y=326.60) i(y=316.90) n(y=316.90) a(y=316.90) c(y=316.90) o(y=316.90)  (y=326.60) n(y=316.90) c(y=316.90) e(y=316.90) n(y=316.90) t(y=316.90)  (y=326.60) r(y=316.90) a(y=316.90) t(y=316.90) i(y=316.90)  (y=326.60) o(y=316.90) n(y=316.90) r(y=316.90)  (y=326.60) a(y=316.90) n(y=316.90) g(y=316.90) e(y=316.90) o(y=316.90) ...(共110个字符)
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行20 - y坐标: 327.67485, 字号: 8.8, 文本: '0. 3  -10. 0 μmol/L  , with  a  detec  tion limit of 0. 2 μmol/L  As  one  of  t'
+2025-11-13 22:53:32,169 - services.pdf_parser - INFO - 行20 字符y坐标详情: 0(y=327.67) .(y=327.67) 3(y=327.67)  (y=338.34) -(y=328.16) 1(y=327.67) 0(y=327.67) .(y=327.67) 0(y=327.67) μ(y=327.67) m(y=327.67) o(y=327.67) l(y=327.67) /(y=327.67) L(y=327.67)  (y=338.34) ,(y=334.19) w(y=327.67) i(y=327.67) t(y=327.67) h(y=327.67)  (y=338.34) a(y=327.67)  (y=338.34) d(y=327.67) e(y=327.67) t(y=327.67) e(y=327.67) c(y=327.67)  (y=338.34) t(y=327.67) i(y=327.67) o(y=327.67) n(y=327.67) l(y=327.67) i(y=327.67) m(y=327.67) i(y=327.67) t(y=327.67) o(y=327.67) f(y=327.67) 0(y=327.67) .(y=327.67) 2(y=327.67) μ(y=327.67) m(y=327.67) o(y=327.67) l(y=327.67) /(y=327.67) L(y=327.67) ...(共94个字符)
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行21 - y坐标: 345.93238999999994, 字号: 8.8, 文本: '(shaowsigedn alg-otoo-dn oirseeprroadtuiociboilfity3)  .higThB  AstBoFra4g/eV  X'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行22 - y坐标: 357.28538999999995, 字号: 8.8, 文本: 'anti-interference  performance,.   Analytical  applications  for'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行23 - y坐标: 372.31084999999996, 字号: 9.7, 文本: 'CFL   detecti on  in  r eal  lake   water ,  pharmac eutical  tablet  and  eplre'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行24 - y坐标: 383.08185, 字号: 8.8, 文本: 'fetal bovine    esleercutrmochsaemmpiclaels  sweenrseorac  hcioenvdeudc.tive  ca'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行25 - y坐标: 393.85285, 字号: 8.8, 文本: 'Kteteryawbuotrydlasm:monium  tetrafluorobora;te  TBABF   cefadroxi;l  [ ]'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行26 - y坐标: 411.14038999999997, 字号: 9.7, 文本: 'CFL   antibiotic ( 4); csuarrbfaocne  b  lcahcikt oasannd   iesn  huasnucaell  y'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行27 - y坐标: 422.4933899999999, 字号: 9.7, 文本: '(CLC  )number    O652  Document  code     A and  imm, obilize  carbon  black  wi'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行28 - y坐标: 433.26438999999993, 字号: 9.7, 文本: 'Article  ID     16:72-5220 2025 04-0348-10 : electron  transfer 14 .   In  addit'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行29 - y坐标: 444.03538999999995, 字号: 0.9, 文本: ': ( )     [  ]     ,'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行30 - y坐标: 458.98037999999997, 字号: 9.7, 文本: 'Open  Science  Identity  itohnati c lcioquulidd s hsauvbestabneteinallrye poirmt'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行31 - y坐标: 476.34738999999996, 字号: 9.7, 文本: '(OSID) electrochemical  sensors[14-17].'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行32 - y坐标: 500.71214399999997, 字号: 9.7, 文本: '0　 Introduction methyInli mtihdiasz  olree seartcehtr,a fluthorreoeb orealteec  '
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行33 - y坐标: 516.7213439999999, 字号: 9.7, 文本: 'tetrabutylammonium  tetrafluoroborate  TBABF   and'
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行34 - y坐标: 527.8803439999999, 字号: 9.7, 文本: 'The  wide  use  of  antibiotics  has  opened  a  window  to  tetrabutylammonium '
+2025-11-13 22:53:32,179 - services.pdf_parser - INFO - 行35 - y坐标: 540.5923439999999, 字号: 9.7, 文本: 'defeat  infectious  diseases,  but  subsequent  environmental  to  decorate  the'
+2025-11-13 22:53:32,184 - services.pdf_parser - INFO - 行36 - y坐标: 553.206344, 字号: 9.7, 文本: 'pollution  and  bacterial  resistance  problems  have  become  further  immobili'
+2025-11-13 22:53:32,184 - services.pdf_parser - INFO - 行37 - y坐标: 565.821344, 字号: 9.7, 文本: 'more  and  more  serious[1-2].   Cefadroxil  (CFL),  a  broad- electrode  ( GCE '
+2025-11-13 22:53:32,184 - services.pdf_parser - INFO - 行38 - y坐标: 578.532344, 字号: 9.7, 文本: 'spectrum  β-lactam-like  antibiotic,  has  been  mostly  used  electrochemical  '
+2025-11-13 22:53:32,185 - services.pdf_parser - INFO - 行39 - y坐标: 591.050344, 字号: 9.7, 文本: 'for  the  clinical  treatment  of  bacterial  infections[3].   In  this  TBABF4 '
+2025-11-13 22:53:32,185 - services.pdf_parser - INFO - 行40 - y坐标: 603.762344, 字号: 9.7, 文本: 'regard,  it  is  highly  essential  to  develop  sensitive,  rapid  sensitivity,'
+2025-11-13 22:53:32,185 - services.pdf_parser - INFO - 行41 - y坐标: 616.376344, 字号: 9.7, 文本: 'and  simple  detection  methods  for  CFL  antibiotic. affinity   of  electrolyt'
+2025-11-13 22:53:32,185 - services.pdf_parser - INFO - 行42 - y坐标: 628.8943439999999, 字号: 9.7, 文本: 'Many  analytical  methods,    such  as  sensing  performance.   TBABF4 / VXC-72R'
+2025-11-13 22:53:32,185 - services.pdf_parser - INFO - 行43 - y坐标: 641.508344, 字号: 9.7, 文本: 'spectrophotometry[4],  chromatography[5] and  capillary  also  successfully  use'
+2025-11-13 22:53:32,185 - services.pdf_parser - INFO - 行44 - y坐标: 666.414218, 字号: 7.8, 文本: 'RFoeucenidvaetdio  nda  ittee:m  20  R24e-s0e6ar-c1h7  Foundation  from  Nationa'
+2025-11-13 22:53:32,187 - services.pdf_parser - INFO - 行45 - y坐标: 681.9171789999999, 字号: 7.8, 文本: '∗Correspondenc:e  should  be  addressed  to  ZHANG  Xuan,  email:  xzhang@dhu.ed'
+2025-11-13 22:53:32,188 - services.pdf_parser - INFO - 行46 - y坐标: 695.525218, 字号: 7.8, 文本: 'Cteittraatbiounty:l aZmHmUo nZiu  Xm,   teZtHraAfluNoGro  Xbo.r aDteevJelo.p mJo'
+2025-11-13 22:53:32,188 - services.pdf_parser - INFO - 行47 - y坐标: 711.0271789999999, 字号: 7.8, 文本: '[ ] ( ), , ( ):'
+2025-11-13 22:53:32,188 - services.pdf_parser - INFO - 字号检测结果：标题行数=2（与默认值相同）
+2025-11-13 22:53:32,189 - services.pdf_parser - INFO - 使用line_data提取标题和作者，DOI行索引: 1, 标题行数: 2
+2025-11-13 22:53:32,189 - services.pdf_parser - INFO - line_data总行数: 47
+2025-11-13 22:53:32,189 - services.pdf_parser - INFO - line_data行2: y坐标=51.24434399999984, 文本: 'DOI:   10.19884/ j.1672-5220.202406006'
+2025-11-13 22:53:32,189 - services.pdf_parser - INFO - line_data行3: y坐标=87.35427800000002, 文本: 'Development  of  Electrochemical  Sensor  for  Cefadroxil  Antibiotic  Based  on'
+2025-11-13 22:53:32,189 - services.pdf_parser - INFO - line_data行4: y坐标=104.04427799999996, 文本: 'Conductive  Carbon  Black  Decorated  with  Tetrabutylammonium  Tetrafluoroborat'
+2025-11-13 22:53:32,190 - services.pdf_parser - INFO - line_data行5: y坐标=137.57579599999997, 文本: 'ZHU  Zongxian1,  ZHANG  Xuan1, 2∗'
+2025-11-13 22:53:32,190 - services.pdf_parser - INFO - line_data行6: y坐标=149.73534399999983, 文本: '1. Key  Labo  ratory  of  Sc ience  and   Technology    of  Eco- Textiles,   Min'
+2025-11-13 22:53:32,190 - services.pdf_parser - INFO - line_data行7: y坐标=161.4763439999998, 文本: 'Chemica  l Engineeri ng, Do ngh  ua Univer sity, Sh an ghai 2016 20, China'
+2025-11-13 22:53:32,190 - services.pdf_parser - INFO - line_data行8: y坐标=173.2173439999998, 文本: '2. National Innovation Center of Advanced Dyeing &Finishing Technology, Tai’an 2'
+2025-11-13 22:53:32,190 - services.pdf_parser - INFO - line_data行9: y坐标=196.67784999999992, 文本: 'Abstract:    The  de velo pment   of  ana lytic  al  me  thods  f  or   electrop'
+2025-11-13 22:53:32,190 - services.pdf_parser - INFO - line_data行10: y坐标=207.4478499999999, 文本: 'anti biotic dete ct ion ha s bec  ome cr  ucial for public health.  In  However,'
+2025-11-13 22:53:32,191 - services.pdf_parser - INFO - line_data行11: y坐标=218.21884999999997, 文本: 'this resea  rch, a no vel and simple electroche mical senso  r for  expensive  i'
+2025-11-13 22:53:32,191 - services.pdf_parser - INFO - 开始提取作者，当前行索引i=4，总行数=47
+2025-11-13 22:53:32,191 - services.pdf_parser - INFO - 作者行附近的上下文（行3到行9）:
+2025-11-13 22:53:32,191 - services.pdf_parser - INFO -     行3: y坐标=87.35427800000002, 文本: 'Development  of  Electrochemical  Sensor  for  Cefadroxil  Antibiotic  Based  on'
+2025-11-13 22:53:32,192 - services.pdf_parser - INFO -     行4: y坐标=104.04427799999996, 文本: 'Conductive  Carbon  Black  Decorated  with  Tetrabutylammonium  Tetrafluoroborat'
+2025-11-13 22:53:32,192 - services.pdf_parser - INFO - >>> 行5: y坐标=137.57579599999997, 文本: 'ZHU  Zongxian1,  ZHANG  Xuan1, 2∗'
+2025-11-13 22:53:32,192 - services.pdf_parser - INFO -     行6: y坐标=149.73534399999983, 文本: '1. Key  Labo  ratory  of  Sc ience  and   Technology    of  Eco- Textiles,   Min'
+2025-11-13 22:53:32,192 - services.pdf_parser - INFO -     行7: y坐标=161.4763439999998, 文本: 'Chemica  l Engineeri ng, Do ngh  ua Univer sity, Sh an ghai 2016 20, China'
+2025-11-13 22:53:32,193 - services.pdf_parser - INFO -     行8: y坐标=173.2173439999998, 文本: '2. National Innovation Center of Advanced Dyeing &Finishing Technology, Tai’an 2'
+2025-11-13 22:53:32,193 - services.pdf_parser - INFO -     行9: y坐标=196.67784999999992, 文本: 'Abstract:    The  de velo pment   of  ana lytic  al  me  thods  f  or   electrop'
+2025-11-13 22:53:32,193 - services.pdf_parser - INFO - 原始作者行（第5行）: 'ZHU  Zongxian1,  ZHANG  Xuan1, 2∗'
+2025-11-13 22:53:32,194 - services.pdf_parser - INFO - 清理数字后: 'ZHU  Zongxian,  ZHANG  Xuan, '
+2025-11-13 22:53:32,194 - services.pdf_parser - INFO - 最终提取的authors_line: 'ZHU  Zongxian, ZHANG  Xuan,'
+2025-11-13 22:53:32,194 - services.pdf_parser - INFO - normalize_authors_for_display 输入: 'ZHU  Zongxian, ZHANG  Xuan,'
+2025-11-13 22:53:32,195 - services.pdf_parser - INFO - normalize_authors_for_display 输出（有逗号）: 'ZHU  Zongxian, ZHANG  Xuan'
+2025-11-13 22:53:32,195 - services.pdf_parser - INFO - normalize_authors_for_display 输入: 'ZHU  Zongxian, ZHANG  Xuan,'
+2025-11-13 22:53:32,195 - services.pdf_parser - INFO - normalize_authors_for_display 输出（有逗号）: 'ZHU  Zongxian, ZHANG  Xuan'
+2025-11-13 22:53:32,195 - services.pdf_parser - INFO - 未找到Citation信息
+2025-11-13 22:53:32,196 - services.pdf_parser - INFO - 期刊页码范围: 348 -> 357
+2025-11-13 22:53:32,199 - services.pdf_parser - INFO - 行1 - y坐标: 11.199959999999919, 字号: 8.8, 文本: 'Development  of  Electrochemical  Sensor  for  Cefadroxil  Antibiotic  Based  on'
+2025-11-13 22:53:32,200 - services.pdf_parser - INFO - 行1 字符y坐标详情: D(y=11.20) e(y=11.20) v(y=11.20) e(y=11.20) l(y=11.20) o(y=11.20) p(y=11.20) m(y=11.20) e(y=11.20) n(y=11.20) t(y=11.20)  (y=9.97) o(y=11.20) f(y=11.20)  (y=9.97) E(y=11.20) l(y=11.20) e(y=11.20) c(y=11.20) t(y=11.20) r(y=11.20) o(y=11.20) c(y=11.20) h(y=11.20) e(y=11.20) m(y=11.20) i(y=11.20) c(y=11.20) a(y=11.20) l(y=11.20)  (y=9.97) S(y=11.20) e(y=11.20) n(y=11.20) s(y=11.20) o(y=11.20) r(y=11.20)  (y=9.97) f(y=11.20) o(y=11.20) r(y=11.20)  (y=9.97) C(y=11.20) e(y=11.20) f(y=11.20) a(y=11.20) d(y=11.20) r(y=11.20) o(y=11.20) x(y=11.20) ...(共91个字符)
+2025-11-13 22:53:32,200 - services.pdf_parser - INFO - 行2 - y坐标: 31.728437999999983, 字号: 8.8, 文本: 'Black  Decorated  with  Tetrabutylammonium  Tetrafluoroborate 357'
+2025-11-13 22:53:32,200 - services.pdf_parser - INFO - 行2 字符y坐标详情: B(y=25.46) l(y=25.46) a(y=25.46) c(y=25.46) k(y=25.46)  (y=24.23) D(y=25.46) e(y=25.46) c(y=25.46) o(y=25.46) r(y=25.46) a(y=25.46) t(y=25.46) e(y=25.46) d(y=25.46)  (y=24.23) w(y=25.46) i(y=25.46) t(y=25.46) h(y=25.46)  (y=24.23) T(y=25.46) e(y=25.46) t(y=25.46) r(y=25.46) a(y=25.46) b(y=25.46) u(y=25.46) t(y=25.46) y(y=25.46) l(y=25.46) a(y=25.46) m(y=25.46) m(y=25.46) o(y=25.46) n(y=25.46) i(y=25.46) u(y=25.46) m(y=25.46)  (y=24.23) T(y=25.46) e(y=25.46) t(y=25.46) r(y=25.46) a(y=25.46) f(y=25.46) l(y=25.46) u(y=25.46) o(y=25.46) r(y=25.46) ...(共60个字符)
+2025-11-13 22:53:32,200 - services.pdf_parser - INFO - 行3 - y坐标: 51.24434399999984, 字号: 9.7, 文本: 'functiona lized    graphene   nanoplate lets  for    the   glassy   carbon    el'
+2025-11-13 22:53:32,201 - services.pdf_parser - INFO - 行3 字符y坐标详情: f(y=51.24) u(y=51.24) n(y=51.24) c(y=51.24) t(y=51.24) i(y=51.24) o(y=51.24) n(y=51.24) a(y=51.24)  (y=61.89) l(y=51.24) i(y=51.24) z(y=51.24) e(y=51.24) d(y=51.24)  (y=61.89)  (y=50.15) g(y=51.24) r(y=51.24) a(y=51.24) p(y=51.24) h(y=51.24) e(y=51.24) n(y=51.24) e(y=51.24)  (y=61.89)  (y=50.15) n(y=51.24) a(y=51.24) n(y=51.24) o(y=51.24) p(y=51.24) l(y=51.24) a(y=51.24) t(y=51.24) e(y=51.24)  (y=61.89) l(y=51.24) e(y=51.24) t(y=51.24) s(y=51.24)  (y=50.15) f(y=51.24) o(y=51.24) r(y=51.24)  (y=50.15)  (y=61.89) t(y=51.24) h(y=51.24) e(y=51.24) ...(共102个字符)
+2025-11-13 22:53:32,201 - services.pdf_parser - INFO - 行4 - y坐标: 62.98534399999983, 字号: 9.7, 文本: 'detection of bi sphenol A  [ J ].   Journ al of Acta, 200 7,  596(1  ): 79-85.'
+2025-11-13 22:53:32,201 - services.pdf_parser - INFO - 行4 字符y坐标详情: d(y=62.99) e(y=62.99) t(y=62.99) e(y=62.99) c(y=62.99) t(y=62.99) i(y=62.99) o(y=62.99) n(y=62.99) o(y=62.99) f(y=62.99) b(y=62.99) i(y=62.99)  (y=73.63) s(y=62.99) p(y=62.99) h(y=62.99) e(y=62.99) n(y=62.99) o(y=62.99) l(y=62.99) A(y=62.99)  (y=73.63) [(y=70.23) J(y=62.99) ](y=70.23) .(y=62.99)  (y=73.63) J(y=62.88) o(y=62.88) u(y=62.88) r(y=62.88) n(y=62.88)  (y=73.63) a(y=62.88) l(y=62.88) o(y=62.88) f(y=62.88) A(y=62.88) c(y=62.88) t(y=62.88) a(y=62.88) ,(y=70.23) 2(y=62.99) 0(y=62.99) 0(y=62.99)  (y=73.63) 7(y=62.99) ,(y=70.23)  (y=73.63) ...(共67个字符)
+2025-11-13 22:53:32,202 - services.pdf_parser - INFO - 行5 - y坐标: 74.62059999999997, 字号: 9.7, 文本: 'Electroanalytical Chemistry, 2019, 833: 370- [22]　 ENACH  E T A  , OLIVEIRA-BRE '
+2025-11-13 22:53:32,203 - services.pdf_parser - INFO - 行5 字符y坐标详情: E(y=74.62) l(y=74.62) e(y=74.62) c(y=74.62) t(y=74.62) r(y=74.62) o(y=74.62) a(y=74.62) n(y=74.62) a(y=74.62) l(y=74.62) y(y=74.62) t(y=74.62) i(y=74.62) c(y=74.62) a(y=74.62) l(y=74.62) C(y=74.62) h(y=74.62) e(y=74.62) m(y=74.62) i(y=74.62) s(y=74.62) t(y=74.62) r(y=74.62) y(y=74.62) ,(y=81.98) 2(y=74.73) 0(y=74.73) 1(y=74.73) 9(y=74.73) ,(y=81.98) 8(y=74.73) 3(y=74.73) 3(y=74.73) :(y=81.98) 3(y=74.73) 7(y=74.73) 0(y=74.73) -(y=74.73) [(y=81.98) 2(y=74.73) 2(y=74.73) ](y=81.98) 　(y=74.73) E(y=74.73) N(y=74.73) A(y=74.73) C(y=74.73) H(y=74.73) ...(共75个字符)
+2025-11-13 22:53:32,203 - services.pdf_parser - INFO - 行6 - y坐标: 86.46834399999989, 字号: 9.7, 文本: '379.                   Phenol and  para -substituted   phenols'
+2025-11-13 22:53:32,203 - services.pdf_parser - INFO - 行6 字符y坐标详情: 3(y=86.47) 7(y=86.47) 9(y=86.47) .(y=86.47)  (y=97.11)  (y=97.11)  (y=97.11)  (y=97.11)  (y=97.11)  (y=97.11)  (y=97.11)  (y=97.11)  (y=97.11) P(y=86.47) h(y=86.47) e(y=86.47) n(y=86.47) o(y=86.47) l(y=86.47) a(y=86.47) n(y=86.47) d(y=86.47)  (y=97.11) p(y=86.47) a(y=86.47) r(y=86.47) a(y=86.47)  (y=97.11) -(y=86.47) s(y=86.47) u(y=86.47) b(y=86.47) s(y=86.47) t(y=86.47) i(y=86.47) t(y=86.47) u(y=86.47) t(y=86.47) e(y=86.47) d(y=86.47)  (y=97.11) p(y=86.47) h(y=86.47) e(y=86.47) n(y=86.47) o(y=86.47) l(y=86.47) s(y=86.47)  (y=97.11)
+2025-11-13 22:53:32,203 - services.pdf_parser - INFO - 行7 - y坐标: 105.45823199999995, 字号: 9.7, 文本: '[18]　 ZfaHciAleN  GfaXb,ricZaHtioAnN  GoYf  Cg,raMphAenLe-zXin.c  Onoex-pidoet  '
+2025-11-13 22:53:32,203 - services.pdf_parser - INFO - 行7 字符y坐标详情: [(y=105.46) 1(y=98.21) 8(y=98.21) ](y=105.46) 　(y=98.21) Z(y=98.21) f(y=109.95) a(y=109.95) H(y=98.21) c(y=109.95) i(y=109.95) A(y=98.21) l(y=109.95) e(y=109.95) N(y=98.21)  (y=108.85) G(y=98.21) f(y=109.95) a(y=109.95) X(y=98.21) b(y=109.95) ,(y=105.46) r(y=109.95) i(y=109.95) c(y=109.95) Z(y=98.21) a(y=109.95) H(y=98.21) t(y=109.95) i(y=109.95) o(y=109.95) A(y=98.21) n(y=109.95) N(y=98.21)  (y=108.85) G(y=98.21) o(y=109.95) Y(y=98.21) f(y=109.95)  (y=108.85) C(y=98.21) g(y=109.95) ,(y=105.46) r(y=109.95) a(y=109.95) M(y=98.21) p(y=109.95) h(y=109.95) A(y=98.21) e(y=109.95) ...(共158个字符)
+2025-11-13 22:53:32,203 - services.pdf_parser - INFO - 行8 - y坐标: 121.69134399999984, 字号: 9.7, 文本: 'composite  a  nd  its  enhanc  ed  sens itiv  ity  for   9-16.             ,  , '
+2025-11-13 22:53:32,204 - services.pdf_parser - INFO - 行8 字符y坐标详情: c(y=121.69) o(y=121.69) m(y=121.69) p(y=121.69) o(y=121.69) s(y=121.69) i(y=121.69) t(y=121.69) e(y=121.69)  (y=120.59) a(y=121.69)  (y=132.33) n(y=121.69) d(y=121.69)  (y=120.59) i(y=121.69) t(y=121.69) s(y=121.69)  (y=120.59) e(y=121.69) n(y=121.69) h(y=121.69) a(y=121.69) n(y=121.69) c(y=121.69)  (y=132.33) e(y=121.69) d(y=121.69)  (y=120.59) s(y=121.69) e(y=121.69) n(y=121.69) s(y=121.69)  (y=132.33) i(y=121.69) t(y=121.69) i(y=121.69) v(y=121.69)  (y=132.33) i(y=121.69) t(y=121.69) y(y=121.69)  (y=120.59) f(y=121.69) o(y=121.69) r(y=121.69)  (y=120.59)  (y=132.33) 9(y=121.69) -(y=121.69) ...(共69个字符)
+2025-11-13 22:53:32,204 - services.pdf_parser - INFO - 行9 - y坐标: 133.43334399999992, 字号: 9.7, 文本: 'simul taneous ele  ctroc  hemi  cal detectio  n of asco  rbic  [23]　 SANZ C G, S'
+2025-11-13 22:53:32,204 - services.pdf_parser - INFO - 行9 字符y坐标详情: s(y=133.43) i(y=133.43) m(y=133.43) u(y=133.43) l(y=133.43)  (y=144.08) t(y=133.43) a(y=133.43) n(y=133.43) e(y=133.43) o(y=133.43) u(y=133.43) s(y=133.43) e(y=133.43) l(y=133.43) e(y=133.43)  (y=144.08) c(y=133.43) t(y=133.43) r(y=133.43) o(y=133.43) c(y=133.43)  (y=144.08) h(y=133.43) e(y=133.43) m(y=133.43) i(y=133.43)  (y=144.08) c(y=133.43) a(y=133.43) l(y=133.43) d(y=133.43) e(y=133.43) t(y=133.43) e(y=133.43) c(y=133.43) t(y=133.43) i(y=133.43) o(y=133.43)  (y=144.08) n(y=133.43) o(y=133.43) f(y=133.43) a(y=133.43) s(y=133.43) c(y=133.43) o(y=133.43)  (y=144.08) r(y=133.43) b(y=133.43) ...(共89个字符)
+2025-11-13 22:53:32,205 - services.pdf_parser - INFO - 行10 - y坐标: 145.1743439999999, 字号: 9.7, 文本: 'acid, dop ami ne and uric  acid[  J].   Sensors and Electroch  emical ch aracte '
+2025-11-13 22:53:32,205 - services.pdf_parser - INFO - 行10 字符y坐标详情: a(y=145.17) c(y=145.17) i(y=145.17) d(y=145.17) ,(y=152.42) d(y=145.17) o(y=145.17) p(y=145.17)  (y=155.82) a(y=145.17) m(y=145.17) i(y=145.17)  (y=155.82) n(y=145.17) e(y=145.17) a(y=145.17) n(y=145.17) d(y=145.17) u(y=145.17) r(y=145.17) i(y=145.17) c(y=145.17)  (y=155.82) a(y=145.17) c(y=145.17) i(y=145.17) d(y=145.17) [(y=152.42)  (y=155.82) J(y=145.17) ](y=152.42) .(y=145.17)  (y=155.82) S(y=145.07) e(y=145.07) n(y=145.07) s(y=145.07) o(y=145.07) r(y=145.07) s(y=145.07) a(y=145.07) n(y=145.07) d(y=145.07) E(y=145.17) l(y=145.17) e(y=145.17) c(y=145.17) t(y=145.17) r(y=145.17) o(y=145.17) ...(共91个字符)
+2025-11-13 22:53:32,205 - services.pdf_parser - INFO - 行11 - y坐标: 156.80859999999996, 字号: 9.7, 文本: 'Actuator s B:  Chemic al,  20 16, 227:  48  8-4 96.    β-lactam antibio tic and '
+2025-11-13 22:53:32,206 - services.pdf_parser - INFO - 行11 字符y坐标详情: A(y=156.81) c(y=156.81) t(y=156.81) u(y=156.81) a(y=156.81) t(y=156.81) o(y=156.81) r(y=156.81)  (y=167.56) s(y=156.81) B(y=156.81) :(y=164.16)  (y=167.56) C(y=156.81) h(y=156.81) e(y=156.81) m(y=156.81) i(y=156.81) c(y=156.81)  (y=167.56) a(y=156.81) l(y=156.81) ,(y=164.16)  (y=167.56) 2(y=156.92) 0(y=156.92)  (y=167.56) 1(y=156.92) 6(y=156.92) ,(y=164.16) 2(y=156.92) 2(y=156.92) 7(y=156.92) :(y=164.16)  (y=167.56) 4(y=156.92) 8(y=156.92)  (y=167.56) 8(y=156.92) -(y=156.92) 4(y=156.92)  (y=167.56) 9(y=156.92) 6(y=156.92) .(y=156.92)  (y=167.56)  (y=167.56) β(y=157.36) -(y=156.92) l(y=156.92) ...(共84个字符)
+2025-11-13 22:53:32,206 - services.pdf_parser - INFO - 行12 - y坐标: 175.90523199999996, 字号: 9.7, 文本: '[19]　 ZPhHoAspNhGoruXs,-dWopAedN  gGraKphePn,e-ZbHasAedN  eGlecLtroNc,heemt iacl'
+2025-11-13 22:53:32,206 - services.pdf_parser - INFO - 行12 字符y坐标详情: [(y=175.91) 1(y=168.66) 9(y=168.66) ](y=175.91) 　(y=168.66) Z(y=168.66) P(y=180.40) h(y=180.40) H(y=168.66) o(y=180.40) A(y=168.66) s(y=180.40) p(y=180.40) N(y=168.66) h(y=180.40) G(y=168.66) o(y=180.40) r(y=180.40) u(y=180.40) X(y=168.66) s(y=180.40) ,(y=175.91) -(y=180.40) d(y=180.40) W(y=168.66) o(y=180.40) p(y=180.40) A(y=168.66) e(y=180.40) d(y=180.40) N(y=168.66)  (y=179.30) g(y=180.40) G(y=168.66) r(y=180.40) a(y=180.40) K(y=168.66) p(y=180.40) h(y=180.40) e(y=180.40) P(y=168.66) n(y=180.40) ,(y=175.91) e(y=180.40) -(y=180.40) Z(y=168.66) b(y=180.40) H(y=168.66) a(y=180.40) s(y=180.40) ...(共146个字符)
+2025-11-13 22:53:32,206 - services.pdf_parser - INFO - 行13 - y坐标: 192.13934399999982, 字号: 9.7, 文本: 'senso r  for  sens itive  dete  ction   of  acet  aminop  hen [24]　 YANG  X  ,Y,'
+2025-11-13 22:53:32,207 - services.pdf_parser - INFO - 行13 字符y坐标详情: s(y=192.14) e(y=192.14) n(y=192.14) s(y=192.14) o(y=192.14)  (y=202.78) r(y=192.14)  (y=191.04) f(y=192.14) o(y=192.14) r(y=192.14)  (y=191.04) s(y=192.14) e(y=192.14) n(y=192.14) s(y=192.14)  (y=202.78) i(y=192.14) t(y=192.14) i(y=192.14) v(y=192.14) e(y=192.14)  (y=191.04) d(y=192.14) e(y=192.14) t(y=192.14) e(y=192.14)  (y=202.78) c(y=192.14) t(y=192.14) i(y=192.14) o(y=192.14) n(y=192.14)  (y=191.04)  (y=202.78) o(y=192.14) f(y=192.14)  (y=191.04) a(y=192.14) c(y=192.14) e(y=192.14) t(y=192.14)  (y=202.78) a(y=192.14) m(y=192.14) i(y=192.14) n(y=192.14) o(y=192.14) p(y=192.14)  (y=202.78) ...(共104个字符)
+2025-11-13 22:53:32,207 - services.pdf_parser - INFO - 行14 - y坐标: 211.1292319999999, 字号: 9.7, 文本: '[32J.]. Analytica Chimica Acta, 2018, 1036: 26- Meleocdterolilnygsis anaolfy sis'
+2025-11-13 22:53:32,207 - services.pdf_parser - INFO - 行14 字符y坐标详情: [(y=211.13) 3(y=215.62) 2(y=215.62) J(y=203.88) .(y=215.62) ](y=211.13) .(y=203.88) A(y=203.77) n(y=203.77) a(y=203.77) l(y=203.77) y(y=203.77) t(y=203.77) i(y=203.77) c(y=203.77) a(y=203.77) C(y=203.77) h(y=203.77) i(y=203.77) m(y=203.77) i(y=203.77) c(y=203.77) a(y=203.77) A(y=203.77) c(y=203.77) t(y=203.77) a(y=203.77) ,(y=211.13) 2(y=203.88) 0(y=203.88) 1(y=203.88) 8(y=203.88) ,(y=211.13) 1(y=203.88) 0(y=203.88) 3(y=203.88) 6(y=203.88) :(y=211.13) 2(y=203.88) 6(y=203.88) -(y=203.88) M(y=203.88) e(y=215.62) l(y=215.62) e(y=215.62) o(y=203.88) c(y=215.62) d(y=203.88) t(y=215.62) e(y=203.88) ...(共118个字符)
+2025-11-13 22:53:32,207 - services.pdf_parser - INFO - 行15 - y坐标: 222.87023199999993, 字号: 9.7, 文本: '[ ]'
+2025-11-13 22:53:32,207 - services.pdf_parser - INFO - 行15 字符y坐标详情: [(y=222.87) ](y=222.87)
+2025-11-13 22:53:32,208 - services.pdf_parser - INFO - 行16 - y坐标: 234.61223199999995, 字号: 9.7, 文本: '[20]　 YteAraMheArtDz A  Tsp,e ctrMosIcZoUpNicO    Min.v estIingfartaiorend    an'
+2025-11-13 22:53:32,208 - services.pdf_parser - INFO - 行16 字符y坐标详情: [(y=234.61) 2(y=227.36) 0(y=227.36) ](y=234.61) 　(y=227.36) Y(y=227.36) t(y=239.10) e(y=239.10) A(y=227.36) r(y=239.10) a(y=239.10) M(y=227.36) h(y=239.10) e(y=239.10) A(y=227.36) r(y=239.10) t(y=239.10) D(y=227.36) z(y=239.10)  (y=238.01) A(y=227.36)  (y=226.26) T(y=227.36) s(y=239.10) p(y=239.10) ,(y=234.61) e(y=239.10)  (y=226.26) c(y=239.10) t(y=239.10) r(y=239.10) M(y=227.36) o(y=239.10) s(y=239.10) I(y=227.36) c(y=239.10) Z(y=227.36) o(y=239.10) U(y=227.36) p(y=239.10) N(y=227.36) i(y=239.10) c(y=239.10) O(y=227.36)  (y=238.01)  (y=226.26) M(y=227.36) i(y=239.10) n(y=239.10) .(y=227.36) ...(共160个字符)
+2025-11-13 22:53:32,208 - services.pdf_parser - INFO - 行17 - y坐标: 250.84534399999995, 字号: 9.7, 文本: 'imidazolium  ,  pyridinium,   and    tetraalkyl-  [ ] meth ods:  f, undam  ental'
+2025-11-13 22:53:32,208 - services.pdf_parser - INFO - 行17 字符y坐标详情: i(y=250.85) m(y=250.85) i(y=250.85) d(y=250.85) a(y=250.85) z(y=250.85) o(y=250.85) l(y=250.85) i(y=250.85) u(y=250.85) m(y=250.85)  (y=261.49) ,(y=258.09)  (y=249.75) p(y=250.85) y(y=250.85) r(y=250.85) i(y=250.85) d(y=250.85) i(y=250.85) n(y=250.85) i(y=250.85) u(y=250.85) m(y=250.85) ,(y=258.09)  (y=261.49)  (y=249.75) a(y=250.85) n(y=250.85) d(y=250.85)  (y=261.49)  (y=249.75) t(y=250.85) e(y=250.85) t(y=250.85) r(y=250.85) a(y=250.85) a(y=250.85) l(y=250.85) k(y=250.85) y(y=250.85) l(y=250.85) -(y=250.85)  (y=261.49) [(y=246.35) ](y=246.35) m(y=250.85) e(y=250.85) t(y=250.85) h(y=250.85) ...(共96个字符)
+2025-11-13 22:53:32,209 - services.pdf_parser - INFO - 行18 - y坐标: 262.58634399999994, 字号: 9.7, 文本: 'amm onium te  trafluo roborate  ionic liquids [ J]. New  Yor k: Joh n  Wil ey &S'
+2025-11-13 22:53:32,209 - services.pdf_parser - INFO - 行18 字符y坐标详情: a(y=262.59) m(y=262.59) m(y=262.59)  (y=273.23) o(y=262.59) n(y=262.59) i(y=262.59) u(y=262.59) m(y=262.59) t(y=262.59) e(y=262.59)  (y=273.23) t(y=262.59) r(y=262.59) a(y=262.59) f(y=262.59) l(y=262.59) u(y=262.59) o(y=262.59)  (y=273.23) r(y=262.59) o(y=262.59) b(y=262.59) o(y=262.59) r(y=262.59) a(y=262.59) t(y=262.59) e(y=262.59)  (y=273.23) i(y=262.59) o(y=262.59) n(y=262.59) i(y=262.59) c(y=262.59) l(y=262.59) i(y=262.59) q(y=262.59) u(y=262.59) i(y=262.59) d(y=262.59) s(y=262.59) [(y=269.84) J(y=262.59) ](y=269.84) .(y=262.59) N(y=262.59) e(y=262.59) w(y=262.59)  (y=273.23) Y(y=262.59) ...(共84个字符)
+2025-11-13 22:53:32,209 - services.pdf_parser - INFO - 行19 - y坐标: 274.2216, 字号: 9.7, 文本: 'ACS O  me ga, 202  2,  7( 34)  :  2980  4- 298 12.   [26]　 ATIF S,  BAIG J A, AF'
+2025-11-13 22:53:32,209 - services.pdf_parser - INFO - 行19 字符y坐标详情: A(y=274.22) C(y=274.22) S(y=274.22) O(y=274.22)  (y=284.97) m(y=274.22) e(y=274.22)  (y=284.97) g(y=274.22) a(y=274.22) ,(y=281.58) 2(y=274.33) 0(y=274.33) 2(y=274.33)  (y=284.97) 2(y=274.33) ,(y=281.58)  (y=284.97) 7(y=274.33) ((y=281.58)  (y=284.97) 3(y=274.33) 4(y=274.33) )(y=281.58)  (y=284.97) :(y=281.58)  (y=284.97) 2(y=274.33) 9(y=274.33) 8(y=274.33) 0(y=274.33)  (y=284.97) 4(y=274.33) -(y=274.33)  (y=284.97) 2(y=274.33) 9(y=274.33) 8(y=274.33)  (y=284.97) 1(y=274.33) 2(y=274.33) .(y=274.33)  (y=284.97) [(y=281.58) 2(y=274.33) 6(y=274.33) ](y=281.58) 　(y=274.33) A(y=274.33) T(y=274.33) ...(共86个字符)
+2025-11-13 22:53:32,210 - services.pdf_parser - INFO - 行20 - y坐标: 293.31823199999997, 字号: 9.7, 文本: '[21]　 XvoIlAtaOmmF,etZriHc  AdeOterFmiQn,atiLonI  JofW  ch,loertamalp.heSneincso'
+2025-11-13 22:53:32,211 - services.pdf_parser - INFO - 行20 字符y坐标详情: [(y=293.32) 2(y=286.07) 1(y=286.07) ](y=293.32) 　(y=286.07) X(y=286.07) v(y=297.81) o(y=297.81) I(y=286.07) l(y=297.81) A(y=286.07) t(y=297.81) a(y=297.81) O(y=286.07) m(y=297.81) m(y=297.81) F(y=286.07) ,(y=293.32) e(y=297.81) t(y=297.81) Z(y=286.07) r(y=297.81) i(y=297.81) H(y=286.07) c(y=297.81)  (y=296.71) A(y=286.07) d(y=297.81) e(y=297.81) O(y=286.07) t(y=297.81) e(y=297.81) r(y=297.81) F(y=286.07) m(y=297.81) i(y=297.81) Q(y=286.07) n(y=297.81) ,(y=293.32) a(y=297.81) t(y=297.81) i(y=297.81) L(y=286.07) o(y=297.81) n(y=297.81) I(y=286.07)  (y=296.71) J(y=286.07) o(y=297.81) f(y=297.81) ...(共179个字符)
+2025-11-13 22:53:32,211 - services.pdf_parser - INFO - 行21 - y坐标: 309.551344, 字号: 9.7, 文本: 'using  single-w all    carbon    nano tube-gold   biolog ical  sa  mples[J].   M'
+2025-11-13 22:53:32,212 - services.pdf_parser - INFO - 行22 - y坐标: 321.293344, 字号: 9.7, 文本: 'nanoparticle-ionic liquid composite film modified 2020, 154: 104574.'
+2025-11-13 22:53:32,212 - services.pdf_parser - INFO - 行23 - y坐标: 367.2619699999999, 字号: 19.7, 文本: '基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄'
+2025-11-13 22:53:32,212 - services.pdf_parser - INFO - 行24 - y坐标: 394.7229699999999, 字号: 19.7, 文本: '抗生素电化学传感器'
+2025-11-13 22:53:32,212 - services.pdf_parser - INFO - 行25 - y坐标: 443.09638799999993, 字号: 11.8, 文本: '朱宗贤1, 张　 煊1, 2∗'
+2025-11-13 22:53:32,213 - services.pdf_parser - INFO - 行26 - y坐标: 462.09034399999996, 字号: 9.7, 文本: '1. 东华大学  生态纺织教育部重点实验室, 化学与化工学院, 上海  201620'
+2025-11-13 22:53:32,213 - services.pdf_parser - INFO - 行27 - y坐标: 478.58634399999994, 字号: 9.7, 文本: '2. 国家先进印染技术创新中心, 山东  泰安  271000'
+2025-11-13 22:53:32,213 - services.pdf_parser - INFO - 行28 - y坐标: 511.5532219999999, 字号: 10.3, 文本: '摘　 要: 抗生素的检测对公共健康而言非常重要。 该研究开发了一种新颖简单的可灵敏检测头孢羟氨苄'
+2025-11-13 22:53:32,213 - services.pdf_parser - INFO - 行29 - y坐标: 536.310438, 字号: 10.3, 文本: '(tectreaffalduroorxoibl,oraCteFL )TB抗AB生F 素修的饰电的化导学电传炭感黑器。商通品过名将VX四C-丁72R基 四涂氟覆硼'
+2025-11-13 22:53:32,214 - services.pdf_parser - INFO - 行30 - y坐标: 553.292438, 字号: 10.3, 文本: 'electrode GCE, 上 构4筑)了电化学传感器 TB(ABF / VXC-72R/ GCE) 研究发现 CFL 在该( 传感器上于'
+2025-11-13 22:53:32,214 - services.pdf_parser - INFO - 行31 - y坐标: 571.0494379999999, 字号: 10.3, 文本: '0. 22  V 处,有一个) 还原, 峰 该传感器在 0. 3~10. 0  mo4l/ L 浓度范围内对。 CFL 显示出良好的线性响应特性'
+2025-11-13 22:53:32,214 - services.pdf_parser - INFO - 行32 - y坐标: 588.806438, 字号: 10.3, 文本: '检测限为 0. 2  mol/ L 。信噪比为 3 该传感器表μ现出良好的重现性 储备稳定性和抗干扰能力 并被成,'
+2025-11-13 22:53:32,214 - services.pdf_parser - INFO - 行33 - y坐标: 605.787438, 字号: 10.3, 文本: '功应用于湖水μ 药剂和(胎牛血清样品)。中 CFL 的检测 、 ,'
+2025-11-13 22:53:32,215 - services.pdf_parser - INFO - 行34 - y坐标: 622.7694379999999, 字号: 10.3, 文本: '关键词:   电化学、 传感器 导电炭黑 四丁基四氟硼酸。铵 头孢羟氨苄抗生素'
+2025-11-13 22:53:32,215 - services.pdf_parser - INFO - 行35 - y坐标: 639.7504379999999, 字号: 10.3, 文本: '; ; ;'
+2025-11-13 22:53:32,217 - services.pdf_parser - INFO - 中文提取：使用line_data分行，找到 12 行包含中文的内容
+2025-11-13 22:53:32,218 - services.pdf_parser - INFO - 中文提取：判断标题行数为 2
+2025-11-13 22:53:32,219 - services.pdf_parser - INFO - 中文标题: '基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄抗生素电化学传感器...'
+2025-11-13 22:53:32,219 - services.pdf_parser - INFO - 中文作者: '朱宗贤, 张煊...'
+2025-11-13 22:53:32,669 - services.pdf_parser - INFO - 开始提取图片，期刊页码范围: (348, 357), PDF总页数: 10, 偏移量: 347
+2025-11-13 22:53:32,669 - services.pdf_parser - INFO - 期刊页码 348-357 映射到PDF索引 0-9
+2025-11-13 22:53:32,669 - services.pdf_parser - INFO - 检查PDF第 1 页 (期刊第 348 页): 找到 1 张图片
+2025-11-13 22:53:32,669 - services.pdf_parser - INFO - 提取图片 1: xref=89, 图片元数据: (89, 0, 378, 378, 8, 'DeviceCMYK', '', 'img10', 'DCTDecode')
+2025-11-13 22:53:32,680 - services.pdf_parser - INFO - 检测到CMYK格式图片，转换为RGB
+2025-11-13 22:53:32,735 - services.pdf_parser - INFO - ✅ 成功提取第一张图片(QRcode): backen/temp_images\paper_348-357_page_348_image_QRcode.png, 尺寸: 378x378
+2025-11-13 22:53:32,735 - services.pdf_parser - INFO - 检查PDF第 2 页 (期刊第 349 页): 找到 1 张图片
+2025-11-13 22:53:32,735 - services.pdf_parser - INFO - 提取图片 1: xref=3, 图片元数据: (3, 0, 2362, 1315, 8, 'DeviceCMYK', '', 'img11', 'DCTDecode')
+2025-11-13 22:53:32,776 - services.pdf_parser - INFO - 检测到CMYK格式图片，转换为RGB
+2025-11-13 22:53:32,896 - services.pdf_parser - INFO - ✅ 成功提取第二张图片: backen/temp_images\paper_348-357_page_349_image.png, 尺寸: 2362x1315
+2025-11-13 22:53:32,896 - services.pdf_parser - INFO - 成功提取 2 张图片
+2025-11-13 22:53:32,905 - services.pdf_parser - INFO - 论文 1 第一张图片(QRcode) 本地保存成功: images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-13 22:53:32,907 - services.pdf_parser - INFO - 论文 1 第二张图片 本地保存成功: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-13 22:53:32,907 - services.pdf_parser - INFO - 提取论文 1: Development of Electrochemical Sensor for Cefadrox...
+2025-11-13 22:53:32,907 - services.pdf_parser - INFO - 成功解析出 1 篇论文，按顺序排列
+2025-11-13 22:53:32,907 - services.file_service - INFO - 预解析结果: 1 篇论文
+2025-11-13 22:53:32,914 - services.file_service - INFO - 用户：editor 创建新期刊: 东华学报 - 2025, 42(4)
+2025-11-13 22:53:32,914 - services.file_service - INFO - 开始解析PDF文件: uploads\20251113_225325_基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄 抗生素电化学传感器.pdf
+2025-11-13 22:53:32,920 - services.file_service - INFO - 开始保存 1 篇论文到数据库
+2025-11-13 22:53:32,920 - services.file_service - INFO - 成功解析出 1 篇真实论文
+2025-11-13 22:53:32,930 - services.file_service - INFO - 期刊和文件记录已保存到数据库: 期刊ID=3, 文件ID=2, 论文数量=1
+2025-11-13 22:53:32,935 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:32] "POST /api/upload HTTP/1.1" 200 -
+2025-11-13 22:53:32,949 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:32] "GET /api/papers HTTP/1.1" 200 -
+2025-11-13 22:53:36,247 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:36] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 22:53:39,154 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 22:53:39,154 - __main__ - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_225246.xlsx
+2025-11-13 22:53:39,156 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-13 22:53:39,157 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 22:53:39,158 - services.export_service - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_225246.xlsx
+2025-11-13 22:53:39,167 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 22:53:39,175 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251113_225339.xlsx
+2025-11-13 22:53:39,177 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:39] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-13 22:53:39,532 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251113_225339.xlsx
+2025-11-13 22:53:39,539 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 22:53:39] "GET /api/download/统计表_2025,%2042(4)_20251113_225339.xlsx HTTP/1.1" 200 -
+2025-11-13 23:39:41,834 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 23:39:41,894 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-13 23:39:41,894 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 23:39:41,898 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 23:39:44,440 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-13 23:39:44,468 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 23:39:44,489 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-13 23:40:09,364 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:40:09] "[35m[1mGET /api/journals HTTP/1.1[0m" 500 -
+2025-11-13 23:40:11,957 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:40:11] "[35m[1mGET /api/papers HTTP/1.1[0m" 500 -
+2025-11-13 23:40:13,509 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:40:13] "[35m[1mGET /api/journals HTTP/1.1[0m" 500 -
+2025-11-13 23:40:17,586 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:40:17] "[35m[1mGET /api/journals HTTP/1.1[0m" 500 -
+2025-11-13 23:40:53,428 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:40:53] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-13 23:40:53,430 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:40:53] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-13 23:41:01,108 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:41:01] "POST /api/login HTTP/1.1" 200 -
+2025-11-13 23:41:02,462 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:41:02] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 23:41:08,078 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:41:08] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-13 23:41:09,814 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 23:41:09,816 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:41:09] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 23:41:14,844 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 23:41:14,845 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:41:14] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 23:43:28,469 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 23:43:28,469 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:28] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-13 23:43:33,903 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 23:43:33,906 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:33] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-13 23:43:38,557 - services.template_config_service - INFO - 已复制用户模板文件: user_configs\user_2\template_user_2_20251113_234333_-_1.xlsx -> D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_234338.xlsx
+2025-11-13 23:43:38,557 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-13 23:43:38,557 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:38] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-13 23:43:41,133 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:41] "GET /api/journals HTTP/1.1" 200 -
+2025-11-13 23:43:42,390 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 23:43:42,391 - __main__ - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_234338.xlsx
+2025-11-13 23:43:42,403 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-13 23:43:42,406 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-13 23:43:42,406 - services.export_service - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251113_234338.xlsx
+2025-11-13 23:43:42,420 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-13 23:43:42,438 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251113_234342.xlsx
+2025-11-13 23:43:42,445 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:42] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-13 23:43:42,856 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251113_234342.xlsx
+2025-11-13 23:43:42,856 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:42] "GET /api/download/统计表_2025,%2042(4)_20251113_234342.xlsx HTTP/1.1" 200 -
+2025-11-13 23:43:54,667 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:54] "GET /api/papers HTTP/1.1" 200 -
+2025-11-13 23:43:54,668 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 23:43:54] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 12:38:58,164 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 12:38:58,223 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 12:38:58,223 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 12:38:58,223 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 12:39:00,968 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 12:39:00,996 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 12:39:01,017 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 12:39:22,840 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:22] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-14 12:39:22,906 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:22] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 12:39:32,442 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:32] "POST /api/login HTTP/1.1" 200 -
+2025-11-14 12:39:35,368 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:35] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 12:39:38,640 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 12:39:38,644 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:38] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-14 12:39:45,185 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-14 12:39:45,185 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:45] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-14 12:39:49,265 - services.template_config_service - INFO - 已复制用户模板文件: user_configs\user_2\template_user_2_20251114_123945_-_1.xlsx -> D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_123949.xlsx
+2025-11-14 12:39:49,266 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-14 12:39:49,267 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:49] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-14 12:39:51,958 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:51] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 12:39:52,910 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 12:39:52,911 - __main__ - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_123949.xlsx
+2025-11-14 12:39:52,914 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-14 12:39:52,925 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-14 12:39:52,939 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251114_123952.xlsx
+2025-11-14 12:39:52,939 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:52] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-14 12:39:53,020 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251114_123952.xlsx
+2025-11-14 12:39:53,024 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:39:53] "GET /api/download/统计表_2025,%2042(4)_20251114_123952.xlsx HTTP/1.1" 200 -
+2025-11-14 12:46:05,221 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-14 12:46:05,512 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 12:46:08,212 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 12:46:08,280 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 12:46:08,311 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 12:46:19,382 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:19] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 12:46:20,262 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 12:46:20,263 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:20] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-14 12:46:25,493 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-14 12:46:25,493 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:25] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-14 12:46:30,710 - services.template_config_service - INFO - 已复制用户模板文件: user_configs\user_2\template_user_2_20251114_124625_-_1.xlsx -> D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-14 12:46:30,711 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-14 12:46:30,713 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:30] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-14 12:46:34,278 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:34] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 12:46:35,390 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 12:46:35,390 - __main__ - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-14 12:46:35,394 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-14 12:46:35,403 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-14 12:46:35,417 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251114_124635.xlsx
+2025-11-14 12:46:35,417 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:35] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-14 12:46:35,811 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251114_124635.xlsx
+2025-11-14 12:46:35,813 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:46:35] "GET /api/download/统计表_2025,%2042(4)_20251114_124635.xlsx HTTP/1.1" 200 -
+2025-11-14 12:56:22,423 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 12:56:22,425 - __main__ - INFO - 使用用户模板生成统计表: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-14 12:56:22,430 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-14 12:56:22,468 - services.template_service - INFO - 从Excel文件第2行提取到 6 个表头: ['稿件号', '页数', '一作', '通讯', '刊期', '是否东华大学']
+2025-11-14 12:56:22,485 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251114_125622.xlsx
+2025-11-14 12:56:22,492 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:56:22] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-14 12:56:22,878 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251114_125622.xlsx
+2025-11-14 12:56:22,878 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:56:22] "GET /api/download/统计表_2025,%2042(4)_20251114_125622.xlsx HTTP/1.1" 200 -
+2025-11-14 12:57:47,145 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:57:47] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 12:57:51,113 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 12:57:51,113 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 12:57:51] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-14 13:33:23,540 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 13:33:23,609 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 13:33:23,609 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 13:33:23,611 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 13:33:26,005 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 13:33:26,042 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 13:33:26,063 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 13:33:28,195 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:33:28] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:35:59,824 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:35:59] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:35:59,839 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:35:59] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:36:26,919 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:36:26] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:36:27,168 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:36:27] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:41:27,970 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:41:27] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:41:27,981 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:41:27] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:41:37,845 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:41:37] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 13:41:38,512 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:41:38] "GET /api/admin/users/2 HTTP/1.1" 200 -
+2025-11-14 13:42:06,718 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\blueprints\\admin.py', reloading
+2025-11-14 13:42:07,013 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 13:42:09,540 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 13:42:09,571 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 13:42:09,596 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 13:44:16,211 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-14 13:44:16,400 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 13:44:18,712 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 13:44:18,738 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 13:44:18,762 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 13:44:55,104 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:44:55] "[33mGET /api/admin/users/2 HTTP/1.1[0m" 404 -
+2025-11-14 13:44:55,106 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:44:55] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:45:05,555 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:45:05] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 13:45:06,260 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:45:06] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:47:22,566 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:47:22] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:47:22,576 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:47:22] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:47:30,902 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:47:30] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 13:47:31,625 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:47:31] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:49:46,282 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:49:46] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:49:46,288 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:49:46] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:50:08,995 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:50:08] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 13:50:09,232 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 13:50:09] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:03:31,405 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:03:31] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:03:44,394 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 14:03:44,457 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 14:03:44,457 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 14:03:44,457 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 14:03:47,238 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 14:03:47,271 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 14:03:47,303 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 14:03:48,488 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:03:48] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:09:57,121 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 14:09:57,177 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 14:09:57,177 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 14:09:57,182 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 14:09:59,957 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 14:09:59,983 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 14:10:00,004 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 14:10:06,978 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:10:06] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:11:09,171 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:11:09] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:11:09,179 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:11:09] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:11:16,853 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:11:16] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:14:16,676 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:14:16] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:14:16,905 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:14:16] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:14:31,024 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:14:31] "GET /api/me HTTP/1.1" 200 -

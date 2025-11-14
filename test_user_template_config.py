@@ -52,9 +52,9 @@ def test_user_template_config():
         user_template_config = {
             'template_file_path': 'test_template.xlsx',
             'column_mapping': [
-                {'system_field': 'manuscript_id', 'template_header': '稿件号', 'order': 1},
-                {'system_field': 'title', 'template_header': '标题', 'order': 2},
-                {'system_field': 'authors', 'template_header': '作者', 'order': 3}
+                {'system_key': 'manuscript_id', 'template_header': '稿件号', 'order': 1},
+                {'system_key': 'title', 'template_header': '标题', 'order': 2},
+                {'system_key': 'authors', 'template_header': '作者', 'order': 3}
             ]
         }
         

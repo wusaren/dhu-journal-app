@@ -293,11 +293,10 @@
 import { ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UploadFilled, Loading } from '@element-plus/icons-vue'
-import { journalService } from '@/api/journalService'
+import { formatService, type UserTemplateConfig, type UserTuiwenTemplateConfig } from '@/api/formatService'
 
 const props = defineProps<{
   modelValue: boolean
-  journalId?: number
 }>()
 
 const emit = defineEmits<{
@@ -375,7 +374,7 @@ const getFieldLabel = (key: string) => {
 // 加载系统字段
 const loadSystemFields = async () => {
   try {
-    const res = await journalService.getSystemFields()
+    const res = await formatService.getSystemFields()
     if (res.success) {
       systemFields.value = res.fields
     }
@@ -400,7 +399,7 @@ const handleFileChange = (file: any) => {
 
 // 上传并识别（仅统计表）
 const handleUpload = async () => {
-  if (!selectedFile.value || !props.journalId || templateType.value !== 'stats') {
+  if (!selectedFile.value || templateType.value !== 'stats') {
     ElMessage.warning('请选择文件')
     return
   }
@@ -410,19 +409,49 @@ const handleUpload = async () => {
     const formData = new FormData()
     formData.append('file', selectedFile.value)
 
-    // 统计表模板：上传Excel并识别表头
-    const res = await journalService.uploadTemplate(props.journalId, formData)
+    // 统计表模板：上传Excel并识别表头（用户级别）
+    const res = await formatService.uploadStatsFormat(selectedFile.value)
+    console.log('上传结果:', res) // 调试日志
+    templateFilePath.value = res.template_file_path
+    console.log("templateFilePath:", templateFilePath.value)
+    // 检查返回结果的结构 res
     if (res.success) {
-      headers.value = res.headers
-      templateFilePath.value = res.template_file_path
+      // 使用后端返回的表头数据
+      if (res.headers && res.headers.length > 0) {
+        // 转换后端返回的表头格式
+        headers.value = res.headers.map((header: any, index: number) => ({
+          template_header: header.template_header,
+          system_key: header.system_key,
+          label: header.label,
+          order: index + 1,
+          is_custom: header.is_custom
+        }))
+        console.log('使用后端返回的表头:', headers.value)
+      } else {
+        // 如果后端没有返回表头，创建默认表头
+        headers.value = [
+          { template_header: '稿件号', system_key: 'manuscript_id', label: '稿件号', order: 1, is_custom: false },
+          { template_header: '标题', system_key: 'title', label: '标题', order: 2, is_custom: false },
+          { template_header: '作者', system_key: 'authors', label: '作者', order: 3, is_custom: false },
+          { template_header: '一作', system_key: 'first_author', label: '一作', order: 4, is_custom: false },
+          { template_header: '通讯', system_key: 'corresponding', label: '通讯', order: 5, is_custom: false },
+          { template_header: '刊期', system_key: 'issue', label: '刊期', order: 6, is_custom: false },
+          { template_header: '是否东华大学', system_key: 'is_dhu', label: '是否东华大学', order: 7, is_custom: false }
+        ]
+        console.log('使用默认表头:', headers.value)
+      }
       step.value = 2
-      ElMessage.success('模板上传成功，已识别表头')
+      ElMessage.success('模板上传成功，请配置表头映射')
     } else {
-      ElMessage.error(res.message || '上传失败')
+      // 如果返回结果没有success字段，或者success为false
+      const errorMessage = res?.message || '上传失败，请检查文件格式'
+      ElMessage.error(errorMessage)
     }
   } catch (error: any) {
     console.error('上传模板失败:', error)
-    ElMessage.error(error.message || '上传失败')
+    // 更详细的错误信息
+    const errorMessage = error?.response?.data?.message || error?.message || '上传失败，请检查网络连接'
+    ElMessage.error(errorMessage)
   } finally {
     uploading.value = false
   }
@@ -567,26 +596,27 @@ const handleTuiwenDrop = (dropIndex: number, event: DragEvent) => {
 
 // 保存配置
 const handleSave = async () => {
-  if (!props.journalId || !templateType.value) {
+  if (!templateType.value) {
     return
   }
 
   try {
     if (templateType.value === 'stats') {
-      // 统计表模板：保存列映射配置
-      if (!templateFilePath.value) {
-        ElMessage.error('模板文件路径不存在，请重新上传')
-        return
+      // 统计表模板：保存列映射配置（用户级别）
+      const userTemplateConfig: UserTemplateConfig = {
+        template_file_path: templateFilePath.value || 'user_template.xlsx', // 添加模板文件路径
+        column_mapping: headers.value.map(header => ({
+          system_key: header.system_key || header.template_header,
+          template_header: header.template_header,
+          order: header.order,
+          is_custom: header.is_custom
+        }))
       }
       
-      const res = await journalService.saveTemplateMapping(
-        props.journalId,
-        templateFilePath.value,
-        headers.value
-      )
+      const res = await formatService.saveUserTemplate(userTemplateConfig)
       
       if (res.success) {
-        ElMessage.success('模板配置保存成功')
+        ElMessage.success('统计表模板配置保存成功')
         hasTemplate.value = true
         emit('saved')
         handleClose()
@@ -594,11 +624,17 @@ const handleSave = async () => {
         ElMessage.error(res.message || '保存失败')
       }
     } else {
-      // 推文模板：保存字段配置
-      const res = await journalService.saveTuiwenTemplateConfig(
-        props.journalId,
-        tuiwenFields.value
-      )
+      // 推文模板：保存字段配置（用户级别）
+      const userTuiwenConfig: UserTuiwenTemplateConfig = {
+        fields: tuiwenFields.value.map(field => ({
+          field: field.key,
+          label: field.label,
+          required: false,
+          order: field.order
+        }))
+      }
+      
+      const res = await formatService.saveUserTuiwenTemplate(userTuiwenConfig)
       
       if (res.success) {
         ElMessage.success('推文模板配置保存成功')
@@ -617,7 +653,7 @@ const handleSave = async () => {
 
 // 删除模板
 const handleDeleteTemplate = async () => {
-  if (!props.journalId || !templateType.value) {
+  if (!templateType.value) {
     return
   }
 
@@ -628,16 +664,29 @@ const handleDeleteTemplate = async () => {
       type: 'warning'
     })
 
-    const res = templateType.value === 'stats' 
-      ? await journalService.deleteTemplate(props.journalId)
-      : await journalService.deleteTuiwenTemplate(props.journalId)
-    
-    if (res.success) {
-      ElMessage.success('模板删除成功')
-      hasTemplate.value = false
-      handleClose()
+    // 对于推文模板，我们使用一个空的配置来"删除"它
+    if (templateType.value === 'tuiwen') {
+      const emptyConfig: UserTuiwenTemplateConfig = {
+        fields: []
+      }
+      const res = await formatService.saveUserTuiwenTemplate(emptyConfig)
+      if (res.success) {
+        ElMessage.success('推文模板配置已清空')
+        hasTemplate.value = false
+        handleClose()
+      } else {
+        ElMessage.error(res.message || '删除失败')
+      }
     } else {
-      ElMessage.error(res.message || '删除失败')
+      // 统计表模板使用删除接口
+      const res = await formatService.deleteUserTemplate()
+      if (res.success) {
+        ElMessage.success('统计表模板删除成功')
+        hasTemplate.value = false
+        handleClose()
+      } else {
+        ElMessage.error(res.message || '删除失败')
+      }
     }
   } catch (error: any) {
     if (error !== 'cancel') {
@@ -649,33 +698,39 @@ const handleDeleteTemplate = async () => {
 
 // 加载已保存的配置（当用户选择了模板类型后）
 const loadSavedConfig = async () => {
-  if (!props.journalId || !templateType.value) {
+  if (!templateType.value) {
     return
   }
 
   try {
     if (templateType.value === 'stats') {
-      // 加载统计表模板配置
-      const res = await journalService.getTemplateHeaders(props.journalId)
+      // 加载统计表模板配置（用户级别）
+      const res = await formatService.getUserTemplate()
       if (res.success && res.has_template) {
-        headers.value = res.headers
+        // 转换数据格式
+        headers.value = (res.column_mapping || []).map((mapping: any) => ({
+          template_header: mapping.template_header,
+          system_key: mapping.system_key,
+          label: mapping.template_header,
+          order: mapping.order || 1,
+          is_custom: false
+        }))
         updateOrders()
-        templateFilePath.value = res.template_file_path || ''
         hasTemplate.value = true
         step.value = 2
       }
     } else {
-      // 加载推文模板配置
-      const res = await journalService.getTuiwenTemplate(props.journalId)
+      // 加载推文模板配置（用户级别）
+      const res = await formatService.getUserTuiwenTemplate()
       if (res.success && res.has_template && res.fields) {
-        tuiwenFields.value = res.fields
+        tuiwenFields.value = (res.fields || []).map((field: any) => ({
+          key: field.field,
+          label: field.label,
+          order: field.order || 1
+        }))
         updateTuiwenOrders()
         hasTemplate.value = true
         step.value = 2
-      } else if (res.success && res.has_template) {
-        // 兼容旧格式（如果有模板文件路径）
-        hasTemplate.value = true
-        step.value = 1
       }
     }
   } catch (error) {
@@ -696,7 +751,7 @@ const handleClose = () => {
 }
 
 // 监听对话框打开
-watch(() => props.modelValue, (newVal) => {
+watch(() => props.modelValue, (newVal: boolean) => {
   if (newVal) {
     loadSystemFields()
     // 不自动加载配置，让用户先选择模板类型
@@ -941,4 +996,3 @@ watch(() => props.modelValue, (newVal) => {
   justify-content: flex-end;
 }
 </style>
-

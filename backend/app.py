@@ -560,6 +560,7 @@ def get_column_config(journal_id):
 
 # 上传统计表模板文件
 @app.route('/api/upload/stats-format', methods=['POST'])
+@auth_required()
 def upload_template():
     """上传Excel模板文件并识别表头"""
     try:
@@ -677,12 +678,13 @@ def get_template_headers(journal_id):
         return jsonify({'success': False, 'message': f'获取模板表头失败: {str(e)}'}), 500
 
 # 保存用户模板配置
-@app.route('/api/user/template', methods=['POST'])
+@app.route('/api/user/template', methods=['PUT'])
 @auth_required()
 def save_user_template():
     """保存用户模板配置"""
     try:
         data = request.get_json()
+        print(data)
         template_file_path = data.get('template_file_path')
         column_mapping = data.get('column_mapping', [])
         
@@ -948,33 +950,22 @@ def export_excel():
         user_id = current_user.id
         template_config_service = TemplateConfigService()
         user_template_config = template_config_service.load_user_config(user_id)
-        
+        print('user_template_config:', user_template_config)
         if user_template_config and user_template_config.get('template_file_path') and user_template_config.get('column_mapping'):
             # 使用用户模板生成
             logger.info(f"使用用户模板生成统计表: {user_template_config.get('template_file_path')}")
-            result = export_service.export_excel(journal_id, columns_config, user_id)
+            result = export_service.export_excel_with_template(journal_id, user_template_config['template_file_path'], user_template_config['column_mapping'])
+        
         else:
-            # 检查期刊级别的模板配置
-            template_config = template_config_service.load_config(journal_id)
+            # 使用列配置生成
+            # 如果没有传入配置，尝试从 JSON 文件加载
+            if columns_config is None:
+                config_service = ColumnConfigService()
+                columns_config = config_service.load_config(journal_id)
+                if columns_config:
+                    logger.info(f"从配置文件加载了期刊 {journal_id} 的列配置")
             
-            if template_config and template_config.get('template_file_path') and template_config.get('column_mapping'):
-                # 使用期刊模板生成
-                logger.info(f"使用期刊模板生成统计表: {template_config.get('template_file_path')}")
-                result = export_service.export_excel_with_template(
-                    journal_id,
-                    template_config['template_file_path'],
-                    template_config['column_mapping']
-                )
-            else:
-                # 使用列配置生成
-                # 如果没有传入配置，尝试从 JSON 文件加载
-                if columns_config is None:
-                    config_service = ColumnConfigService()
-                    columns_config = config_service.load_config(journal_id)
-                    if columns_config:
-                        logger.info(f"从配置文件加载了期刊 {journal_id} 的列配置")
-                
-                result = export_service.export_excel(journal_id, columns_config)
+            result = export_service.export_excel(journal_id, columns_config)
         
         if result['success']:
             return jsonify(result)

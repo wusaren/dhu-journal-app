@@ -69,9 +69,9 @@ def test_user_template_simple():
         # 创建用户模板配置（不包含实际文件路径）
         user_template_config = {
             'column_mapping': [
-                {'system_field': 'manuscript_id', 'template_header': '稿件号', 'order': 1},
-                {'system_field': 'title', 'template_header': '标题', 'order': 2},
-                {'system_field': 'authors', 'template_header': '作者', 'order': 3}
+                {'system_key': 'manuscript_id', 'template_header': '稿件号', 'order': 1},
+                {'system_key': 'title', 'template_header': '标题', 'order': 2},
+                {'system_key': 'authors', 'template_header': '作者', 'order': 3}
             ]
         }
         
