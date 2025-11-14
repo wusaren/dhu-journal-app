@@ -3,6 +3,7 @@
 从 app.py 中提取文件相关业务逻辑，保持完全兼容
 """
 from models import Journal, Paper, FileUpload, User, db
+from services.permission_service import PermissionService
 from utils.helpers import get_file_type, generate_timestamp, ensure_upload_directory, format_file_response
 from utils.validators import validate_file_upload
 from datetime import datetime
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FileService:
     """文件服务类"""
     
-    def upload_file(self, file, journal_id=None):
+    def upload_file(self, file, journal_id=None, user=None):
         """
         文件上传 - 从 app.py 中提取，保持完全兼容
         返回格式与原来完全一致
@@ -53,6 +54,10 @@ class FileService:
                     journal = Journal.query.get(int(journal_id))
                     if not journal:
                         return {'success': False, 'message': '指定的期刊不存在', 'status_code': 404}
+                    
+                    # 检查用户是否有权限访问该期刊
+                    # if user and not PermissionService.can_edit_journal(user, journal):
+                    #     return {'success': False, 'message': '您没有权限上传文件到该期刊', 'status_code': 403}
                 else:
                     # 先解析PDF获取期刊信息，然后查找或创建期刊
                     journal = None
@@ -76,35 +81,44 @@ class FileService:
                                 # 基于真实期刊信息查找现有期刊
                                 journal = Journal.query.filter_by(title=real_title, issue=real_issue).first()
                                 
-                                if journal:
-                                    logger.info(f"找到现有期刊: {journal.title} - {journal.issue}")
+                                if journal and journal.created_by == user.id:
+                                    logger.info(f"找到用户{user.username}创建的现有期刊: {journal.title} - {journal.issue}")
+                                elif journal and journal.created_by != user.id:
+                                    return{'success': False, 'message': '您无权限上传期刊{journal.title}-{journal.issue}相关论文', 'status_code': 409}
                                 else:
-                                    # 创建新期刊
-                                    journal_created = True
-                                    first_user = User.query.first()
-                                    if not first_user:
-                                        password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
-                                        first_user = User(
-                                            username='admin',
-                                            password_hash=password_hash.decode('utf-8'),
-                                            email='admin@example.com',
-                                            role='admin'
-                                        )
-                                        db.session.add(first_user)
-                                        db.session.flush()
+                                        # 创建新期刊
+                                        journal_created = True
+                                        # 使用当前登录用户创建期刊
+                                        
+                                        # journal_creator = user 
+                                        journal_creator_id= user.id if user else 0
+                                        journal_creator_name= user.username if user.username else '匿名用户'
+                                        # 如果没有登录用户，使用第一个用户
+                                        # journal_creator = User.query.first()
+                                        # if not journal_creator:
+                                        #     password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                                        #     journal_creator = User(
+                                        #         username='admin',
+                                        #         password_hash=password_hash.decode('utf-8'),
+                                        #         email='admin@example.com',
+                                        #         role='admin'
+                                        #     )
+                                        #     db.session.add(journal_creator)
+                                        #     db.session.flush()
                                     
-                                    journal = Journal(
-                                        title=real_title,
-                                        issue=real_issue,
-                                        publish_date=datetime.now().date(),
-                                        status='draft',
-                                        description=f'基于PDF解析自动创建的期刊 - 上传文件: {filename}',
-                                        paper_count=0,
-                                        created_by=first_user.id
-                                    )
-                                    db.session.add(journal)
-                                    db.session.flush()
-                                    logger.info(f"创建新期刊: {journal.title} - {journal.issue}")
+                                        journal = Journal(
+                                            title=real_title,
+                                            issue=real_issue,
+                                            publish_date=datetime.now().date(),
+                                            status='draft',
+                                            description=f'基于PDF解析自动创建的期刊 - 上传文件: {filename}',
+                                            paper_count=0,
+                                            created_by=journal_creator_id
+                                        )
+                                        db.session.add(journal)
+                                        db.session.flush()
+                                        logger.info(f"用户：{journal_creator_name} 创建新期刊: {journal.title} - {journal.issue}")
+                                    
                         except Exception as parse_error:
                             logger.warning(f"PDF预解析失败，使用默认期刊: {str(parse_error)}")
                             journal = None
@@ -119,17 +133,22 @@ class FileService:
                         else:
                             # 创建新期刊记录
                             journal_created = True
-                            first_user = User.query.first()
-                            if not first_user:
-                                password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
-                                first_user = User(
-                                    username='admin',
-                                    password_hash=password_hash.decode('utf-8'),
-                                    email='admin@example.com',
-                                    role='admin'
-                                )
-                                db.session.add(first_user)
-                                db.session.flush()
+                            # 使用当前登录用户创建期刊
+                            if user:
+                                journal_creator = user
+                            else:
+                                # 如果没有登录用户，使用第一个用户
+                                journal_creator = User.query.first()
+                                if not journal_creator:
+                                    password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                                    journal_creator = User(
+                                        username='admin',
+                                        password_hash=password_hash.decode('utf-8'),
+                                        email='admin@example.com',
+                                        role='admin'
+                                    )
+                                    db.session.add(journal_creator)
+                                    db.session.flush()
                             
                             journal = Journal(
                                 title='东华学报',
@@ -138,7 +157,7 @@ class FileService:
                                 status='draft',
                                 description=f'自动创建的期刊 - 上传文件: {filename}',
                                 paper_count=0,
-                                created_by=first_user.id
+                                created_by=journal_creator.id
                             )
                             db.session.add(journal)
                             db.session.flush()
@@ -294,20 +313,24 @@ class FileService:
             logger.error(f"详细错误: {traceback.format_exc()}")
             return {'success': False, 'message': f'服务器内部错误: {str(e)}', 'status_code': 500}
     
-    def upload_file_with_overwrite(self, file, journal_id, overwrite_paper_id=None):
+    def upload_file_with_overwrite(self, file, journal_id, overwrite_paper_id=None, user=None):
         """带覆盖选项的文件上传"""
         try:
             # 如果指定了要覆盖的论文ID，先删除现有论文
             if overwrite_paper_id:
                 existing_paper = Paper.query.get(overwrite_paper_id)
                 if existing_paper:
+                    # 检查用户是否有权限删除该论文
+                    if user and not PermissionService.can_delete_paper(user, existing_paper):
+                        return {'success': False, 'message': '您没有权限删除该论文', 'status_code': 403}
+                    
                     # 删除现有论文
                     db.session.delete(existing_paper)
                     db.session.commit()
                     logger.info(f"已删除现有论文 ID: {overwrite_paper_id}")
             
             # 执行正常的上传流程
-            return self.upload_file(file, journal_id)
+            return self.upload_file(file, journal_id, user)
             
         except Exception as e:
             logger.error(f"覆盖上传错误: {str(e)}")

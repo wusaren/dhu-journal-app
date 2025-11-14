@@ -95,11 +95,11 @@ export const paperService = {
 
     // 预览PDF
     getPreviewUrl(filename: string): string {
-        return `/api/preview/${filename}`
+        return `/preview/${filename}`
     },
 
     // 下载PDF
     getDownloadUrl(filename: string): string {
-        return `/api/download/${filename}`
+        return `/download/${filename}`
     }
 }

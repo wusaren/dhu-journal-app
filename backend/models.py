@@ -1,19 +1,58 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
 from datetime import datetime
 
 db = SQLAlchemy()
 
-class User(db.Model):
+# 角色-用户关联表
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('users.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('roles.id'))
+)
+
+class Role(db.Model, RoleMixin):
+    __tablename__ = 'roles'
+    
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True)
+    # store the hashed password in password_hash for compatibility with other scripts
     password_hash = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(100))
-    role = db.Column(db.Enum('admin', 'editor', 'viewer'), default='editor')
+    @property
+    def password(self):
+        """兼容旧代码：返回存储的 password_hash"""
+        return self.password_hash
+    @password.setter
+    def password(self, value):
+        self.password_hash = value
+    active = db.Column(db.Boolean(), default=True)
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
+    
+    # Flask-Security 关系
+    roles = db.relationship('Role', secondary=roles_users,
+                          backref=db.backref('users', lazy='dynamic'))
+    
+    # 兼容原有字段
+    @property
+    def role(self):
+        """兼容原有的 role 属性"""
+        if self.roles:
+            return self.roles[0].name if self.roles else 'viewer'
+        return 'viewer'
+    def __repr__(self):
+        return f"User('{self.username}', '{self.email}')"
+
+# 创建用户数据存储（必须在User和Role类定义之后）
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 
 class Author(db.Model):
     """作者表 - 管理作者信息"""
@@ -60,6 +99,7 @@ class Journal(db.Model):
     
     # 唯一约束：同一期刊的同一期应该唯一
     __table_args__ = (
+        db.UniqueConstraint('title', 'issue', 'created_by', name='uk_journal_title_issue_creator'),
         db.UniqueConstraint('title', 'issue', name='uk_journal_title_issue'),
         db.Index('idx_journal_title', 'title'),
         db.Index('idx_journal_issue', 'issue'),

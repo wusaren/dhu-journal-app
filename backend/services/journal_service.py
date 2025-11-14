@@ -1,8 +1,10 @@
 """
 期刊服务
 从 app.py 中提取期刊相关业务逻辑，保持完全兼容
+集成数据层权限控制
 """
 from models import Journal, Paper, db
+from services.permission_service import PermissionService
 from datetime import datetime
 import logging
 
@@ -11,16 +13,17 @@ logger = logging.getLogger(__name__)
 class JournalService:
     """期刊服务类"""
     
-    def get_all_journals(self):
+    def get_all_journals(self, user=None):
         """
-        获取所有期刊 - 从 app.py 中提取，保持完全兼容
+        获取所有期刊 - 集成数据层权限控制
         返回格式与原来完全一致
         """
         try:
-            journals = Journal.query.all()
+            # 使用权限服务获取可访问的期刊
+            accessible_journals = PermissionService.get_accessible_journals(user)
             journal_list = []
             
-            for journal in journals:
+            for journal in accessible_journals:
                 papers = Paper.query.filter_by(journal_id=journal.id).order_by(Paper.page_start).all()
                 journal_list.append({
                     'id': journal.id,
@@ -39,9 +42,9 @@ class JournalService:
             logger.error(f"获取期刊列表错误: {str(e)}")
             return {'success': False, 'message': f'获取期刊列表失败: {str(e)}', 'status_code': 500}
     
-    def create_journal(self, data):
+    def create_journal(self, data, user=None):
         """
-        创建期刊 - 从 app.py 中提取，保持完全兼容
+        创建期刊 - 集成数据层权限控制
         返回格式与原来完全一致
         """
         try:
@@ -61,6 +64,9 @@ class JournalService:
                     'duplicate': True
                 }
             
+            # 设置创建者ID
+            created_by = user.id if user else 1  # 如果提供了用户，使用用户ID，否则使用默认管理员ID
+            
             # 创建新期刊
             new_journal = Journal(
                 title=data['title'],
@@ -68,13 +74,13 @@ class JournalService:
                 publish_date=datetime.strptime(data['publish_date'], '%Y-%m-%d').date(),
                 status=data['status'],
                 description=data.get('description', ''),
-                created_by=1  # 默认管理员用户ID
+                created_by=created_by
             )
             
             db.session.add(new_journal)
             db.session.commit()
             
-            logger.info(f"新期刊创建成功: {new_journal.issue}")
+            logger.info(f"新期刊创建成功: {new_journal.issue} (创建者: {created_by})")
             
             return {
                 'success': True,
@@ -94,15 +100,23 @@ class JournalService:
             db.session.rollback()
             return {'success': False, 'message': f'创建期刊失败: {str(e)}', 'status_code': 500}
     
-    def delete_journal(self, journal_id):
+    def delete_journal(self, journal_id, user=None):
         """
-        删除期刊 - 从 app.py 中提取，保持完全兼容
+        删除期刊 - 集成数据层权限控制
         返回格式与原来完全一致
         """
         try:
             journal = Journal.query.get(journal_id)
             if not journal:
                 return {'success': False, 'message': '期刊不存在', 'status_code': 404}
+            
+            # 检查删除权限
+            if not PermissionService.can_delete_journal(user, journal):
+                return {
+                    'success': False,
+                    'message': '您没有权限删除此期刊',
+                    'status_code': 403
+                }
             
             # 获取关联的论文数量
             papers_count = Paper.query.filter_by(journal_id=journal_id).count()
@@ -121,7 +135,7 @@ class JournalService:
             db.session.delete(journal)
             db.session.commit()
             
-            logger.info(f"期刊删除成功: {journal.title} - {journal.issue}")
+            logger.info(f"期刊删除成功: {journal.title} - {journal.issue} (删除者: {user.id if user else '未知'})")
             
             return {
                 'success': True,

@@ -12,6 +12,13 @@ export interface Journal {
     fileSize?: number
 }
 
+export interface SimpleUser {
+    id: number
+    username: string
+    email?: string
+    active?: boolean
+}
+
 export interface CreateJournalRequest {
     issue: string
     title: string
@@ -50,6 +57,7 @@ export interface ApiResponse<T> {
     success: boolean
     message: string
     data?: T
+    duplicate?: boolean
 }
 
 export interface ColumnDefinition {
@@ -69,6 +77,42 @@ class JournalService {
      */
     async getJournals(): Promise<Journal[]> {
         return await apiClient.get('/journals')
+    }
+
+    /**
+     * 获取指定角色的用户列表（封装 admin 接口）
+     */
+    async getUsersByRole(roleName: string): Promise<SimpleUser[]> {
+        const resp: any = await apiClient.get(`/admin/users/with-role/${encodeURIComponent(roleName)}`)
+        console.log('API返回数据:', resp) // 调试日志
+        
+        // 由于axios拦截器直接返回response.data，resp已经是解析后的数据
+        // 检查不同的数据结构可能性
+        if (resp) {
+            // 情况1: 直接返回用户数组
+            if (Array.isArray(resp)) {
+                return resp as SimpleUser[]
+            }
+            // 情况2: 返回 { users: [...] }
+            if (resp.users && Array.isArray(resp.users)) {
+                return resp.users as SimpleUser[]
+            }
+            // 情况3: 返回 { data: [...] }
+            if (resp.data && Array.isArray(resp.data)) {
+                return resp.data as SimpleUser[]
+            }
+        }
+        console.warn('无法解析用户列表数据:', resp)
+        return []
+    }
+
+    /**
+     * 为期刊分配用户（更新 journal.created_by）
+     */
+    async assignJournal(journalId: number, assigneeId: number): Promise<{ message: string }> {
+        const resp = await apiClient.post(`/journals/${journalId}/assign`, { assignee_id: assigneeId })
+        // 期望返回 { message: '分配成功' }
+        return resp.data
     }
 
     /**
@@ -144,10 +188,10 @@ class JournalService {
     async generateWeibo(journalId: number): Promise<ExportResponse> {
         return await apiClient.post('/export/tuiwen', { journalId })
     }
-
     /**
      * 获取可用列定义
      */
+    
     async getAvailableColumns(): Promise<{ success: boolean; columns: ColumnDefinition[] }> {
         return await apiClient.get('/export/columns')
     }
@@ -268,7 +312,7 @@ class JournalService {
      */
     async downloadFile(filename: string): Promise<void> {
         const link = document.createElement('a')
-        link.href = `/api/download/${filename}`
+        link.href = `/download/${filename}`
         link.download = filename
         link.click()
     }

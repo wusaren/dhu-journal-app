@@ -297,7 +297,26 @@ def generate_excel_stats_from_template(articles, journal, template_file_path: st
         if header_row is None:
             raise Exception("无法找到表头行")
         
-        # 建立表头文本到列索引的映射，同时找到最后一个有内容的列
+        # 按 order 排序 column_mapping
+        column_mapping = sorted(column_mapping, key=lambda x: x.get('order', 999))
+
+        # 需要保留的表头集合
+        mapped_headers = set()
+        for mapping in column_mapping:
+            template_header = mapping.get('template_header')
+            if template_header:
+                mapped_headers.add(str(template_header).strip())
+
+        # 删除模板中不在映射里的列，避免表头残留
+        columns_to_remove = []
+        for col_idx, cell in enumerate(ws[header_row], start=1):
+            header_text = str(cell.value).strip() if cell.value else ''
+            if header_text and header_text not in mapped_headers:
+                columns_to_remove.append(col_idx)
+        for col_idx in sorted(columns_to_remove, reverse=True):
+            ws.delete_cols(col_idx)
+
+        # 删除后重新建立表头映射，并记录最后一个有内容的列
         header_to_col = {}
         last_content_col = 0
         for col_idx, cell in enumerate(ws[header_row], start=1):
@@ -305,17 +324,13 @@ def generate_excel_stats_from_template(articles, journal, template_file_path: st
             if header_text:
                 header_to_col[header_text] = col_idx
                 last_content_col = col_idx  # 更新最后一个有内容的列
-        
-        # 按 order 排序 column_mapping
-        column_mapping = sorted(column_mapping, key=lambda x: x.get('order', 999))
-        
+
         # 保存原始表头样式（用于新列）
         source_header_cell = None
-        if header_row > 0:
-            try:
-                source_header_cell = ws.cell(row=header_row, column=1)
-            except:
-                pass
+        for cell in ws[header_row]:
+            if cell.value and str(cell.value).strip():
+                source_header_cell = cell
+                break
         
         # 检查 column_mapping 中是否有模板文件中不存在的字段，如果有则添加
         # 从最后一个有内容的列之后开始添加，避免中间有空列

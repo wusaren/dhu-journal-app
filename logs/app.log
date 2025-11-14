@@ -1,0 +1,16 @@
+2025-11-13 13:16:26,073 - app - INFO - 创建目录: uploads/format_check
+2025-11-13 13:16:26,073 - app - INFO - 创建目录: uploads/format_check/temp
+2025-11-13 13:16:26,073 - app - INFO - 创建目录: uploads/format_check/reports
+2025-11-13 13:16:26,082 - app - INFO - 创建目录: user_configs
+2025-11-13 13:21:40,108 - services.template_config_service - INFO - 用户 1 的配置文件不存在: D:\wsr\project\dhu-Journal-app\backend\user_configs\user_1\stats_template.json
+2025-11-13 13:21:40,110 - services.tuiwen_template_service - INFO - 已保存用户 1 的推文模板字段配置到 D:\wsr\project\dhu-Journal-app\backend\user_configs\user_1\weibo_template.json
+2025-11-13 13:21:40,111 - services.tuiwen_template_service - INFO - 已加载用户 1 的推文模板配置
+2025-11-13 13:21:40,115 - services.export_service - INFO - 期刊 2 找到 0 篇论文
+2025-11-13 13:29:41,584 - services.tuiwen_template_service - INFO - 已保存用户 1 的推文模板字段配置到 D:\wsr\project\dhu-Journal-app\backend\user_configs\user_1\weibo_template.json
+2025-11-13 13:29:41,585 - services.tuiwen_template_service - INFO - 已加载用户 1 的推文模板配置
+2025-11-13 13:29:41,586 - services.template_config_service - ERROR - 保存用户模板配置失败: argument should be a str or an os.PathLike object where __fspath__ returns a str, not 'NoneType'
+2025-11-13 13:29:41,586 - services.template_config_service - INFO - 用户 1 的配置文件不存在: D:\wsr\project\dhu-Journal-app\backend\user_configs\user_1\stats_template.json
+2025-11-14 15:33:32,159 - backend.app - INFO - 创建目录: uploads/format_check
+2025-11-14 15:33:32,159 - backend.app - INFO - 创建目录: uploads/format_check/temp
+2025-11-14 15:33:32,159 - backend.app - INFO - 创建目录: uploads/format_check/reports
+2025-11-14 15:33:32,164 - backend.app - INFO - 创建目录: user_configs

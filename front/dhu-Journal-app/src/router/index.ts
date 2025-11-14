@@ -19,6 +19,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/LoginView.vue')
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/RegisterView.vue')
+  },
+  {
     path: '/paper-management',
     name: 'PaperManagement',
     component: () => import('@/views/PaperManagementView.vue')
@@ -34,10 +39,20 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/PreliminaryReviewView.vue')
   },
   {
+    path: '/personality-center',
+    name: 'PersonalityCenter',
+    component: () => import('@/views/PersonalityCenterView.vue')
+  },
+  {
     path: '/create-journal',
     name: 'CreateJournal',
     component: () => import('@/views/CreateJournalView.vue')
-  }
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('@/views/AdminView.vue')
+  },
   // 可以继续添加更多路由...
 ]
 
