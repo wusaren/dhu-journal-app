@@ -15123,3 +15123,119 @@
 2025-11-14 14:14:16,676 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:14:16] "GET /api/me HTTP/1.1" 200 -
 2025-11-14 14:14:16,905 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:14:16] "GET /api/me HTTP/1.1" 200 -
 2025-11-14 14:14:31,024 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:14:31] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:28:03,399 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:28:03] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:35:47,745 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:35:47] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:35:47,935 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:35:47] "[33mGET /api/api/me HTTP/1.1[0m" 404 -
+2025-11-14 14:35:54,663 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:35:54] "[33mGET /api/api/me HTTP/1.1[0m" 404 -
+2025-11-14 14:35:54,893 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:35:54] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:43:51,597 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:43:51] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 14:44:55,758 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:44:55] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 14:44:57,342 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:44:57] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 14:44:57,343 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:44:57] "GET /api/papers HTTP/1.1" 200 -
+2025-11-14 14:45:00,473 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:45:00] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:45:06,161 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:45:06] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:46:35,650 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 14:46:35,705 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 14:46:35,705 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 14:46:35,712 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 14:46:38,179 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 14:46:38,219 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 14:46:38,249 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 14:58:10,447 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:58:10] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:58:26,390 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:58:26] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 14:59:33,775 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:59:33] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 14:59:40,699 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 14:59:40] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 15:10:55,926 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:10:55] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 15:11:09,773 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:11:09] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 15:14:20,047 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:14:20] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-14 15:15:04,777 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-14 15:15:04,777 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:15:04] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-14 15:20:28,468 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-14 15:20:28,834 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 15:20:31,276 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:20:31,306 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 15:20:31,327 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 15:23:19,955 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:23:19] "POST /api/login HTTP/1.1" 200 -
+2025-11-14 15:23:20,441 - __main__ - WARNING - 更新用户配置文件失败: [Errno 2] No such file or directory: 'backend/config/users.json'
+2025-11-14 15:23:20,441 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:23:20] "POST /api/change-password HTTP/1.1" 200 -
+2025-11-14 15:27:42,380 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-14 15:27:42,876 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 15:27:45,418 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:27:45,448 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 15:27:45,474 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 15:27:55,563 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:27:55] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-11-14 15:29:00,163 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:29:00] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-11-14 15:29:23,330 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:29:23] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-11-14 15:30:32,242 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:30:32] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-11-14 15:31:01,568 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:31:01] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-11-14 15:32:09,459 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:32:09,523 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 15:32:09,523 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 15:32:09,526 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 15:32:11,685 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:32:11,717 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 15:32:11,729 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 15:32:23,177 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:32:23] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-11-14 15:33:57,202 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:33:57,252 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 15:33:57,252 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 15:33:57,252 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 15:33:59,610 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:33:59,641 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 15:33:59,670 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 15:37:39,517 - __main__ - INFO - 用户 admin 已创建
+2025-11-14 15:37:39,742 - __main__ - INFO - 用户 editor 已创建
+2025-11-14 15:37:39,967 - __main__ - INFO - 用户 editor2 已创建
+2025-11-14 15:37:40,186 - __main__ - INFO - 用户 managing_editor 已创建
+2025-11-14 15:37:40,193 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:37:40,282 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 15:37:40,282 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 15:37:40,282 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 15:37:42,640 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 15:37:42,670 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 15:37:42,690 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 15:38:22,397 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:38:22] "POST /api/login HTTP/1.1" 200 -
+2025-11-14 15:38:22,860 - __main__ - INFO - 用户 admin 的密码已更新
+2025-11-14 15:38:22,860 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:38:22] "POST /api/change-password HTTP/1.1" 200 -
+2025-11-14 15:39:20,224 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:39:20] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-11-14 15:39:28,052 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:39:28] "POST /api/login HTTP/1.1" 200 -
+2025-11-14 15:39:31,211 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:39:31] "[33mGET /api/api/admin/stats HTTP/1.1[0m" 404 -
+2025-11-14 15:39:31,523 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:39:31] "[33mGET /api/api/admin/users?page=1&per_page=10 HTTP/1.1[0m" 404 -
+2025-11-14 15:39:31,526 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:39:31] "[33mGET /api/api/admin/roles HTTP/1.1[0m" 404 -
+2025-11-14 15:43:48,174 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:43:48] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 15:43:48,280 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:43:48] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 15:43:48,460 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:43:48] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 15:47:19,198 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:47:19] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 15:47:19,321 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:47:19] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 15:47:19,499 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:47:19] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 15:52:30,443 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:52:30] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 15:52:30,451 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:52:30] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 15:52:30,451 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:52:30] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 15:54:25,424 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:54:25] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 15:54:25,424 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:54:25] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 15:54:25,433 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:54:25] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 15:56:37,400 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:56:37] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 15:56:37,400 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:56:37] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 15:56:37,400 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:56:37] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 15:58:00,292 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:58:00] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 15:58:00,296 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:58:00] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 15:58:00,299 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 15:58:00] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 16:07:51,596 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:51] "GET /api/papers HTTP/1.1" 200 -
+2025-11-14 16:07:51,596 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:51] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 16:07:52,824 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:52] "GET /api/journals HTTP/1.1" 200 -
+2025-11-14 16:07:53,460 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:53] "GET /api/me HTTP/1.1" 200 -
+2025-11-14 16:07:58,857 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
+2025-11-14 16:07:58,860 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/stats HTTP/1.1" 200 -
+2025-11-14 16:07:58,862 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/roles HTTP/1.1" 200 -

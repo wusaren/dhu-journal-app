@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
 
-from backend.app import app, db, init_db
+from backend.app import app,db, init_db
 from backend.models import User, Author, Journal, Paper, PaperAuthor, FileUpload
 
 def rebuild_database():

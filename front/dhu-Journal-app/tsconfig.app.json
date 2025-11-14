@@ -2,7 +2,8 @@
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-
+    "target": "es5",
+    "lib": ["es2015", "dom", "dom.iterable"],
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

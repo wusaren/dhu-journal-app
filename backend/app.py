@@ -319,6 +319,63 @@ def logout():
         logger.error(f"登出错误: {str(e)}")
         return jsonify({'message': f'登出失败: {str(e)}'}), 500
 
+# 修改密码
+@app.route('/api/change-password', methods=['POST'])
+@auth_required()
+def change_password():
+    """修改用户密码"""
+    try:
+        data = request.get_json()
+        current_password = data.get('currentPassword')
+        new_password = data.get('newPassword')
+        
+        if not current_password or not new_password:
+            return jsonify({'success': False, 'message': '当前密码和新密码不能为空'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'success': False, 'message': '新密码长度不能少于6位'}), 400
+        
+        # 验证当前密码
+        from flask_security.utils import verify_password
+        if not verify_password(current_password, current_user.password):
+            return jsonify({'success': False, 'message': '当前密码错误'}), 401
+        
+        # 更新数据库中的密码
+        current_user.password = hash_password(new_password)
+        db.session.commit()
+        
+        # 更新JSON配置文件中的密码
+        try:
+            import json
+            user_config_path = 'config/users.json'
+            with open(user_config_path, 'r', encoding='utf-8') as f:
+                user_config = json.load(f)
+            
+            # 找到当前用户并更新密码
+            for user in user_config['users']:
+                if user['username'] == current_user.username:
+                    user['password'] = new_password
+                    break
+            
+            # 写回配置文件
+            with open(user_config_path, 'w', encoding='utf-8') as f:
+                json.dump(user_config, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"用户 {current_user.username} 的密码已更新")
+            
+        except Exception as e:
+            logger.warning(f"更新用户配置文件失败: {e}")
+            # 数据库更新成功，配置文件更新失败不影响主要功能
+        
+        return jsonify({
+            'success': True,
+            'message': '密码修改成功'
+        })
+    
+    except Exception as e:
+        logger.error(f"修改密码错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'密码修改失败: {str(e)}'}), 500
+
 # 获取期刊列表
 @app.route('/api/journals', methods=['GET'])
 @auth_required()

@@ -247,6 +247,7 @@
         <el-button @click="handleClose">取消</el-button>
         <el-button
           v-if="step === 0"
+          class="next-btn"
           type="primary"
           :disabled="!templateType"
           @click="handleTypeSelected"
@@ -254,6 +255,7 @@
           下一步
         </el-button>
         <el-button
+          class="upload-btn"
           v-if="step === 1 && templateType === 'stats'"
           type="primary"
           :disabled="!selectedFile"
@@ -262,6 +264,7 @@
           上传并识别
         </el-button>
         <el-button
+          class="next-btn"
           v-if="step === 1 && templateType === 'tuiwen'"
           type="primary"
           :disabled="tuiwenFields.length === 0"
@@ -270,6 +273,7 @@
           下一步
         </el-button>
         <el-button
+          class="save-btn"
           v-if="step === 2"
           type="primary"
           :disabled="(templateType === 'stats' && headers.length === 0) || (templateType === 'tuiwen' && tuiwenFields.length === 0)"
@@ -994,5 +998,16 @@ watch(() => props.modelValue, (newVal: boolean) => {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+}
+
+.next-btn, .upload-btn, .save-btn {
+  min-width: 100px;
+  background: #7c0101;
+  color: rgb(255, 255, 255);
+}
+
+.next-btn:hover, .upload-btn:hover, .save-btn:hover {
+  background: #5e0606;
+  color: rgb(255, 255, 255);
 }
 </style>

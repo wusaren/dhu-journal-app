@@ -174,11 +174,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useJournalStore } from '@/stores/journalStore'
-import type { Journal } from '@/api/journalService'
-import { journalService } from '@/api/journalService'
-import apiClient from '@/api/axios'
-
+import { useJournalStore } from '../stores/journalStore'
+import type { Journal } from '../api/journalService'
+import { journalService } from '../api/journalService'
 const router = useRouter()
 const journalStore = useJournalStore()
 

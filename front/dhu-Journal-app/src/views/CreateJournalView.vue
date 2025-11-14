@@ -99,7 +99,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { journalService } from '@/api/journalService'
+import { journalService } from '../api/journalService'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()

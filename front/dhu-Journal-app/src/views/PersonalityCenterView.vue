@@ -2,8 +2,7 @@
   <div class="personality-center">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1>个人中心</h1>
-      <p>管理您的个性化设置和账户信息</p>
+      <h1>个人信息</h1>
     </div>
 
     <!-- 用户信息卡片 -->
@@ -51,6 +50,12 @@
       v-model="showTemplateDialog"
       @saved="handleTemplateSaved"
     />
+
+    <!-- 密码修改对话框 -->
+    <PasswordChangeDialog
+      v-model="showPasswordDialog"
+      @saved="handlePasswordSaved"
+    />
   </div>
 </template>
 
@@ -58,6 +63,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import TemplateConfigDialog from '../components/TemplateConfigDialog.vue'
+import PasswordChangeDialog from '../components/PasswordChangeDialog.vue'
 import { authService, type UserDetail } from '../api/authService'
 
 // 用户信息
@@ -65,6 +71,9 @@ const userInfo = ref<UserDetail | null>(null)
 
 // 模板配置对话框状态
 const showTemplateDialog = ref(false)
+
+// 密码修改对话框状态
+const showPasswordDialog = ref(false)
 
 // 加载用户信息
 const loadUserInfo = async () => {
@@ -82,12 +91,17 @@ const openTemplateConfig = () => {
 
 // 打开密码设置
 const openPasswordSettings = () => {
-  ElMessage.info('密码设置功能开发中...')
+  showPasswordDialog.value = true
 }
 
 // 模板配置保存后的处理
 const handleTemplateSaved = () => {
   ElMessage.success('模板配置已保存')
+}
+
+// 密码修改保存后的处理
+const handlePasswordSaved = () => {
+  ElMessage.success('密码修改成功')
 }
 
 // 组件挂载时加载用户信息
@@ -105,7 +119,7 @@ onMounted(() => {
 
 .page-header {
   margin-bottom: 40px;
-  text-align: center;
+  text-align: left;
 }
 
 .page-header h1 {
@@ -124,7 +138,7 @@ onMounted(() => {
 /* 用户信息卡片样式 */
 .user-info-card {
   max-width: 600px;
-  margin: 0 auto 40px auto;
+  margin: 0 0 40px 0;
   border-radius: 12px;
   border: 1px solid #e4e7ed;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -132,7 +146,7 @@ onMounted(() => {
 
 .user-info-content {
   display: flex;
-  align-items: center;
+  align-items: left;
   padding: 24px;
 }
 
@@ -173,10 +187,10 @@ onMounted(() => {
 /* 功能卡片容器 */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 24px;
   max-width: 800px;
-  margin: 0 auto;
+  margin: 0 ;
 }
 
 /* 功能卡片样式 */

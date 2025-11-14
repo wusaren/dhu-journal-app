@@ -299,7 +299,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import apiClient from '@/api/axios'
+import apiClient from '../api/axios'
 
 // 响应式数据
 const activeTab = ref('users')
@@ -346,7 +346,7 @@ const getRoleTagType = (role: string) => {
 
 const loadStats = async () => {
   try {
-    const response = await apiClient.get('/api/admin/stats')
+    const response = await apiClient.get('/admin/stats')
     stats.value = response
   } catch (error) {
     console.error('加载统计信息失败:', error)
@@ -356,7 +356,7 @@ const loadStats = async () => {
 const loadUsers = async () => {
   loadingUsers.value = true
   try {
-    const response = await apiClient.get('/api/admin/users', {
+    const response = await apiClient.get('/admin/users', {
       params: {
         page: currentPage.value,
         per_page: pageSize.value
@@ -375,7 +375,7 @@ const loadUsers = async () => {
 const loadRoles = async () => {
   loadingRoles.value = true
   try {
-    const response = await apiClient.get('/api/admin/roles')
+    const response = await apiClient.get('/admin/roles')
     roles.value = response.roles
   } catch (error) {
     console.error('加载角色列表失败:', error)
@@ -415,7 +415,7 @@ const addRole = async () => {
   if (!selectedUser.value || !newRole.value) return
   
   try {
-    await apiClient.post(`/api/admin/users/${selectedUser.value.id}/roles`, {
+    await apiClient.post(`/admin/users/${selectedUser.value.id}/roles`, {
       role_name: newRole.value
     })
     ElMessage.success('角色添加成功')
@@ -431,7 +431,7 @@ const removeRole = async (roleName: string) => {
   if (!selectedUser.value) return
   
   try {
-    await apiClient.delete(`/api/admin/users/${selectedUser.value.id}/roles`, {
+    await apiClient.delete(`/admin/users/${selectedUser.value.id}/roles`, {
       data: { role_name: roleName }
     })
     ElMessage.success('角色移除成功')
@@ -454,7 +454,7 @@ const toggleUserActive = async (user: any) => {
       }
     )
     
-    await apiClient.put(`/api/admin/users/${user.id}/activate`)
+    await apiClient.put(`/admin/users/${user.id}/activate`)
     ElMessage.success(`用户${user.active ? '禁用' : '启用'}成功`)
     loadUsers()
     loadStats()
@@ -478,7 +478,7 @@ const createRole = async () => {
   }
   
   try {
-    await apiClient.post('/api/admin/roles', newRoleForm.value)
+    await apiClient.post('/admin/roles', newRoleForm.value)
     ElMessage.success('角色创建成功')
     createRoleDialogVisible.value = false
     loadRoles()
@@ -501,7 +501,7 @@ const deleteRole = async (role: any) => {
       }
     )
     
-    await apiClient.delete(`/api/admin/roles/${role.id}`)
+    await apiClient.delete(`/admin/roles/${role.id}`)
     ElMessage.success('角色删除成功')
     loadRoles()
     loadStats()
