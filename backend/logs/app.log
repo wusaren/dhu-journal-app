@@ -6108,3 +6108,178 @@
 2025-11-14 16:07:58,857 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
 2025-11-14 16:07:58,860 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/stats HTTP/1.1" 200 -
 2025-11-14 16:07:58,862 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 19:47:35,502 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 19:47:35,561 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-14 19:47:35,561 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 19:47:35,573 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 19:47:37,236 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 19:47:37,261 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 19:47:37,279 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-14 19:48:15,936 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 19:48:15,938 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:15] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 19:48:16,446 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 19:48:16,446 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:16] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 19:48:27,239 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:27] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 19:48:29,448 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 19:48:29,449 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:29] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 19:48:31,402 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:31] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 19:48:31,405 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:31] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-14 19:48:32,332 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:32] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 19:48:33,551 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:33] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-11-14 19:48:34,742 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 19:48:34,743 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:34] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 19:48:41,784 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:41] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 19:48:41,787 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:41] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-14 19:48:46,377 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:46] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 19:48:48,470 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:48] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-11-14 19:48:50,278 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 19:48:50,279 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 19:48:50] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 20:13:44,232 - __main__ - INFO - 用户 admin 已创建
+2025-11-14 20:13:44,481 - __main__ - INFO - 用户 editor 已创建
+2025-11-14 20:13:44,718 - __main__ - INFO - 用户 editor2 已创建
+2025-11-14 20:13:44,963 - __main__ - INFO - 用户 managing_editor 已创建
+2025-11-14 20:13:44,969 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 20:13:45,008 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-14 20:13:45,008 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 20:13:45,010 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 20:13:46,568 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 20:13:46,589 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 20:13:46,612 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-14 20:13:58,809 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 20:13:58,810 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:13:58] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 20:14:05,709 - __main__ - ERROR - 获取格式审查文件列表错误: name 'FormatCheckFile' is not defined
+2025-11-14 20:14:05,710 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:14:05] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-11-14 20:17:06,299 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-14 20:17:08,603 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 20:17:34,187 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 20:17:34,220 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-14 20:17:34,221 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 20:17:34,222 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 20:17:35,691 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 20:17:35,710 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 20:17:35,727 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-14 20:17:42,645 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:17:42] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:17:44,164 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:17:44] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:18:00,277 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:00] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-14 20:18:00,294 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251114_201800_paper1.docx
+2025-11-14 20:18:00,302 - __main__ - INFO - 格式审查文件记录已创建: ID=1
+2025-11-14 20:18:00,306 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:00] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-14 20:18:00,315 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:00] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:18:05,964 - __main__ - INFO - 打开原始文档: uploads/format_check/temp\20251114_201800_paper1.docx
+2025-11-14 20:18:05,967 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:05] "GET /api/paper-format/open-original/1 HTTP/1.1" 200 -
+2025-11-14 20:18:16,727 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-14 20:18:22,120 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-14 20:18:22,157 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-14 20:18:22,158 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251114_201800_paper1.docx
+2025-11-14 20:18:22,159 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-14 20:18:22,388 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-14 20:18:22,497 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-14 20:18:22,651 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-14 20:18:22,976 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-14 20:18:23,164 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-14 20:18:23,195 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-14 20:18:23,232 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-14 20:18:23,233 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:18:23,233 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:18:23,246 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251114_201823_paper1_annotated.docx
+2025-11-14 20:18:23,247 - services.document_annotator - INFO - 共识别出 48 个问题
+2025-11-14 20:18:23,259 - services.document_annotator - INFO - 正在添加批注，共有 48 个问题
+2025-11-14 20:18:23,262 - services.document_annotator - INFO - 已添加批注: Title-format_authors
+2025-11-14 20:18:23,264 - services.document_annotator - INFO - 已添加批注: Title-format_affiliation_para3
+2025-11-14 20:18:23,275 - services.document_annotator - INFO - 已添加批注: Abstract-format
+2025-11-14 20:18:23,280 - services.document_annotator - INFO - 已添加批注: Keywords-format
+2025-11-14 20:18:23,284 - services.document_annotator - INFO - 已添加批注: Keywords-clc_structure
+2025-11-14 20:18:23,289 - services.document_annotator - INFO - 已添加批注: Keywords-clc_format
+2025-11-14 20:18:23,294 - services.document_annotator - INFO - 已添加批注: Keywords-footnote_structure
+2025-11-14 20:18:23,296 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,298 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,299 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,300 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,302 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,303 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,305 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,306 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-14 20:18:23,307 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-14 20:18:23,308 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-14 20:18:23,310 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-14 20:18:23,317 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-14 20:18:23,320 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-14 20:18:23,322 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-14 20:18:23,328 - services.document_annotator - INFO - 已添加批注: Content-content_format_para1
+2025-11-14 20:18:23,344 - services.document_annotator - INFO - 已添加批注: Content-content_format_para2
+2025-11-14 20:18:23,355 - services.document_annotator - INFO - 已添加批注: Content-content_format_para3
+2025-11-14 20:18:23,372 - services.document_annotator - INFO - 已添加批注: Content-content_format_para4
+2025-11-14 20:18:23,395 - services.document_annotator - INFO - 已添加批注: Content-content_format_para5
+2025-11-14 20:18:23,418 - services.document_annotator - INFO - 已添加批注: Content-content_format_para6
+2025-11-14 20:18:23,455 - services.document_annotator - INFO - 已添加批注: Content-content_format_para7
+2025-11-14 20:18:23,497 - services.document_annotator - INFO - 已添加批注: Content-content_format_para8
+2025-11-14 20:18:23,552 - services.document_annotator - INFO - 已添加批注: Content-content_format_para9
+2025-11-14 20:18:23,575 - services.document_annotator - INFO - 已添加批注: Content-content_format_para10
+2025-11-14 20:18:23,608 - services.document_annotator - INFO - 已添加批注: Content-content_format_para11
+2025-11-14 20:18:23,631 - services.document_annotator - INFO - 已添加批注: Content-content_format_para12
+2025-11-14 20:18:23,654 - services.document_annotator - INFO - 已添加批注: Content-content_format_para13
+2025-11-14 20:18:23,678 - services.document_annotator - INFO - 已添加批注: Content-content_format_para14
+2025-11-14 20:18:23,702 - services.document_annotator - INFO - 已添加批注: Content-content_format_para15
+2025-11-14 20:18:23,725 - services.document_annotator - INFO - 已添加批注: Content-content_format_para16
+2025-11-14 20:18:23,753 - services.document_annotator - INFO - 已添加批注: Content-content_format_para17
+2025-11-14 20:18:23,781 - services.document_annotator - INFO - 已添加批注: Content-content_format_para18
+2025-11-14 20:18:23,810 - services.document_annotator - INFO - 已添加批注: Content-content_format_para19
+2025-11-14 20:18:23,845 - services.document_annotator - INFO - 已添加批注: Content-content_format_para20
+2025-11-14 20:18:23,874 - services.document_annotator - INFO - 已添加批注: Content-content_format_para21
+2025-11-14 20:18:23,904 - services.document_annotator - INFO - 已添加批注: Content-content_format_para22
+2025-11-14 20:18:23,936 - services.document_annotator - INFO - 已添加批注: Content-content_format_para23
+2025-11-14 20:18:23,966 - services.document_annotator - INFO - 已添加批注: Content-content_format_para24
+2025-11-14 20:18:23,998 - services.document_annotator - INFO - 已添加批注: Content-content_format_para25
+2025-11-14 20:18:24,030 - services.document_annotator - INFO - 已添加批注: Content-content_format_para26
+2025-11-14 20:18:24,062 - services.document_annotator - INFO - 已添加批注: Content-content_format_para27
+2025-11-14 20:18:24,098 - services.document_annotator - INFO - 成功添加 48 个批注
+2025-11-14 20:18:24,098 - services.document_annotator - INFO - 批注添加完成！共添加 48 个批注
+2025-11-14 20:18:24,100 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251114_201823_paper1_annotated.docx
+2025-11-14 20:18:24,108 - __main__ - INFO - 数据库记录已更新: ID=1
+2025-11-14 20:18:24,110 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:24] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-14 20:18:24,129 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:24] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:18:28,919 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251114_201823_paper1_annotated.docx
+2025-11-14 20:18:28,920 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:28] "GET /api/paper-format/download-annotated/20251114_201823_paper1_annotated.docx HTTP/1.1" 200 -
+2025-11-14 20:18:50,968 - __main__ - INFO - 打开检测报告: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:18:50,970 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:50] "GET /api/paper-format/open-report/1 HTTP/1.1" 200 -
+2025-11-14 20:18:58,663 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:18:58,664 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:18:58] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-14 20:23:38,943 - __main__ - INFO - 打开检测报告: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:23:38,945 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:23:38] "[36mGET /api/paper-format/open-report/1 HTTP/1.1[0m" 304 -
+2025-11-14 20:23:42,370 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:23:42,372 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:23:42] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-14 20:23:46,453 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:23:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:23:52,592 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:23:52] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:23:55,061 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:23:55,063 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:23:55] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-14 20:25:31,947 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:25:31] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:25:34,128 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:25:34] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:45:12,301 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 20:45:12,383 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-14 20:45:12,383 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 20:45:12,395 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 20:45:14,039 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 20:45:14,059 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 20:45:14,077 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-14 20:45:15,761 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:45:15] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:46:06,594 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:46:06] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-14 20:46:13,801 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-14 20:46:13,803 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:46:13] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-14 20:47:20,819 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:47:20] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 20:47:20,821 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:47:20] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-14 20:47:45,026 - __main__ - ERROR - 登录错误: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-11-14 20:47:45,029 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:47:45] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-11-14 20:48:20,894 - __main__ - ERROR - 登录错误: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-11-14 20:48:20,895 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 20:48:20] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -

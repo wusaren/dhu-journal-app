@@ -14,7 +14,7 @@ from sqlalchemy import text
 
 # 导入配置和模型
 from config.config import current_config
-from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore
+from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore, FormatCheckFile
 
 # 导入封装后的模块
 from services.journal_service import JournalService

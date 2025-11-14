@@ -326,14 +326,14 @@
             
            <div class="format-actions">
              <el-button size="small" @click="resetFormatCheck">重新检测</el-button>
-             <el-button class="view-report-btn" size="small" @click="viewDetailReport">查看详细报告</el-button>
+             <el-button class="view-report-btn" size="small" @click="viewDetailReport">查看检测报告</el-button>
              <el-button 
                v-if="formatCheckResult?.data?.annotated_saved"
                class="download-annotated-btn" 
                size="small" 
                @click="downloadAnnotatedDocument"
              >
-               下载批注文档
+               下载标记文档
              </el-button>
            </div>
          </div>
@@ -810,7 +810,7 @@ const handleReview = (paper: Paper) => {
     if (paper.formatCheckResult.data?.report_text) {
       reportText.value = paper.formatCheckResult.data.report_text
     } else {
-      // 从数据库加载的数据没有报告文本，将在用户点击"查看详细报告"时按需加载
+      // 从数据库加载的数据没有报告文本，将在用户点击"查看检测报告"时按需加载
       reportText.value = ''
     }
   } else {
@@ -979,7 +979,7 @@ const resetFormatCheck = () => {
   showModuleSelector()
 }
 
-// 查看详细报告
+// 查看检测报告
 const viewDetailReport = async () => {
   if (!formatCheckResult.value) {
     ElMessage.error('无检测结果')
@@ -1039,7 +1039,7 @@ const downloadReport = () => {
 
 const downloadAnnotatedDocument = () => {
   if (!formatCheckResult.value?.data?.annotated_download_url) {
-    ElMessage.error('批注文档不可用')
+    ElMessage.error('标记文档不可用')
     return
   }
   
@@ -1052,9 +1052,9 @@ const downloadAnnotatedDocument = () => {
     link.click()
     document.body.removeChild(link)
     
-    ElMessage.success('批注文档下载成功')
+    ElMessage.success('标记文档下载成功')
   } catch (error) {
-    ElMessage.error('下载批注文档失败：' + (error as Error).message)
+    ElMessage.error('下载标记文档失败：' + (error as Error).message)
   }
 }
 
@@ -1099,7 +1099,7 @@ const handleDelete = async (paper: Paper) => {
   try {
     // 确认删除
     await ElMessageBox.confirm(
-      `确定要删除论文"${paper.title}"吗？\n\n删除后将无法恢复，包括临时文件、检测报告和批注文档。`,
+      `确定要删除论文"${paper.title}"吗？\n\n删除后将无法恢复。`,
       '删除论文',
       {
         confirmButtonText: '确定删除',
