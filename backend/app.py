@@ -14,7 +14,7 @@ from sqlalchemy import text
 
 # 导入配置和模型
 from config.config import current_config
-from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore
+from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore, FormatCheckFile
 
 # 导入封装后的模块
 from services.journal_service import JournalService
@@ -126,6 +126,7 @@ UPLOAD_FOLDER = 'uploads'
 FORMAT_CHECK_FOLDER = 'uploads/format_check'
 FORMAT_CHECK_TEMP_FOLDER = 'uploads/format_check/temp'
 FORMAT_CHECK_REPORTS_FOLDER = 'uploads/format_check/reports'
+FORMAT_CHECK_ANNOTATE_FOLDER = 'uploads/format_check/annotate'
 # 新增：用户配置目录（用于用户模板、用户配置文件等，和 uploads 分离）
 USER_CONFIG_FOLDER = 'user_configs'
 
@@ -135,10 +136,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['FORMAT_CHECK_FOLDER'] = FORMAT_CHECK_FOLDER
 app.config['FORMAT_CHECK_TEMP_FOLDER'] = FORMAT_CHECK_TEMP_FOLDER
 app.config['FORMAT_CHECK_REPORTS_FOLDER'] = FORMAT_CHECK_REPORTS_FOLDER
+app.config['FORMAT_CHECK_ANNOTATE_FOLDER'] = FORMAT_CHECK_ANNOTATE_FOLDER
 app.config['USER_CONFIG_FOLDER'] = USER_CONFIG_FOLDER
 
 # 创建必要的目录
-for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER, USER_CONFIG_FOLDER]:
+for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER, FORMAT_CHECK_ANNOTATE_FOLDER, USER_CONFIG_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
         logger.info(f"创建目录: {folder}")
@@ -1225,108 +1227,138 @@ def assign_journal(journal_id):
         return jsonify({'message': f'分配失败: {str(e)}'}), 500
 # ==================== 论文格式检测 API ====================
 
-# # 获取可用的检测模块
-# @app.route('/api/paper-format/modules', methods=['GET'])
-# def get_format_modules():
-#     """获取所有可用的论文格式检测模块"""
-#     try:
-#         paper_format_service = PaperFormatService()
-#         modules = paper_format_service.get_available_modules()
+# 获取所有格式审查文件列表
+@app.route('/api/paper-format/files', methods=['GET'])
+def get_format_check_files():
+    """获取所有格式审查文件列表"""
+    try:
+        files = FormatCheckFile.query.order_by(FormatCheckFile.created_at.desc()).all()
         
-#         # 获取每个模块的详细信息
-#         modules_info = []
-#         for module_name in modules:
-#             info = paper_format_service.get_module_info(module_name)
-#             modules_info.append(info)
+        files_data = []
+        for file in files:
+            files_data.append({
+                'id': file.id,
+                'fileId': file.id,
+                'title': file.title,
+                'submitDate': file.submit_date.strftime('%Y-%m-%d'),
+                'tempFilePath': file.temp_file_path,
+                'reportPath': file.report_path,
+                'annotatedPath': file.annotated_path,
+                'checkStatus': file.check_status,
+                'totalChecks': file.total_checks,
+                'passedChecks': file.passed_checks,
+                'failedChecks': file.failed_checks,
+                'passRate': file.pass_rate,
+                'createdAt': file.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
         
-#         return jsonify({
-#             'success': True,
-#             'data': {
-#                 'modules': modules_info,
-#                 'total': len(modules_info)
-#             }
-#         })
+        return jsonify({
+            'success': True,
+            'data': files_data,
+            'message': '获取列表成功'
+        })
     
-#     except Exception as e:
-#         logger.error(f"获取检测模块列表错误: {str(e)}")
-#         return jsonify({
-#             'success': False, 
-#             'message': f'获取检测模块列表失败: {str(e)}'
-#         }), 500
+    except Exception as e:
+        logger.error(f"获取格式审查文件列表错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'获取列表失败: {str(e)}'
+        }), 500
 
 
-# # 检测单个模块
-# @app.route('/api/paper-format/check/<module_name>', methods=['POST'])
-# def check_format_module(module_name):
-#     """检测论文格式（单个模块）"""
-#     try:
-#         # 获取上传的文件
-#         if 'file' not in request.files:
-#             return jsonify({
-#                 'success': False, 
-#                 'message': '未上传文件'
-#             }), 400
+# 检查标题是否重复
+@app.route('/api/paper-format/check-duplicate', methods=['POST'])
+def check_duplicate_title():
+    """检查论文标题是否重复"""
+    try:
+        data = request.get_json()
+        title = data.get('title')
         
-#         file = request.files['file']
-#         if file.filename == '':
-#             return jsonify({
-#                 'success': False, 
-#                 'message': '文件名为空'
-#             }), 400
+        if not title:
+            return jsonify({
+                'success': False,
+                'message': '标题不能为空'
+            }), 400
         
-#         # 检查文件类型
-#         if not file.filename.endswith('.docx'):
-#             return jsonify({
-#                 'success': False, 
-#                 'message': '只支持 .docx 格式的文件'
-#             }), 400
+        # 查询是否存在相同标题
+        existing_file = FormatCheckFile.query.filter_by(title=title).first()
         
-#         # 保存临时文件到temp目录
-#         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-#         temp_filename = f"{timestamp}_{secure_filename(file.filename)}"
-#         temp_path = os.path.join(app.config['FORMAT_CHECK_TEMP_FOLDER'], temp_filename)
-#         logger.info(f"保存临时文件: {temp_path}")
-#         file.save(temp_path)
-        
-#         # 执行检测
-#         paper_format_service = PaperFormatService()
-        
-#         # 根据模块名称调用相应的检测方法
-#         if module_name.lower() == 'title':
-#             result = paper_format_service.check_title(temp_path)
-#         elif module_name.lower() == 'abstract':
-#             result = paper_format_service.check_abstract(temp_path)
-#         elif module_name.lower() == 'keywords':
-#             result = paper_format_service.check_keywords(temp_path)
-#         elif module_name.lower() == 'content':
-#             result = paper_format_service.check_content(temp_path)
-#         elif module_name.lower() == 'figure':
-#             enable_api = request.form.get('enableApi', 'false').lower() == 'true'
-#             result = paper_format_service.check_figure(temp_path, enable_content_check=enable_api)
-#         elif module_name.lower() == 'formula':
-#             result = paper_format_service.check_formula(temp_path)
-#         elif module_name.lower() == 'table':
-#             result = paper_format_service.check_table(temp_path)
-#         else:
-#             return jsonify({
-#                 'success': False, 
-#                 'message': f'未知的检测模块: {module_name}'
-#             }), 400
-        
-#         return jsonify(result)
-
-#     except Exception as e:
-#         logger.error(f"单模块检测错误: {str(e)}")
-#         return jsonify({
-#             'success': False, 
-#             'message': f'检测失败: {str(e)}'
-#         }), 500
+        if existing_file:
+            return jsonify({
+                'success': True,
+                'data': {
+                    'exists': True,
+                    'file_id': existing_file.id,
+                    'submit_date': existing_file.submit_date.strftime('%Y-%m-%d'),
+                    'check_status': existing_file.check_status
+                },
+                'message': '标题已存在'
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'data': {
+                    'exists': False
+                },
+                'message': '标题不存在'
+            })
+    
+    except Exception as e:
+        logger.error(f"检查标题重复错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'检查失败: {str(e)}'
+        }), 500
 
 
-# 全量检测
-@app.route('/api/paper-format/check-all', methods=['POST'])
-def check_format_all():
-    """执行论文格式全量检测"""
+# 删除格式审查文件记录
+@app.route('/api/paper-format/delete/<int:file_id>', methods=['DELETE'])
+def delete_format_check_file(file_id):
+    """删除格式审查文件记录（覆盖时使用）"""
+    try:
+        format_check_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_check_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        # 删除物理文件
+        try:
+            if os.path.exists(format_check_file.temp_file_path):
+                os.remove(format_check_file.temp_file_path)
+            if format_check_file.report_path and os.path.exists(format_check_file.report_path):
+                os.remove(format_check_file.report_path)
+            if format_check_file.annotated_path and os.path.exists(format_check_file.annotated_path):
+                os.remove(format_check_file.annotated_path)
+        except Exception as e:
+            logger.warning(f"删除物理文件失败: {e}")
+        
+        # 删除数据库记录
+        db.session.delete(format_check_file)
+        db.session.commit()
+        
+        logger.info(f"已删除格式审查文件记录: ID={file_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': '删除成功'
+        })
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"删除文件记录错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'删除失败: {str(e)}'
+        }), 500
+
+
+# 保存临时文件
+@app.route('/api/paper-format/save-temp', methods=['POST'])
+def save_temp_file():
+    """保存上传的文件到临时目录并插入数据库记录"""
     try:
         # 获取上传的文件
         if 'file' not in request.files:
@@ -1349,6 +1381,11 @@ def check_format_all():
                 'message': '只支持 .docx 格式的文件'
             }), 400
         
+        # 获取标题和提交日期
+        title = request.form.get('title', file.filename.replace('.docx', ''))
+        submit_date_str = request.form.get('submit_date', datetime.now().strftime('%Y-%m-%d'))
+        submit_date = datetime.strptime(submit_date_str, '%Y-%m-%d').date()
+        
         # 保存临时文件到temp目录
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         temp_filename = f"{timestamp}_{secure_filename(file.filename)}"
@@ -1356,9 +1393,61 @@ def check_format_all():
         logger.info(f"保存临时文件: {temp_path}")
         file.save(temp_path)
         
+        # 插入数据库记录
+        format_check_file = FormatCheckFile(
+            title=title,
+            submit_date=submit_date,
+            temp_file_path=temp_path,
+            check_status='pending'
+        )
+        db.session.add(format_check_file)
+        db.session.commit()
+        
+        logger.info(f"格式审查文件记录已创建: ID={format_check_file.id}")
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'temp_file_path': temp_path,
+                'file_id': format_check_file.id
+            },
+            'message': '文件保存成功'
+        })
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"保存临时文件错误: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'message': f'保存失败: {str(e)}'
+        }), 500
+
+# 全量检测
+@app.route('/api/paper-format/check-all', methods=['POST'])
+def check_format_all():
+    """执行论文格式全量检测"""
+    try:
+        # 获取JSON数据
+        data = request.get_json()
+        temp_file_path = data.get('temp_file_path')
+        file_id = data.get('file_id')  # 获取文件ID
+        
+        if not temp_file_path:
+            return jsonify({
+                'success': False, 
+                'message': '缺少临时文件路径'
+            }), 400
+        
+        # 检查文件是否存在
+        if not os.path.exists(temp_file_path):
+            return jsonify({
+                'success': False, 
+                'message': '临时文件不存在'
+            }), 404
+        
         # 获取参数
-        enable_figure_api = request.form.get('enableFigureApi', 'false').lower() == 'true'
-        modules = request.form.get('modules')  # 可选，逗号分隔的模块名称
+        enable_figure_api = data.get('enableFigureApi', False)
+        modules = data.get('modules')  # 可选，逗号分隔的模块名称
         
         if modules:
             modules_list = [m.strip() for m in modules.split(',')]
@@ -1367,15 +1456,18 @@ def check_format_all():
         
         # 执行检测
         paper_format_service = PaperFormatService()
-        result = paper_format_service.check_all(
-            temp_path,
+        all_reports_dict = paper_format_service.check_all(
+            temp_file_path,
             enable_figure_api=enable_figure_api,
             modules=modules_list
         )
-        
+ 
+        result = paper_format_service.process_report(all_reports_dict)
+ 
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
         # 自动生成并保存报告
         if result.get('success'):
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             report_filename = f"{timestamp}_format_report.txt"
             report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], report_filename)
             
@@ -1392,11 +1484,70 @@ def check_format_all():
             except Exception as e:
                 logger.warning(f"自动保存报告失败: {e}")
                 # 不影响检测结果的返回
+
+        if all_reports_dict['error'] is None:
+            # 生成带批注的文档
+            try:
+                from services.document_annotator import generate_annotated_document
+                annotate_filename = f"{timestamp}_annotated.docx"
+                annotate_output_dir = app.config['FORMAT_CHECK_ANNOTATE_FOLDER']
+                
+                # 从result中获取all_reports
+                all_reports = all_reports_dict['data']
+                # logger.info(f"所有报告信息:{all_reports}")
+                
+                annotated_path = generate_annotated_document(
+                    temp_file_path,
+                    all_reports,
+                    annotate_output_dir
+                )
+                
+                if annotated_path:
+                    result['data']['annotated_saved'] = True
+                    result['data']['annotated_filename'] = os.path.basename(annotated_path)
+                    result['data']['annotated_download_url'] = f'/api/paper-format/download-annotated/{os.path.basename(annotated_path)}'
+                    logger.info(f"批注文档已自动生成: {annotated_path}")
+                else:
+                    logger.warning("批注文档生成失败")
+            except Exception as e:
+                logger.warning(f"生成批注文档失败: {e}")
+                # 不影响检测结果的返回
+        
+        # 更新数据库记录
+        if file_id and result.get('success'):
+            try:
+                format_check_file = FormatCheckFile.query.get(file_id)
+                if format_check_file:
+                    # 更新文件路径
+                    if result['data'].get('report_saved'):
+                        format_check_file.report_path = os.path.join(
+                            app.config['FORMAT_CHECK_REPORTS_FOLDER'], 
+                            result['data']['report_filename']
+                        )
+                    
+                    if result['data'].get('annotated_saved'):
+                        format_check_file.annotated_path = os.path.join(
+                            app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], 
+                            result['data']['annotated_filename']
+                        )
+                    
+                    # 更新检测结果摘要
+                    if 'summary' in result['data']:
+                        summary = result['data']['summary']
+                        format_check_file.total_checks = summary.get('total_checks', 0)
+                        format_check_file.passed_checks = summary.get('passed_checks', 0)
+                        format_check_file.failed_checks = summary.get('failed_checks', 0)
+                        format_check_file.pass_rate = summary.get('pass_rate', 0.0)
+                    
+                    format_check_file.check_status = 'completed'
+                    db.session.commit()
+                    logger.info(f"数据库记录已更新: ID={file_id}")
+            except Exception as e:
+                db.session.rollback()
+                logger.warning(f"更新数据库记录失败: {e}")
         
         return jsonify(result)
             
-        
-    
     except Exception as e:
         logger.error(f"全量检测错误: {str(e)}")
         return jsonify({
@@ -1405,78 +1556,181 @@ def check_format_all():
         }), 500
 
 
-# 生成检测报告
-# @app.route('/api/paper-format/generate-report', methods=['POST'])
-# def generate_format_report():
-#     """生成论文格式检测报告"""
-#     try:
-#         data = request.get_json()
-#         check_results = data.get('checkResults')
-#
-#         if not check_results:
-#             return jsonify({
-#                 'success': False,
-#                 'message': '缺少检测结果数据'
-#             }), 400
-#
-#         # 生成报告文件名，保存到reports目录
-#         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-#         report_filename = f"{timestamp}_format_report.txt"
-#         report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], report_filename)
-#         logger.info(f"生成报告文件: {report_path}")
-#
-#         # 生成报告
-#         paper_format_service = PaperFormatService()
-#         result = paper_format_service.generate_report(check_results, output_path=report_path)
-#
-#         if result['success']:
-#             # 返回报告文本和下载链接
-#             return jsonify({
-#                 'success': True,
-#                 'data': {
-#                     'report_text': result['data']['report_text'],
-#                     'download_url': f'/api/paper-format/download-report/{report_filename}'
-#                 },
-#                 'message': '报告生成成功'
-#             })
-#         else:
-#             return jsonify(result), result.get('status_code', 500)
-#
-#     except Exception as e:
-#         logger.error(f"生成报告错误: {str(e)}")
-#         return jsonify({
-#             'success': False,
-#             'message': f'生成报告失败: {str(e)}'
-#         }), 500
+# 下载带批注的论文文档
+@app.route('/api/paper-format/download-annotated/<filename>')
+def download_annotated_document(filename):
+    """下载带批注的论文文档"""
+    try:
+        annotated_path = os.path.join(app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], filename)
+        
+        if not os.path.exists(annotated_path):
+            return jsonify({
+                'success': False,
+                'message': '批注文件不存在'
+            }), 404
+        
+        logger.info(f"下载批注文档: {annotated_path}")
+        return send_file(
+            annotated_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        logger.error(f"下载批注文档错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'下载失败: {str(e)}'
+        }), 500
 
 
-# 下载格式检测报告
-# @app.route('/api/paper-format/download-report/<filename>')
-# def download_format_report(filename):
-#     """下载论文格式检测报告"""
-#     try:
-#         report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], filename)
-#
-#         if not os.path.exists(report_path):
-#             return jsonify({
-#                 'success': False,
-#                 'message': '报告文件不存在'
-#             }), 404
-#
-#         logger.info(f"下载报告: {report_path}")
-#         return send_file(
-#             report_path,
-#             as_attachment=True,
-#             download_name=filename,
-#             mimetype='text/plain'
-#         )
-#
-#     except Exception as e:
-#         logger.error(f"下载报告错误: {str(e)}")
-#         return jsonify({
-#             'success': False,
-#             'message': f'下载失败: {str(e)}'
-#         }), 500
+# 通过file_id打开原始文档
+@app.route('/api/paper-format/open-original/<int:file_id>')
+def open_original_document(file_id):
+    """通过file_id打开原始文档"""
+    try:
+        format_check_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_check_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        if not os.path.exists(format_check_file.temp_file_path):
+            return jsonify({
+                'success': False,
+                'message': '原始文件不存在'
+            }), 404
+        
+        logger.info(f"打开原始文档: {format_check_file.temp_file_path}")
+        return send_file(
+            format_check_file.temp_file_path,
+            as_attachment=True,
+            download_name=f"{format_check_file.title}.docx",
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        logger.error(f"打开原始文档错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'打开失败: {str(e)}'
+        }), 500
+
+
+# 获取检测报告文本内容
+@app.route('/api/paper-format/get-report-text/<int:file_id>')
+def get_report_text(file_id):
+    """获取检测报告的文本内容"""
+    try:
+        format_check_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_check_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        if not format_check_file.report_path or not os.path.exists(format_check_file.report_path):
+            return jsonify({
+                'success': False,
+                'message': '检测报告不存在'
+            }), 404
+        
+        # 读取报告文本内容
+        try:
+            with open(format_check_file.report_path, 'r', encoding='utf-8') as f:
+                report_text = f.read()
+            
+            logger.info(f"读取检测报告文本: {format_check_file.report_path}")
+            return jsonify({
+                'success': True,
+                'data': {
+                    'report_text': report_text
+                },
+                'message': '读取成功'
+            })
+        except Exception as e:
+            logger.error(f"读取报告文件错误: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'读取报告失败: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"获取报告文本错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'获取失败: {str(e)}'
+        }), 500
+
+
+# 通过file_id打开检测报告
+@app.route('/api/paper-format/open-report/<int:file_id>')
+def open_report_by_id(file_id):
+    """通过file_id打开检测报告"""
+    try:
+        format_check_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_check_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        if not format_check_file.report_path or not os.path.exists(format_check_file.report_path):
+            return jsonify({
+                'success': False,
+                'message': '检测报告不存在'
+            }), 404
+        
+        logger.info(f"打开检测报告: {format_check_file.report_path}")
+        return send_file(
+            format_check_file.report_path,
+            as_attachment=True,
+            download_name=f"{format_check_file.title}_report.txt",
+            mimetype='text/plain'
+        )
+    except Exception as e:
+        logger.error(f"打开检测报告错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'打开失败: {str(e)}'
+        }), 500
+
+
+# 通过file_id打开批注文档
+@app.route('/api/paper-format/open-annotated/<int:file_id>')
+def open_annotated_by_id(file_id):
+    """通过file_id打开批注文档"""
+    try:
+        format_check_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_check_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        if not format_check_file.annotated_path or not os.path.exists(format_check_file.annotated_path):
+            return jsonify({
+                'success': False,
+                'message': '批注文档不存在'
+            }), 404
+        
+        logger.info(f"打开批注文档: {format_check_file.annotated_path}")
+        return send_file(
+            format_check_file.annotated_path,
+            as_attachment=True,
+            download_name=f"{format_check_file.title}_annotated.docx",
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        logger.error(f"打开批注文档错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'打开失败: {str(e)}'
+        }), 500
 
 
 if __name__ == '__main__':

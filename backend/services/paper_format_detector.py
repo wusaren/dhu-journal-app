@@ -319,8 +319,4 @@ class PaperFormatDetector:
         
         return all_results
     
-    # def get_available_modules(self) -> List[str]:
-    #     """获取所有可用的检测模块"""
-    #     return list(self.modules.keys())
-
 

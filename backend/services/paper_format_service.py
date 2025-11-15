@@ -150,230 +150,6 @@ class PaperFormatService:
             'details': serializable_details
         }
     
-    def check_title(self, docx_path: str) -> Dict[str, Any]:
-        """检测标题、作者、单位格式"""
-        try:
-            logger.info(f"开始标题检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_title(docx_path)
-            normalized_data = self._normalize_report(report, 'Title')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '标题检测完成' if all_ok else '标题检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Title')
-    
-    def check_abstract(self, docx_path: str) -> Dict[str, Any]:
-        """检测摘要格式"""
-        try:
-            logger.info(f"开始摘要检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_abstract(docx_path)
-            normalized_data = self._normalize_report(report, 'Abstract')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '摘要检测完成' if all_ok else '摘要检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Abstract')
-    
-    def check_keywords(self, docx_path: str) -> Dict[str, Any]:
-        """检测关键词格式"""
-        try:
-            logger.info(f"开始关键词检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_keywords(docx_path)
-            normalized_data = self._normalize_report(report, 'Keywords')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '关键词检测完成' if all_ok else '关键词检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Keywords')
-    
-    def check_content(self, docx_path: str) -> Dict[str, Any]:
-        """检测正文格式"""
-        try:
-            logger.info(f"开始正文检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_content(docx_path)
-            normalized_data = self._normalize_report(report, 'Content')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '正文检测完成' if all_ok else '正文检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Content')
-    
-    def check_figure(self, docx_path: str, enable_content_check: bool = False) -> Dict[str, Any]:
-        """检测图片格式"""
-        try:
-            logger.info(f"开始图片检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_figure(docx_path, enable_content_check=enable_content_check)
-            normalized_data = self._normalize_report(report, 'Figure')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '图片检测完成' if all_ok else '图片检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Figure')
-    
-    def check_formula(self, docx_path: str) -> Dict[str, Any]:
-        """检测公式格式"""
-        try:
-            logger.info(f"开始公式检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_formula(docx_path)
-            normalized_data = self._normalize_report(report, 'Formula')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '公式检测完成' if all_ok else '公式检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Formula')
-    
-    def check_table(self, docx_path: str) -> Dict[str, Any]:
-        """检测表格格式"""
-        try:
-            logger.info(f"开始表格检测: {docx_path}")
-            
-            if not os.path.isfile(docx_path):
-                return self._format_response(
-                    success=False,
-                    message=f"文件不存在: {docx_path}",
-                    status_code=404
-                )
-            
-            report = self.detector.detect_table(docx_path)
-            normalized_data = self._normalize_report(report, 'Table')
-            
-            all_ok = all(
-                check.get('ok', False) 
-                for check in normalized_data['checks'].values()
-            )
-            
-            message = '表格检测完成' if all_ok else '表格检测发现问题'
-            
-            return self._format_response(
-                success=True,
-                data=normalized_data,
-                message=message,
-                status_code=200
-            )
-            
-        except Exception as e:
-            return self._handle_exception(e, 'Table')
-    
     def check_all(self, docx_path: str, enable_figure_api: bool = False,
                   modules: Optional[List[str]] = None) -> Dict[str, Any]:
         """执行所有格式检测"""
@@ -393,7 +169,23 @@ class PaperFormatService:
                 modules=modules,
                 enable_figure_api=enable_figure_api
             )
-            
+            # all_reports=self._make_json_serializable(all_reports)
+
+            # logger.info(f"检测结果字典：{all_reports}")
+
+            return {'data': all_reports, 'error': None}
+
+        except Exception as e:
+            return {'data': None, 'error': e}
+
+
+    def process_report(self,all_reports_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """对所有的检测报告进行处理"""
+        if all_reports_dict['error'] is not None:
+            return self._handle_exception(all_reports_dict['error'], 'All')
+
+        try:
+            all_reports= all_reports_dict['data']
             # 标准化所有结果
             all_results = {}
             for module_name, report in all_reports.items():
@@ -539,31 +331,3 @@ class PaperFormatService:
         except Exception as e:
             return self._handle_exception(e, 'ReportGeneration')
     
-    # def get_available_modules(self) -> List[str]:
-    #     """获取可用的检测模块列表"""
-    #     return self.detector.get_available_modules()
-    
-    # def get_module_info(self, module_name: str) -> Dict[str, Any]:
-    #     """获取指定模块的信息"""
-    #     descriptions = {
-    #         'Title': '标题、作者、单位格式检测',
-    #         'Abstract': '摘要格式检测',
-    #         'Keywords': '关键词格式检测',
-    #         'Content': '正文格式检测',
-    #         'Figure': '图片格式检测',
-    #         'Formula': '公式格式检测',
-    #         'Table': '表格格式检测'
-    #     }
-    #
-    #     if module_name not in self.get_available_modules():
-    #         return {
-    #             'exists': False,
-    #             'message': f'模块不存在: {module_name}'
-    #         }
-    #
-    #     return {
-    #         'exists': True,
-    #         'module_name': module_name,
-    #         'default_template': f'{module_name}.json',
-    #         'description': descriptions.get(module_name, '未知模块')
-    #     }
