@@ -514,17 +514,18 @@ def export_tuiwen():
         export_service = ExportService()
         
         # 优先检查用户级别的推文模板配置
-        user_id = current_user.id
-        tuiwen_template_service = TuiwenTemplateService()
-        user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+        # user_id = current_user.id
+        # tuiwen_template_service = TuiwenTemplateService()
+        # user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
         
-        if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
-            # 使用用户模板生成
-            logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
-            result = export_service.export_tuiwen(journal_id, user_id)
-        else:
-            # 使用期刊模板生成
-            result = export_service.export_tuiwen(journal_id)
+        # if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+        #     # 使用用户模板生成
+        #     logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+        # result = export_service.export_tuiwen(journal_id, user_id)
+        result = export_service.export_tuiwen(journal_id)
+        # else:
+        #     # 使用期刊模板生成
+        #     result = export_service.export_tuiwen(journal_id)
         
         if result['success']:
             return jsonify(result)

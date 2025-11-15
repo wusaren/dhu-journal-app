@@ -45,7 +45,8 @@ class ExportService:
             logger.error(f"目录生成错误: {str(e)}")
             return {'success': False, 'message': f'目录生成失败: {str(e)}', 'status_code': 500}
     
-    def export_tuiwen(self, journal_id, user_id=None):
+    # def export_tuiwen(self, journal_id, user_id=None):
+    def export_tuiwen(self, journal_id):
         """
         生成推文 - 支持用户级别的推文模板配置
         返回格式与原来完全兼容
@@ -64,36 +65,36 @@ class ExportService:
                 return {'success': False, 'message': '该期刊没有论文数据，无法生成推文', 'status_code': 400}
             
             # 优先检查用户级别的推文模板配置
-            if user_id:
-                from services.tuiwen_template_service import TuiwenTemplateService
-                tuiwen_template_service = TuiwenTemplateService()
-                user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+            # if user_id:
+            #     from services.tuiwen_template_service import TuiwenTemplateService
+            #     tuiwen_template_service = TuiwenTemplateService()
+            #     user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
                 
-                if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
-                    # 使用用户字段配置生成推文
-                    logger.info(f"使用用户推文字段配置生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
-                    from services.document_generator import generate_tuiwen_from_fields
-                    output_path = generate_tuiwen_from_fields(papers, journal, user_tuiwen_template_config['fields'])
-                    return {
-                        'success': True,
-                        'message': '推文生成成功（使用用户模板）',
-                        'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
-                        'filePath': output_path
-                    }
+            #     if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+            #         # 使用用户字段配置生成推文
+            #         logger.info(f"使用用户推文字段配置生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+            #         from services.document_generator import generate_tuiwen_from_fields
+            #         output_path = generate_tuiwen_from_fields(papers, journal, user_tuiwen_template_config['fields'])
+            #         return {
+            #             'success': True,
+            #             'message': '推文生成成功（使用用户模板）',
+            #             'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
+            #             'filePath': output_path
+            #         }
             
             # 检查期刊级别的推文模板配置
-            from services.tuiwen_template_service import TuiwenTemplateService
-            tuiwen_template_service = TuiwenTemplateService()
-            tuiwen_template_config = tuiwen_template_service.load_config(journal_id)
+            # from services.tuiwen_template_service import TuiwenTemplateService
+            # tuiwen_template_service = TuiwenTemplateService()
+            # tuiwen_template_config = tuiwen_template_service.load_config(journal_id)
             
-            if tuiwen_template_config and tuiwen_template_config.get('fields'):
-                # 使用字段配置生成推文
-                logger.info(f"使用推文字段配置生成: {len(tuiwen_template_config.get('fields', []))} 个字段")
-                from services.document_generator import generate_tuiwen_from_fields
-                output_path = generate_tuiwen_from_fields(papers, journal, tuiwen_template_config['fields'])
-            else:
-                # 使用默认格式生成推文
-                output_path = generate_tuiwen_content(papers, journal)
+            # if tuiwen_template_config and tuiwen_template_config.get('fields'):
+            #     # 使用字段配置生成推文
+            #     logger.info(f"使用推文字段配置生成: {len(tuiwen_template_config.get('fields', []))} 个字段")
+            #     from services.document_generator import generate_tuiwen_from_fields
+            #     output_path = generate_tuiwen_from_fields(papers, journal, tuiwen_template_config['fields'])
+            # else:
+            #     # 使用默认格式生成推文
+            output_path = generate_tuiwen_content(papers, journal)
             
             return {
                 'success': True,

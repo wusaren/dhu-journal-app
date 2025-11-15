@@ -6644,3 +6644,29 @@
 2025-11-15 10:54:08,631 - __main__ - INFO - 所有默认用户已创建完成
 2025-11-15 10:54:08,700 - werkzeug - WARNING -  * Debugger is active!
 2025-11-15 10:54:08,721 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-15 11:05:19,048 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-15 11:05:19,189 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 11:05:21,318 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 11:05:21,374 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 11:05:21,402 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-15 11:05:38,946 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\services\\export_service.py', reloading
+2025-11-15 11:05:39,093 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 11:05:41,109 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 11:05:41,170 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 11:05:41,196 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-15 11:05:55,417 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 11:05:55] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 11:05:56,729 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 11:05:56] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 开始处理第二张图片: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 本地图片存在: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 本地图片路径检查结果: images\papers_2025_ 42_4_pages_348-357_image.png, 文件存在: True
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 尝试插入图片到Word: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-15 11:05:58,048 - services.document_generator - INFO - ✅ 为论文 1 成功插入第二张图片: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 开始处理第一张图片(QRcode): images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 本地图片存在: images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 本地图片路径检查结果: images\papers_2025_ 42_4_pages_348-357_image_QRcode.png, 文件存在: True
+2025-11-15 11:05:58,048 - services.document_generator - INFO - 尝试插入第一张图片到Word: images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-15 11:05:58,055 - services.document_generator - INFO - ✅ 为论文 1 成功插入第一张图片(QRcode): images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-15 11:05:58,100 - services.document_generator - INFO - 推文Word文档已生成: uploads\推文_2025, 42(4)_20251115_110558.docx
+2025-11-15 11:05:58,101 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 11:05:58] "POST /api/export/tuiwen HTTP/1.1" 200 -
+2025-11-15 11:05:58,153 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\推文_2025, 42(4)_20251115_110558.docx
+2025-11-15 11:05:58,155 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 11:05:58] "GET /api/download/推文_2025,%2042(4)_20251115_110558.docx HTTP/1.1" 200 -
