@@ -35,6 +35,33 @@
         "managing_editor"
       ],
       "active": true
+    },
+    {
+      "username": "dhu001",
+      "email": "dhu001@example.com",
+      "password": "dhu123",
+      "roles": [
+        "editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "dhu002",
+      "email": "dhu002@example.com",
+      "password": "dhu456",
+      "roles": [
+        "editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "dhu003",
+      "email": "dhu003@example.com",
+      "password": "dhu789",
+      "roles": [
+        "managing_editor"
+      ],
+      "active": true
     }
   ],
   "roles": [
