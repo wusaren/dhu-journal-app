@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import List, Any, Optional, Dict
@@ -11,6 +12,74 @@ from docx.oxml.ns import qn
 from openpyxl import Workbook, load_workbook
 
 logger = logging.getLogger(__name__)
+
+# 默认配置文件路径
+DEFAULT_CONFIG_FILE = Path(__file__).parent.parent / 'configs' / 'default_stats_columns.json'
+DEFAULT_TUIWEN_CONFIG_FILE = Path(__file__).parent.parent / 'configs' / 'default_tuiwen_fields.json'
+
+def load_default_columns_config() -> List[Dict]:
+    """
+    从JSON文件加载默认列配置
+    如果文件不存在或加载失败，返回硬编码的默认配置作为后备
+    
+    Returns:
+        列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
+    """
+    try:
+        if DEFAULT_CONFIG_FILE.exists():
+            with open(DEFAULT_CONFIG_FILE, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+                columns = config_data.get('columns', [])
+                if columns:
+                    logger.info(f"从配置文件加载了默认列配置: {len(columns)} 列")
+                    return columns
+        
+        logger.warning(f"默认配置文件不存在或为空，使用硬编码默认配置: {DEFAULT_CONFIG_FILE}")
+    except Exception as e:
+        logger.error(f"加载默认列配置失败: {str(e)}，使用硬编码默认配置")
+    
+    # 后备硬编码配置
+    return [
+        {'key': 'manuscript_id', 'order': 1},
+        {'key': 'pdf_pages', 'order': 2},
+        {'key': 'first_author', 'order': 3},
+        {'key': 'corresponding', 'order': 4},
+        {'key': 'issue', 'order': 5},
+        {'key': 'is_dhu', 'order': 6},
+    ]
+
+def load_default_tuiwen_fields_config() -> List[Dict]:
+    """
+    从JSON文件加载默认推文字段配置
+    如果文件不存在或加载失败，返回硬编码的默认配置作为后备
+    
+    Returns:
+        字段配置列表，格式: [{'field': 'title', 'label': '标题', 'order': 1}, ...]
+    """
+    try:
+        if DEFAULT_TUIWEN_CONFIG_FILE.exists():
+            with open(DEFAULT_TUIWEN_CONFIG_FILE, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+                fields = config_data.get('fields', [])
+                if fields:
+                    logger.info(f"从配置文件加载了默认推文字段配置: {len(fields)} 个字段")
+                    return fields
+        
+        logger.warning(f"默认推文配置文件不存在或为空，使用硬编码默认配置: {DEFAULT_TUIWEN_CONFIG_FILE}")
+    except Exception as e:
+        logger.error(f"加载默认推文字段配置失败: {str(e)}，使用硬编码默认配置")
+    
+    # 后备硬编码配置
+    return [
+        {'field': 'chinese_title', 'label': '中文标题', 'required': False, 'order': 1},
+        {'field': 'chinese_authors', 'label': '中文作者', 'required': False, 'order': 2},
+        {'field': 'second_image', 'label': '论文配图', 'required': False, 'order': 3},
+        {'field': 'title', 'label': '标题', 'required': True, 'order': 4},
+        {'field': 'authors', 'label': '作者', 'required': True, 'order': 5},
+        {'field': 'doi', 'label': 'DOI', 'required': False, 'order': 6},
+        {'field': 'citation', 'label': '引用信息', 'required': True, 'order': 7},
+        {'field': 'first_image', 'label': '作者说链接/OSID', 'required': False, 'order': 8},
+    ]
 
 def _get(a: Any, key: str):
     """获取对象属性，兼容dict和object - 完全照搬参考代码"""
@@ -134,16 +203,9 @@ def generate_excel_stats(articles, journal, columns_config=None) -> str:
         ws = wb.active
         ws.title = '期刊统计表'
         
-        # 如果没有提供列配置，使用默认配置
+        # 如果没有提供列配置，从JSON文件加载默认配置
         if not columns_config:
-            columns_config = [
-                {'key': 'manuscript_id', 'order': 1},
-                {'key': 'pdf_pages', 'order': 2},
-                {'key': 'first_author', 'order': 3},
-                {'key': 'corresponding', 'order': 4},
-                {'key': 'issue', 'order': 5},
-                {'key': 'is_dhu', 'order': 6},
-            ]
+            columns_config = load_default_columns_config()
         
         # 按order排序
         columns_config = sorted(columns_config, key=lambda x: x.get('order', 999))
@@ -324,8 +386,18 @@ def generate_excel_stats_from_template(articles, journal, template_file_path: st
             if header_text:
                 header_to_col[header_text] = col_idx
                 last_content_col = col_idx  # 更新最后一个有内容的列
+        
+        # 清理最后一列之后的空列（避免表头最右端出现多余的空格和边框）
+        max_col = ws.max_column
+        if max_col > last_content_col:
+            # 删除最后一列之后的所有空列
+            cols_to_remove = list(range(last_content_col + 1, max_col + 1))
+            for col_idx in sorted(cols_to_remove, reverse=True):
+                ws.delete_cols(col_idx)
+            logger.info(f"清理了 {len(cols_to_remove)} 个空列（从第 {last_content_col + 1} 列到第 {max_col} 列）")
 
         # 保存原始表头样式（用于新列）
+        # 使用识别到的第一个字段的样式
         source_header_cell = None
         for cell in ws[header_row]:
             if cell.value and str(cell.value).strip():
@@ -365,14 +437,35 @@ def generate_excel_stats_from_template(articles, journal, template_file_path: st
                                 horizontal=source_header_cell.alignment.horizontal,
                                 vertical=source_header_cell.alignment.vertical
                             )
+                        # 复制边框样式，直接复制第一个识别到的字段的边框样式
                         if source_header_cell.border:
                             from openpyxl.styles import Border
-                            cell.border = source_header_cell.border
+                            from copy import deepcopy
+                            source_border = source_header_cell.border
+                            cell.border = Border(
+                                left=deepcopy(source_border.left) if source_border.left else None,
+                                right=deepcopy(source_border.right) if source_border.right else None,
+                                top=deepcopy(source_border.top) if source_border.top else None,
+                                bottom=deepcopy(source_border.bottom) if source_border.bottom else None
+                            )
                     except Exception as e:
                         logger.warning(f"复制表头样式失败: {str(e)}")
                 header_to_col[template_header] = next_col
                 next_col += 1
                 logger.info(f"添加新列到模板: {template_header} (列 {header_to_col[template_header]})")
+        
+        # 添加完所有新列后，再次清理最后一列之后的空列
+        final_last_col = 0
+        for col_idx, cell in enumerate(ws[header_row], start=1):
+            header_text = str(cell.value).strip() if cell.value else ''
+            if header_text:
+                final_last_col = col_idx
+        final_max_col = ws.max_column
+        if final_max_col > final_last_col:
+            cols_to_remove = list(range(final_last_col + 1, final_max_col + 1))
+            for col_idx in sorted(cols_to_remove, reverse=True):
+                ws.delete_cols(col_idx)
+            logger.info(f"最终清理了 {len(cols_to_remove)} 个空列（从第 {final_last_col + 1} 列到第 {final_max_col} 列）")
         
         # 删除表头行之后的所有数据行（保留表头）
         data_start_row = header_row + 1
@@ -449,7 +542,24 @@ def get_local_image_path(image_path: str, temp_dir: str) -> Optional[str]:
         return None
 
 def generate_tuiwen_content(papers, journal):
-    """生成秀米推文内容 - Word文档格式"""
+    """
+    生成秀米推文内容 - Word文档格式
+    使用默认字段配置（从JSON文件加载或硬编码后备）
+    """
+    try:
+        # 从JSON文件加载默认字段配置
+        default_fields = load_default_tuiwen_fields_config()
+        
+        # 使用 generate_tuiwen_from_fields 函数生成推文
+        return generate_tuiwen_from_fields(papers, journal, default_fields)
+        
+    except Exception as e:
+        logger.error(f"使用默认配置生成推文失败: {str(e)}，尝试使用原始硬编码方式")
+        # 如果使用配置方式失败，回退到原始硬编码方式
+        return _generate_tuiwen_content_legacy(papers, journal)
+
+def _generate_tuiwen_content_legacy(papers, journal):
+    """生成秀米推文内容 - 原始硬编码方式（作为后备）"""
     try:
         # 创建临时目录用于存储下载的图片
         temp_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
@@ -749,6 +859,10 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
         # 添加空行
         doc.add_paragraph()
         
+        # 创建临时目录用于存储图片（在整个函数中共享）
+        temp_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
+        os.makedirs(temp_dir, exist_ok=True)
+        
         # 按配置的字段顺序生成每篇论文的内容
         for paper_idx, paper in enumerate(papers, 1):
             # 处理数据库Paper对象或字典
@@ -773,6 +887,14 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 formatted_authors = format_authors_for_citation(authors, max_authors=3)
                 citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
             
+            # 获取图片URL
+            if hasattr(paper, 'first_image_url'):
+                first_image_url = getattr(paper, 'first_image_url', '') or ''
+                second_image_url = getattr(paper, 'second_image_url', '') or ''
+            else:
+                first_image_url = paper.get('first_image_url', '') or ''
+                second_image_url = paper.get('second_image_url', '') or ''
+            
             # 字段值映射
             field_values = {
                 'chinese_title': chinese_title,
@@ -783,16 +905,62 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 'citation': citation,
                 'page_start': str(page_start) if page_start else '',
                 'page_end': str(page_end) if page_end else '',
+                'first_image': first_image_url,  # 图片URL
+                'second_image': second_image_url,  # 图片URL
             }
             
             # 按配置的字段顺序添加内容
             for field_config in sorted(fields_config, key=lambda x: x.get('order', 999)):
-                field_key = field_config.get('key')
+                field_key = field_config.get('field') or field_config.get('key')  # 支持两种格式
                 field_label = field_config.get('label', '')
                 
                 if field_key in field_values:
                     value = field_values[field_key]
-                    if value:
+                    
+                    # 处理图片字段
+                    if field_key == 'second_image' and value:
+                        try:
+                            local_image_path = get_local_image_path(value, temp_dir)
+                            if local_image_path and os.path.exists(local_image_path):
+                                try:
+                                    doc.add_picture(local_image_path, width=Pt(300))
+                                    logger.info(f"✅ 为论文 {paper_idx} 成功插入第二张图片")
+                                except Exception as picture_error:
+                                    logger.error(f"❌ 插入第二张图片失败: {str(picture_error)}")
+                                    url_para = doc.add_paragraph()
+                                    url_run = url_para.runs[0] if url_para.runs else url_para.add_run()
+                                    url_run.text = f"图片路径: {value}"
+                                    url_run.font.size = Pt(9)
+                        except Exception as img_error:
+                            logger.error(f"❌ 处理第二张图片失败: {str(img_error)}")
+                    
+                    elif field_key == 'first_image' and value:
+                        # 添加分隔线
+                        doc.add_paragraph("─" * 20)
+                        # 添加"作者说链接/OSID"文字
+                        osid_para = doc.add_paragraph()
+                        osid_run = osid_para.runs[0] if osid_para.runs else osid_para.add_run()
+                        osid_run.text = "作者说链接/OSID"
+                        osid_run.font.size = Pt(10)
+                        osid_run.font.bold = True
+                        # 插入图片
+                        try:
+                            local_image_path = get_local_image_path(value, temp_dir)
+                            if local_image_path and os.path.exists(local_image_path):
+                                try:
+                                    doc.add_picture(local_image_path, width=Pt(100))
+                                    logger.info(f"✅ 为论文 {paper_idx} 成功插入第一张图片(QRcode)")
+                                except Exception as picture_error:
+                                    logger.error(f"❌ 插入第一张图片失败: {str(picture_error)}")
+                                    url_para = doc.add_paragraph()
+                                    url_run = url_para.runs[0] if url_para.runs else url_para.add_run()
+                                    url_run.text = f"二维码路径: {value}"
+                                    url_run.font.size = Pt(9)
+                        except Exception as img_error:
+                            logger.error(f"❌ 处理第一张图片失败: {str(img_error)}")
+                    
+                    # 处理文本字段
+                    elif value and field_key not in ['first_image', 'second_image']:
                         # 添加字段标签和值
                         para = doc.add_paragraph()
                         run = para.runs[0] if para.runs else para.add_run()

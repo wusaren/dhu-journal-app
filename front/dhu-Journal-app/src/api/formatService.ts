@@ -111,7 +111,7 @@ export const formatService = {
     updated_at?: string
   }> {
     const response = await apiClient.get('/user/template')
-    return response.data
+    return response as any
   },
 
   /**
@@ -140,7 +140,7 @@ export const formatService = {
     updated_at?: string
   }> {
     const response = await apiClient.get('/user/tuiwen-template')
-    return response.data
+    return response as any
   },
 
   /**
@@ -152,7 +152,7 @@ export const formatService = {
     fields: SystemField[]
   }> {
     const response = await apiClient.get('/template/system-fields')
-    return response.data
+    return response as any
   },
 
   /**

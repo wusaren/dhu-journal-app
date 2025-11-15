@@ -13,54 +13,67 @@ logger = logging.getLogger(__name__)
 SYSTEM_FIELD_MAPPINGS = {
     'manuscript_id': {
         'label': '稿件号',
+        'category': '基本信息',
         'keywords': ['稿件号', '稿件编号', '稿件', 'manuscript', 'id']
     },
     'pdf_pages': {
         'label': '页数',
+        'category': '基本信息',
         'keywords': ['页数', '页', 'pages', '总页数']
     },
     'first_author': {
         'label': '一作',
+        'category': '作者信息',
         'keywords': ['一作', '第一作者', 'first author', 'first']
     },
     'corresponding': {
         'label': '通讯',
+        'category': '作者信息',
         'keywords': ['通讯', '通讯作者', 'corresponding', 'correspondence']
     },
     'authors': {
         'label': '作者',
+        'category': '作者信息',
         'keywords': ['作者', 'author', 'authors']
     },
     'issue': {
         'label': '刊期',
+        'category': '基本信息',
         'keywords': ['刊期', '期', 'issue']
     },
     'is_dhu': {
         'label': '是否东华大学',
+        'category': '基本信息',
         'keywords': ['是否东华', '东华', 'dhu', 'is_dhu']
     },
     'title': {
         'label': '标题',
+        'category': '论文信息',
         'keywords': ['标题', '题目', 'title']
     },
     'chinese_title': {
         'label': '中文标题',
+        'category': '论文信息',
         'keywords': ['中文标题', '中文题目', 'chinese title']
     },
     'chinese_authors': {
         'label': '中文作者',
+        'category': '作者信息',
         'keywords': ['中文作者', 'chinese author', 'chinese authors']
     },
     'doi': {
         'label': 'DOI',
+        'category': '论文信息',
         'keywords': ['doi', 'DOI']
     },
     'page_start': {
         'label': '起始页码',
+        'category': '基本信息',
         'keywords': ['起始页', '起始页码', '开始页', 'page start', 'start page']
     },
     'page_end': {
         'label': '结束页码',
+        'category': '基本信息',
         'keywords': ['结束页', '结束页码', '终止页', 'page end', 'end page']
     },
 }
@@ -194,6 +207,7 @@ class TemplateService:
             {
                 'key': key,
                 'label': info['label'],
+                'category': info.get('category', '其他'),
                 'keywords': info['keywords']
             }
             for key, info in SYSTEM_FIELD_MAPPINGS.items()

@@ -1,0 +1,68 @@
+{
+  "fields": [
+    {
+      "field": "chinese_title",
+      "label": "中文标题",
+      "required": false,
+      "order": 1
+    },
+    {
+      "field": "chinese_authors",
+      "label": "中文作者",
+      "required": false,
+      "order": 2
+    },
+    {
+      "field": "second_image",
+      "label": "论文配图",
+      "required": false,
+      "order": 3
+    },
+    {
+      "field": "title",
+      "label": "标题",
+      "required": true,
+      "order": 4
+    },
+    {
+      "field": "authors",
+      "label": "作者",
+      "required": true,
+      "order": 5
+    },
+    {
+      "field": "doi",
+      "label": "DOI",
+      "required": false,
+      "order": 6
+    },
+    {
+      "field": "citation",
+      "label": "引用信息",
+      "required": true,
+      "order": 7
+    },
+    {
+      "field": "first_image",
+      "label": "作者说链接/OSID",
+      "required": false,
+      "order": 8
+    }
+  ],
+  "header": {
+    "journal_title": "东华大学学报",
+    "separator": "─",
+    "separator_length": 30,
+    "editor_format": "本期责编: 编辑部 | {date}"
+  },
+  "paper_separator": {
+    "enabled": true,
+    "character": "─",
+    "length": 20
+  },
+  "description": "默认推文格式字段配置，当用户没有配置模板时使用",
+  "version": "1.0"
+}
+
+
+

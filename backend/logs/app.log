@@ -6670,3 +6670,410 @@
 2025-11-15 11:05:58,101 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 11:05:58] "POST /api/export/tuiwen HTTP/1.1" 200 -
 2025-11-15 11:05:58,153 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\uploads\推文_2025, 42(4)_20251115_110558.docx
 2025-11-15 11:05:58,155 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 11:05:58] "GET /api/download/推文_2025,%2042(4)_20251115_110558.docx HTTP/1.1" 200 -
+2025-11-15 13:25:07,709 - __main__ - INFO - 用户 dhu001 已创建
+2025-11-15 13:25:07,923 - __main__ - INFO - 用户 dhu002 已创建
+2025-11-15 13:25:08,138 - __main__ - INFO - 用户 dhu003 已创建
+2025-11-15 13:25:08,140 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:25:08,191 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:25:08,191 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:25:08,194 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:25:11,302 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:25:11,325 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:25:11,352 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:25:14,698 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:14] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-15 13:25:14,702 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:14] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-15 13:25:14,704 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:14] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 13:25:25,987 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:25] "POST /api/login HTTP/1.1" 200 -
+2025-11-15 13:25:27,327 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:27] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:25:29,324 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:29] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:25:30,410 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:30] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 13:25:35,412 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:35] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:25:36,440 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:36] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:25:36,441 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:36] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:25:37,088 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:37] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 13:25:39,891 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:39] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:25:40,855 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:40] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:25:45,802 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:45] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:25:55,884 - services.document_generator - INFO - 从配置文件加载了默认推文字段配置: 8 个字段
+2025-11-15 13:25:55,915 - services.document_generator - WARNING - 本地图片不存在: images\papers_2025_ 42_4_pages_339-347_image.png
+2025-11-15 13:25:55,916 - services.document_generator - WARNING - 本地图片不存在: images\papers_2025_ 42_4_pages_339-347_image_QRcode.png
+2025-11-15 13:25:55,916 - services.document_generator - INFO - 本地图片存在: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-15 13:25:55,919 - services.document_generator - INFO - ✅ 为论文 2 成功插入第二张图片
+2025-11-15 13:25:55,920 - services.document_generator - INFO - 本地图片存在: images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-15 13:25:55,922 - services.document_generator - INFO - ✅ 为论文 2 成功插入第一张图片(QRcode)
+2025-11-15 13:25:55,970 - services.document_generator - INFO - 根据字段配置生成推文: uploads\推文_2025, 42(4)_20251115_132555.docx
+2025-11-15 13:25:55,972 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:55] "POST /api/export/tuiwen HTTP/1.1" 200 -
+2025-11-15 13:25:56,019 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\推文_2025, 42(4)_20251115_132555.docx
+2025-11-15 13:25:56,040 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:25:56] "GET /api/download/推文_2025,%2042(4)_20251115_132555.docx HTTP/1.1" 200 -
+2025-11-15 13:26:00,051 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:26:00,056 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 13:26:00,058 - services.document_generator - INFO - 从配置文件加载了默认列配置: 6 列
+2025-11-15 13:26:00,086 - services.document_generator - INFO - 统计表已生成: uploads\统计表_2025, 42(4)_20251115_132600.xlsx
+2025-11-15 13:26:00,086 - services.document_generator - INFO - 使用的列配置: ['manuscript_id', 'pdf_pages', 'first_author', 'corresponding', 'issue', 'is_dhu']
+2025-11-15 13:26:00,087 - services.document_generator - INFO - 生成的数据（前3条）: [{'稿件号': 'E2024-04007', '页数': 9, '一作': 'WU  Xiaoyan', '通讯': 'XIAO  Ru', '刊期': '2025, 42(4)', '是否东华大学': '是'}, {'稿件号': 'E2024-06006', '页数': 10, '一作': 'ZHU  Zongxian', '通讯': 'ZHANG  Xuan', '刊期': '2025, 42(4)', '是否东华大学': '是'}]
+2025-11-15 13:26:00,089 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:00] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:26:00,149 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_132600.xlsx
+2025-11-15 13:26:00,174 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:00] "GET /api/download/统计表_2025,%2042(4)_20251115_132600.xlsx HTTP/1.1" 200 -
+2025-11-15 13:26:05,150 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:05] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:26:05,952 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:05] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:26:07,432 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:26:07,434 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:07] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:26:44,567 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:44] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:26:45,844 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:26:45,845 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:45] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:26:50,691 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:26:50,693 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:26:50] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:28:18,207 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\utils\\helpers.py', reloading
+2025-11-15 13:28:18,593 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:28:24,783 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:28:24,825 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:28:24,863 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:28:29,796 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:28:29] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:28:29,805 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:28:29] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:29:28,872 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:29:28] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:29:31,850 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:29:31] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:29:31,852 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:29:31] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:29:32,791 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:29:32] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 13:30:55,816 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\template_service.py', reloading
+2025-11-15 13:30:56,005 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:30:59,573 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:30:59,605 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:30:59,643 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:31:04,110 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\template_service.py', reloading
+2025-11-15 13:31:04,316 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:31:07,830 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:31:07,855 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:31:07,885 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:31:43,913 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:43] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:31:43,928 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:43] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:31:45,048 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:45] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:31:45,057 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:45] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:31:45,774 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:45] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:31:47,822 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:31:47,827 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:47] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:31:52,349 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:31:52,351 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:31:52] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:32:17,575 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:32:17,622 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:32:17,622 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:32:17,625 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:32:21,006 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:32:21,032 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:32:21,069 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:32:25,452 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:25] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:32:25,454 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:25] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:32:25,466 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:25] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:32:26,679 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:26] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:32:27,985 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:27] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:32:29,642 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:32:29,644 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:29] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:32:33,173 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:32:33,175 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:32:33] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:34:47,148 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:47] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:34:48,362 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:34:48,363 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:48] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:34:53,347 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:34:53,349 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:53] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:34:57,130 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:57] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:34:57,132 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:57] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:34:58,120 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:58] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:34:59,524 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:34:59] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:39:34,926 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:34] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 13:39:35,444 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:35] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:39:35,447 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:35] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:39:36,293 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:36] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:39:36,836 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:36] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:39:37,910 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:37] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:39:39,329 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:39:39,331 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:39] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:39:44,148 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:39:44,149 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:39:44] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:42:42,337 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:42:42,338 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:42:42] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:42:47,112 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:42:47,114 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:42:47] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:43:12,693 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:43:12,739 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:43:12,739 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:43:12,741 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:43:15,728 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:43:15,753 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:43:15,785 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:43:36,722 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:36] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:43:36,725 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:36] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:43:36,742 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:36] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:43:37,267 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:37] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:43:38,984 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:38] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:43:40,536 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:43:40,537 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:40] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:43:44,009 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:43:44,011 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:43:44] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:45:42,892 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:45:42,939 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:45:42,940 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:45:42,944 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:45:46,228 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:45:46,263 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:45:46,298 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:45:50,583 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:45:50] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:45:52,071 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:45:52] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:45:52,703 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:45:52] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:45:54,261 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:45:54,262 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:45:54] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:45:58,120 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:45:58,122 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:45:58] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:46:29,737 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:29] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:46:30,847 - services.template_config_service - WARNING - 用户模板文件不存在: D:\wsr\project\dhu-Journal-app(1)\dhu-journal-app\backend\user_configs\user_2\stats_template_20251114_124630.xlsx
+2025-11-15 13:46:30,848 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:30] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:46:34,720 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:46:34,721 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:34] "POST /api/upload/stats-format HTTP/1.1" 200 -
+2025-11-15 13:46:35,785 - services.template_config_service - INFO - 已复制用户模板文件: user_configs\user_2\template_user_2_20251115_134634_3-.xlsx -> C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:46:35,786 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-15 13:46:35,788 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:35] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:46:37,359 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:37] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:46:38,246 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:38] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 13:46:38,686 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:38] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:46:39,363 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:39] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:46:40,739 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:46:40,741 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:46:40,745 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-15 13:46:40,769 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:46:40,793 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(5)_20251115_134640.xlsx
+2025-11-15 13:46:40,796 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:40] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:46:40,844 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(5)_20251115_134640.xlsx
+2025-11-15 13:46:40,862 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:40] "GET /api/download/统计表_2025,%2042(5)_20251115_134640.xlsx HTTP/1.1" 200 -
+2025-11-15 13:46:43,271 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:46:43,271 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:46:43,273 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 13:46:43,289 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:46:43,310 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_134643.xlsx
+2025-11-15 13:46:43,312 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:43] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:46:43,353 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_134643.xlsx
+2025-11-15 13:46:43,368 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:46:43] "GET /api/download/统计表_2025,%2042(4)_20251115_134643.xlsx HTTP/1.1" 200 -
+2025-11-15 13:48:14,914 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:48:15,131 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:48:18,591 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:48:18,623 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:48:18,656 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:48:27,460 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:48:27,700 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:48:31,453 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:48:31,481 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:48:31,516 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:48:52,641 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:48:52,641 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:48:52,653 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 13:48:52,673 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:48:52,673 - services.document_generator - INFO - 清理了 1 个空列（从第 8 列到第 8 列）
+2025-11-15 13:48:52,699 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_134852.xlsx
+2025-11-15 13:48:52,700 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:48:52] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:48:52,755 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_134852.xlsx
+2025-11-15 13:48:52,777 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:48:52] "GET /api/download/统计表_2025,%2042(4)_20251115_134852.xlsx HTTP/1.1" 200 -
+2025-11-15 13:49:59,305 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:49:59,526 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:50:03,266 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:50:03,300 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:50:03,330 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:50:14,703 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:50:15,002 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:50:18,507 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:50:18,534 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:50:18,568 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:50:28,257 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:50:28,258 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:50:28,266 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 13:50:28,281 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:50:28,283 - services.document_generator - INFO - 清理了 1 个空列（从第 8 列到第 8 列）
+2025-11-15 13:50:28,295 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_135028.xlsx
+2025-11-15 13:50:28,297 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:50:28] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:50:28,350 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_135028.xlsx
+2025-11-15 13:50:28,365 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:50:28] "GET /api/download/统计表_2025,%2042(4)_20251115_135028.xlsx HTTP/1.1" 200 -
+2025-11-15 13:50:48,341 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:50:48,380 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:50:48,380 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:50:48,385 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:50:51,242 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:50:51,270 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:50:51,300 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:50:57,353 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:50:57] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:50:58,220 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:50:58] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:50:58,810 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:50:58] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:50:59,991 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:50:59,992 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:50:59] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:51:02,436 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:51:02] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:51:06,464 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:51:06,466 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:51:06,469 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 13:51:06,483 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:51:06,483 - services.document_generator - INFO - 清理了 1 个空列（从第 8 列到第 8 列）
+2025-11-15 13:51:06,496 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_135106.xlsx
+2025-11-15 13:51:06,499 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:51:06] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:51:06,540 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_135106.xlsx
+2025-11-15 13:51:06,554 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:51:06] "GET /api/download/统计表_2025,%2042(4)_20251115_135106.xlsx HTTP/1.1" 200 -
+2025-11-15 13:52:07,323 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:52:07,553 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:52:10,672 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:52:10,701 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:52:10,734 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:52:19,361 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:52:19,572 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:52:22,831 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:52:22,859 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:52:22,893 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:52:26,451 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:52:26,691 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:52:29,554 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:52:29,580 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:52:29,611 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:53:02,528 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:02] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:53:03,104 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:03] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:53:04,478 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:04] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:53:04,483 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:04] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:53:05,153 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:05] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:53:06,423 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:06] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:53:07,738 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:53:07,739 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:53:07] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:53:16,123 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:53:16,173 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:53:16,173 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:53:16,178 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:53:19,736 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:53:19,761 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:53:19,789 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:54:17,120 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:54:17,342 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:54:18,485 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\document_generator.py', reloading
+2025-11-15 13:54:18,681 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:54:21,348 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:54:21,374 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:54:21,408 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:54:48,382 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:54:48,438 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.3:5000
+2025-11-15 13:54:48,438 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 13:54:48,442 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 13:54:51,695 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 13:54:51,722 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 13:54:51,753 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 13:54:56,012 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:54:56] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:54:56,698 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:54:56] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:54:58,018 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:54:58] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:54:59,306 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:54:59,308 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:54:59] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:55:01,675 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:01] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:55:02,332 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:02] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:55:03,312 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:03] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:55:03,679 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:03] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:55:03,690 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:03] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 13:55:04,682 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:04] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 13:55:06,305 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:55:06,305 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:55:06,309 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 13:55:06,324 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:55:06,325 - services.document_generator - INFO - 清理了 1 个空列（从第 8 列到第 8 列）
+2025-11-15 13:55:06,336 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_135506.xlsx
+2025-11-15 13:55:06,339 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:06] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:55:06,381 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_135506.xlsx
+2025-11-15 13:55:06,396 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:06] "GET /api/download/统计表_2025,%2042(4)_20251115_135506.xlsx HTTP/1.1" 200 -
+2025-11-15 13:55:18,425 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:55:18,425 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx
+2025-11-15 13:55:18,430 - services.export_service - INFO - 期刊 3 找到 1 篇论文
+2025-11-15 13:55:18,443 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 13:55:18,443 - services.document_generator - INFO - 清理了 1 个空列（从第 8 列到第 8 列）
+2025-11-15 13:55:18,463 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(5)_20251115_135518.xlsx
+2025-11-15 13:55:18,465 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:18] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 13:55:18,506 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(5)_20251115_135518.xlsx
+2025-11-15 13:55:18,520 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:18] "GET /api/download/统计表_2025,%2042(5)_20251115_135518.xlsx HTTP/1.1" 200 -
+2025-11-15 13:55:30,534 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:30] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 13:55:31,115 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:31] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:55:32,966 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:55:32,968 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:55:32] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:57:04,519 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:57:04,520 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:57:04] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 13:57:18,768 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:57:18] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:57:27,933 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:57:27] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:59:55,388 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:59:55] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 13:59:56,757 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 13:59:56,758 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 13:59:56] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:00:24,448 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:00:24] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:00:25,754 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:00:25,756 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:00:25] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:01:32,049 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:01:32] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:01:33,269 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:01:33,270 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:01:33] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:03:37,840 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:03:37] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:03:39,260 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:03:39,261 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:03:39] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:06:46,253 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:06:46] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:06:47,839 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:06:47,840 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:06:47] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:09:00,305 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_service.py', reloading
+2025-11-15 14:09:00,553 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 14:09:09,504 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 14:09:09,590 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 14:09:09,666 - werkzeug - INFO -  * Debugger PIN: 965-044-876
+2025-11-15 14:09:16,107 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:09:16] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 14:09:16,121 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:09:16] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 14:11:08,004 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:08] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:11:09,178 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:11:09,179 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:09] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:11:41,602 - services.template_config_service - INFO - 已复制用户模板文件: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_134635.xlsx -> C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_141141.xlsx
+2025-11-15 14:11:41,602 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-15 14:11:41,604 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:41] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:11:45,005 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:45] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 14:11:46,655 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:46] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 14:11:46,999 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:46] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 14:11:48,120 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:11:48,120 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_141141.xlsx
+2025-11-15 14:11:48,125 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 14:11:48,153 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 14:11:48,154 - services.document_generator - INFO - 清理了 1 个空列（从第 7 列到第 7 列）
+2025-11-15 14:11:48,154 - services.document_generator - INFO - 添加新列到模板: 333 (列 7)
+2025-11-15 14:11:48,155 - services.document_generator - INFO - 添加新列到模板: 222 (列 8)
+2025-11-15 14:11:48,183 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_141148.xlsx
+2025-11-15 14:11:48,184 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:48] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 14:11:48,227 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_141148.xlsx
+2025-11-15 14:11:48,244 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:11:48] "GET /api/download/统计表_2025,%2042(4)_20251115_141148.xlsx HTTP/1.1" 200 -
+2025-11-15 14:12:15,175 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:15] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 14:12:15,843 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:15] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:12:16,870 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:12:16,873 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:16] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:12:29,130 - services.template_config_service - INFO - 已复制用户模板文件: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_141141.xlsx -> C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_141229.xlsx
+2025-11-15 14:12:29,130 - services.template_config_service - INFO - 已保存用户 2 的模板配置到 C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template.json
+2025-11-15 14:12:29,131 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:29] "PUT /api/user/template HTTP/1.1" 200 -
+2025-11-15 14:12:30,968 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:30] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 14:12:32,477 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:12:32,477 - __main__ - INFO - 使用用户模板生成统计表: C:\Users\57189\dhu-journal-app\backend\user_configs\user_2\stats_template_20251115_141229.xlsx
+2025-11-15 14:12:32,480 - services.export_service - INFO - 期刊 2 找到 2 篇论文
+2025-11-15 14:12:32,504 - services.template_service - INFO - 从Excel文件第2行提取到 7 个表头: ['稿件', '页数', '一作', '通讯', '刊期', '是否东华大学', '123']
+2025-11-15 14:12:32,504 - services.document_generator - INFO - 清理了 1 个空列（从第 6 列到第 6 列）
+2025-11-15 14:12:32,505 - services.document_generator - INFO - 添加新列到模板: 333 (列 6)
+2025-11-15 14:12:32,505 - services.document_generator - INFO - 添加新列到模板: 222 (列 7)
+2025-11-15 14:12:32,525 - services.document_generator - INFO - 基于模板生成统计表: uploads\统计表_2025, 42(4)_20251115_141232.xlsx
+2025-11-15 14:12:32,526 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:32] "POST /api/export/excel HTTP/1.1" 200 -
+2025-11-15 14:12:32,569 - services.file_service - INFO - 尝试下载文件: C:\Users\57189\dhu-journal-app\backend\uploads\统计表_2025, 42(4)_20251115_141232.xlsx
+2025-11-15 14:12:32,583 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:12:32] "GET /api/download/统计表_2025,%2042(4)_20251115_141232.xlsx HTTP/1.1" 200 -
+2025-11-15 14:25:08,899 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:25:08] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 14:25:09,536 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:25:09] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 14:25:10,798 - services.template_config_service - INFO - 已加载用户 2 的模板配置
+2025-11-15 14:25:10,800 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:25:10] "GET /api/user/template HTTP/1.1" 200 -

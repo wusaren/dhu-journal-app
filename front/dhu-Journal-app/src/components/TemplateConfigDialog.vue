@@ -89,6 +89,7 @@
                 type="danger"
                 text
                 @click="removeTuiwenField(index)"
+                style="margin-left: 10px;"
               >
                 删除
               </el-button>
@@ -142,17 +143,27 @@
           >
             <div class="header-info">
               <span class="header-number">{{ index + 1 }}</span>
-              <span class="header-text">{{ header.template_header }}</span>
+              <!-- 自定义字段可以编辑名称（包括识别出来的自定义字段） -->
+              <el-input
+                v-if="!header.system_key || header.is_custom"
+                v-model="header.template_header"
+                size="small"
+                class="header-input"
+                placeholder="请输入字段名称"
+                @blur="handleCustomFieldNameChange(header)"
+              />
+              <span v-else class="header-text">{{ header.template_header }}</span>
               <span class="drag-indicator">☰</span>
             </div>
             
             <div class="header-actions">
               <el-select
                 v-model="header.system_key"
-                placeholder="选择系统字段"
+                :placeholder="header.is_custom ? (header.template_header || '自定义字段') : '选择系统字段'"
                 clearable
                 style="width: 200px;"
                 @change="handleHeaderChange(header)"
+                @clear="handleHeaderClear(header)"
               >
                 <el-option
                   v-for="field in getAvailableFieldsForHeader(header)"
@@ -162,7 +173,7 @@
                 />
               </el-select>
               
-              <el-tag v-if="header.system_key" type="success" style="margin-left: 10px;">
+              <el-tag v-if="header.system_key && !header.is_custom" type="success" style="margin-left: 10px;">
                 {{ getFieldLabel(header.system_key) }}
               </el-tag>
               <el-tag v-else type="info" style="margin-left: 10px;">
@@ -196,7 +207,16 @@
         width="500px"
         append-to-body
       >
+        <div style="margin-bottom: 15px;">
+          <el-radio-group v-model="newFieldType">
+            <el-radio label="system">系统字段</el-radio>
+            <el-radio label="custom">自定义字段</el-radio>
+          </el-radio-group>
+        </div>
+        
+        <!-- 系统字段选择 -->
         <el-select
+          v-if="newFieldType === 'system'"
           v-model="newFieldKey"
           placeholder="选择系统字段"
           style="width: 100%;"
@@ -208,8 +228,21 @@
             :value="field.key"
           />
         </el-select>
+        
+        <!-- 自定义字段输入 -->
+        <el-input
+          v-if="newFieldType === 'custom'"
+          v-model="newCustomFieldName"
+          placeholder="请输入自定义字段名称（将显示在Excel表头）"
+          style="width: 100%;"
+          clearable
+        />
+        <div v-if="newFieldType === 'custom'" style="margin-top: 10px; color: #909399; font-size: 12px;">
+          提示：自定义字段将不会映射到系统字段
+        </div>
+        
         <template #footer>
-          <el-button @click="showAddFieldDialog = false">取消</el-button>
+          <el-button @click="handleCloseAddFieldDialog">取消</el-button>
           <el-button type="primary" @click="handleAddField">确定</el-button>
         </template>
       </el-dialog>
@@ -282,8 +315,9 @@
           保存配置
         </el-button>
         <el-button
-          v-if="hasTemplate"
-          type="danger"
+          v-if="step === 2 && hasTemplate"
+          class="delete-btn"
+          type="primary"
           @click="handleDeleteTemplate"
         >
           删除模板
@@ -329,6 +363,8 @@ const headers = ref<Array<{
 const systemFields = ref<Array<{ key: string; label: string; keywords: string[] }>>([])
 const showAddFieldDialog = ref(false)
 const newFieldKey = ref<string>('')
+const newFieldType = ref<'system' | 'custom'>('system')
+const newCustomFieldName = ref<string>('')
 const hasTemplate = ref(false)
 const dragIndex = ref<number | null>(null)
 
@@ -388,11 +424,10 @@ const loadSystemFields = async () => {
 }
 
 // 选择模板类型后
-const handleTypeSelected = () => {
+const handleTypeSelected = async () => {
   if (templateType.value) {
-    step.value = 1
-    // 加载已保存的配置（如果存在）
-    loadSavedConfig()
+    // 先检查是否有已保存的配置，如果有则跳转到配置页面，否则进入上传/选择字段步骤
+    await loadSavedConfig()
   }
 }
 
@@ -467,9 +502,34 @@ const handleHeaderChange = (header: any) => {
     const field = systemFields.value.find(f => f.key === header.system_key)
     header.label = field?.label || null
     header.is_custom = false
+    // 如果之前是自定义字段，现在改为系统字段，将表头名称改为系统字段的标签
+    if (field) {
+      header.template_header = field.label
+    }
   } else {
     header.label = null
     header.is_custom = true
+    // 标记为自定义字段时，保持当前表头名称不变（用户可以编辑）
+    // 确保is_custom为true，这样识别出来的自定义字段也能编辑名称
+  }
+}
+
+// 清空下拉框时（标记为自定义字段）
+const handleHeaderClear = (header: any) => {
+  header.system_key = null
+  header.label = null
+  header.is_custom = true
+  // 保持当前表头名称不变
+}
+
+// 自定义字段名称变化
+const handleCustomFieldNameChange = (header: any) => {
+  if (!header.template_header || !header.template_header.trim()) {
+    ElMessage.warning('字段名称不能为空')
+    // 如果名称为空，恢复为默认值
+    header.template_header = '自定义字段'
+  } else {
+    header.template_header = header.template_header.trim()
   }
 }
 
@@ -515,25 +575,52 @@ const handleDrop = (dropIndex: number, event: DragEvent) => {
   dragIndex.value = null
 }
 
+// 关闭添加字段对话框
+const handleCloseAddFieldDialog = () => {
+  newFieldKey.value = ''
+  newFieldType.value = 'system'
+  newCustomFieldName.value = ''
+  showAddFieldDialog.value = false
+}
+
 // 添加字段（统计表）
 const handleAddField = () => {
-  if (!newFieldKey.value) {
-    ElMessage.warning('请选择字段')
-    return
-  }
+  if (newFieldType.value === 'system') {
+    // 添加系统字段
+    if (!newFieldKey.value) {
+      ElMessage.warning('请选择系统字段')
+      return
+    }
 
-  const field = systemFields.value.find(f => f.key === newFieldKey.value)
-  if (field) {
+    const field = systemFields.value.find(f => f.key === newFieldKey.value)
+    if (field) {
+      headers.value.push({
+        template_header: field.label,
+        system_key: field.key,
+        label: field.label,
+        order: headers.value.length + 1,
+        is_custom: false
+      })
+      updateOrders()
+      handleCloseAddFieldDialog()
+    }
+  } else {
+    // 添加自定义字段
+    if (!newCustomFieldName.value || !newCustomFieldName.value.trim()) {
+      ElMessage.warning('请输入自定义字段名称')
+      return
+    }
+
+    const fieldName = newCustomFieldName.value.trim()
     headers.value.push({
-      template_header: field.label,
-      system_key: field.key,
-      label: field.label,
+      template_header: fieldName,
+      system_key: null,
+      label: null,
       order: headers.value.length + 1,
-      is_custom: false
+      is_custom: true
     })
     updateOrders()
-    newFieldKey.value = ''
-    showAddFieldDialog.value = false
+    handleCloseAddFieldDialog()
   }
 }
 
@@ -707,26 +794,43 @@ const loadSavedConfig = async () => {
   }
 
   try {
+    // 确保系统字段已加载（用于显示字段标签）
+    if (templateType.value === 'stats' && systemFields.value.length === 0) {
+      await loadSystemFields()
+    }
+
     if (templateType.value === 'stats') {
       // 加载统计表模板配置（用户级别）
       const res = await formatService.getUserTemplate()
-      if (res.success && res.has_template) {
+      console.log('加载统计表模板配置结果:', res)
+      if (res && res.success && res.has_template) {
         // 转换数据格式
-        headers.value = (res.column_mapping || []).map((mapping: any) => ({
-          template_header: mapping.template_header,
-          system_key: mapping.system_key,
-          label: mapping.template_header,
-          order: mapping.order || 1,
-          is_custom: false
-        }))
+        headers.value = (res.column_mapping || []).map((mapping: any) => {
+          // 如果有system_key，使用系统字段的label，否则使用template_header
+          const systemField = systemFields.value.find(f => f.key === mapping.system_key)
+          const label = systemField ? systemField.label : mapping.template_header
+          return {
+            template_header: mapping.template_header,
+            system_key: mapping.system_key || null,
+            label: label,
+            order: mapping.order || 1,
+            is_custom: mapping.is_custom || !mapping.system_key
+          }
+        })
         updateOrders()
         hasTemplate.value = true
+        templateFilePath.value = res.template_file_path || ''
+        // 有模板配置，直接跳转到配置页面
         step.value = 2
+      } else {
+        // 没有模板配置，进入上传文件步骤
+        step.value = 1
       }
     } else {
       // 加载推文模板配置（用户级别）
       const res = await formatService.getUserTuiwenTemplate()
-      if (res.success && res.has_template && res.fields) {
+      console.log('加载推文模板配置结果:', res)
+      if (res && res.success && res.has_template && res.fields) {
         tuiwenFields.value = (res.fields || []).map((field: any) => ({
           key: field.field,
           label: field.label,
@@ -734,11 +838,17 @@ const loadSavedConfig = async () => {
         }))
         updateTuiwenOrders()
         hasTemplate.value = true
+        // 有模板配置，直接跳转到配置确认页面
         step.value = 2
+      } else {
+        // 没有模板配置，进入选择字段步骤
+        step.value = 1
       }
     }
   } catch (error) {
     console.warn('加载模板配置失败:', error)
+    // 出错时也进入第一步
+    step.value = 1
   }
 }
 
@@ -966,7 +1076,13 @@ watch(() => props.modelValue, (newVal: boolean) => {
 .header-text {
   font-weight: 500;
   color: #303133;
-  flex: 1;
+  width: 150px;
+  margin-right: 10px;
+}
+
+.header-input {
+  width: 150px;
+  margin-right: 10px;
 }
 
 .drag-indicator {
@@ -1000,13 +1116,35 @@ watch(() => props.modelValue, (newVal: boolean) => {
   justify-content: flex-end;
 }
 
-.next-btn, .upload-btn, .save-btn {
+.next-btn, .upload-btn {
   min-width: 100px;
   background: #7c0101;
   color: rgb(255, 255, 255);
 }
 
-.next-btn:hover, .upload-btn:hover, .save-btn:hover {
+.next-btn:hover, .upload-btn:hover {
+  background: #5e0606;
+  color: rgb(255, 255, 255);
+}
+
+.save-btn {
+  min-width: 100px;
+  background: #409eff;
+  color: rgb(255, 255, 255);
+}
+
+.save-btn:hover {
+  background: #66b1ff;
+  color: rgb(255, 255, 255);
+}
+
+.delete-btn {
+  min-width: 100px;
+  background: #7c0101;
+  color: rgb(255, 255, 255);
+}
+
+.delete-btn:hover {
   background: #5e0606;
   color: rgb(255, 255, 255);
 }
