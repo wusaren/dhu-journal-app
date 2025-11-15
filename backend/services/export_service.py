@@ -64,7 +64,26 @@ class ExportService:
             if not papers:
                 return {'success': False, 'message': '该期刊没有论文数据，无法生成推文', 'status_code': 400}
             
-            # 使用默认格式生成推文（从JSON文件加载配置或硬编码后备）
+            # 检查用户级别的推文模板配置
+            if user_id:
+                from services.tuiwen_template_service import TuiwenTemplateService
+                tuiwen_template_service = TuiwenTemplateService()
+                user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+                
+            #     if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+            #         # 使用用户字段配置生成推文
+            #         logger.info(f"使用用户推文字段配置生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+            #         from services.document_generator import generate_tuiwen_from_fields
+            #         output_path = generate_tuiwen_from_fields(papers, journal, user_tuiwen_template_config['fields'])
+            #         return {
+            #             'success': True,
+            #             'message': '推文生成成功（使用用户模板）',
+            #             'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
+            #             'filePath': output_path
+            #         }
+            
+            # 没有用户模板配置，使用默认格式生成推文
+            logger.info("用户没有推文模板配置，使用默认格式生成推文")
             output_path = generate_tuiwen_content(papers, journal)
             
             return {
@@ -81,15 +100,8 @@ class ExportService:
     def export_excel(self, journal_id, columns_config=None):
         """
         生成统计表 - 使用列配置或默认配置
-        注意：用户模板配置的检查由 app.py 路由层负责，此方法只负责生成统计表
-        
-        Args:
-            journal_id: 期刊ID
-            columns_config: 列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
-                          如果为None，将从默认配置文件加载（default_stats_columns.json）
-        
-        Returns:
-            {'success': True/False, 'message': '...', 'downloadUrl': '...', 'filePath': '...'}
+        columns_config: 列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
+                        如果为None，将从默认配置文件加载
         """
         try:
             # 获取期刊信息
@@ -126,7 +138,7 @@ class ExportService:
                 }
                 articles.append(article)
             
-            # 生成统计表Excel（如果 columns_config 为 None，generate_excel_stats 会从默认配置文件加载）
+            # 生成统计表Excel（如果columns_config为None，generate_excel_stats会从默认配置文件加载）
             output_path = generate_excel_stats(articles, journal, columns_config)
             
             return {

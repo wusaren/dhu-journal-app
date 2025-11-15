@@ -502,7 +502,7 @@ def export_toc():
 @app.route('/api/export/tuiwen', methods=['POST'])
 @auth_required()
 def export_tuiwen():
-    """生成推文Word文档 - 优先使用用户模板，否则使用期刊模板"""
+    """生成推文Word文档 - 优先使用用户模板，否则使用默认格式"""
     try:
         data = request.get_json()
         journal_id = data.get('journalId')
@@ -517,14 +517,14 @@ def export_tuiwen():
         # tuiwen_template_service = TuiwenTemplateService()
         # user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
         
-        # if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
-        #     # 使用用户模板生成
-        #     logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
-        # result = export_service.export_tuiwen(journal_id, user_id)
-        result = export_service.export_tuiwen(journal_id)
-        # else:
-        #     # 使用期刊模板生成
-        #     result = export_service.export_tuiwen(journal_id)
+        if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+            # 使用用户模板生成
+            logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+            result = export_service.export_tuiwen(journal_id, user_id)
+        else:
+            # 没有用户模板配置，使用默认格式生成
+            logger.info("用户没有推文模板配置，使用默认格式生成推文")
+            result = export_service.export_tuiwen(journal_id)
         
         if result['success']:
             return jsonify(result)
@@ -564,7 +564,6 @@ def get_available_columns():
     except Exception as e:
         logger.error(f"获取可用列失败: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
-
 
 # 上传统计表模板文件
 @app.route('/api/upload/stats-format', methods=['POST'])
@@ -658,7 +657,6 @@ def upload_tuiwen_template():
         logger.error(f"上传推文模板错误: {str(e)}")
         return jsonify({'success': False, 'message': f'上传模板失败: {str(e)}'}), 500
 
-
 # 保存用户模板配置
 @app.route('/api/user/template', methods=['PUT'])
 @auth_required()
@@ -689,7 +687,6 @@ def save_user_template():
         logger.error(f"保存用户模板配置错误: {str(e)}")
         return jsonify({'success': False, 'message': f'保存用户模板配置失败: {str(e)}'}), 500
 
-
 # 获取用户模板配置
 @app.route('/api/user/template', methods=['GET'])
 @auth_required()
@@ -719,7 +716,6 @@ def get_user_template():
     except Exception as e:
         logger.error(f"获取用户模板配置错误: {str(e)}")
         return jsonify({'success': False, 'message': f'获取用户模板配置失败: {str(e)}'}), 500
-
 
 # 获取系统字段列表
 @app.route('/api/template/system-fields', methods=['GET'])
@@ -793,7 +789,6 @@ def get_user_tuiwen_template():
         logger.error(f"获取用户推文模板配置错误: {str(e)}")
         return jsonify({'success': False, 'message': f'获取用户推文模板配置失败: {str(e)}'}), 500
 
-
 # 生成统计表
 @app.route('/api/export/excel', methods=['POST'])
 @auth_required()
@@ -809,18 +804,18 @@ def export_excel():
         
         export_service = ExportService()
         
-        # 优先检查用户级别的模板配置
+        # 检查用户级别的模板配置
         user_id = current_user.id
         template_config_service = TemplateConfigService()
         user_template_config = template_config_service.load_user_config(user_id)
-        print('user_template_config:', user_template_config)
+        
         if user_template_config and user_template_config.get('template_file_path') and user_template_config.get('column_mapping'):
             # 使用用户模板生成
             logger.info(f"使用用户模板生成统计表: {user_template_config.get('template_file_path')}")
             result = export_service.export_excel_with_template(journal_id, user_template_config['template_file_path'], user_template_config['column_mapping'])
-        
         else:
-            # 没有用户模板配置，使用默认配置生成（从JSON文件加载或硬编码后备）
+            # 没有用户模板配置，使用默认配置（从JSON文件加载）
+            logger.info("用户没有模板配置，使用默认配置生成统计表")
             result = export_service.export_excel(journal_id, columns_config=None)
         
         if result['success']:
