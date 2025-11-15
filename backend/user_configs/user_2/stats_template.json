@@ -1,10 +1,10 @@
 {
   "user_id": 2,
-  "template_file_path": "D:\\wsr\\project\\dhu-Journal-app(1)\\dhu-journal-app\\backend\\user_configs\\user_2\\stats_template_20251114_124630.xlsx",
+  "template_file_path": "C:\\Users\\57189\\dhu-journal-app\\backend\\user_configs\\user_2\\stats_template_20251114_232204.xlsx",
   "column_mapping": [
     {
       "system_key": "manuscript_id",
-      "template_header": "稿件号",
+      "template_header": "稿件",
       "order": 1,
       "is_custom": false
     },
@@ -21,18 +21,12 @@
       "is_custom": false
     },
     {
-      "system_key": "corresponding",
-      "template_header": "通讯",
+      "system_key": "123",
+      "template_header": "123",
       "order": 4,
-      "is_custom": false
-    },
-    {
-      "system_key": "issue",
-      "template_header": "刊期",
-      "order": 5,
-      "is_custom": false
+      "is_custom": true
     }
   ],
-  "created_at": "2025-11-14T12:46:30.710897",
-  "updated_at": "2025-11-14T12:46:30.710897"
+  "created_at": "2025-11-14T23:22:04.054430",
+  "updated_at": "2025-11-14T23:22:04.054430"
 }

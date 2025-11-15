@@ -63,7 +63,7 @@ class ExportService:
             if not papers:
                 return {'success': False, 'message': '该期刊没有论文数据，无法生成推文', 'status_code': 400}
             
-            # 优先检查用户级别的推文模板配置
+            # 检查用户级别的推文模板配置
             if user_id:
                 from services.tuiwen_template_service import TuiwenTemplateService
                 tuiwen_template_service = TuiwenTemplateService()
@@ -81,19 +81,9 @@ class ExportService:
                         'filePath': output_path
                     }
             
-            # 检查期刊级别的推文模板配置
-            from services.tuiwen_template_service import TuiwenTemplateService
-            tuiwen_template_service = TuiwenTemplateService()
-            tuiwen_template_config = tuiwen_template_service.load_config(journal_id)
-            
-            if tuiwen_template_config and tuiwen_template_config.get('fields'):
-                # 使用字段配置生成推文
-                logger.info(f"使用推文字段配置生成: {len(tuiwen_template_config.get('fields', []))} 个字段")
-                from services.document_generator import generate_tuiwen_from_fields
-                output_path = generate_tuiwen_from_fields(papers, journal, tuiwen_template_config['fields'])
-            else:
-                # 使用默认格式生成推文
-                output_path = generate_tuiwen_content(papers, journal)
+            # 没有用户模板配置，使用默认格式生成推文
+            logger.info("用户没有推文模板配置，使用默认格式生成推文")
+            output_path = generate_tuiwen_content(papers, journal)
             
             return {
                 'success': True,
@@ -106,11 +96,11 @@ class ExportService:
             logger.error(f"推文生成错误: {str(e)}")
             return {'success': False, 'message': f'推文生成失败: {str(e)}', 'status_code': 500}
     
-    def export_excel(self, journal_id, columns_config=None, user_id=None):
+    def export_excel(self, journal_id, columns_config=None):
         """
-        生成统计表 - 支持自定义列配置和用户模板配置
+        生成统计表 - 使用列配置或默认配置
         columns_config: 列配置列表，格式: [{'key': 'manuscript_id', 'order': 1}, ...]
-        user_id: 用户ID，用于检查用户级别的模板配置
+                        如果为None，将从默认配置文件加载
         """
         try:
             # 获取期刊信息
@@ -147,29 +137,7 @@ class ExportService:
                 }
                 articles.append(article)
             
-            # 优先检查用户级别的模板配置
-            if user_id:
-                from services.template_config_service import TemplateConfigService
-                template_config_service = TemplateConfigService()
-                user_template_config = template_config_service.load_user_config(user_id)
-                
-                if user_template_config and user_template_config.get('template_file_path') and user_template_config.get('column_mapping'):
-                    # 使用用户模板生成
-                    logger.info(f"使用用户模板生成统计表: {user_template_config.get('template_file_path')}")
-                    output_path = generate_excel_stats_from_template(
-                        articles, 
-                        journal, 
-                        user_template_config['template_file_path'], 
-                        user_template_config['column_mapping']
-                    )
-                    return {
-                        'success': True,
-                        'message': '统计表生成成功（使用用户模板）',
-                        'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
-                        'filePath': output_path
-                    }
-            
-            # 生成统计表Excel（传递列配置）
+            # 生成统计表Excel（如果columns_config为None，generate_excel_stats会从默认配置文件加载）
             output_path = generate_excel_stats(articles, journal, columns_config)
             
             return {
