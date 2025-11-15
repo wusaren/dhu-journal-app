@@ -9285,3 +9285,249 @@
 2025-11-15 14:47:01,312 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:47:01] "POST /api/export/tuiwen HTTP/1.1" 200 -
 2025-11-15 14:47:01,452 - services.file_service - INFO - 尝试下载文件: D:\wsr\project\dhu-Journal-app\backend\uploads\推文_2025, 42(2)_20251115_144701.docx
 2025-11-15 14:47:01,454 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:47:01] "GET /api/download/推文_2025,%2042(2)_20251115_144701.docx HTTP/1.1" 200 -
+2025-11-15 14:52:48,884 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 14:52:49,870 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-15 14:52:49,871 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 14:52:49,875 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 14:52:51,902 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 14:52:51,920 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 14:52:51,936 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-15 14:52:59,423 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:52:59] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 14:53:01,209 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:01] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 14:53:03,749 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-15 14:53:03,751 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:03] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-15 14:53:05,966 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:05] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 14:53:06,786 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:06] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 14:53:07,931 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:07] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 14:53:07,943 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:07] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 14:53:08,730 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:53:08] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 14:59:24,079 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:59:24] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 14:59:29,004 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-15 14:59:29,006 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 14:59:29] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-15 15:01:13,572 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:13] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 15:01:13,573 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:13] "GET /api/papers HTTP/1.1" 200 -
+2025-11-15 15:01:14,989 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:14] "GET /api/journals HTTP/1.1" 200 -
+2025-11-15 15:01:18,145 - __main__ - INFO - 用户没有推文模板配置，使用默认格式生成推文
+2025-11-15 15:01:18,148 - services.export_service - INFO - 用户没有推文模板配置，使用默认格式生成推文
+2025-11-15 15:01:18,149 - services.document_generator - INFO - 从配置文件加载了默认推文字段配置: 8 个字段
+2025-11-15 15:01:18,166 - services.document_generator - INFO - 本地图片存在: images\papers_2025_ 42_4_pages_348-357_image.png
+2025-11-15 15:01:18,170 - services.document_generator - INFO - ✅ 为论文 1 成功插入第二张图片
+2025-11-15 15:01:18,171 - services.document_generator - INFO - 本地图片存在: images\papers_2025_ 42_4_pages_348-357_image_QRcode.png
+2025-11-15 15:01:18,174 - services.document_generator - INFO - ✅ 为论文 1 成功插入第一张图片(QRcode)
+2025-11-15 15:01:18,229 - services.document_generator - INFO - 根据字段配置生成推文: uploads\推文_2025, 42(4)_20251115_150118.docx
+2025-11-15 15:01:18,231 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:18] "POST /api/export/tuiwen HTTP/1.1" 200 -
+2025-11-15 15:01:18,275 - services.file_service - INFO - 尝试下载文件: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\uploads\推文_2025, 42(4)_20251115_150118.docx
+2025-11-15 15:01:18,278 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:18] "GET /api/download/推文_2025,%2042(4)_20251115_150118.docx HTTP/1.1" 200 -
+2025-11-15 15:01:49,982 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:49] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 15:01:51,094 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:51] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 15:01:54,877 - services.tuiwen_template_service - INFO - 用户 5 的推文模板配置文件不存在: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\user_configs\user_5\weibo_template.json
+2025-11-15 15:01:54,879 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:01:54] "GET /api/user/tuiwen-template HTTP/1.1" 200 -
+2025-11-15 15:02:01,969 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:02:01] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 15:02:03,470 - services.template_config_service - INFO - 用户 5 的配置文件不存在: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\user_configs\user_5\stats_template.json
+2025-11-15 15:02:03,471 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:02:03] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-15 15:09:04,923 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:09:04] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 15:09:14,244 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:09:14] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-15 15:09:14,257 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 15:09:14,266 - __main__ - INFO - 格式审查文件记录已创建: ID=2
+2025-11-15 15:09:14,267 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:09:14] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-15 15:09:14,278 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:09:14] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 15:09:59,299 - __main__ - INFO - 打开原始文档: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 15:09:59,301 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:09:59] "GET /api/paper-format/open-original/2 HTTP/1.1" 200 -
+2025-11-15 15:10:43,846 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-15 15:10:48,573 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-15 15:10:48,574 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-15 15:10:48,574 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 15:10:48,576 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-15 15:10:48,730 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-15 15:10:48,779 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-15 15:10:48,892 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-15 15:10:48,993 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-15 15:10:49,093 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-15 15:10:49,105 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-15 15:10:49,132 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-15 15:10:49,134 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251115_151049_format_report.txt
+2025-11-15 15:10:49,134 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251115_151049_format_report.txt
+2025-11-15 15:10:49,138 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251115_151049_test_annotated.docx
+2025-11-15 15:10:49,139 - services.document_annotator - INFO - 共识别出 18 个问题
+2025-11-15 15:10:49,144 - services.document_annotator - INFO - 正在添加批注，共有 18 个问题
+2025-11-15 15:10:49,147 - services.document_annotator - INFO - 已添加批注: Title-affiliations
+2025-11-15 15:10:49,149 - services.document_annotator - INFO - 已添加批注: Title-format_title
+2025-11-15 15:10:49,149 - services.document_annotator - INFO - 已添加批注: Title-format_authors
+2025-11-15 15:10:49,150 - services.document_annotator - INFO - 已添加批注: Title-format_affiliation_para3
+2025-11-15 15:10:49,158 - services.document_annotator - INFO - 已添加批注: Abstract-format
+2025-11-15 15:10:49,165 - services.document_annotator - INFO - 已添加批注: Keywords-structure
+2025-11-15 15:10:49,173 - services.document_annotator - INFO - 已添加批注: Keywords-format
+2025-11-15 15:10:49,182 - services.document_annotator - INFO - 已添加批注: Keywords-footnote_format
+2025-11-15 15:10:49,214 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-15 15:10:49,250 - services.document_annotator - INFO - 已添加批注: Content-format
+2025-11-15 15:10:49,252 - services.document_annotator - INFO - 已添加批注: Content-case
+2025-11-15 15:10:49,256 - services.document_annotator - INFO - 已添加批注: Content-content_format_para1
+2025-11-15 15:10:49,260 - services.document_annotator - INFO - 已添加批注: Content-content_format_para2
+2025-11-15 15:10:49,266 - services.document_annotator - INFO - 已添加批注: Content-content_format_para3
+2025-11-15 15:10:49,274 - services.document_annotator - INFO - 已添加批注: Content-content_format_para4
+2025-11-15 15:10:49,288 - services.document_annotator - INFO - 已添加批注: Figure-numbering
+2025-11-15 15:10:49,305 - services.document_annotator - INFO - 已添加批注: Figure-figure1_caption
+2025-11-15 15:10:49,320 - services.document_annotator - INFO - 已添加批注: Table-table1_table_style
+2025-11-15 15:10:49,328 - services.document_annotator - INFO - 成功添加 18 个批注
+2025-11-15 15:10:49,329 - services.document_annotator - INFO - 批注添加完成！共添加 18 个批注
+2025-11-15 15:10:49,329 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251115_151049_test_annotated.docx
+2025-11-15 15:10:49,339 - __main__ - INFO - 数据库记录已更新: ID=2
+2025-11-15 15:10:49,341 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:10:49] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-15 15:10:49,358 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:10:49] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 15:11:32,391 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251115_151049_test_annotated.docx
+2025-11-15 15:11:32,392 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:11:32] "GET /api/paper-format/download-annotated/20251115_151049_test_annotated.docx HTTP/1.1" 200 -
+2025-11-15 15:12:22,468 - __main__ - INFO - 打开检测报告: uploads/format_check/reports\20251115_151049_format_report.txt
+2025-11-15 15:12:22,470 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:12:22] "GET /api/paper-format/open-report/2 HTTP/1.1" 200 -
+2025-11-15 15:12:36,267 - __main__ - INFO - 打开批注文档: uploads/format_check/annotate\20251115_151049_test_annotated.docx
+2025-11-15 15:12:36,269 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:12:36] "GET /api/paper-format/open-annotated/2 HTTP/1.1" 200 -
+2025-11-15 15:22:52,951 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:22:52] "GET /api/me HTTP/1.1" 200 -
+2025-11-15 15:23:32,288 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:23:32] "GET /api/template/system-fields HTTP/1.1" 200 -
+2025-11-15 15:24:32,016 - services.tuiwen_template_service - INFO - 用户 5 的推文模板配置文件不存在: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\user_configs\user_5\weibo_template.json
+2025-11-15 15:24:32,017 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:24:32] "GET /api/user/tuiwen-template HTTP/1.1" 200 -
+2025-11-15 16:00:17,689 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_detector.py', reloading
+2025-11-15 16:00:18,897 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 16:00:21,670 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 16:00:21,675 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-15 16:00:21,708 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 16:00:21,730 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-15 16:00:32,647 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:00:32] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:00:40,973 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-15 16:00:45,658 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-15 16:00:45,720 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-15 16:00:45,721 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 16:00:45,722 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-15 16:00:46,677 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-15 16:00:46,679 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251115_160046_format_report.txt
+2025-11-15 16:00:46,683 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251115_160046_format_report.txt
+2025-11-15 16:00:46,689 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251115_160046_test_annotated.docx
+2025-11-15 16:00:46,690 - services.document_annotator - INFO - 共识别出 2 个问题
+2025-11-15 16:00:46,699 - services.document_annotator - INFO - 正在添加批注，共有 2 个问题
+2025-11-15 16:00:46,734 - services.document_annotator - INFO - 已添加批注: Figure-numbering
+2025-11-15 16:00:46,759 - services.document_annotator - INFO - 已添加批注: Figure-figure1_caption
+2025-11-15 16:00:46,770 - services.document_annotator - INFO - 成功添加 2 个批注
+2025-11-15 16:00:46,771 - services.document_annotator - INFO - 批注添加完成！共添加 2 个批注
+2025-11-15 16:00:46,772 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251115_160046_test_annotated.docx
+2025-11-15 16:00:46,788 - __main__ - INFO - 数据库记录已更新: ID=2
+2025-11-15 16:00:46,792 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:00:46] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-15 16:00:46,811 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:00:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:03:01,768 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_detect\\Figure_detect.py', reloading
+2025-11-15 16:03:02,549 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 16:03:04,671 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 16:03:05,502 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-15 16:03:05,531 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 16:03:05,547 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-15 16:03:10,743 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:03:10] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:03:17,952 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-15 16:03:21,902 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-15 16:03:21,902 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-15 16:03:21,903 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 16:03:21,904 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-15 16:03:50,176 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-15 16:03:50,177 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251115_160350_format_report.txt
+2025-11-15 16:03:50,179 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251115_160350_format_report.txt
+2025-11-15 16:03:50,183 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251115_160350_test_annotated.docx
+2025-11-15 16:03:50,184 - services.document_annotator - INFO - 共识别出 2 个问题
+2025-11-15 16:03:50,190 - services.document_annotator - INFO - 正在添加批注，共有 2 个问题
+2025-11-15 16:03:50,205 - services.document_annotator - INFO - 已添加批注: Figure-numbering
+2025-11-15 16:03:50,222 - services.document_annotator - INFO - 已添加批注: Figure-figure1_caption
+2025-11-15 16:03:50,229 - services.document_annotator - INFO - 成功添加 2 个批注
+2025-11-15 16:03:50,229 - services.document_annotator - INFO - 批注添加完成！共添加 2 个批注
+2025-11-15 16:03:50,230 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251115_160350_test_annotated.docx
+2025-11-15 16:03:50,243 - __main__ - INFO - 数据库记录已更新: ID=2
+2025-11-15 16:03:50,245 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:03:50] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-15 16:03:50,259 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:03:50] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:24:40,059 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_detector.py', reloading
+2025-11-15 16:47:16,370 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 16:47:18,282 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 16:47:18,284 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-15 16:47:18,300 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 16:47:18,315 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-15 16:47:34,495 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:47:34] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:48:20,235 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-15 16:48:24,222 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-15 16:48:24,224 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-15 16:48:24,225 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 16:48:24,226 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-15 16:48:24,242 - services.paper_detect.Figure_content_detect - INFO - 图片内容检测器初始化成功！
+2025-11-15 16:48:25,273 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-15 16:48:25,274 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251115_164825_format_report.txt
+2025-11-15 16:48:25,275 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251115_164825_format_report.txt
+2025-11-15 16:48:25,280 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251115_164825_test_annotated.docx
+2025-11-15 16:48:25,281 - services.document_annotator - INFO - 共识别出 2 个问题
+2025-11-15 16:48:25,289 - services.document_annotator - INFO - 正在添加批注，共有 2 个问题
+2025-11-15 16:48:25,309 - services.document_annotator - INFO - 已添加批注: Figure-numbering
+2025-11-15 16:48:25,329 - services.document_annotator - INFO - 已添加批注: Figure-figure1_caption
+2025-11-15 16:48:25,342 - services.document_annotator - INFO - 成功添加 2 个批注
+2025-11-15 16:48:25,343 - services.document_annotator - INFO - 批注添加完成！共添加 2 个批注
+2025-11-15 16:48:25,343 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251115_164825_test_annotated.docx
+2025-11-15 16:48:25,362 - __main__ - INFO - 数据库记录已更新: ID=2
+2025-11-15 16:48:25,364 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:48:25] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-15 16:48:25,382 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:48:25] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:49:10,769 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251115_164825_test_annotated.docx
+2025-11-15 16:49:10,770 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:49:10] "GET /api/paper-format/download-annotated/20251115_164825_test_annotated.docx HTTP/1.1" 200 -
+2025-11-15 16:51:53,762 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:51:53] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:52:00,917 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-15 16:52:00,918 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-15 16:52:00,919 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-15 16:52:00,921 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251115_150914_test.docx
+2025-11-15 16:52:00,921 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-15 16:52:00,933 - services.paper_detect.Figure_content_detect - INFO - 图片内容检测器初始化成功！
+2025-11-15 16:52:03,022 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-15 16:52:03,024 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251115_165203_format_report.txt
+2025-11-15 16:52:03,024 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251115_165203_format_report.txt
+2025-11-15 16:52:03,028 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251115_165203_test_annotated.docx
+2025-11-15 16:52:03,028 - services.document_annotator - INFO - 共识别出 2 个问题
+2025-11-15 16:52:03,034 - services.document_annotator - INFO - 正在添加批注，共有 2 个问题
+2025-11-15 16:52:03,052 - services.document_annotator - INFO - 已添加批注: Figure-numbering
+2025-11-15 16:52:03,074 - services.document_annotator - INFO - 已添加批注: Figure-figure1_caption
+2025-11-15 16:52:03,083 - services.document_annotator - INFO - 成功添加 2 个批注
+2025-11-15 16:52:03,083 - services.document_annotator - INFO - 批注添加完成！共添加 2 个批注
+2025-11-15 16:52:03,084 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251115_165203_test_annotated.docx
+2025-11-15 16:52:03,097 - __main__ - INFO - 数据库记录已更新: ID=2
+2025-11-15 16:52:03,098 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:52:03] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-15 16:52:03,114 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:52:03] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:53:42,802 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 16:53:42,805 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-15 16:53:43,842 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-15 16:53:43,843 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-15 16:53:43,855 - werkzeug - INFO -  * Restarting with stat
+2025-11-15 16:53:46,523 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-15 16:53:46,527 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-15 16:53:46,547 - werkzeug - WARNING -  * Debugger is active!
+2025-11-15 16:53:46,564 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-15 16:53:46,609 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:53:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:53:48,210 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:53:48] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:53:54,785 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:53:54] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-15 16:53:54,803 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251115_165354_test1.docx
+2025-11-15 16:53:54,815 - __main__ - INFO - 格式审查文件记录已创建: ID=3
+2025-11-15 16:53:54,820 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:53:54] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-15 16:53:54,830 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:53:54] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-15 16:54:01,307 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-15 16:54:05,282 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-15 16:54:05,348 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-15 16:54:05,349 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251115_165354_test1.docx
+2025-11-15 16:54:05,349 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-15 16:54:05,410 - services.paper_detect.Figure_content_detect - INFO - 图片内容检测器初始化成功！
+2025-11-15 16:54:37,369 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-15 16:54:37,370 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251115_165437_format_report.txt
+2025-11-15 16:54:37,371 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251115_165437_format_report.txt
+2025-11-15 16:54:37,376 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251115_165437_test1_annotated.docx
+2025-11-15 16:54:37,376 - services.document_annotator - INFO - 共识别出 5 个问题
+2025-11-15 16:54:37,428 - services.document_annotator - INFO - 正在添加批注，共有 5 个问题
+2025-11-15 16:54:37,431 - services.document_annotator - INFO - 已添加批注: Figure-figure1_picture
+2025-11-15 16:54:37,438 - services.document_annotator - INFO - 已添加批注: Figure-figure2_picture
+2025-11-15 16:54:37,439 - services.document_annotator - INFO - 已添加批注: Figure-figure3_picture
+2025-11-15 16:54:37,440 - services.document_annotator - INFO - 已添加批注: Figure-figure4_picture
+2025-11-15 16:54:37,441 - services.document_annotator - INFO - 已添加批注: Figure-figure5_picture
+2025-11-15 16:54:37,686 - services.document_annotator - INFO - 成功添加 5 个批注
+2025-11-15 16:54:37,686 - services.document_annotator - INFO - 批注添加完成！共添加 5 个批注
+2025-11-15 16:54:37,688 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251115_165437_test1_annotated.docx
+2025-11-15 16:54:37,700 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-11-15 16:54:37,701 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:54:37] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-15 16:54:37,725 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:54:37] "GET /api/paper-format/files HTTP/1.1" 200 -

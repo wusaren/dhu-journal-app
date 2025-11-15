@@ -25,6 +25,8 @@ from typing import Dict, List, Optional, Tuple
 from docx import Document
 from docx.oxml import parse_xml
 from PIL import Image
+import logging
+logger = logging.getLogger(__name__)
 
 try:
     import requests
@@ -50,23 +52,30 @@ class FigureContentDetector:
         """
         # 尝试从配置文件加载
         try:
-            from paper_detect.config_loader import get_config
-            config = get_config()
-            config.load()
-            
-            self.api_key = api_key or config.api_key
-            self.api_base = api_base or config.api_base
-            self.model = model or config.model
-            self.save_images = save_images if save_images is not None else config.save_images
-            self.image_dir = Path(image_dir or config.image_dir)
-        except ImportError:
-            # 如果无法导入配置加载器，使用默认值
-            self.api_key = api_key
-            self.api_base = api_base or "https://api.siliconflow.cn/v1"
-            self.model = model or "Qwen/Qwen3-VL-32B-Instruct"
-            self.save_images = save_images if save_images is not None else False
-            self.image_dir = Path(image_dir or "extracted_figures")
-        
+            # config = get_config()
+            # config.load()
+            # self.api_key = api_key or config.api_key
+            # self.api_base = api_base or config.api_base
+            # self.model = model or config.model
+            # self.save_images = save_images if save_images is not None else config.save_images
+            # self.image_dir = Path(image_dir or config.image_dir)
+
+            self.api_key = api_key or os.getenv('SILICONFLOW_API_KEY')
+            self.api_base = api_base or os.getenv('SILICONFLOW_API_BASE')
+            self.model = model or os.getenv('SILICONFLOW_MODEL')
+            self.save_images = save_images or os.getenv('SAVE_EXTRACTED_IMAGES')
+            self.image_dir = Path(image_dir or os.getenv('EXTRACTED_IMAGES_DIR'))
+        except Exception:
+            logger.error("图片内容检测器初始化失败！")
+        # except ImportError:
+        #     # 如果无法导入配置加载器，使用默认值
+        #     self.api_key = api_key
+        #     self.api_base = api_base or "https://api.siliconflow.cn/v1"
+        #     self.model = model or "Qwen/Qwen3-VL-32B-Instruct"
+        #     self.save_images = save_images if save_images is not None else False
+        #     self.image_dir = Path(image_dir or "extracted_figures")
+
+        logger.info("图片内容检测器初始化成功！")
         # 验证API密钥
         if not self.api_key:
             raise ValueError(

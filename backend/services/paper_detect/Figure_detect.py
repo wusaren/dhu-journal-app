@@ -6,6 +6,8 @@ import sys
 import json
 import re
 from pathlib import Path
+import logging
+logger = logging.getLogger(__name__)
 
 # 添加项目根目录到路径，以便导入模块
 if __name__ == '__main__':
@@ -364,7 +366,7 @@ def check_figure_numbering(captions, tpl):
     
     return report
 
-def check_doc_with_template(doc_path, template_identifier, enable_content_check=True, api_key=None):
+def check_doc_with_template(doc_path, template_identifier, enable_content_check=True):
     """
     使用指定的模板检测文档中的图片格式
     
@@ -372,8 +374,6 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
         doc_path: Word文档路径
         template_identifier: 模板标识符（文件路径或模板名称）
         enable_content_check: 是否启用图片内容智能检测（需要API密钥）
-        api_key: 硅基流动API密钥（启用内容检测时需要）
-    
     返回:
         检测报告字典
     """
@@ -394,8 +394,8 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
                 # 如果失败，尝试相对导入
                 from .Figure_content_detect import FigureContentDetector
             
-            # 初始化检测器（会自动从配置文件读取，或使用传入的api_key）
-            content_detector = FigureContentDetector(api_key=api_key)
+            # 初始化检测器（会自动从配置文件读取）
+            content_detector = FigureContentDetector()
             print(f"✓ 图片内容智能检测已启用")
             if content_detector.save_images:
                 print(f"  图片将保存到: {content_detector.image_dir}/ 目录")
