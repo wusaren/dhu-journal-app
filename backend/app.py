@@ -517,14 +517,14 @@ def export_tuiwen():
         # tuiwen_template_service = TuiwenTemplateService()
         # user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
         
-        if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
-            # 使用用户模板生成
-            logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
-            result = export_service.export_tuiwen(journal_id, user_id)
-        else:
+        # if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+        #     # 使用用户模板生成
+        #     logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+        #     result = export_service.export_tuiwen(journal_id, user_id)
+        # else:
             # 没有用户模板配置，使用默认格式生成
-            logger.info("用户没有推文模板配置，使用默认格式生成推文")
-            result = export_service.export_tuiwen(journal_id)
+        logger.info("用户没有推文模板配置，使用默认格式生成推文")
+        result = export_service.export_tuiwen(journal_id)
         
         if result['success']:
             return jsonify(result)

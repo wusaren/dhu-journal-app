@@ -65,10 +65,10 @@ class ExportService:
                 return {'success': False, 'message': '该期刊没有论文数据，无法生成推文', 'status_code': 400}
             
             # 检查用户级别的推文模板配置
-            if user_id:
-                from services.tuiwen_template_service import TuiwenTemplateService
-                tuiwen_template_service = TuiwenTemplateService()
-                user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+            # if user_id:
+            #     from services.tuiwen_template_service import TuiwenTemplateService
+            #     tuiwen_template_service = TuiwenTemplateService()
+            #     user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
                 
             #     if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
             #         # 使用用户字段配置生成推文
