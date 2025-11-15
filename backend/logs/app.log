@@ -15239,3 +15239,16 @@
 2025-11-14 16:07:58,857 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/users?page=1&per_page=10 HTTP/1.1" 200 -
 2025-11-14 16:07:58,860 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/stats HTTP/1.1" 200 -
 2025-11-14 16:07:58,862 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 16:07:58] "GET /api/admin/roles HTTP/1.1" 200 -
+2025-11-14 21:48:13,040 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 21:48:13,101 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.103:5000
+2025-11-14 21:48:13,102 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-14 21:48:13,104 - werkzeug - INFO -  * Restarting with stat
+2025-11-14 21:48:15,264 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-14 21:48:15,292 - werkzeug - WARNING -  * Debugger is active!
+2025-11-14 21:48:15,314 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-14 21:48:21,257 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 21:48:21] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-14 21:48:21,315 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 21:48:21] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-14 21:48:30,927 - werkzeug - INFO - 127.0.0.1 - - [14/Nov/2025 21:48:30] "POST /api/login HTTP/1.1" 200 -
