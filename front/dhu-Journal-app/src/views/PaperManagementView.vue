@@ -9,11 +9,12 @@
           <el-col :span="6">
             <el-form-item label="期刊刊期">
               <el-select v-model="filterForm.issue" placeholder="请选择刊期" clearable>
-                <el-option label="2024年第1期" value="2024-1" />
-                <el-option label="2024年第2期" value="2024-2" />
-                <el-option label="2024年第3期" value="2024-3" />
-                <el-option label="2023年第4期" value="2023-4" />
-                <el-option label="2023年第3期" value="2023-3" />
+                <el-option 
+                  v-for="journal in journalList" 
+                  :key="journal.id"
+                  :label="journal.issue" 
+                  :value="journal.issue" 
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -47,7 +48,7 @@
       <template #header>
         <div class="card-header">
           <h3>论文列表</h3>
-          <el-button class="add-paper-btn" type="primary" size="small">添加论文</el-button>
+          <el-button class="add-paper-btn" type="primary" size="small" @click="handleAddPaper">添加论文</el-button>
         </div>
       </template>
 
@@ -56,8 +57,8 @@
         <el-button size="small" type="danger" @click="handleBatchDelete">
           批量删除 ({{ selectedPapers.length }})
         </el-button>
-        <el-button size="small" type="warning" @click="handleBatchMove">
-          批量移动
+        <el-button size="small" type="success" @click="handleBatchDownload">
+          批量下载 ({{ selectedPapers.length }})
         </el-button>
       </div>
 
@@ -72,11 +73,25 @@
         <el-table-column prop="journalIssue" label="期刊刊期" width="120" />
         <el-table-column prop="startPage" label="起始页" width="80" />
         <el-table-column prop="endPage" label="结束页" width="80" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="150">
           <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.status)">
-              {{ scope.row.status }}
-            </el-tag>
+            <div v-if="scope.row.parsing_status === 'parsing'">
+              <el-progress 
+                :percentage="scope.row.parsing_progress || 0" 
+                :show-text="false"
+                :stroke-width="8"
+                status="success"
+              />
+              <span style="font-size: 12px; color: #67c23a;">解析中...</span>
+            </div>
+            <div v-else-if="scope.row.parsing_status === 'failed'">
+              <el-tag type="danger">解析失败</el-tag>
+            </div>
+            <div v-else>
+              <el-tag :type="getStatusType(scope.row.status)">
+                {{ scope.row.status }}
+              </el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="submitDate" label="提交日期" width="120" />
@@ -110,196 +125,33 @@
         />
       </div>
     </el-card>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { usePaperStore } from '@/stores/paperStore'
+import type { Paper } from '@/api/paperService'
 
-interface Paper {
-  id: number
-  title: string
-  author: string
-  journalIssue: string
-  startPage: number
-  endPage: number
-  status: string
-  submitDate: string
-}
+const paperStore = usePaperStore()
 
-interface FilterForm {
-  issue: string
-  status: string
-  keyword: string
-}
-
-const filterForm = ref<FilterForm>({
-  issue: '',
-  status: '',
-  keyword: ''
+// 使用store中的状态和计算属性
+const filterForm = computed(() => paperStore.filterForm)
+const selectedPapers = computed(() => paperStore.selectedPapers)
+const currentPage = computed({
+  get: () => paperStore.currentPage,
+  set: (value) => paperStore.setCurrentPage(value)
 })
-
-const selectedPapers = ref<Paper[]>([])
-const currentPage = ref(1)
-const pageSize = ref(10)
-
-// 模拟数据 - 包含更多论文数据用于分页测试
-const allPaperList = ref<Paper[]>([
-  {
-    id: 1,
-    title: '基于深度学习的图像识别技术研究',
-    author: '张三',
-    journalIssue: '2024年第1期',
-    startPage: 1,
-    endPage: 10,
-    status: '待审核',
-    submitDate: '2024-01-15'
-  },
-  {
-    id: 2,
-    title: '人工智能在医疗诊断中的应用',
-    author: '李四',
-    journalIssue: '2024年第1期',
-    startPage: 11,
-    endPage: 20,
-    status: '已通过',
-    submitDate: '2024-01-10'
-  },
-  {
-    id: 3,
-    title: '区块链技术在供应链管理中的研究',
-    author: '王五',
-    journalIssue: '2024年第2期',
-    startPage: 21,
-    endPage: 30,
-    status: '需修改',
-    submitDate: '2024-01-08'
-  },
-  {
-    id: 4,
-    title: '大数据分析在商业决策中的应用',
-    author: '赵六',
-    journalIssue: '2024年第2期',
-    startPage: 31,
-    endPage: 40,
-    status: '已拒绝',
-    submitDate: '2024-01-05'
-  },
-  {
-    id: 5,
-    title: '云计算环境下的数据安全研究',
-    author: '钱七',
-    journalIssue: '2024年第3期',
-    startPage: 41,
-    endPage: 50,
-    status: '待审核',
-    submitDate: '2024-01-03'
-  },
-  {
-    id: 6,
-    title: '物联网技术在智能家居中的应用',
-    author: '孙八',
-    journalIssue: '2024年第3期',
-    startPage: 51,
-    endPage: 60,
-    status: '已通过',
-    submitDate: '2024-01-01'
-  },
-  {
-    id: 7,
-    title: '机器学习算法优化研究',
-    author: '周九',
-    journalIssue: '2023年第4期',
-    startPage: 61,
-    endPage: 70,
-    status: '需修改',
-    submitDate: '2023-12-28'
-  },
-  {
-    id: 8,
-    title: '自然语言处理技术进展',
-    author: '吴十',
-    journalIssue: '2023年第4期',
-    startPage: 71,
-    endPage: 80,
-    status: '已拒绝',
-    submitDate: '2023-12-25'
-  },
-  {
-    id: 9,
-    title: '计算机视觉技术应用',
-    author: '郑十一',
-    journalIssue: '2023年第3期',
-    startPage: 81,
-    endPage: 90,
-    status: '待审核',
-    submitDate: '2023-12-20'
-  },
-  {
-    id: 10,
-    title: '网络安全防护技术研究',
-    author: '王十二',
-    journalIssue: '2023年第3期',
-    startPage: 91,
-    endPage: 100,
-    status: '已通过',
-    submitDate: '2023-12-15'
-  },
-  {
-    id: 11,
-    title: '数据库优化技术研究',
-    author: '李十三',
-    journalIssue: '2023年第2期',
-    startPage: 101,
-    endPage: 110,
-    status: '需修改',
-    submitDate: '2023-12-10'
-  },
-  {
-    id: 12,
-    title: '软件工程方法论研究',
-    author: '张十四',
-    journalIssue: '2023年第2期',
-    startPage: 111,
-    endPage: 120,
-    status: '已拒绝',
-    submitDate: '2023-12-05'
-  }
-])
-
-// 过滤后的论文列表
-const filteredPaperList = computed(() => {
-  return allPaperList.value.filter(paper => {
-    // 刊期筛选：使用value值进行匹配
-    const matchesIssue = !filterForm.value.issue || 
-      paper.journalIssue.includes(filterForm.value.issue.replace('-', '年第') + '期')
-    
-    // 状态筛选：将英文状态值映射为中文状态
-    const statusMap: Record<string, string> = {
-      'pending': '待审核',
-      'approved': '已通过', 
-      'need_revision': '需修改',
-      'rejected': '已拒绝'
-    }
-    const matchesStatus = !filterForm.value.status || 
-      paper.status === statusMap[filterForm.value.status]
-    
-    // 关键词筛选：不区分大小写
-    const matchesKeyword = !filterForm.value.keyword || 
-      paper.title.toLowerCase().includes(filterForm.value.keyword.toLowerCase()) || 
-      paper.author.toLowerCase().includes(filterForm.value.keyword.toLowerCase())
-    
-    return matchesIssue && matchesStatus && matchesKeyword
-  })
+const pageSize = computed({
+  get: () => paperStore.pageSize,
+  set: (value) => paperStore.setPageSize(value)
 })
-
-// 分页后的论文列表
-const pagedPaperList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-  return filteredPaperList.value.slice(start, end)
-})
+const journalList = computed(() => paperStore.journalList)
+const allPaperList = computed(() => paperStore.allPaperList)
+const filteredPaperList = computed(() => paperStore.filteredPaperList)
+const pagedPaperList = computed(() => paperStore.pagedPaperList)
 
 const getStatusType = (status: string) => {
   const statusMap: Record<string, string> = {
@@ -312,34 +164,63 @@ const getStatusType = (status: string) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1 // 搜索时重置到第一页
+  paperStore.setCurrentPage(1) // 搜索时重置到第一页
   ElMessage.info('搜索完成')
 }
 
 const resetFilter = () => {
-  filterForm.value = {
-    issue: '',
-    status: '',
-    keyword: ''
-  }
-  currentPage.value = 1
+  paperStore.resetFilter()
+  ElMessage.info('筛选已重置')
 }
 
 const handleSelectionChange = (selection: Paper[]) => {
-  selectedPapers.value = selection
+  paperStore.setSelectedPapers(selection)
 }
 
 const handleSizeChange = (size: number) => {
-  pageSize.value = size
-  currentPage.value = 1
+  paperStore.setPageSize(size)
 }
 
 const handleCurrentChange = (page: number) => {
-  currentPage.value = page
+  paperStore.setCurrentPage(page)
 }
 
 const handleView = (paper: Paper) => {
-  ElMessage.info(`查看论文: ${paper.title}`)
+  console.log('查看按钮点击，论文数据:', paper)
+  
+  // 检查是否有PDF文件路径
+  if (!paper.file_path && !paper.stored_filename) {
+    ElMessage.warning('该论文暂无PDF文件')
+    return
+  }
+  
+  // 从文件路径中提取文件名
+  let filename = ''
+  if (paper.file_path) {
+    // 从文件路径中提取文件名
+    const pathParts = paper.file_path.split(/[\\/]/)
+    filename = pathParts[pathParts.length - 1]
+  } else if (paper.stored_filename) {
+    filename = paper.stored_filename
+  }
+  
+  if (!filename) {
+    ElMessage.error('无法获取PDF文件名')
+    return
+  }
+  
+  // 使用预览API访问PDF文件 - 不强制下载
+  const pdfUrl = `/api/preview/${filename}`
+  console.log('PDF预览URL:', pdfUrl)
+  
+  // 在新窗口打开PDF预览
+  const previewWindow = window.open(pdfUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes')
+  
+  if (previewWindow) {
+    ElMessage.success('正在打开PDF预览...')
+  } else {
+    ElMessage.error('无法打开预览窗口，请检查浏览器弹窗设置')
+  }
 }
 
 const handleEdit = (paper: Paper) => {
@@ -353,10 +234,15 @@ const handleDelete = async (paper: Paper) => {
       cancelButtonText: '取消',
       type: 'warning',
     })
-    // 这里添加删除逻辑
-    ElMessage.success('论文删除成功')
-  } catch {
-    ElMessage.info('取消删除')
+    
+    await paperStore.deletePaper(paper.id)
+  } catch (error: any) {
+    if (error === 'cancel' || error.message === 'cancel') {
+      ElMessage.info('取消删除')
+    } else {
+      console.error('删除论文失败:', error)
+      ElMessage.error(error.message)
+    }
   }
 }
 
@@ -367,17 +253,66 @@ const handleBatchDelete = async () => {
       cancelButtonText: '取消',
       type: 'warning',
     })
-    // 这里添加批量删除逻辑
-    ElMessage.success('批量删除成功')
-    selectedPapers.value = []
-  } catch {
-    ElMessage.info('取消批量删除')
+    
+    await paperStore.batchDeletePapers()
+  } catch (error: any) {
+    if (error === 'cancel' || error.message === 'cancel') {
+      ElMessage.info('取消批量删除')
+    } else {
+      console.error('批量删除失败:', error)
+      ElMessage.error(error.message)
+    }
   }
+}
+
+const handleBatchDownload = async () => {
+  await paperStore.batchDownloadPapers()
 }
 
 const handleBatchMove = () => {
   ElMessage.info('批量移动功能待实现')
 }
+
+const handleAddPaper = () => {
+  // 创建文件输入元素，支持多选
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.pdf'
+  input.multiple = true
+  input.style.display = 'none'
+  
+  input.onchange = async (event: any) => {
+    const files = Array.from(event.target.files) as File[]
+    if (!files || files.length === 0) return
+    
+    // 验证文件类型
+    const invalidFiles = files.filter(file => file.type !== 'application/pdf')
+    if (invalidFiles.length > 0) {
+      ElMessage.error('请选择PDF文件')
+      return
+    }
+    
+    // 如果选择了多个文件，使用批量上传
+    if (files.length > 1) {
+      await paperStore.batchUploadPapers(files)
+    } else {
+      // 单个文件上传
+      const file = files[0]
+      await paperStore.uploadPaper(file)
+    }
+  }
+  
+  // 触发文件选择
+  document.body.appendChild(input)
+  input.click()
+  document.body.removeChild(input)
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  paperStore.loadJournals()
+  paperStore.loadPapers(true) // 只在初始加载时显示成功消息
+})
 </script>
 
 <style scoped>
@@ -432,6 +367,19 @@ const handleBatchMove = () => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* 翻页组件当前页码自定义颜色 */
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+
+:deep(.el-pagination.is-background .el-pager li.is-active:hover) {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+  color: white !important;
 }
 
 /* 搜索按钮自定义样式 */
@@ -502,6 +450,18 @@ const handleBatchMove = () => {
   background-color: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
   color: #333 !important;
+}
+
+/* 批量下载按钮自定义样式 */
+.batch-actions .el-button--success {
+  background-color: #67c23a !important;
+  border-color: #67c23a !important;
+  color: white !important;
+}
+
+.batch-actions .el-button--success:hover {
+  background-color: #5daf34 !important;
+  border-color: #5daf34 !important;
 }
 
 .delete-btn:hover {

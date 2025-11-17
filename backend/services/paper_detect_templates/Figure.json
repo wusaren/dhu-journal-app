@@ -1,0 +1,75 @@
+{
+  "figure_rule": "图片标题格式为：Fig. 编号 标题文字（Fig.后必须有空格），居中，五号字体；图片居中对齐，标题位于图片下方",
+  "figure_detection_rules": {
+    "caption_pattern": "^\\s*Fig\\.\\s+(\\d+)\\s+(.+)$",
+    "caption_format": {
+      "prefix": "Fig.",
+      "numbering_required": true,
+      "alignment": "center"
+    },
+    "picture_style": {
+      "alignment": "center",
+      "description": "图片应居中对齐"
+    },
+    "position_relationship": {
+      "caption_position": "below_picture",
+      "max_distance": 2,
+      "description": "标题在图片下方，间隔不超过2个段落"
+    }
+  },
+  "format_rules": {
+    "caption": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "caption_numbering_check": true,
+    "caption_sequential_check": true,
+    "picture_alignment_check": true,
+    "position_relationship_check": true,
+    "numbering_start": 1
+  },
+  "messages": {
+    "figure_detection_ok": "图片格式检查通过",
+    "figure_detection_error": "图片格式检查发现问题",
+    "caption_format_ok": "图片标题格式正确",
+    "caption_format_error": "图片标题格式不正确",
+    "caption_missing": "未找到图片标题",
+    "caption_pattern_error": "图片标题格式应为：Fig. 编号 标题文字（如：Fig. 1 Material structure，Fig.后必须有空格）",
+    "caption_alignment_error": "图片标题应居中对齐",
+    "caption_font_size_error": "图片标题字体大小应为五号(10.5pt)",
+    "caption_font_name_error": "图片标题字体应为Times New Roman",
+    "caption_numbering_error": "图片编号不连续，发现编号：{numbers}",
+    "caption_numbering_start_error": "图片编号应从{start}开始，实际从{actual}开始",
+    "picture_not_found": "未在标题上方找到图片对象",
+    "picture_alignment_error": "图片应居中对齐",
+    "summary_overall": "图片格式检查结果: {ok}",
+    "figure_count": "检测到 {count} 个图片"
+  },
+  "notes": [
+    "图片检查重点：1) 图片标题格式(Fig. 编号 标题文字，Fig.后必须有空格，居中，五号) 2) 图片编号连续性 3) 图片对象存在性 4) 图片和标题的位置关系（标题在图片下方）",
+    "图片标题必须在图片下方，格式为：Fig. 1 Description（Fig.后必须有空格），字号为五号(10.5pt)",
+    "图片应居中对齐",
+    "图片标题字体：Times New Roman，五号(10.5pt)，居中对齐",
+    "编号规则：图片编号从1开始，连续递增（Fig. 1, Fig. 2, Fig. 3...）"
+  ],
+  "generated_from": "用户要求：图片标题格式为Fig. 编号 标题文字（Fig.后必须有空格，居中、五号），图片居中，标题在图片下方，编号从1开始连续递增"
+}
+

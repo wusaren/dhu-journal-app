@@ -4,16 +4,53 @@
 
     
 
+    <!-- 筛选区域 -->
+    <el-card class="filter-card">
+      <el-form :model="filterForm" label-width="80px">
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <el-form-item label="期刊刊期">
+              <el-select v-model="filterForm.issue" placeholder="请选择刊期" clearable @change="handleFilter">
+                <el-option 
+                  v-for="journal in journalList" 
+                  :key="journal.id"
+                  :label="journal.issue" 
+                  :value="journal.issue" 
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item>
+              <el-button class="reset-btn" @click="resetFilter">重置筛选</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </el-card>
+
     <!-- 期刊列表 -->
     <el-card class="journal-list-card">
       <template #header>
         <div class="card-header">
           <h3>期刊列表</h3>
-          <span class="total-count">共 {{ journalList.length }} 个期刊</span>
+          <span class="total-count">共 {{ filteredJournalList.length }} 个期刊</span>
         </div>
       </template>
 
-      <el-table :data="journalList" style="width: 100%">
+      <!-- 批量操作按钮 -->
+      <div class="batch-actions" v-if="selectedJournals.length > 0">
+        <el-button size="small" type="danger" @click="handleBatchDelete">
+          批量删除 ({{ selectedJournals.length }})
+        </el-button>
+      </div>
+
+      <el-table 
+        :data="pagedJournalList" 
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" />
         <el-table-column prop="issue" label="期号" width="150" />
         <el-table-column prop="title" label="期刊名称" width="200" />
         <el-table-column prop="publishDate" label="出版日期" width="120" />
@@ -22,10 +59,10 @@
             {{ scope.row.paperCount }} 篇
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="400">
+        <el-table-column label="操作" width="600">
           <template #default="scope">
             <el-button class="edit-btn" size="small" type="primary" @click="handleEdit(scope.row)">
-              编辑
+              预览内容
             </el-button>
             <el-button class="view-btn" size="small" @click="handleViewTOC(scope.row)">
               查看目录
@@ -39,195 +76,204 @@
               生成推文
             </el-button>
             <el-button 
-              class="stats-btn"
+              class="excel-btn"
               size="small" 
               type="success"
               @click="handleViewStats(scope.row)"
             >
               查看统计表
             </el-button>
+            <el-button 
+              class="distribute-btn"
+              size="small"
+              v-if="IsManaging"
+              @click="handleDistribute(scope.row)"
+            >
+              分配任务
+            </el-button>
+            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
-    <!-- 上传区域 -->
-    <el-card class="upload-card">
-      <template #header>
-        <div class="card-header">
-          <h3>上传期刊文件</h3>
-        </div>
-      </template>
 
-      <el-upload
-        class="upload-demo"
-        action="#"
-        :auto-upload="false"
-        :on-change="handleFileChange"
-        :show-file-list="false"
-      >
-        <template #trigger>
-          <el-button class="select-journal-btn" type="primary" size="mid">选择期刊文件</el-button>
-        </template>
-        <el-button 
-          style="margin-left: 10px;" 
-          :disabled="!selectedFile"
-          :loading="uploadLoading"
-          @click="handleParse"
-          class="analysis-journal-btn"
-          type="success" 
-          size="mid"
-        >
-          添加到期刊
-        </el-button>
-      </el-upload>
-
-      <div v-if="selectedFile" class="file-info">
-        <p>已选择文件: {{ selectedFile.name }}</p>
-        <p>文件大小: {{ formatFileSize(selectedFile.size) }}</p>
+      <!-- 分页控件 -->
+      <div class="pagination">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :small="true"
+          :background="true"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="filteredJournalList.length"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
       </div>
     </el-card>
+    <!-- 创建期刊区域 -->
+    <el-card class="create-card">
+      <template #header>
+        <div class="card-header">
+          <h3>期刊管理</h3>
+          <el-button 
+            class="create-journal-btn" 
+            type="primary" 
+            size="mid"
+            @click="handleCreateJournal"
+          >
+            创建期刊
+          </el-button>
+        </div>
+      </template>
+      
+      <div class="create-tips">
+        <p>点击"创建期刊"按钮来添加新的期刊记录</p>
+      </div>
+    </el-card>
+
+    <!-- 分配任务对话框 -->
+    <el-dialog
+      v-model="showDistributeDialog"
+      title="分配任务 - 选择编辑"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <div>
+        <el-form label-position="top">
+          <el-form-item label="选择编辑">
+            <el-select
+              v-model="selectedAssignee"
+              placeholder="请选择编辑"
+              :loading="loadingEditors"
+              filterable
+              clearable
+            >
+              <el-option
+                v-for="u in editorUsers"
+                :key="u.id"
+                :label="u.username + (u.email ? ' <' + u.email + '>' : '')"
+                :value="u.id"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <el-button @click="showDistributeDialog = false">取消</el-button>
+        <el-button class="assgin-btn" type="primary" :loading="assigning" @click="confirmDistribute">确认分配</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { UploadFile, UploadFiles } from 'element-plus'
-import axios from 'axios'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useJournalStore } from '../stores/journalStore'
+import type { Journal } from '../api/journalService'
+import { journalService } from '../api/journalService'
+const router = useRouter()
+const journalStore = useJournalStore()
 
-interface Journal {
-  id: number
-  title: string
-  issue: string
-  publishDate: string
-  paperCount: number
-  status: string
-  description?: string
-  fileName?: string
-  fileSize?: number
+const currentUser = ref<any>(null)
+
+// 检查是否为总编角色
+const IsManaging = computed(() => {
+  return currentUser.value?.role === 'managing_editor' || currentUser.value?.roles?.includes('managing_editor')
+})
+
+// 使用store中的状态和计算属性
+const filterForm = computed(() => journalStore.filterForm)
+const selectedJournals = computed(() => journalStore.selectedJournals)
+const loading = computed(() => journalStore.loading)
+const currentPage = computed({
+  get: () => journalStore.currentPage,
+  set: (value) => journalStore.setCurrentPage(value)
+})
+const pageSize = computed({
+  get: () => journalStore.pageSize,
+  set: (value) => journalStore.setPageSize(value)
+})
+const pagedJournalList = computed(() => journalStore.pagedJournalList)
+const totalJournals = computed(() => journalStore.totalJournals)
+const journalList = computed(() => journalStore.journalList)
+const filteredJournalList = computed(() => journalStore.filteredJournalList)
+
+// 新增：分配任务相关状态
+const showDistributeDialog = ref(false)
+const editorUsers = ref<Array<{ id: number; username: string; email?: string }>>([])
+const loadingEditors = ref(false)
+const selectedAssignee = ref<number | null>(null)
+const assigning = ref(false)
+const currentJournalForAssign = ref<Journal | null>(null)
+
+// 处理筛选
+const handleFilter = () => {
+  ElMessage.info('筛选完成')
 }
 
-const selectedFile = ref<File | null>(null)
-const journalList = ref<Journal[]>([])
-const loading = ref(false)
-const uploadLoading = ref(false)
+// 重置筛选
+const resetFilter = () => {
+  journalStore.resetFilter()
+  ElMessage.info('筛选已重置')
+}
 
-// 获取认证token
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+// 处理选择变化
+const handleSelectionChange = (selection: Journal[]) => {
+  journalStore.setSelectedJournals(selection)
+}
+
+// 处理每页数量变化
+const handleSizeChange = (size: number) => {
+  journalStore.setPageSize(size)
+}
+
+// 处理当前页变化
+const handleCurrentChange = (page: number) => {
+  journalStore.setCurrentPage(page)
+}
+
+// 批量删除期刊
+const handleBatchDelete = async () => {
+  if (selectedJournals.value.length === 0) {
+    ElMessage.warning('请先选择要删除的期刊')
+    return
   }
-}
 
-// 加载期刊列表
-const loadJournals = async () => {
-  loading.value = true
   try {
-    console.log('开始加载期刊列表...')
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedJournals.value.length} 个期刊吗？\n\n⚠️ 注意：如果期刊下还有论文，将无法删除该期刊。`, 
+      '批量删除期刊', 
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
     
-    // 尝试从数据库加载
-    const response = await axios.get('http://localhost:5000/api/journals')
-    console.log('期刊列表响应:', response.data)
-    
-    if (response.data && response.data.length > 0) {
-      // 数据库中有数据，使用数据库数据
-      journalList.value = response.data
-      console.log('使用数据库数据，期刊数量:', response.data.length)
-    } else {
-      // 数据库中没有数据，显示空列表
-      journalList.value = []
-      console.log('数据库为空，显示空列表')
-    }
-    
-    ElMessage.success('期刊列表加载成功')
+    await journalStore.batchDeleteJournals()
   } catch (error: any) {
-    console.error('加载期刊列表失败:', error)
-    console.error('错误详情:', error.response?.data)
-    
-    if (error.code === 'ERR_NETWORK' || error.message.includes('ERR_CONNECTION_REFUSED')) {
-      ElMessage.error('无法连接到后端服务，请确保后端服务已启动')
-      journalList.value = []
+    if (error === 'cancel' || error.message === 'cancel') {
+      ElMessage.info('取消批量删除')
     } else {
-      ElMessage.error(`加载期刊列表失败: ${error.response?.data?.message || error.message}`)
-      journalList.value = []
+      console.error('批量删除期刊失败:', error)
+      ElMessage.error(error.message)
     }
-  } finally {
-    loading.value = false
   }
 }
 
 onMounted(() => {
   // 直接加载期刊列表，不需要认证
-  loadJournals()
+  journalStore.loadJournals()
 })
 
-const handleFileChange = (file: UploadFile, fileList: UploadFiles) => {
-  selectedFile.value = file.raw as File
-}
-
-const handleParse = async () => {
-  if (!selectedFile.value) {
-    ElMessage.error('请先选择文件')
-    return
-  }
-
-  uploadLoading.value = true
-  
-  try {
-    console.log('开始上传文件:', selectedFile.value.name)
-    
-    // 创建FormData
-    const formData = new FormData()
-    formData.append('file', selectedFile.value)
-    formData.append('journalId', '1') // 默认关联到期刊ID 1
-    
-    console.log('准备上传文件...')
-    
-    // 上传文件（不需要认证）
-    const uploadResponse = await axios.post('http://localhost:5000/api/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-
-    console.log('文件上传响应:', uploadResponse.data)
-
-    console.log('上传响应:', uploadResponse.data)
-    
-    if (uploadResponse.data.fileId || uploadResponse.data.message === '文件上传成功') {
-      ElMessage.success('文件上传成功！')
-      
-      // 重新从数据库加载期刊列表
-      await loadJournals()
-      
-      ElMessage.success('文件已添加到期刊列表！')
-    } else {
-      ElMessage.error('文件上传失败：未收到有效响应')
-    }
-  } catch (error: any) {
-    console.error('文件上传失败:', error)
-    console.error('错误详情:', error.response?.data)
-    
-    if (error.code === 'ERR_NETWORK' || error.message.includes('ERR_CONNECTION_REFUSED')) {
-      ElMessage.error('无法连接到后端服务，请确保后端服务已启动 (http://localhost:5000)')
-    } else if (error.response?.status === 500) {
-      ElMessage.error(`服务器内部错误: ${error.response?.data?.message || '请检查后端日志'}`)
-    } else {
-      ElMessage.error(`文件上传失败: ${error.response?.data?.message || error.message}`)
-    }
-  } finally {
-    uploadLoading.value = false
-  }
-}
-
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+const handleCreateJournal = () => {
+  router.push('/create-journal')
 }
 
 const getStatusType = (status: string) => {
@@ -240,87 +286,202 @@ const getStatusType = (status: string) => {
   return statusMap[status] || 'info'
 }
 
-const handleEdit = (journal: Journal) => {
-  ElMessage.info('编辑功能暂未实现，敬请期待！')
+const handleEdit = async (journal: Journal) => {
+  try {
+    // 获取该期刊的论文列表
+    const papers = await journalStore.getPapers(journal.id)
+    
+    if (papers && papers.length > 0) {
+      // 限制显示数量：最多显示10条
+      const displayPapers = papers.slice(0, 10)
+      const isTruncated = papers.length > 10
+      
+      // 创建弹窗显示论文列表
+      ElMessageBox.alert(
+        `
+        <div>
+          <h3 style="margin-bottom: 15px; color: #303133;">期刊 "${journal.issue}" 的论文列表</h3>
+          <p style="margin-bottom: 15px; color: #606266;">共 ${papers.length} 篇论文${isTruncated ? ' (显示前10条)' : ''}</p>
+          <div style="max-height: 500px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background-color: #f5f7fa;">
+                  <th style="padding: 12px; border: 1px solid #ebeef5; text-align: left; min-width: 200px;">论文标题</th>
+                  <th style="padding: 12px; border: 1px solid #ebeef5; text-align: left; min-width: 120px;">作者</th>
+                  <th style="padding: 12px; border: 1px solid #ebeef5; text-align: left; min-width: 80px;">起始页</th>
+                  <th style="padding: 12px; border: 1px solid #ebeef5; text-align: left; min-width: 100px;">稿件号</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${displayPapers.map((paper: any) => `
+                  <tr>
+                    <td style="padding: 12px; border: 1px solid #ebeef5; word-break: break-word;">${paper.title || '无标题'}</td>
+                    <td style="padding: 12px; border: 1px solid #ebeef5;">${paper.authors || paper.first_author || '未知作者'}</td>
+                    <td style="padding: 12px; border: 1px solid #ebeef5; text-align: center;">${paper.page_start || 0}</td>
+                    <td style="padding: 12px; border: 1px solid #ebeef5;">${paper.manuscript_id || '无'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${isTruncated ? `<p style="color: #909399; margin-top: 15px; font-size: 13px;">还有 ${papers.length - 10} 篇论文未显示，请前往论文管理页面查看完整列表</p>` : ''}
+        </div>
+        `,
+        '期刊论文列表',
+        {
+          dangerouslyUseHTMLString: true,
+          customClass: 'journal-papers-dialog',
+          showConfirmButton: true,
+          confirmButtonText: '关闭',
+          showCancelButton: false,
+          closeOnClickModal: true,
+          width: '900px',  // 增加弹窗宽度
+          customStyle: {
+            'max-width': '90vw'  // 响应式最大宽度
+          }
+        }
+      ).then(() => {
+        // 弹窗关闭后的回调
+      }).catch(() => {
+        // 弹窗取消的回调
+      })
+      
+      // 在弹窗显示后修改按钮样式
+      setTimeout(() => {
+        const confirmButton = document.querySelector('.el-message-box__btns .el-button--primary') as HTMLElement
+        if (confirmButton) {
+          confirmButton.style.backgroundColor = '#b62020ff'
+          confirmButton.style.borderColor = '#be2121ff'
+          confirmButton.style.color = 'white'
+          
+          // 添加悬停效果
+          confirmButton.addEventListener('mouseenter', () => {
+            confirmButton.style.backgroundColor = '#7a0b0b'
+            confirmButton.style.borderColor = '#7a0b0b'
+          })
+          confirmButton.addEventListener('mouseleave', () => {
+            confirmButton.style.backgroundColor = '#b62020ff'
+            confirmButton.style.borderColor = '#be2121ff'
+          })
+        }
+      }, 100)
+    } else {
+      ElMessage.info(`期刊 "${journal.issue}" 暂无论文数据`)
+    }
+  } catch (error: any) {
+    console.error('获取期刊论文列表失败:', error)
+    ElMessage.error(error.message)
+  }
 }
 
 const handleViewTOC = async (journal: Journal) => {
   try {
-    ElMessage.info(`正在生成目录: ${journal.issue}`)
-    
-    // 调用后端生成目录
-    const response = await axios.post('http://localhost:5000/api/export/toc', {
-      journalId: journal.id
-    })
-    
-    if (response.data.downloadUrl) {
-      // 下载文件
-      const link = document.createElement('a')
-      link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `目录_${journal.issue}.docx`
-      link.click()
-      ElMessage.success('目录生成成功！')
-    }
+    await journalStore.generateTOC(journal.id, journal.issue)
   } catch (error: any) {
     console.error('生成目录失败:', error)
-    ElMessage.error(`生成目录失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   }
 }
 
 const handlePublish = (journal: Journal) => {
   const newStatus = journal.status === '已发布' ? '编辑中' : '已发布'
   ElMessage.success(`期刊 ${journal.issue} ${newStatus === '已发布' ? '已发布' : '已取消发布'}`)
-  
-  // 更新状态
-  const index = journalList.value.findIndex(j => j.id === journal.id)
-  if (index !== -1) {
-    journalList.value[index].status = newStatus
-  }
 }
 
 const handleGenerateWeibo = async (journal: Journal) => {
   try {
-    ElMessage.info(`正在生成推文: ${journal.issue}`)
-    
-    // 调用后端生成推文
-    const response = await axios.post('http://localhost:5000/api/export/weibo', {
-      journalId: journal.id
-    })
-    
-    if (response.data.downloadUrl) {
-      // 下载文件
-      const link = document.createElement('a')
-      link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `推文_${journal.issue}.html`
-      link.click()
-      ElMessage.success('推文生成成功！')
-    }
+    await journalStore.generateWeibo(journal.id, journal.issue)
   } catch (error: any) {
     console.error('生成推文失败:', error)
-    ElMessage.error(`生成推文失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
   }
 }
 
 const handleViewStats = async (journal: Journal) => {
+  // 直接生成统计表，不打开配置对话框
+  // 后端会自动判断：有模板配置就用模板，没有就用默认配置
   try {
-    ElMessage.info(`正在生成统计表: ${journal.issue}`)
-    
-    // 调用后端生成统计表
-    const response = await axios.post('http://localhost:5000/api/export/excel', {
-      journalId: journal.id
-    })
-    
-    if (response.data.downloadUrl) {
-      // 下载文件
-      const link = document.createElement('a')
-      link.href = `http://localhost:5000${response.data.downloadUrl}`
-      link.download = `统计表_${journal.issue}.xlsx`
-      link.click()
-      ElMessage.success('统计表生成成功！')
-    }
+    await journalStore.generateStats(journal.id, journal.issue)
   } catch (error: any) {
     console.error('生成统计表失败:', error)
-    ElMessage.error(`生成统计表失败: ${error.response?.data?.message || error.message}`)
+    ElMessage.error(error.message)
+  }
+}
+
+// 点击分配按钮时打开对话框并加载 role=editor 的用户
+const handleDistribute = async (journal: Journal) => {
+  currentJournalForAssign.value = journal
+  selectedAssignee.value = null
+  showDistributeDialog.value = true
+  await loadEditorUsers()
+}
+
+const loadEditorUsers = async () => {
+  loadingEditors.value = true
+  try {
+    // 使用 journalService 封装调用
+    const users = await journalService.getUsersByRole('editor')
+    console.log('加载到的编辑用户:', users) // 调试日志
+    editorUsers.value = users || []
+    if (users.length === 0) {
+      console.warn('编辑用户列表为空，请检查API返回数据')
+    }
+  } catch (err: any) {
+    console.error('加载编辑用户失败:', err)
+    ElMessage.error(err?.response?.data?.message || '加载编辑用户失败')
+    editorUsers.value = []
+  } finally {
+    loadingEditors.value = false
+  }
+}
+
+const confirmDistribute = async () => {
+  if (!currentJournalForAssign.value) {
+    ElMessage.error('未选择期刊')
+    return
+  }
+  if (!selectedAssignee.value) {
+    ElMessage.warning('请先选择一名编辑')
+    return
+  }
+
+  assigning.value = true
+  try {
+    // 使用 journalService 进行分配
+    await journalService.assignJournal(currentJournalForAssign.value.id, selectedAssignee.value)
+    ElMessage.success('任务已分配')
+    showDistributeDialog.value = false
+    // 刷新列表或局部数据
+    journalStore.loadJournals()
+  } catch (err: any) {
+    console.error('分配任务失败:', err)
+    ElMessage.error(err?.response?.data?.message || '分配任务失败')
+  } finally {
+    assigning.value = false
+  }
+}
+
+
+const handleDelete = async (journal: Journal) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除期刊"${journal.title} - ${journal.issue}"吗？\n\n⚠️ 注意：如果该期刊下还有论文，将无法删除期刊。`, 
+      '删除期刊', 
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+    
+    await journalStore.deleteJournal(journal.id)
+  } catch (error: any) {
+    if (error === 'cancel' || error.message === 'cancel') {
+      ElMessage.info('取消删除')
+    } else {
+      console.error('删除期刊失败:', error)
+      ElMessage.error(error.message)
+    }
   }
 }
 </script>
@@ -346,12 +507,38 @@ const handleViewStats = async (journal: Journal) => {
   margin: 0;
 }
 
-.upload-card {
+.create-card {
   margin-bottom: 20px;
 }
 
 .journal-list-card {
   margin-bottom: 20px;
+}
+
+.batch-actions {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 翻页组件当前页码自定义颜色 */
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+
+:deep(.el-pagination.is-background .el-pager li.is-active:hover) {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+  color: white !important;
 }
 
 .card-header {
@@ -370,44 +557,31 @@ const handleViewStats = async (journal: Journal) => {
   font-size: 14px;
 }
 
-.file-info {
+.create-tips {
   margin-top: 15px;
   padding: 10px;
   background-color: #f8f9fa;
   border-radius: 4px;
 }
 
-.file-info p {
+.create-tips p {
   margin: 5px 0;
   color: #666;
   font-size: 14px;
 }
 
-.upload-demo {
-  display: flex;
-  align-items: center;
-}
-/* 选择期刊按钮自定义样式 */
-.select-journal-btn {
+/* 创建期刊按钮自定义样式 */
+.create-journal-btn {
   background-color: #b62020ff !important;
   border-color: #be2121ff !important;
   color: white !important;
 }
 
-.select-journal-btn:hover {
+.create-journal-btn:hover {
   background-color: #7a0b0b !important;
   border-color: #7a0b0b !important;
 }
-.analysis-journal-btn {
-  background-color: #fa8c16 !important;
-  border-color: #fa8c16 !important;
-  color: white !important;
-}
-.analysis-journal-btn:hover {
-  background-color: #fa8c20 !important;
-  border-color: #fa8c20!important;
-  color: white !important;
-}
+
 /* 查看按钮自定义样式 */
 .view-btn {
   background-color: #f5f5f5 !important;
@@ -448,15 +622,92 @@ const handleViewStats = async (journal: Journal) => {
 }
 
 /* 统计表按钮自定义样式 */
-.stats-btn {
+.excel-btn {
   background-color: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
   color: #333 !important;
 }
 
-.stats-btn:hover {
+.excel-btn:hover {
   background-color: #e6f7ff !important;
   border-color: #3f4041ff !important;
   color: #7a7d80ff !important;
+}
+/* 分配按钮自定义样式 */
+.distribute-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.distribute-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
+/* 模板配置按钮自定义样式 */
+.template-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.template-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
+/* 删除按钮自定义样式 */
+.delete-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+.delete-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+.assgin-btn {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+.assgin-btn:hover {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+  color: white !important;
+}
+/* 筛选区域样式 */
+.filter-card {
+  margin-bottom: 20px;
+}
+
+/* 重置筛选按钮自定义样式 */
+.reset-btn {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.reset-btn:hover {
+  background-color: #e6f7ff !important;
+  border-color: #3f4041ff !important;
+  color: #7a7d80ff !important;
+}
+
+/* 弹窗关闭按钮自定义样式 */
+:deep(.custom-confirm-button) {
+  background-color: #b62020ff !important;
+  border-color: #be2121ff !important;
+  color: white !important;
+}
+
+:deep(.custom-confirm-button:hover) {
+  background-color: #7a0b0b !important;
+  border-color: #7a0b0b !important;
+  color: white !important;
 }
 </style>

@@ -1,0 +1,81 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@example.com",
+      "password": "admin456",
+      "roles": [
+        "admin"
+      ],
+      "active": true
+    },
+    {
+      "username": "editor",
+      "email": "editor@example.com",
+      "password": "editor123",
+      "roles": [
+        "editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "editor2",
+      "email": "editor2@example.com",
+      "password": "editor456",
+      "roles": [
+        "editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "managing_editor",
+      "email": "managing_editor@example.com",
+      "password": "managing_editor123",
+      "roles": [
+        "managing_editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "dhu001",
+      "email": "dhu001@example.com",
+      "password": "dhu123",
+      "roles": [
+        "editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "dhu002",
+      "email": "dhu002@example.com",
+      "password": "dhu456",
+      "roles": [
+        "editor"
+      ],
+      "active": true
+    },
+    {
+      "username": "dhu003",
+      "email": "dhu003@example.com",
+      "password": "dhu789",
+      "roles": [
+        "managing_editor"
+      ],
+      "active": true
+    }
+  ],
+  "roles": [
+    {
+      "name": "admin",
+      "description": "管理员"
+    },
+    {
+      "name": "editor",
+      "description": "编辑"
+    },
+    {
+      "name": "managing_editor",
+      "description": "总编"
+    }
+  ]
+}

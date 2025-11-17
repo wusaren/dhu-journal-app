@@ -1,0 +1,15 @@
+{
+  "columns": [
+    {"key": "manuscript_id", "order": 1, "label": "稿件号"},
+    {"key": "pdf_pages", "order": 2, "label": "页数"},
+    {"key": "first_author", "order": 3, "label": "一作"},
+    {"key": "corresponding", "order": 4, "label": "通讯"},
+    {"key": "issue", "order": 5, "label": "刊期"},
+    {"key": "is_dhu", "order": 6, "label": "是否东华大学"}
+  ],
+  "description": "默认统计表列配置，当用户没有配置模板时使用",
+  "version": "1.0"
+}
+
+
+

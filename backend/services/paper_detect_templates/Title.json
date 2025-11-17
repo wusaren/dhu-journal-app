@@ -1,0 +1,115 @@
+{
+  "title_rule": "每个含字母的实词首字母大写 (Title Case).",
+  "author_example_raw": "ZHAO Daxue 1，ZHANG San2，LI Donghua 1 ，LI Xiang 1（作者姓全大写，名首字母大写）",
+  "author_rule_desc": "作者格式：姓氏全部大写（如 ZHAO），名首字母大写（如 Daxue），姓与名之间以空格分隔；名后可直接跟单位编号（例如 1 或 2，可多个，用逗号分隔）；作者之间用英文或中文逗号分隔；对应作者可用  或 * 标注。",
+  "author_regex": "([A-Z]{2,})\\s+[A-Z][a-zA-Z\\-]+(?:\\d*(?:,\\d*)*)\\s*[\\*\\u2020]?",
+  "affiliations_example": {
+    "1": "College of Mechanical Engineering, Donghua University, Shanghai 200051, China",
+    "2": "College of Textiles, Donghua University, Shanghai 200051, China"
+  },
+  "rules": {
+    "title_case": true,
+    "chicago_style": true
+  },
+  "format_rules": {
+    "title": {
+      "font_size_pt": 14,
+      "font_name": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "justify",
+      "space_before": 1,
+      "space_after": 1
+    },
+    "authors": {
+      "font_size_pt": 12,
+      "font_name": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "justify",
+      "space_before": 0,
+      "space_after": 0
+    },
+    "affiliations": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "justify",
+      "space_before": 0,
+      "space_after": 1
+    }
+  },
+  "author_warning_rules": [
+    {
+      "field": "surname",
+      "pattern": "^[A-Z]{2,}$",
+      "must_match": true,
+      "when_present_only": true,
+      "message": "姓氏应全部大写: '{raw}' -> detected surname='{surname}'"
+    },
+    {
+      "field": "given_en",
+      "pattern": "^[A-Z][a-zA-Z\\- ]*$",
+      "must_match": true,
+      "when_present_only": true,
+      "message": "英文名应以大写字母开头: '{raw}' -> detected given_en='{given_en}'"
+    },
+    {
+      "field": "given_cn",
+      "pattern": "[\\u4e00-\\u9fff]",
+      "must_match": true,
+      "when_present_only": true,
+      "message": "括号内的中文名疑似不包含中文字符: '{raw}' -> '{given_cn}'"
+    }
+  ],
+  "messages": {
+    "title_ok": "标题通过 Title-Case 检查。",
+    "title_bad_prefix": "标题格式不符合 Title Case 规则: ",
+    "title_suggestion": "建议修正为: {corrected}",
+    "format_title_issue_header": "标题格式问题：",
+    "format_title_ok": "标题格式检查通过",
+    "format_authors_issue_header": "作者格式问题：",
+    "format_authors_ok": "作者格式检查通过",
+    "format_affiliation_issue_header": "单位格式问题（第{index}段）：",
+    "format_affiliation_ok": "单位段落 {index} 格式检查通过",
+    "format_all_ok": "格式检查通过（标题、作者、单位格式符合要求）。",
+    "authors_pass": "作者格式检查通过（姓氏全大写 / 英文名首字母大写 / 可含括号中文名）。",
+    "affiliations_missing_prefix": "作者引用了不存在的单位编号: ",
+    "affiliations_ok": "作者引用的单位编号在模板或文档中存在。",
+    "affiliations_all_same": "所有作者均来自同一单位 (id={id})，按规范应省略作者后的小标，且单位行不应写编号 '1.'。",
+    "affiliations_all_same_advice": "建议：移除作者名后的编号；把单位行改为不带编号。",
+    "affiliations_doc_single_warning": "文档中检测到唯一编号单位 '{id}. ...'，但作者已省略小标。按规范应去掉单位行编号。",
+    "affiliations_tpl_single_warning": "模板示例中检测到唯一编号单位 (id={id})。建议模板示例使用无编号形式。",
+    "summary_overall": "Overall OK: {ok}"
+  },
+  "notes": [
+    "标题检查采用芝加哥格式规则（基于spaCy词性分析+显式虚词列表）：实词（名词、动词、形容词、副词、代词）首字母大写，虚词（冠词a/an/the、短介词at/by/for/in/of/on/to/up、连词and/but/nor/yet/so等）小写，首尾词总是大写。特别支持连词符复合词和化学式保留。需要安装spaCy和英文语言模型。",
+    "冠词规则：a、an、the在标题中间位置必须小写（除非在标题开头或结尾）。介词和连词同样遵循此规则。",
+    "作者解析为宽松启发式：优先识别全大写姓与首字母大写名；若论文里有中文名或其它格式，需扩展正则。"
+  ],
+  "generated_from": "用户提供的自然语言模板示例",
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "affiliation_detection": {
+      "numbered_pattern": "^\\s*\\d+[\\.、\\s:-]",
+      "institution_keywords": ["College", "University", "Institute", "School", "Department", "学院", "大学", "研究院"],
+      "keyword_flags": "I"
+    },
+    "paragraph_detection": {
+      "title_index": 0,
+      "authors_index": 1,
+      "affiliations_start_index": 2
+    }
+  }
+}

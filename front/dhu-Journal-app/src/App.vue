@@ -13,7 +13,7 @@
           <el-dropdown v-else>
             <span class="user-info">
               <el-icon><user /></el-icon>
-              管理员
+              {{ currentUser?.username || '用户' }}
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -42,14 +42,20 @@
           <el-menu-item index="/">
             <span>首页</span>
           </el-menu-item>
+          <el-menu-item index="/preliminary-review">
+            <span>初审系统</span>
+          </el-menu-item>
           <el-menu-item index="/paper-management">
             <span>论文管理</span>
           </el-menu-item>
           <el-menu-item index="/journal-management">
             <span>期刊管理</span>
           </el-menu-item>
-          <el-menu-item index="/preliminary-review">
-            <span>初审系统</span>
+          <el-menu-item index="/personality-center">
+            <span>个人中心</span>
+          </el-menu-item>
+          <el-menu-item v-if="isAdmin" index="/admin">
+            <span>用户管理</span>
           </el-menu-item>
         </el-menu>
       </aside>
@@ -64,14 +70,34 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { User, SwitchButton } from '@element-plus/icons-vue'
+import { authService } from '@/api/authService'
 
 const route = useRoute()
 const router = useRouter()
 
-const isLoggedIn = ref(false) // 模拟登录状态
+const isLoggedIn = ref(false)
+const currentUser = ref<any>(null)
 const currentRoute = computed(() => route.path)
+
+// 检查是否为管理员
+const isAdmin = computed(() => {
+  return currentUser.value?.role === 'admin' || currentUser.value?.roles?.includes('admin')
+})
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  const user = authService.getCurrentUserFromStorage()
+  if (user) {
+    isLoggedIn.value = true
+    currentUser.value = user
+  } else {
+    isLoggedIn.value = false
+    currentUser.value = null
+  }
+}
 
 const handleMenuSelect = (index: string) => {
   router.push(index)
@@ -88,7 +114,19 @@ const handleLogout = async () => {
       cancelButtonText: '取消',
       type: 'warning',
     })
+    
+    // 调用后端登出接口
+    try {
+      await authService.logout()
+    } catch (error) {
+      console.log('后端登出失败，继续清除前端状态')
+    }
+    
+    // 清除前端状态
+    authService.clearUserInfo()
     isLoggedIn.value = false
+    currentUser.value = null
+    
     ElMessage.success('退出登录成功')
     router.push('/')
   } catch {
@@ -96,11 +134,22 @@ const handleLogout = async () => {
   }
 }
 
-// 模拟登录状态管理 - 实际项目中应该使用Pinia或Vuex
-// 这里简单模拟，实际应该根据登录接口返回的状态来设置
-if (localStorage.getItem('isLoggedIn') === 'true') {
-  isLoggedIn.value = true
-}
+// 监听路由变化，检查登录状态
+onMounted(() => {
+  checkLoginStatus()
+})
+
+// 监听路由变化，实时更新登录状态
+watch(() => route.path, () => {
+  checkLoginStatus()
+})
+
+// 监听storage变化，实时更新登录状态
+window.addEventListener('storage', checkLoginStatus)
+
+// 自定义事件监听，用于登录成功后的状态更新
+window.addEventListener('user-login', checkLoginStatus)
+window.addEventListener('user-logout', checkLoginStatus)
 </script>
 
 <style>
@@ -145,10 +194,11 @@ if (localStorage.getItem('isLoggedIn') === 'true') {
   padding: 8px 12px;
   border-radius: 4px;
   transition: background-color 0.3s;
+  color: white;
 }
 
 .user-info:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(104, 4, 4);
 }
 
 .login-btn {

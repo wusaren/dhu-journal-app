@@ -1,0 +1,125 @@
+{
+  "content_rule": "正文标题层级检测：0 Introduction起始（必须有编号0），一级标题实词首字母大写，二三级标题仅首词大写，一级四号段前后一行，二三级五号，正文五号1.5倍行距首行缩进2字符",
+  "structure_rules": {
+    "level0_pattern": "^\\s*0\\s{1}Introduction\\s*$",
+    "level1_pattern": "^\\s*(\\d+)\\s{1}(.+)$",
+    "level2_pattern": "^\\s*(\\d+\\.\\d+)\\s{1}(.+)$", 
+    "level3_pattern": "^\\s*(\\d+\\.\\d+\\.\\d+)\\s{1}(.+)$",
+    "introduction_required": true,
+    "numbering_start": 0,
+    "max_level1_count": 10,
+    "max_level2_count": 5,
+    "max_level3_count": 3
+  },
+  "title_case_rules": {
+    "level1_style": "title_case",
+    "level2_style": "sentence_case", 
+    "level3_style": "sentence_case",
+    "level1_major_words": ["Materials", "Methods", "Results", "Discussion", "Conclusion", "Analysis", "Experimental", "Theoretical"],
+    "minor_words": ["and", "or", "of", "in", "on", "at", "to", "for", "with", "by", "from", "the", "a", "an"]
+  },
+  "format_rules": {
+    "level1_title": {
+      "font_size_pt": 14,
+      "font_name": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 12,
+      "space_after": 12,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "level2_title": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman", 
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "level3_title": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman",
+      "bold": true, 
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "content_text": {
+      "font_size_pt": 10.5,
+      "font_name": "Times New Roman",
+      "bold": false,
+      "italic": false, 
+      "line_spacing": 1.5,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "justify",
+      "first_line_indent": 21,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号", 
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.5": "1.5倍行距", 
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐", 
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_hierarchy_ok": "标题层级结构正确",
+    "structure_hierarchy_error": "标题层级结构有问题",
+    "structure_introduction_ok": "找到Introduction标题（0 Introduction）",
+    "structure_introduction_error": "未找到Introduction标题或格式不正确，应为 '0 Introduction'（0后恰好1个空格）",
+    "structure_numbering_ok": "标题编号连续性正确",
+    "structure_numbering_error": "标题编号不连续或格式错误",
+    "structure_spacing_error": "标题编号后空格数量错误，应为恰好1个空格",
+    "title_case_level1_ok": "一级标题大小写正确（实词首字母大写）",
+    "title_case_level1_error": "一级标题大小写错误，实词应首字母大写",
+    "title_case_level23_ok": "二三级标题大小写正确（仅首词大写）", 
+    "title_case_level23_error": "二三级标题大小写错误，仅首词应大写，其余小写",
+    "format_level1_ok": "一级标题格式正确（四号，段前后一行）",
+    "format_level1_error": "一级标题格式问题",
+    "format_level23_ok": "二三级标题格式正确（五号）",
+    "format_level23_error": "二三级标题格式问题", 
+    "format_content_ok": "正文内容格式正确（五号，1.5倍行距）",
+    "format_content_error": "正文内容格式问题",
+    "summary_overall": "正文格式检查结果: {ok}"
+  },
+  "notes": [
+    "正文检查重点：1) 标题层级结构(0,1,1.1,1.1.1) 2) 一级标题实词首字母大写 3) 二三级标题仅首词大写 4) 一级四号段前后一行 5) 二三级五号 6) 正文五号1.5倍行距",
+    "标题编号应连续，不应跳跃或重复"
+  ],
+  "generated_from": "用户提供的正文格式要求"
+}

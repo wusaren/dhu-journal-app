@@ -1,19 +1,58 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
 from datetime import datetime
 
 db = SQLAlchemy()
 
-class User(db.Model):
+# 角色-用户关联表
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('users.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('roles.id'))
+)
+
+class Role(db.Model, RoleMixin):
+    __tablename__ = 'roles'
+    
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True)
+    # store the hashed password in password_hash for compatibility with other scripts
     password_hash = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(100))
-    role = db.Column(db.Enum('admin', 'editor', 'viewer'), default='editor')
+    @property
+    def password(self):
+        """兼容旧代码：返回存储的 password_hash"""
+        return self.password_hash
+    @password.setter
+    def password(self, value):
+        self.password_hash = value
+    active = db.Column(db.Boolean(), default=True)
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
+    
+    # Flask-Security 关系
+    roles = db.relationship('Role', secondary=roles_users,
+                          backref=db.backref('users', lazy='dynamic'))
+    
+    # 兼容原有字段
+    @property
+    def role(self):
+        """兼容原有的 role 属性"""
+        if self.roles:
+            return self.roles[0].name if self.roles else 'viewer'
+        return 'viewer'
+    def __repr__(self):
+        return f"User('{self.username}', '{self.email}')"
+
+# 创建用户数据存储（必须在User和Role类定义之后）
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 
 class Author(db.Model):
     """作者表 - 管理作者信息"""
@@ -49,6 +88,7 @@ class Journal(db.Model):
     publish_date = db.Column(db.Date)
     status = db.Column(db.Enum('draft', 'published', 'archived'), default='draft')
     description = db.Column(db.Text)
+    paper_count = db.Column(db.Integer, default=0)  # 论文数量
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -56,6 +96,14 @@ class Journal(db.Model):
     # 关系
     papers = db.relationship('Paper', backref='journal', lazy='dynamic', cascade='all, delete-orphan')
     file_uploads = db.relationship('FileUpload', backref='journal', lazy='dynamic')
+    
+    # 唯一约束：同一期刊的同一期应该唯一
+    __table_args__ = (
+        db.UniqueConstraint('title', 'issue', 'created_by', name='uk_journal_title_issue_creator'),
+        db.UniqueConstraint('title', 'issue', name='uk_journal_title_issue'),
+        db.Index('idx_journal_title', 'title'),
+        db.Index('idx_journal_issue', 'issue'),
+    )
 
 class PaperAuthor(db.Model):
     """论文-作者关联表 - 多对多关系"""
@@ -94,7 +142,7 @@ class Paper(db.Model):
     pdf_pages = db.Column(db.Integer, nullable=False)  # 页数，如: 15
     first_author = db.Column(db.String(200), nullable=False)  # 一作，如: HUANG Jiacui
     corresponding = db.Column(db.String(200))  # 通讯，如: ZHAO Mingbo
-    issue = db.Column(db.String(100), nullable=False)  # 刊期，如: 2025, 42(3)
+    issue = db.Column(db.String(100), nullable=False)  # 刊期，如: 2025, 42(3) - 从PDF解析
     is_dhu = db.Column(db.Boolean, default=False)  # 是否东华大学
     
     # 其他字段
@@ -102,16 +150,29 @@ class Paper(db.Model):
     abstract = db.Column(db.Text)
     keywords = db.Column(db.Text)
     file_path = db.Column(db.String(500))
+    
+    # 中文标题和作者字段
+    chinese_title = db.Column(db.Text)  # 中文标题
+    chinese_authors = db.Column(db.Text)  # 中文作者
+    
+    # image_path = db.Column(db.String(500))  # MinIO图片URL（保留用于兼容）
+    first_image_url = db.Column(db.String(500))  # 第一张图片URL（QRcode）
+    second_image_url = db.Column(db.String(500))  # 第二张图片URL
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # 关系
     paper_authors = db.relationship('PaperAuthor', backref='paper', lazy='dynamic', cascade='all, delete-orphan')
     
-    # 索引
+    # 索引和唯一约束
     __table_args__ = (
         db.Index('idx_journal_id', 'journal_id'),
         db.Index('idx_page_start', 'page_start'),
+        db.Index('idx_manuscript_id', 'manuscript_id'),
+        # 唯一约束：稿件号应该唯一
+        db.UniqueConstraint('manuscript_id', name='uk_paper_manuscript_id'),
+        # 唯一约束：同一期刊中论文标题应该唯一
+        db.UniqueConstraint('journal_id', 'title', name='uk_paper_journal_title'),
     )
 
 class FileUpload(db.Model):
@@ -128,3 +189,36 @@ class FileUpload(db.Model):
     upload_status = db.Column(db.Enum('uploading', 'processing', 'completed', 'failed'), default='uploading')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class FormatCheckFile(db.Model):
+    """格式审查文件表"""
+    __tablename__ = 'format_check_files'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(500), nullable=False)  # 论文标题
+    submit_date = db.Column(db.Date, nullable=False)  # 提交日期
+    
+    # 文件路径
+    temp_file_path = db.Column(db.String(500), nullable=False)  # 临时文件路径（原始文档）
+    report_path = db.Column(db.String(500))  # 检测报告路径
+    annotated_path = db.Column(db.String(500))  # 批注文档路径
+    content_details_path = db.Column(db.String(500))  # content_details文件路径
+    
+    # 检测状态
+    check_status = db.Column(db.Enum('pending', 'completed', 'failed'), default='pending')  # 检测状态
+    
+    # 检测结果摘要（可选，用于快速查询）
+    total_checks = db.Column(db.Integer)  # 总检测项数
+    passed_checks = db.Column(db.Integer)  # 通过项数
+    failed_checks = db.Column(db.Integer)  # 失败项数
+    pass_rate = db.Column(db.Float)  # 通过率
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_title', 'title'),
+        db.Index('idx_submit_date', 'submit_date'),
+        db.Index('idx_check_status', 'check_status'),
+    )
