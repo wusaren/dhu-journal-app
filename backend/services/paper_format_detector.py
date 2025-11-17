@@ -283,7 +283,7 @@ class PaperFormatDetector:
         if modules is None:
             modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
         
-        all_results = {}
+        all_reports = {}
         
         for module_name in modules:
             logger.info(f"执行 {module_name} 检测")
@@ -307,16 +307,16 @@ class PaperFormatDetector:
                     logger.warning(f"未知模块: {module_name}")
                     continue
                 
-                all_results[module_name] = result
+                all_reports[module_name] = result
                 
             except Exception as e:
                 logger.error(f"{module_name} 检测异常: {e}")
-                all_results[module_name] = {
+                all_reports[module_name] = {
                     'error': True,
                     'error_message': str(e),
                     'summary': [f'{module_name}检测失败: {e}']
                 }
         
-        return all_results
+        return all_reports
     
 

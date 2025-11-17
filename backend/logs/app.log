@@ -9601,3 +9601,228 @@
 2025-11-17 15:12:48,418 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:48] "GET /api/paper-format/files HTTP/1.1" 200 -
 2025-11-17 15:13:08,704 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251117_151247_paper1_annotated.docx
 2025-11-17 15:13:08,705 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:13:08] "GET /api/paper-format/download-annotated/20251117_151247_paper1_annotated.docx HTTP/1.1" 200 -
+2025-11-17 16:14:31,911 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 16:14:31,915 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 16:14:31,983 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-17 16:14:31,984 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 16:14:31,994 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 16:14:34,388 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 16:14:34,397 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 16:14:34,425 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 16:14:34,467 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 16:14:34,849 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 16:14:34] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 16:14:39,486 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 16:14:39] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 16:15:21,420 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 16:15:25,867 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 16:15:25,868 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 16:15:25,868 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 16:15:25,868 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 16:15:26,069 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 16:15:26,194 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 16:15:26,387 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 16:15:26,627 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 16:15:26,771 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 16:15:26,808 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 16:15:26,845 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-17 16:15:26,846 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251117_161526_format_report.txt
+2025-11-17 16:15:26,847 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251117_161526_format_report.txt
+2025-11-17 16:15:26,851 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251117_161526_paper1_annotated.docx
+2025-11-17 16:15:26,852 - services.document_annotator - INFO - 共识别出 65 个问题
+2025-11-17 16:15:27,873 - services.document_annotator - INFO - 批注添加完成！共添加 65 个批注
+2025-11-17 16:15:27,874 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251117_161526_paper1_annotated.docx
+2025-11-17 16:15:27,894 - __main__ - INFO - 数据库记录已更新: ID=4
+2025-11-17 16:15:27,896 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 16:15:27] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-17 16:15:27,921 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 16:15:27] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:14:20,466 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-11-17 17:14:21,390 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:14:23,638 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:14:23,643 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:14:23,658 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:14:23,674 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:14:35,472 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:14:35,475 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:14:35,509 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-17 17:14:35,510 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 17:14:35,514 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:14:37,516 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:14:37,519 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:14:37,534 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:14:37,549 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:14:41,619 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:14:41] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:14:53,280 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251117_161526_format_report.txt
+2025-11-17 17:14:53,281 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:14:53] "GET /api/paper-format/get-report-text/4 HTTP/1.1" 200 -
+2025-11-17 17:15:03,833 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:15:07,750 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:15:07,806 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:15:07,806 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:15:07,807 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:15:08,078 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:15:08,193 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:15:08,400 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:15:08,725 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:15:08,951 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:15:08,996 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:15:09,036 - __main__ - ERROR - 全量检测错误: name 'paper_format_service' is not defined
+2025-11-17 17:15:09,037 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:15:09] "[35m[1mPOST /api/paper-format/check-all HTTP/1.1[0m" 500 -
+2025-11-17 17:17:18,604 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-17 17:23:24,290 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:23:24,293 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:23:24,318 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-17 17:23:24,318 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 17:23:24,320 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:23:26,382 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:23:26,385 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:23:26,402 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:23:26,419 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:23:29,664 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:23:29] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:23:41,159 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:23:45,374 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:23:45,374 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:23:45,374 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:23:45,375 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:23:45,610 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:23:45,726 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:23:45,925 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:23:46,227 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:23:46,399 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:23:46,447 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:23:46,481 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-17 17:23:46,482 - __main__ - ERROR - 格式检测错误: name 'paper_format_service' is not defined
+2025-11-17 17:23:46,483 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:23:46] "[35m[1mPOST /api/paper-format/check-all HTTP/1.1[0m" 500 -
+2025-11-17 17:24:08,122 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-11-17 17:24:09,710 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:24:11,506 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:24:11,509 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:24:11,524 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:24:11,538 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:32:09,516 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:32:09] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:32:15,491 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:32:19,410 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:32:19,411 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:32:19,412 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:32:19,414 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:32:19,638 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:32:19,762 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:32:19,969 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:32:20,246 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:32:20,411 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:32:20,460 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:32:20,498 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-17 17:32:20,499 - __main__ - ERROR - 格式检测错误: name 'process_report' is not defined
+2025-11-17 17:32:20,500 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:32:20] "[35m[1mPOST /api/paper-format/check-all HTTP/1.1[0m" 500 -
+2025-11-17 17:33:40,790 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-11-17 17:33:41,359 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:33:43,241 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:33:43,244 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:33:43,261 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:33:43,279 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:33:46,439 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:33:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:33:52,950 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:33:56,650 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:33:56,650 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:33:56,651 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:33:56,652 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:33:56,860 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:33:56,971 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:33:57,159 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:33:57,436 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:33:57,603 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:33:57,653 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:33:57,688 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-17 17:33:57,693 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-17 17:33:57,694 - __main__ - ERROR - 格式检测错误: PaperFormatService.generate_comprehensive_report() takes 1 positional argument but 2 were given
+2025-11-17 17:33:57,696 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:33:57] "[35m[1mPOST /api/paper-format/check-all HTTP/1.1[0m" 500 -
+2025-11-17 17:36:27,315 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-17 17:36:27,984 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:36:29,966 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:36:29,970 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:36:29,984 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:36:29,998 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:36:59,923 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-11-17 17:37:00,145 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:37:01,973 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:37:01,978 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:37:01,992 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:37:02,010 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:37:05,438 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:37:05] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:37:09,219 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:37:13,178 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:37:13,178 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:37:13,180 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:37:13,182 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:37:13,402 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:37:13,525 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:37:13,752 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:37:14,042 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:37:14,261 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:37:14,311 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:37:14,349 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-17 17:37:14,352 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-17 17:37:14,353 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-17 17:37:14,355 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251117_173714_format_report.txt
+2025-11-17 17:37:14,356 - __main__ - ERROR - 格式检测错误: 'PaperFormatService' object has no attribute 'generate_annotated_document'
+2025-11-17 17:37:14,357 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:37:14] "[35m[1mPOST /api/paper-format/check-all HTTP/1.1[0m" 500 -
+2025-11-17 17:37:47,617 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-11-17 17:37:48,245 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:37:50,097 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:37:51,203 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:37:51,222 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:37:51,238 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:37:55,939 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:37:55] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:38:01,347 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:38:05,259 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:38:05,260 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:38:05,260 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:38:05,261 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:38:05,485 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:38:05,594 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:38:05,816 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:38:06,100 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:38:06,273 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:38:06,327 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:38:06,364 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-17 17:38:06,368 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-17 17:38:06,368 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-17 17:38:06,371 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251117_173806_format_report.txt
+2025-11-17 17:38:06,372 - __main__ - ERROR - 格式检测错误: name 'temp_file_path' is not defined
+2025-11-17 17:38:06,373 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:38:06] "[35m[1mPOST /api/paper-format/check-all HTTP/1.1[0m" 500 -
+2025-11-17 17:40:30,688 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-11-17 17:40:31,314 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 17:40:33,669 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 17:40:33,673 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 17:40:33,688 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 17:40:33,704 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 17:40:37,502 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:40:37] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:40:46,385 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 17:40:50,205 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 17:40:50,206 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 17:40:50,207 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 17:40:50,209 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 17:40:50,444 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 17:40:50,563 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 17:40:50,838 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 17:40:51,145 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 17:40:51,316 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 17:40:51,362 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 17:40:51,400 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-17 17:40:51,406 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-17 17:40:51,406 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-17 17:40:51,410 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251117_174051_format_report.txt
+2025-11-17 17:40:51,412 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251117_174051_paper1_annotated.docx
+2025-11-17 17:40:51,414 - services.document_annotator - INFO - 共识别出 65 个问题
+2025-11-17 17:40:52,475 - services.document_annotator - INFO - 批注添加完成！共添加 65 个批注
+2025-11-17 17:40:52,476 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251117_174051_paper1_annotated.docx
+2025-11-17 17:40:52,490 - __main__ - INFO - 数据库记录已更新: ID=4
+2025-11-17 17:40:52,491 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:40:52] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-17 17:40:52,514 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:40:52] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 17:45:45,769 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251117_174051_paper1_annotated.docx
+2025-11-17 17:45:45,771 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 17:45:45] "GET /api/paper-format/download-annotated/20251117_174051_paper1_annotated.docx HTTP/1.1" 200 -

@@ -1214,10 +1214,10 @@ def save_temp_file():
             'message': f'保存失败: {str(e)}'
         }), 500
 
-# 全量检测
+# 格式检测
 @app.route('/api/paper-format/check-all', methods=['POST'])
 def check_format_all():
-    """执行论文格式全量检测"""
+    """执行论文格式检测"""
     try:
         # 获取JSON数据
         data = request.get_json()
@@ -1248,64 +1248,13 @@ def check_format_all():
         
         # 执行检测
         paper_format_service = PaperFormatService()
-        all_reports_dict = paper_format_service.check_all(
+        result = paper_format_service.check_all(
             temp_file_path,
             enable_figure_api=enable_figure_api,
-            modules=modules_list
+            modules=modules_list,
+            reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
+            annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER']
         )
- 
-        # 对所有的检测报告进行处理（计算通过率）
-        result = paper_format_service.process_report(all_reports_dict)
- 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-
-        # 自动生成并保存报告
-        if result.get('success'):
-            report_filename = f"{timestamp}_format_report.txt"
-            report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], report_filename)
-            
-            try:
-                # 生成检测报告
-                report_result = paper_format_service.generate_report(result, output_path=report_path)
-                if report_result.get('success'):
-                    # 将报告信息添加到返回结果中
-                    result['data']['report_saved'] = True
-                    result['data']['report_filename'] = report_filename
-                    result['data']['report_download_url'] = f'/api/paper-format/download-report/{report_filename}'
-                    result['data']['report_text'] = report_result['data']['report_text']
-
-                    logger.info(f"检测报告已自动保存: {report_path}")
-            except Exception as e:
-                logger.warning(f"自动保存报告失败: {e}")
-                # 不影响检测结果的返回
-
-        if all_reports_dict['error'] is None:
-            # 生成带批注的文档
-            try:
-                from services.document_annotator import generate_annotated_document
-                annotate_filename = f"{timestamp}_annotated.docx"
-                annotate_output_dir = app.config['FORMAT_CHECK_ANNOTATE_FOLDER']
-                
-                # 从result中获取all_reports
-                all_reports = all_reports_dict['data']
-                # logger.info(f"所有报告信息:{all_reports}")
-                
-                annotated_path = generate_annotated_document(
-                    temp_file_path,
-                    all_reports,
-                    annotate_output_dir
-                )
-                
-                if annotated_path:
-                    result['data']['annotated_saved'] = True
-                    result['data']['annotated_filename'] = os.path.basename(annotated_path)
-                    result['data']['annotated_download_url'] = f'/api/paper-format/download-annotated/{os.path.basename(annotated_path)}'
-                    logger.info(f"批注文档已自动生成: {annotated_path}")
-                else:
-                    logger.warning("批注文档生成失败")
-            except Exception as e:
-                logger.warning(f"生成批注文档失败: {e}")
-                # 不影响检测结果的返回
         
         # 更新数据库记录
         if file_id and result.get('success'):
@@ -1343,7 +1292,7 @@ def check_format_all():
         return jsonify(result)
             
     except Exception as e:
-        logger.error(f"全量检测错误: {str(e)}")
+        logger.error(f"格式检测错误: {str(e)}")
         return jsonify({
             'success': False, 
             'message': f'检测失败: {str(e)}'
