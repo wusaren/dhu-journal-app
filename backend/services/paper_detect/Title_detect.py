@@ -705,24 +705,66 @@ def check_format_section(doc_path, tpl):
         section_pattern = re.compile(r'^\s*\d+(\s+\d+)*\s+[A-Z]')
         
         # 停止标记（遇到这些标记时停止检测单位段落）
-        stop_markers = re.compile(r'^\s*(Abstract|Keywords|CLC|Introduction|摘要|关键词)[\s:：]', re.IGNORECASE)
+        # 修改：不要求必须有冒号，因为可能是错误格式"Abstract"单独成行
+        stop_markers = re.compile(r'^\s*(Abstract|Keywords|CLC|Introduction|摘要|关键词)\s*[:：]?\s*$', re.IGNORECASE)
 
         affiliation_paragraphs = []
-        if len(nonempty_paragraphs) > 2:
-            for p in nonempty_paragraphs[2:]:
+        affiliation_para_indices = []  # 记录单位段落的实际索引
+        affiliation_numbering_errors = []  # 记录编号格式错误的单位段落
+        
+        # 直接在doc.paragraphs上工作，跳过前面的标题和作者段落
+        # 找到第一个非空段落（标题）和第二个非空段落（作者）的索引
+        nonempty_count = 0
+        start_idx = 0
+        for idx, p in enumerate(doc.paragraphs):
+            if p.text and p.text.strip():
+                nonempty_count += 1
+                if nonempty_count == 3:  # 从第三个非空段落开始检查单位
+                    start_idx = idx
+                    break
+        
+        if start_idx > 0:
+            for idx in range(start_idx, len(doc.paragraphs)):
+                p = doc.paragraphs[idx]
+                # 跳过空段落
+                if not p.text or not p.text.strip():
+                    continue
                 text = p.text.strip()
                 
                 # 遇到停止标记时，停止检测单位段落
                 if stop_markers.match(text):
                     break
-                
-                # 排除章节标题
-                if section_pattern.match(text):
-                    continue
                     
                 # 检查是否是单位段落
-                if re.match(numbered_pattern, text) or (keyword_pattern and re.search(keyword_pattern, text, flags=re.IGNORECASE)):
+                is_affiliation = False
+                has_keyword = keyword_pattern and re.search(keyword_pattern, text, flags=re.IGNORECASE)
+                has_numbered = re.match(numbered_pattern, text)
+                
+                # 排除章节标题（但不排除包含单位关键词的段落）
+                if section_pattern.match(text) and not has_keyword:
+                    continue
+                
+                if has_numbered or has_keyword:
+                    is_affiliation = True
                     affiliation_paragraphs.append(p)
+                    affiliation_para_indices.append(idx)  # 保存实际索引
+                    
+                    # 同时检查单位编号格式是否错误
+                    # 检测：数字 + 空格（没有点号）
+                    wrong_format_match = re.match(r'^(\d+)\s+(?!\d)', text)  # 数字+空格，后面不是数字
+                    if wrong_format_match:
+                        # 确认不是正确的格式（不包含点号、顿号等）
+                        number = wrong_format_match.group(1)
+                        # 检查是否有正确的分隔符（点号或顿号）
+                        correct_format = re.match(r'^\d+[\.\、]', text)
+                        if not correct_format:
+                            # idx已经是在doc.paragraphs中的实际索引
+                            affiliation_numbering_errors.append({
+                                'paragraph': p,
+                                'number': number,
+                                'text': text,
+                                'index': idx + 1  # 报告中显示为1-based
+                            })
         
         num_affs = len(affiliation_paragraphs)
         if num_affs > 0:
@@ -744,10 +786,30 @@ def check_format_section(doc_path, tpl):
                     
                     if affiliation_format_issues:
                         report['ok'] = False
-                        header_tpl = tpl.get('messages', {}).get('format_affiliation_issue_header', "单位格式问题 (段落 {index})：")
-                        header = header_tpl.format(index=nonempty_paragraphs.index(paragraph) + 1)
+                        # 使用保存的索引，而不是通过文本匹配查找
+                        # affiliation_para_indices 在收集单位段落时就已经保存了正确的索引
+                        actual_idx = affiliation_para_indices[i] if i < len(affiliation_para_indices) else 0
+                        header_tpl = tpl.get('messages', {}).get('format_affiliation_issue_header', "单位格式问题（第{index}段）：")
+                        header = header_tpl.format(index=actual_idx + 1)
                         report['messages'].append(header)
                         report['messages'].extend([f"  - {it}" for it in affiliation_format_issues])
+        
+        # 报告单位编号格式错误
+        if affiliation_numbering_errors:
+            report['ok'] = False
+            error_count = len(affiliation_numbering_errors)
+            report['messages'].append(f"\n单位编号格式错误（共 {error_count} 处）：")
+            report['messages'].append("单位编号应使用数字+点号的格式（如 '1. College'），而非数字+空格（如 '1 College'）")
+            for error in affiliation_numbering_errors[:5]:  # 最多显示5个
+                short_text = error['text'][:50] + '...' if len(error['text']) > 50 else error['text']
+                # 为批注系统标记段落索引
+                report['messages'].append(f"  - 段落 {error['index']}: '{short_text}'")
+                report['messages'].append(f"    建议修改为: '{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
+                # 添加单独的批注消息（用于单独批注）
+                report['messages'].append(f"__COMMENT_PARA_{error['index']}__单位编号格式错误：应使用'{error['number']}.'开头，而非'{error['number']} '")
+                report['messages'].append(f"__COMMENT_PARA_{error['index']}__建议修改为：'{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
+            if error_count > 5:
+                report['messages'].append(f"  ... 还有 {error_count - 5} 处类似错误")
 
     print("=== 格式检查完成 ===")
     return report

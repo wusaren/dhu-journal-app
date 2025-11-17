@@ -112,8 +112,12 @@ def detect_font_for_run(run, paragraph=None):
     # 行间距检测
     line_spacing = 1.0  # 默认单倍行距
     try:
+        # 优先级1: 检查段落直接格式的行距
         if paragraph and paragraph.paragraph_format.line_spacing:
             line_spacing = float(paragraph.paragraph_format.line_spacing)
+        # 优先级2: 检查段落样式的行距
+        elif paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
+            line_spacing = float(paragraph.style.paragraph_format.line_spacing)
     except Exception:
         pass
 
@@ -193,7 +197,48 @@ def detect_paragraph_indent(paragraph):
     """检测段落缩进"""
     try:
         fmt = paragraph.paragraph_format
-        first_line_indent = fmt.first_line_indent.pt if fmt.first_line_indent else 0.0
+        
+        # 首行缩进检测：按照 Word 的继承规则
+        # 1. 优先检查 firstLineChars（字符单位，用户设置的标准值）
+        # 2. 如果没有 firstLineChars，检查 firstLine（twips 单位）
+        # 3. 直接格式优先于样式格式
+        first_line_indent = 0.0
+        firstLineChars = None
+        firstLine = None
+        
+        # 优先级1：检查直接格式中的 firstLineChars
+        pPr = fmt._element.pPr
+        if pPr is not None:
+            ind = pPr.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind')
+            if ind is not None:
+                firstLineChars = ind.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}firstLineChars')
+                if not firstLineChars:
+                    firstLine = ind.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}firstLine')
+        
+        # 优先级2：如果直接格式中没有 firstLineChars，检查样式中的 firstLineChars
+        if not firstLineChars:
+            if paragraph.style and paragraph.style.element.pPr is not None:
+                ind = paragraph.style.element.pPr.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind')
+                if ind is not None:
+                    firstLineChars = ind.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}firstLineChars')
+                    if not firstLineChars:
+                        # 样式中也没有 firstLineChars，才使用 firstLine
+                        firstLine = ind.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}firstLine')
+        
+        # 转换为 pt
+        if firstLineChars:
+            # 使用字符单位
+            # firstLineChars 是以 1/20 字符为单位
+            # 在 Word 中，1 字符 ≈ 2.1pt（对于标准字体）
+            # 所以 firstLineChars 个单位 = firstLineChars / 20 字符 = firstLineChars / 20 * 2.1 pt
+            first_line_indent = float(firstLineChars) / 20 * 2.1
+        elif firstLine:
+            # 使用 twips 单位（1 twip = 1/20 pt）
+            first_line_indent = float(firstLine) / 20
+        else:
+            # 都没有，使用 python-docx 的值
+            first_line_indent = fmt.first_line_indent.pt if fmt.first_line_indent else 0.0
+        
         left_indent = fmt.left_indent.pt if fmt.left_indent else 0.0
         right_indent = fmt.right_indent.pt if fmt.right_indent else 0.0
         return first_line_indent, left_indent, right_indent
@@ -317,21 +362,36 @@ def identify_title_hierarchy(doc, tpl):
                 space_count = len(spaces)
                 print(f"0后有{space_count}个空格，应为1个空格")
         
-        # 检查一级标题
+        # 检查一级标题（排除单位段落）
         elif re.match(level1_pattern, text):
             match = re.match(level1_pattern, text)
             number = match.group(1)
             title_text = match.group(2).strip()
-            report['titles'].append({
-                'level': 1,
-                'number': number,
-                'text': title_text,
-                'paragraph': paragraph,
-                'paragraph_index': para_idx,
-                'full_text': text
-            })
-            title_sequence.append(number)
-            print(f"找到一级标题: {number} {title_text}")
+            
+            # 判断是否是单位段落
+            affiliation_keywords = [
+                'college', 'university', 'school', 'institute', 'department',
+                'laboratory', 'center', 'centre', 'academy', 'ministry', 'association',
+                'research', 'engineering', 'science', 'technology',
+                '学院', '大学', '研究所', '实验室', '中心', '部门', '协会'
+            ]
+            text_lower = text.lower()
+            is_affiliation = any(keyword in text_lower for keyword in affiliation_keywords)
+            
+            # 如果不是单位段落，才添加为标题
+            if not is_affiliation:
+                report['titles'].append({
+                    'level': 1,
+                    'number': number,
+                    'text': title_text,
+                    'paragraph': paragraph,
+                    'paragraph_index': para_idx,
+                    'full_text': text
+                })
+                title_sequence.append(number)
+                print(f"找到一级标题: {number} {title_text}")
+            else:
+                print(f"跳过单位段落（非标题）: {text[:60]}...")
         
         # 检查是否是空格数量错误的一级标题
         elif re.match(r'^\s*(\d+)\s+(.+)$', text) and not re.match(level1_pattern, text):
@@ -353,6 +413,7 @@ def identify_title_hierarchy(doc, tpl):
                 'number': number,
                 'text': title_text,
                 'paragraph': paragraph,
+                'paragraph_index': para_idx,
                 'full_text': text
             })
             title_sequence.append(number)
@@ -368,6 +429,7 @@ def identify_title_hierarchy(doc, tpl):
                 'number': number,
                 'text': title_text,
                 'paragraph': paragraph,
+                'paragraph_index': para_idx,
                 'full_text': text
             })
             title_sequence.append(number)
@@ -435,6 +497,15 @@ def identify_title_hierarchy(doc, tpl):
                     'relation between' in text_lower
                 )
                 
+                # 判断是否是单位段落（包含单位关键词）
+                affiliation_keywords = [
+                    'college', 'university', 'school', 'institute', 'department',
+                    'laboratory', 'center', 'academy', 'ministry', 'association',
+                    'research', 'engineering', 'science', 'technology',
+                    '学院', '大学', '研究所', '实验室', '中心', '部门'
+                ]
+                is_affiliation = any(keyword in text_lower for keyword in affiliation_keywords)
+                
                 if not (text_lower.startswith('table ') or 
                        text_lower.startswith('figure ') or 
                        text_lower.startswith('fig.') or
@@ -443,6 +514,7 @@ def identify_title_hierarchy(doc, tpl):
                        text_lower.startswith('clc') or
                        is_reference or
                        is_figure_caption or
+                       is_affiliation or  # 排除单位段落
                        re.match(r'^\d+[\-\—]', text) or  # 排除类似 "1-laptop" 这种
                        re.match(r'^\(\d+\)', text)):  # 排除公式编号
                     missing_number_titles.append({
@@ -482,12 +554,30 @@ def identify_title_hierarchy(doc, tpl):
                 if is_bold and (font_size is None or font_size >= 10.5):
                     # 排除一些明显不是标题的内容
                     text_lower = text.lower()
+                    
+                    # 判断是否是单位段落（包含单位关键词）
+                    affiliation_keywords = [
+                        'college', 'university', 'school', 'institute', 'department',
+                        'laboratory', 'center', 'academy', 'ministry', 'association',
+                        'research', 'engineering', 'science', 'technology',
+                        '学院', '大学', '研究所', '实验室', '中心', '部门'
+                    ]
+                    is_affiliation = any(keyword in text_lower for keyword in affiliation_keywords)
+                    
+                    # 判断是否是单数字开头的单位（如 "1 College of..."）
+                    is_numbered_affiliation = (
+                        re.match(r'^\d{1,2}\s+', text) and  # 以1-2位数字+空格开头
+                        is_affiliation  # 且包含单位关键词
+                    )
+                    
                     if not (text_lower.startswith('table ') or 
                            text_lower.startswith('figure ') or 
                            text_lower.startswith('fig.') or
                            text_lower.startswith('abstract') or
                            text_lower.startswith('keywords') or
                            text_lower.startswith('clc') or
+                           is_affiliation or  # 排除单位段落
+                           is_numbered_affiliation or  # 排除编号的单位段落
                            re.match(r'^\d+[\-\—]', text) or  # 排除类似 "1-laptop" 这种
                            re.match(r'^\(\d+\)', text)):  # 排除公式编号
                         missing_number_titles.append({

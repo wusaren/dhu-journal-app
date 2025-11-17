@@ -9531,3 +9531,73 @@
 2025-11-15 16:54:37,700 - __main__ - INFO - 数据库记录已更新: ID=3
 2025-11-15 16:54:37,701 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:54:37] "POST /api/paper-format/check-all HTTP/1.1" 200 -
 2025-11-15 16:54:37,725 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 16:54:37] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:09:47,843 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 15:09:47,847 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 15:09:47,932 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-17 15:09:47,933 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 15:09:47,946 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 15:09:50,159 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 15:09:50,163 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 15:09:50,176 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 15:09:50,191 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 15:11:12,490 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 15:11:12,493 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 15:11:12,517 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-17 15:11:12,517 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 15:11:12,522 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 15:11:14,617 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 15:11:14,620 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-17 15:11:14,632 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 15:11:14,647 - werkzeug - INFO -  * Debugger PIN: 118-214-340
+2025-11-17 15:11:20,199 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:11:20] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:11:22,735 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:11:22] "[33mGET /api/paper-format/get-report-text/3 HTTP/1.1[0m" 404 -
+2025-11-17 15:12:15,526 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:15] "[33mGET /api/paper-format/get-report-text/3 HTTP/1.1[0m" 404 -
+2025-11-17 15:12:17,962 - __main__ - INFO - 打开检测报告: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-17 15:12:17,964 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:17] "GET /api/paper-format/open-report/1 HTTP/1.1" 200 -
+2025-11-17 15:12:19,673 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:19] "[33mGET /api/paper-format/open-report/3 HTTP/1.1[0m" 404 -
+2025-11-17 15:12:22,476 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:22] "[33mGET /api/paper-format/get-report-text/2 HTTP/1.1[0m" 404 -
+2025-11-17 15:12:24,590 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251114_201823_format_report.txt
+2025-11-17 15:12:24,591 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:24] "GET /api/paper-format/get-report-text/1 HTTP/1.1" 200 -
+2025-11-17 15:12:28,434 - __main__ - INFO - 已删除格式审查文件记录: ID=3
+2025-11-17 15:12:28,435 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:28] "DELETE /api/paper-format/delete/3 HTTP/1.1" 200 -
+2025-11-17 15:12:28,447 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:28] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:12:29,440 - __main__ - INFO - 已删除格式审查文件记录: ID=2
+2025-11-17 15:12:29,441 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:29] "DELETE /api/paper-format/delete/2 HTTP/1.1" 200 -
+2025-11-17 15:12:29,454 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:29] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:12:30,425 - __main__ - INFO - 已删除格式审查文件记录: ID=1
+2025-11-17 15:12:30,426 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:30] "DELETE /api/paper-format/delete/1 HTTP/1.1" 200 -
+2025-11-17 15:12:30,437 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:30] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:12:35,693 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:35] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-17 15:12:35,706 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 15:12:35,714 - __main__ - INFO - 格式审查文件记录已创建: ID=4
+2025-11-17 15:12:35,715 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:35] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-17 15:12:35,725 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:35] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:12:40,760 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-17 15:12:45,956 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-17 15:12:45,956 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-17 15:12:45,957 - services.paper_format_service - INFO - 开始全量检测: uploads/format_check/temp\20251117_151235_paper1.docx
+2025-11-17 15:12:45,957 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-17 15:12:46,180 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-17 15:12:46,285 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-17 15:12:46,510 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-17 15:12:46,767 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-17 15:12:46,934 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-17 15:12:47,009 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-17 15:12:47,129 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-17 15:12:47,131 - services.paper_format_service - INFO - 报告已保存到: uploads/format_check/reports\20251117_151247_format_report.txt
+2025-11-17 15:12:47,136 - __main__ - INFO - 检测报告已自动保存: uploads/format_check/reports\20251117_151247_format_report.txt
+2025-11-17 15:12:47,148 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251117_151247_paper1_annotated.docx
+2025-11-17 15:12:47,152 - services.document_annotator - INFO - 共识别出 65 个问题
+2025-11-17 15:12:48,377 - services.document_annotator - INFO - 批注添加完成！共添加 65 个批注
+2025-11-17 15:12:48,379 - __main__ - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251117_151247_paper1_annotated.docx
+2025-11-17 15:12:48,391 - __main__ - INFO - 数据库记录已更新: ID=4
+2025-11-17 15:12:48,393 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:48] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-17 15:12:48,418 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:12:48] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-17 15:13:08,704 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251117_151247_paper1_annotated.docx
+2025-11-17 15:13:08,705 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 15:13:08] "GET /api/paper-format/download-annotated/20251117_151247_paper1_annotated.docx HTTP/1.1" 200 -

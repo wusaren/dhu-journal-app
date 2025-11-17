@@ -132,8 +132,12 @@ def detect_font_for_run(run, paragraph=None):
     # 行间距检测
     line_spacing = 1.0  # 默认单倍行距
     try:
+        # 优先级1: 检查段落直接格式的行距
         if paragraph and paragraph.paragraph_format.line_spacing:
             line_spacing = float(paragraph.paragraph_format.line_spacing)
+        # 优先级2: 检查段落样式的行距
+        elif paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
+            line_spacing = float(paragraph.style.paragraph_format.line_spacing)
     except Exception:
         pass
 
@@ -242,6 +246,13 @@ def check_keywords_structure(text, tpl):
             ok_msg = tpl.get('messages', {}).get('structure_header_ok')
             if ok_msg:
                 report['messages'].append(ok_msg)
+        elif re.match(r'^\s*Keywords\s*$', text.strip(), re.IGNORECASE):
+            # 检测到错误格式：Keywords单独成行
+            report['ok'] = False
+            report['messages'].append("关键词格式错误：'Keywords'后应紧跟冒号和内容")
+            report['messages'].append("正确格式：'Keywords: 关键词1; 关键词2; 关键词3'")
+            # 将文本作为内容（用于后续长度检查，即使格式错误）
+            report['content'] = text.strip()
         else:
             # 检查是否是缺少冒号的情况
             keywords_without_colon = re.match(r'^\s*Keywords\s+(.+)$', text.strip(), re.DOTALL | re.IGNORECASE)
@@ -370,22 +381,56 @@ def check_keywords_paragraphs(doc, tpl):
     """
     report = {'ok': True, 'messages': [], 'keywords_paragraph': None}
     
-    # 查找包含Keywords的段落（宽松匹配，不要求冒号）
-    keywords_paragraphs = []
+    # 方案1：查找包含Keywords:的段落（正确格式）
+    keywords_with_colon = []
     for paragraph in doc.paragraphs:
-        if paragraph.text and re.search(r'\bKeywords\b', paragraph.text, re.IGNORECASE):
-            keywords_paragraphs.append(paragraph)
+        if paragraph.text and re.search(r'\bKeywords\s*:', paragraph.text, re.IGNORECASE):
+            keywords_with_colon.append(paragraph)
     
-    if len(keywords_paragraphs) == 1:
-        report['keywords_paragraph'] = keywords_paragraphs[0]
+    # 方案2：查找单独的Keywords段落（错误格式）
+    keywords_alone = None
+    next_paragraph = None
+    for i, paragraph in enumerate(doc.paragraphs):
+        if paragraph.text and re.match(r'^\s*Keywords\s*$', paragraph.text.strip(), re.IGNORECASE):
+            keywords_alone = paragraph
+            # 查找下一个非空段落作为关键词内容
+            for j in range(i+1, min(i+3, len(doc.paragraphs))):
+                if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
+                    next_paragraph = doc.paragraphs[j]
+                    break
+            break
+    
+    # 方案3：宽松匹配（仅在前两种都失败时使用）
+    keywords_any = []
+    if not keywords_with_colon and not keywords_alone:
+        for paragraph in doc.paragraphs:
+            if paragraph.text and re.search(r'\bKeywords\b', paragraph.text, re.IGNORECASE):
+                keywords_any.append(paragraph)
+    
+    if len(keywords_with_colon) == 1:
+        # 找到正确格式
+        report['keywords_paragraph'] = keywords_with_colon[0]
         ok_msg = tpl.get('messages', {}).get('structure_header_ok')
         if ok_msg:
-            report['messages'].append("找到关键词段落")
-    elif len(keywords_paragraphs) > 1:
+            report['messages'].append("找到关键词段落（正确格式）")
+    elif keywords_alone:
+        # 找到错误格式（Keywords单独一行）
+        report['ok'] = False
+        report['keywords_paragraph'] = next_paragraph  # 返回内容段落用于后续格式检查
+        report['messages'].append("关键词格式错误：'Keywords'应与内容在同一段落，格式为'Keywords: 关键词1; 关键词2'")
+        report['messages'].append("当前错误格式：'Keywords'单独成行，内容另起一段")
+        if next_paragraph:
+            content_preview = next_paragraph.text[:50] + "..." if len(next_paragraph.text) > 50 else next_paragraph.text
+            report['messages'].append(f"检测到关键词内容段落：'{content_preview}'")
+    elif len(keywords_any) == 1:
+        # 使用宽松匹配找到
+        report['keywords_paragraph'] = keywords_any[0]
+        report['messages'].append("找到关键词段落（可能缺少冒号）")
+    elif len(keywords_with_colon) > 1 or len(keywords_any) > 1:
         report['ok'] = False
         report['messages'].append("检测到多个Keywords段落，应该只有一个")
         # 选择第一个作为主要段落
-        report['keywords_paragraph'] = keywords_paragraphs[0]
+        report['keywords_paragraph'] = keywords_with_colon[0] if keywords_with_colon else keywords_any[0]
     else:
         report['ok'] = False
         report['messages'].append("未找到Keywords段落")
@@ -835,19 +880,52 @@ def check_keywords_with_template(doc_path, template_identifier):
     tpl = load_template(template_identifier)
     doc = Document(doc_path)
     
-    # 查找关键词段落（宽松匹配，不要求冒号）
+    # 先调用check_keywords_paragraphs来查找关键词（它能处理多种格式）
+    paragraphs_report = check_keywords_paragraphs(doc, tpl)
+    
+    # 查找关键词段落索引（用于CLC检查）
     keywords_text = ""
     keywords_paragraph_index = None
     paragraphs = [p for p in doc.paragraphs if p.text and p.text.strip()]
     
-    for i, paragraph in enumerate(paragraphs):
-        if paragraph.text and re.search(r'\bKeywords\b', paragraph.text, re.IGNORECASE):
-            keywords_text = paragraph.text.strip()
-            keywords_paragraph_index = i
-            break
+    # 根据找到的段落提取文本
+    if paragraphs_report.get('keywords_paragraph'):
+        keywords_text = paragraphs_report['keywords_paragraph'].text.strip()
+        # 查找段落索引
+        for i, paragraph in enumerate(paragraphs):
+            if paragraph.text == paragraphs_report['keywords_paragraph'].text:
+                keywords_paragraph_index = i
+                break
+    else:
+        # 如果没找到段落，尝试多种方式查找
+        # 1. 查找单独的Keywords标题
+        for i, paragraph in enumerate(doc.paragraphs):
+            if paragraph.text and re.match(r'^\s*Keywords\s*$', paragraph.text.strip(), re.IGNORECASE):
+                keywords_text = paragraph.text.strip()
+                # 如果下一段是内容，也包含它
+                for j in range(i+1, min(i+2, len(doc.paragraphs))):
+                    if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
+                        keywords_text = "Keywords\n" + doc.paragraphs[j].text.strip()
+                        # 在paragraphs列表中找索引
+                        for k, p in enumerate(paragraphs):
+                            if p.text == doc.paragraphs[j].text:
+                                keywords_paragraph_index = k
+                                break
+                        break
+                break
+        
+        # 2. 如果还是没找到，尝试宽松匹配
+        if not keywords_text:
+            for i, paragraph in enumerate(paragraphs):
+                if paragraph.text and re.search(r'\bKeywords\b', paragraph.text, re.IGNORECASE):
+                    keywords_text = paragraph.text.strip()
+                    keywords_paragraph_index = i
+                    break
     
-    print(f"keywords_text: {keywords_text}")
-    if not keywords_text:
+    print(f"keywords_text: {keywords_text[:50] if keywords_text else 'Not found'}")
+    
+    # 如果完全找不到Keywords
+    if not keywords_text and not paragraphs_report.get('keywords_paragraph'):
         return {
             'structure': {'ok': False, 'messages': ['未找到Keywords段落']},
             'paragraphs': {'ok': False, 'messages': ['未找到Keywords段落']},
@@ -860,8 +938,7 @@ def check_keywords_with_template(doc_path, template_identifier):
         }
     
     # 执行关键词检查
-    structure_report = check_keywords_structure(keywords_text, tpl)
-    paragraphs_report = check_keywords_paragraphs(doc, tpl)
+    structure_report = check_keywords_structure(keywords_text, tpl) if keywords_text else {'ok': False, 'messages': ['无法检查关键词结构']}
     
     if paragraphs_report['keywords_paragraph']:
         format_report = check_keywords_format(paragraphs_report['keywords_paragraph'], tpl)

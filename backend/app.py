@@ -1254,6 +1254,7 @@ def check_format_all():
             modules=modules_list
         )
  
+        # 对所有的检测报告进行处理（计算通过率）
         result = paper_format_service.process_report(all_reports_dict)
  
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -1264,6 +1265,7 @@ def check_format_all():
             report_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], report_filename)
             
             try:
+                # 生成检测报告
                 report_result = paper_format_service.generate_report(result, output_path=report_path)
                 if report_result.get('success'):
                     # 将报告信息添加到返回结果中

@@ -6,8 +6,6 @@ import sys
 import json
 import re
 from pathlib import Path
-import logging
-logger = logging.getLogger(__name__)
 
 # 添加项目根目录到路径，以便导入模块
 if __name__ == '__main__':
@@ -203,28 +201,50 @@ def detect_paragraph_alignment(paragraph):
 def has_picture_object(paragraph):
     """
     检测段落是否包含图片对象
-    支持现代格式(w:drawing)和旧格式(w:pict)
+    支持现代格式(w:drawing)、旧格式(w:pict)和VML格式(v:imagedata)
     返回：True/False
     """
     try:
         para_xml = paragraph._element
+        
+        # 定义命名空间
+        namespaces = {
+            'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
+            'v': 'urn:schemas-microsoft-com:vml',
+            'wp': 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing',
+            'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+            'pic': 'http://schemas.openxmlformats.org/drawingml/2006/picture'
+        }
+        
         # 检查现代Word格式的图片（w:drawing）
-        drawings = para_xml.xpath('.//w:drawing')
+        drawings = para_xml.xpath('.//w:drawing', namespaces=namespaces)
         if drawings:
             return True
         
         # 检查旧格式的图片（w:pict）
-        pictures = para_xml.xpath('.//w:pict')
+        pictures = para_xml.xpath('.//w:pict', namespaces=namespaces)
         if pictures:
             return True
         
-        # 额外检查：通过v:imagedata（VML图片）
-        imagedata = para_xml.xpath('.//v:imagedata')
+        # 检查VML格式的图片（v:imagedata）- 这是最常见的格式
+        imagedata = para_xml.xpath('.//v:imagedata', namespaces=namespaces)
         if imagedata:
             return True
+        
+        # 检查图片元素（a:blip）
+        blips = para_xml.xpath('.//a:blip', namespaces=namespaces)
+        if blips:
+            return True
             
-    except Exception:
-        pass
+    except Exception as e:
+        # 如果xpath失败，尝试直接遍历元素
+        try:
+            for elem in para_xml.iter():
+                tag = elem.tag
+                if any(keyword in tag.lower() for keyword in ['drawing', 'pict', 'imagedata', 'blip']):
+                    return True
+        except Exception:
+            pass
     
     return False
 
@@ -233,7 +253,7 @@ def find_picture_captions(doc, tpl):
     识别文档中的图片标题
     返回：图片标题段落列表，每个元素包含段落对象、编号、标题文本
     """
-    caption_pattern = tpl.get('figure_detection_rules', {}).get('caption_pattern', r'^\s*Fig\.\s+(\d+)\s+(.+)$')
+    caption_pattern = tpl.get('figure_detection_rules', {}).get('caption_pattern', r'^\s*Fig\.?\s*(\d+)[.:\s]*(.*)$')
     captions = []
     
     for idx, paragraph in enumerate(doc.paragraphs):
@@ -242,13 +262,15 @@ def find_picture_captions(doc, tpl):
         if match:
             figure_num = int(match.group(1))
             figure_title = match.group(2).strip()
-            captions.append({
-                'paragraph': paragraph,
-                'paragraph_index': idx,
-                'number': figure_num,
-                'title': figure_title,
-                'full_text': text
-            })
+            # 只有当标题不为空时才认为是有效的标题
+            if figure_title:
+                captions.append({
+                    'paragraph': paragraph,
+                    'paragraph_index': idx,
+                    'number': figure_num,
+                    'title': figure_title,
+                    'full_text': text
+                })
     
     return captions
 

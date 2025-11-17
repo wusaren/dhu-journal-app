@@ -104,8 +104,12 @@ def detect_font_for_run(run, paragraph=None):
     # 5. 行间距检测
     line_spacing = 1.0  # 默认单倍行距
     try:
+        # 优先级1: 检查段落直接格式的行距
         if paragraph and paragraph.paragraph_format.line_spacing:
             line_spacing = float(paragraph.paragraph_format.line_spacing)
+        # 优先级2: 检查段落样式的行距
+        elif paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
+            line_spacing = float(paragraph.style.paragraph_format.line_spacing)
     except Exception:
         pass
     
@@ -249,6 +253,13 @@ def check_abstract_structure(text, tpl):
             ok_msg = tpl.get('messages', {}).get('structure_header_ok')
             if ok_msg:
                 report['messages'].append(ok_msg)
+        elif re.match(r'^\s*Abstract\s*$', text.strip(), re.IGNORECASE):
+            # 检测到错误格式：Abstract单独成行
+            report['ok'] = False
+            report['messages'].append("摘要格式错误：'Abstract'后应紧跟冒号和内容")
+            report['messages'].append("正确格式：'Abstract: 摘要内容...'")
+            # 将文本作为内容（用于后续长度检查，即使格式错误）
+            report['content'] = text.strip()
         else:
             report['ok'] = False
             error_msg = tpl.get('messages', {}).get('structure_header_error')
@@ -294,18 +305,41 @@ def check_abstract_paragraphs(doc, tpl):
     """
     report = {'ok': True, 'messages': [], 'abstract_paragraph': None}
     
-    # 查找包含Abstract的段落
-    abstract_paragraphs = []
+    # 方案1：查找包含Abstract:的段落（正确格式）
+    abstract_with_colon = []
     for paragraph in doc.paragraphs:
         if paragraph.text and re.search(r'\bAbstract\s*:', paragraph.text, re.IGNORECASE):
-            abstract_paragraphs.append(paragraph)
+            abstract_with_colon.append(paragraph)
     
-    if len(abstract_paragraphs) == 1:
-        report['abstract_paragraph'] = abstract_paragraphs[0]
+    # 方案2：查找单独的Abstract段落（错误格式）
+    abstract_alone = None
+    next_paragraph = None
+    for i, paragraph in enumerate(doc.paragraphs):
+        if paragraph.text and re.match(r'^\s*Abstract\s*$', paragraph.text.strip(), re.IGNORECASE):
+            abstract_alone = paragraph
+            # 查找下一个非空段落作为摘要内容
+            for j in range(i+1, min(i+3, len(doc.paragraphs))):
+                if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
+                    next_paragraph = doc.paragraphs[j]
+                    break
+            break
+    
+    if len(abstract_with_colon) == 1:
+        # 找到正确格式
+        report['abstract_paragraph'] = abstract_with_colon[0]
         ok_msg = tpl.get('messages', {}).get('structure_no_paragraph_ok')
         if ok_msg:
             report['messages'].append(ok_msg)
-    elif len(abstract_paragraphs) > 1:
+    elif abstract_alone:
+        # 找到错误格式（Abstract单独一行）
+        report['ok'] = False
+        report['abstract_paragraph'] = next_paragraph  # 返回内容段落用于后续格式检查
+        report['messages'].append("摘要格式错误：'Abstract'应与内容在同一段落，格式为'Abstract: 内容'")
+        report['messages'].append("当前错误格式：'Abstract'单独成行，内容另起一段")
+        if next_paragraph:
+            content_preview = next_paragraph.text[:50] + "..." if len(next_paragraph.text) > 50 else next_paragraph.text
+            report['messages'].append(f"检测到摘要内容段落：'{content_preview}'")
+    elif len(abstract_with_colon) > 1:
         report['ok'] = False
         error_msg = tpl.get('messages', {}).get('structure_paragraph_error')
         if error_msg:
@@ -449,14 +483,37 @@ def check_abstract_with_template(doc_path, template_identifier):
     tpl = load_template(template_identifier)
     doc = Document(doc_path)
     
-    # 查找摘要段落
+    # 先调用check_abstract_paragraphs来查找摘要（它能处理多种格式）
+    paragraphs_report = check_abstract_paragraphs(doc, tpl)
+    
+    # 根据找到的段落提取文本
     abstract_text = ""
-    for paragraph in doc.paragraphs:
-        if paragraph.text and re.search(r'\bAbstract\s*:', paragraph.text, re.IGNORECASE):
-            abstract_text = paragraph.text.strip()
-            break
-    print(f"abstract_text: {abstract_text}")
-    if not abstract_text:
+    if paragraphs_report.get('abstract_paragraph'):
+        abstract_text = paragraphs_report['abstract_paragraph'].text.strip()
+    else:
+        # 如果没找到段落，尝试查找单独的Abstract标题
+        for i, paragraph in enumerate(doc.paragraphs):
+            if paragraph.text and re.match(r'^\s*Abstract\s*$', paragraph.text.strip(), re.IGNORECASE):
+                # 找到Abstract单独一行，使用它作为文本（用于结构检查）
+                abstract_text = paragraph.text.strip()
+                # 如果下一段是内容，也包含它
+                for j in range(i+1, min(i+2, len(doc.paragraphs))):
+                    if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
+                        abstract_text = "Abstract\n" + doc.paragraphs[j].text.strip()
+                        break
+                break
+        
+        # 如果还是没找到，最后尝试查找包含Abstract:的段落
+        if not abstract_text:
+            for paragraph in doc.paragraphs:
+                if paragraph.text and re.search(r'\bAbstract\s*:', paragraph.text, re.IGNORECASE):
+                    abstract_text = paragraph.text.strip()
+                    break
+    
+    print(f"abstract_text: {abstract_text[:50] if abstract_text else 'Not found'}")
+    
+    # 如果完全找不到Abstract
+    if not abstract_text and not paragraphs_report.get('abstract_paragraph'):
         return {
             'structure': {'ok': False, 'messages': ['未找到Abstract段落']},
             'paragraphs': {'ok': False, 'messages': ['未找到Abstract段落']},
@@ -465,8 +522,7 @@ def check_abstract_with_template(doc_path, template_identifier):
         }
     
     # 执行各项检查
-    structure_report = check_abstract_structure(abstract_text, tpl)
-    paragraphs_report = check_abstract_paragraphs(doc, tpl)
+    structure_report = check_abstract_structure(abstract_text, tpl) if abstract_text else {'ok': False, 'messages': ['无法检查摘要结构']}
     
     if paragraphs_report['abstract_paragraph']:
         format_report = check_abstract_format(paragraphs_report['abstract_paragraph'], tpl)
