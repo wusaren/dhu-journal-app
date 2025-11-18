@@ -95,12 +95,14 @@ export const paperFormatService = {
      * @param enableFigureApi 是否启用图片内容API检测
      * @param modules 指定检测的模块列表（可选）
      * @param fileId 文件数据库ID（可选）
+     * @param skipChecks 跳过的检测项字典（可选），格式：{"Title": ["bold", "font_size"], "Abstract": ["font_size"]}
      */
     async checkAll(
         tempFilePath: string,
         enableFigureApi: boolean = false,
         modules?: string[],
-        fileId?: number
+        fileId?: number,
+        skipChecks?: Record<string, string[]>
     ): Promise<ApiResponse<CheckAllResult>> {
         const data: any = {
             temp_file_path: tempFilePath,
@@ -113,6 +115,10 @@ export const paperFormatService = {
 
         if (fileId) {
             data.file_id = fileId
+        }
+
+        if (skipChecks && Object.keys(skipChecks).length > 0) {
+            data.skip_checks = skipChecks
         }
 
         return await apiClient.post('/paper-format/check-all', data)

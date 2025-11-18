@@ -11,6 +11,24 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
+
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
+
+
 """
 === 论文格式检测系统 - 公式检测器 ===
 
@@ -659,11 +677,19 @@ def validate_formula_format(paragraph, template):
         report['messages'].append(f"公式格式验证异常: {str(e)}")
         return report
 
-def check_doc_with_template(doc_path, template_identifier):
+def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     """
     主检查函数：使用模板检查文档中的公式格式
+    参数:
+        doc_path: 文档路径
+        template_identifier: 模板标识符
+        skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
     返回完整的检查报告
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     try:
         # 加载模板
         template = load_template(template_identifier)

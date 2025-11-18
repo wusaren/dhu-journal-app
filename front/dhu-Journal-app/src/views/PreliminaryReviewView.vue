@@ -374,6 +374,34 @@
       </template>
     </el-dialog>
     
+    <!-- 跳过检测项选择对话框 -->
+    <el-dialog v-model="showSkipChecksDialog" title="选择跳过的检测项" width="500px">
+      <div class="skip-checks-content">
+        <el-alert 
+          :title="`正在配置：${currentModuleForSkip ? availableModules.find(m => m.value === currentModuleForSkip)?.label : ''}`"
+          type="info" 
+          :closable="false"
+          style="margin-bottom: 20px;"
+        />
+        
+        <el-checkbox-group v-model="currentSkipChecks">
+          <div class="skip-check-option" v-for="check in availableSkipChecks" :key="check.value">
+            <el-checkbox :value="check.value">
+              <span class="check-label">{{ check.label }}</span>
+              <span class="check-description">{{ check.description }}</span>
+            </el-checkbox>
+          </div>
+        </el-checkbox-group>
+      </div>
+      
+      <template #footer>
+        <el-button @click="cancelSkipChecksSelection">取消</el-button>
+        <el-button class="confirm-btn" type="primary" @click="confirmSkipChecksSelection">
+          确定
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- 检测模块选择对话框 -->
     <el-dialog v-model="showModuleSelectorDialog" title="选择检测模块" width="600px">
       <div class="module-selector-content">
@@ -400,10 +428,24 @@
         <!-- 各检测模块 -->
         <el-checkbox-group v-model="selectedModules" @change="handleModuleChange">
           <div class="module-option" v-for="module in availableModules" :key="module.value">
-            <el-checkbox :value="module.value">
-              <span class="module-label">{{ module.label }}</span>
-              <span class="module-description">{{ module.description }}</span>
-            </el-checkbox>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <el-checkbox :value="module.value">
+                <span class="module-label">{{ module.label }}</span>
+                <span class="module-description">{{ module.description }}</span>
+              </el-checkbox>
+              <el-button
+                v-if="selectedModules.includes(module.value)"
+                size="small"
+                text
+                type="primary"
+                @click="showSkipChecksSelector(module.value)"
+              >
+                选择跳过项
+                <span v-if="skipChecks[module.value] && skipChecks[module.value].length > 0">
+                  ({{ skipChecks[module.value].length }})
+                </span>
+              </el-button>
+            </div>
           </div>
         </el-checkbox-group>
         
@@ -549,6 +591,12 @@ const selectedModules = ref<string[]>([])
 const selectAllModules = ref(false)
 const enableFigureApi = ref(false)
 
+// 跳过检测项相关状态
+const showSkipChecksDialog = ref(false)
+const currentModuleForSkip = ref<string>('')
+const currentSkipChecks = ref<string[]>([])
+const skipChecks = ref<Record<string, string[]>>({})
+
 // 可用的检测模块列表
 const availableModules = [
   { value: 'Title', label: '标题格式检测', description: '检测标题、作者、单位格式' },
@@ -558,6 +606,16 @@ const availableModules = [
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
   { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' }
+]
+
+// 可跳过的检测项列表
+const availableSkipChecks = [
+  { value: 'font_size', label: '字体大小', description: '跳过字体大小检测' },
+  { value: 'bold', label: '加粗', description: '跳过文字加粗检测' },
+  { value: 'italic', label: '斜体', description: '跳过文字斜体检测' },
+  { value: 'alignment', label: '对齐', description: '跳过段落对齐检测' },
+  { value: 'spacing', label: '行距', description: '跳过行距检测' },
+  { value: 'indent', label: '缩进', description: '跳过首行缩进检测' }
 ]
 
 // 计算是否为半选状态
@@ -888,6 +946,36 @@ const handleModuleChange = (value: string[]) => {
   if (!value.includes('Figure')) {
     enableFigureApi.value = false
   }
+  
+  // 清理已取消模块的跳过检测项配置
+  const currentSkipModules = Object.keys(skipChecks.value)
+  currentSkipModules.forEach(module => {
+    if (!value.includes(module)) {
+      delete skipChecks.value[module]
+    }
+  })
+}
+
+// 显示跳过检测项选择对话框
+const showSkipChecksSelector = (moduleName: string) => {
+  currentModuleForSkip.value = moduleName
+  currentSkipChecks.value = skipChecks.value[moduleName] ? [...skipChecks.value[moduleName]] : []
+  showSkipChecksDialog.value = true
+}
+
+// 确认跳过检测项选择
+const confirmSkipChecksSelection = () => {
+  if (currentModuleForSkip.value) {
+    skipChecks.value[currentModuleForSkip.value] = [...currentSkipChecks.value]
+  }
+  showSkipChecksDialog.value = false
+}
+
+// 取消跳过检测项选择
+const cancelSkipChecksSelection = () => {
+  showSkipChecksDialog.value = false
+  currentModuleForSkip.value = ''
+  currentSkipChecks.value = []
 }
 
 const confirmModuleSelection = () => {
@@ -926,7 +1014,8 @@ const startFormatCheck = async () => {
       currentPaper.value.tempFilePath, 
       enableFigureApi.value,
       selectedModules.value,
-      currentPaper.value.fileId
+      currentPaper.value.fileId,
+      skipChecks.value
     )
     
     clearInterval(progressInterval)
@@ -1629,6 +1718,32 @@ onMounted(() => {
 
 .module-description {
   margin-left: 0;
+  color: #909399;
+  font-size: 13px;
+}
+
+/* 跳过检测项对话框样式 */
+.skip-checks-content {
+  padding: 10px 0;
+}
+
+.skip-check-option {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.skip-check-option:last-child {
+  border-bottom: none;
+}
+
+.check-label {
+  font-weight: 500;
+  color: #303133;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.check-description {
   color: #909399;
   font-size: 13px;
 }

@@ -9,6 +9,24 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
+
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
+
+
 # spaCy支持（可选）
 try:
     import spacy
@@ -829,7 +847,7 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
     actual_font_eastasia = extra_info.get('font_eastasia', '宋体')
 
     # 字体大小
-    if expected_font_size_pt is not None:
+    if not should_skip_check('font_size') and expected_font_size_pt is not None:
         actual_size_name = get_font_size(actual_size_pt, tpl)
         expected_size_name = get_font_size(expected_font_size_pt, tpl)
         print(f"字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_font_size_pt}pt）)")
@@ -837,19 +855,19 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
             issues.append(f"字体大小应为{expected_size_name} ({expected_font_size_pt}pt)，实际为{actual_size_name} ({actual_size_pt}pt)")
 
     # 字体名称（英文字体）
-    if expected_font_name is not None:
+    if not should_skip_check('font_name') and expected_font_name is not None:
         print(f"英文字体: {actual_font_name}, 中文字体: {actual_font_eastasia} (期望: {expected_font_name})")
         if actual_font_name != expected_font_name:
             issues.append(f"英文字体应为{expected_font_name}，实际为{actual_font_name}")
 
     # 加粗
-    if expected_bold is not None:
+    if not should_skip_check('bold') and expected_bold is not None:
         print(f"加粗: {'是' if actual_bold else '否'} (期望: {'是' if expected_bold else '否'})")
         if actual_bold != bool(expected_bold):
             issues.append(f"字体应为{'加粗' if expected_bold else '不加粗'}，实际为{'加粗' if actual_bold else '不加粗'}")
 
     # 斜体
-    if expected_italic is not None:
+    if not should_skip_check('italic') and expected_italic is not None:
         print(f"斜体: {'是' if actual_italic else '否'} (期望: {'是' if expected_italic else '否'})")
         if actual_italic != bool(expected_italic):
             issues.append(f"字体应为{'斜体' if expected_italic else '正体'}，实际为{'斜体' if actual_italic else '正体'}")
@@ -920,10 +938,18 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
     print("---")
     return issues
 
-def check_doc_with_template(doc_path, template_identifier):
+def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     """
     主检查函数：调用各个独立的检查函数
+    参数:
+        doc_path: 文档路径
+        template_identifier: 模板标识符
+        skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     tpl = load_template(template_identifier)
     extracted = extract_from_docx(doc_path, tpl)
 

@@ -142,7 +142,8 @@ class PaperFormatService:
     
     def check_all(self, docx_path: str, enable_figure_api: bool = False,
                   modules: Optional[List[str]] = None, 
-                  reports_dir = None, annotate_dir = None) -> Dict[str, Any]:
+                  reports_dir = None, annotate_dir = None,
+                  skip_checks: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
         """
         执行所选择的格式检测
 
@@ -150,12 +151,16 @@ class PaperFormatService:
         docx_path: 待检测的文档路径
         enable_figure_api: 是否启用Figure模块的API内容检测
         modules: 检测配置列表，指定启动哪些检测模块
+        skip_checks: 跳过检测项字典，格式：{"Title": ["bold", "font_size"], "Abstract": ["font_size"]}
         
         返回：
             {模块名: 报告字典} 的字典
         """
         try:
             logger.info(f"开始进行格式检测: {docx_path}")
+            
+            if skip_checks:
+                logger.info(f"跳过检测项配置: {skip_checks}")
             
             if not os.path.isfile(docx_path):
                 return self._format_response(
@@ -168,7 +173,8 @@ class PaperFormatService:
             all_reports = self.detector.detect_all(
                 docx_path,
                 modules=modules,
-                enable_figure_api=enable_figure_api
+                enable_figure_api=enable_figure_api,
+                skip_checks=skip_checks
             )
 
         except Exception as e:
@@ -370,6 +376,49 @@ class PaperFormatService:
                         if messages and not table_alignment.get('ok', False):
                             for msg in messages:
                                 lines.append(f"      • {msg}")
+            
+            # Figure模块需要特殊处理（类似Table模块）
+            elif module_name == 'Figure':
+                # 处理图片编号检查
+                numbering = report.get('numbering', {})
+                if isinstance(numbering, dict) and 'ok' in numbering:
+                    ok_status = "✓ 通过" if numbering.get('ok', False) else "✗ 失败"
+                    lines.append(f"\n  [Numbering] {ok_status}")
+                    messages = numbering.get('messages', [])
+                    if messages:
+                        for msg in messages:
+                            lines.append(f"    • {msg}")
+                
+                # 处理每张图片
+                figures = report.get('figures', [])
+                for i, fig_report in enumerate(figures, 1):
+                    caption_info = fig_report.get('caption_info', {})
+                    if fig_report.get('has_caption', False):
+                        caption_text = caption_info.get('full_text', f'Fig.{i}')
+                        lines.append(f"\n  [图片 {i}: {caption_text[:40]}{'...' if len(caption_text) > 40 else ''}]")
+                    else:
+                        lines.append(f"\n  [图片 {i}: (无标题)]")
+                    
+                    # 标题格式
+                    format_check = fig_report.get('format_check', {})
+                    if isinstance(format_check, dict) and 'ok' in format_check:
+                        ok_status = "✓" if format_check.get('ok', False) else "✗"
+                        lines.append(f"    标题格式: {ok_status}")
+                        messages = format_check.get('messages', [])
+                        if messages and not format_check.get('ok', False):
+                            for msg in messages:
+                                lines.append(f"      • {msg}")
+                    
+                    # 图片对齐
+                    picture_check = fig_report.get('picture_check', {})
+                    if isinstance(picture_check, dict) and 'ok' in picture_check:
+                        ok_status = "✓" if picture_check.get('ok', False) else "✗"
+                        lines.append(f"    图片对齐: {ok_status}")
+                        messages = picture_check.get('messages', [])
+                        if messages and not picture_check.get('ok', False):
+                            for msg in messages:
+                                lines.append(f"      • {msg}")
+            
             else:
                 # 其他模块的常规处理
                 for section_key, section_value in report.items():

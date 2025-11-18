@@ -1240,11 +1240,14 @@ def check_format_all():
         # 获取参数
         enable_figure_api = data.get('enableFigureApi', False)
         modules = data.get('modules')  # 可选，逗号分隔的模块名称
+        skip_checks = data.get('skip_checks', {})  # 获取跳过检测项字典
         
         if modules:
             modules_list = [m.strip() for m in modules.split(',')]
         else:
             modules_list = None
+        
+        logger.info(f"接收到skip_checks参数: {skip_checks}")
         
         # 执行检测
         paper_format_service = PaperFormatService()
@@ -1253,7 +1256,8 @@ def check_format_all():
             enable_figure_api=enable_figure_api,
             modules=modules_list,
             reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
-            annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER']
+            annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
+            skip_checks=skip_checks
         )
         
         # 更新数据库记录

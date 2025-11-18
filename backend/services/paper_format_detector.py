@@ -87,12 +87,13 @@ class PaperFormatDetector:
         with open(template_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     
-    def detect_title(self, docx_path: str) -> Dict[str, Any]:
+    def detect_title(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测标题、作者、单位格式
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -101,7 +102,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Title.json')
             Title_detect = self.modules['Title']
             
-            result = Title_detect.check_doc_with_template(docx_path, template_path)
+            result = Title_detect.check_doc_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -112,12 +113,13 @@ class PaperFormatDetector:
                 'summary': [f'标题检测失败: {e}']
             }
     
-    def detect_abstract(self, docx_path: str) -> Dict[str, Any]:
+    def detect_abstract(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测摘要格式
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -126,7 +128,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Abstract.json')
             Abstract_detect = self.modules['Abstract']
             
-            result = Abstract_detect.check_abstract_with_template(docx_path, template_path)
+            result = Abstract_detect.check_abstract_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -137,12 +139,13 @@ class PaperFormatDetector:
                 'summary': [f'摘要检测失败: {e}']
             }
     
-    def detect_keywords(self, docx_path: str) -> Dict[str, Any]:
+    def detect_keywords(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测关键词格式
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -151,7 +154,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Keywords.json')
             Keywords_detect = self.modules['Keywords']
             
-            result = Keywords_detect.check_keywords_with_template(docx_path, template_path)
+            result = Keywords_detect.check_keywords_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -162,12 +165,13 @@ class PaperFormatDetector:
                 'summary': [f'关键词检测失败: {e}']
             }
     
-    def detect_content(self, docx_path: str) -> Dict[str, Any]:
+    def detect_content(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测正文格式
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -176,7 +180,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Content.json')
             Content_detect = self.modules['Content']
             
-            result = Content_detect.check_content_with_template(docx_path, template_path)
+            result = Content_detect.check_content_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -187,13 +191,15 @@ class PaperFormatDetector:
                 'summary': [f'正文检测失败: {e}']
             }
     
-    def detect_figure(self, docx_path: str, enable_content_check: bool = False) -> Dict[str, Any]:
+    def detect_figure(self, docx_path: str, enable_content_check: bool = False,
+                     skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测图片格式
         
         Args:
             docx_path: Word文档路径
             enable_content_check: 是否启用内容API检测
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -205,7 +211,8 @@ class PaperFormatDetector:
             result = Figure_detect.check_doc_with_template(
                 docx_path, 
                 template_path,
-                enable_content_check=enable_content_check
+                enable_content_check=enable_content_check,
+                skip_checks=skip_checks
             )
             return result
             
@@ -217,12 +224,13 @@ class PaperFormatDetector:
                 'summary': [f'图片检测失败: {e}']
             }
     
-    def detect_formula(self, docx_path: str) -> Dict[str, Any]:
+    def detect_formula(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测公式格式
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -231,7 +239,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Formula.json')
             Formula_detect = self.modules['Formula']
             
-            result = Formula_detect.check_doc_with_template(docx_path, template_path)
+            result = Formula_detect.check_doc_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -242,12 +250,13 @@ class PaperFormatDetector:
                 'summary': [f'公式检测失败: {e}']
             }
     
-    def detect_table(self, docx_path: str) -> Dict[str, Any]:
+    def detect_table(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测表格格式
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -256,7 +265,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Table.json')
             Table_detect = self.modules['Table']
             
-            result = Table_detect.check_doc_with_template(docx_path, template_path)
+            result = Table_detect.check_doc_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -268,7 +277,8 @@ class PaperFormatDetector:
             }
     
     def detect_all(self, docx_path: str, modules: List[str] = None,
-                   enable_figure_api: bool = False) -> Dict[str, Any]:
+                   enable_figure_api: bool = False,
+                   skip_checks: Dict[str, List[str]] = None) -> Dict[str, Any]:
         """
         执行全量检测
         
@@ -276,6 +286,7 @@ class PaperFormatDetector:
             docx_path: Word文档路径
             modules: 指定检测的模块列表，None表示检测所有模块
             enable_figure_api: 是否启用图片内容API检测
+            skip_checks: 跳过检测项字典，格式：{"Title": ["bold", "font_size"], "Abstract": ["font_size"]}
         
         Returns:
             包含所有模块检测结果的字典
@@ -283,26 +294,33 @@ class PaperFormatDetector:
         if modules is None:
             modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
         
+        if skip_checks is None:
+            skip_checks = {}
+        
         all_reports = {}
         
         for module_name in modules:
             logger.info(f"执行 {module_name} 检测")
             
+            # 获取当前模块的跳过检测项配置
+            module_skip_checks = skip_checks.get(module_name, [])
+            
             try:
                 if module_name == 'Title':
-                    result = self.detect_title(docx_path)
+                    result = self.detect_title(docx_path, module_skip_checks)
                 elif module_name == 'Abstract':
-                    result = self.detect_abstract(docx_path)
+                    result = self.detect_abstract(docx_path, module_skip_checks)
                 elif module_name == 'Keywords':
-                    result = self.detect_keywords(docx_path)
+                    result = self.detect_keywords(docx_path, module_skip_checks)
                 elif module_name == 'Content':
-                    result = self.detect_content(docx_path)
+                    result = self.detect_content(docx_path, module_skip_checks)
                 elif module_name == 'Figure':
-                    result = self.detect_figure(docx_path, enable_content_check=enable_figure_api)
+                    result = self.detect_figure(docx_path, enable_content_check=enable_figure_api, 
+                                                skip_checks=module_skip_checks)
                 elif module_name == 'Formula':
-                    result = self.detect_formula(docx_path)
+                    result = self.detect_formula(docx_path, module_skip_checks)
                 elif module_name == 'Table':
-                    result = self.detect_table(docx_path)
+                    result = self.detect_table(docx_path, module_skip_checks)
                 else:
                     logger.warning(f"未知模块: {module_name}")
                     continue

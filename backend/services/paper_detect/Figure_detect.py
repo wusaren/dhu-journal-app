@@ -18,6 +18,24 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
+
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
+
+
 """
 === 论文格式检测系统 - 图片检测器 ===
 
@@ -163,9 +181,8 @@ def detect_paragraph_alignment(paragraph):
     
     检测逻辑：
     1. 如果直接格式不为None，直接使用直接格式结果
-    2. 如果直接格式为None，检查样式格式
-    3. 检查XML样式定义（处理复杂的样式继承）
-    4. 默认为左对齐
+    2. 如果直接格式为None，检查样式格式（包括继承链）
+    3. 默认为左对齐
     """
     
     # 优先级1: 检查直接格式
@@ -174,22 +191,61 @@ def detect_paragraph_alignment(paragraph):
         # 如果有直接格式设置，直接使用
         return int(direct_alignment)
     
-    # 优先级2: 如果直接格式为None，检查样式格式
+    # 优先级2: 如果直接格式为None，检查样式格式（包括继承链）
     if paragraph.style:
         try:
+            # 先检查当前样式
             style_alignment = paragraph.style.paragraph_format.alignment
             if style_alignment is not None:
-                # 如果样式有对齐设置，使用样式对齐
                 return int(style_alignment)
-        except Exception:
-            pass
-    
-    # 优先级3: 检查XML样式定义（处理复杂的样式继承）
-    if paragraph.style and paragraph.style.style_id:
-        try:
-            xml_alignment = get_style_alignment(paragraph.part.document, paragraph.style.style_id)
-            if xml_alignment is not None:
-                return xml_alignment
+            
+            # 如果当前样式没有对齐设置，检查样式继承链
+            current_style = paragraph.style
+            visited = set()  # 避免循环
+            
+            while current_style and current_style.style_id not in visited:
+                visited.add(current_style.style_id)
+                
+                # 检查 XML 中的对齐设置
+                if current_style.element.pPr is not None:
+                    pPr = current_style.element.pPr
+                    jc_elements = pPr.findall('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}jc')
+                    if jc_elements:
+                        val = jc_elements[0].get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                        if val == 'center':
+                            return 1  # CENTER
+                        elif val == 'right':
+                            return 2  # RIGHT
+                        elif val == 'both':
+                            return 3  # JUSTIFY
+                        elif val == 'left':
+                            return 0  # LEFT
+                
+                # 获取基础样式
+                try:
+                    if current_style.element.pPr is not None:
+                        basedOn = current_style.element.pPr.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}basedOn')
+                        if basedOn is None:
+                            # 在 pPr 外查找
+                            basedOn = current_style.element.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}basedOn')
+                        
+                        if basedOn is not None:
+                            base_id = basedOn.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                            # 在样式集合中查找
+                            found = False
+                            for s in paragraph.part.document.styles:
+                                if s.style_id == base_id:
+                                    current_style = s
+                                    found = True
+                                    break
+                            if not found:
+                                break
+                        else:
+                            break
+                    else:
+                        break
+                except Exception:
+                    break
         except Exception:
             pass
             
@@ -317,8 +373,38 @@ def check_caption_format(caption_info, tpl):
     paragraph = caption_info['paragraph']
     expected_format = tpl.get('format_rules', {}).get('caption', {})
     
+    # 获取主要的文本run
+    main_run = next((r for r in paragraph.runs if r.text.strip()), None)
+    if not main_run:
+        report['ok'] = False
+        report['messages'].append('图片标题没有可供检查的文本内容')
+        return report
+    
+    
+    # 检查加粗
+    if not should_skip_check('bold') and 'bold' in expected_format:
+        expected_bold = expected_format.get('bold', False)
+        actual_size, actual_font, actual_bold, actual_italic, _ = detect_font_for_run(main_run, paragraph)
+        if actual_bold != expected_bold:
+            report['ok'] = False
+            msg = tpl.get('messages', {}).get('caption_bold_error', '图片标题应为不加粗')
+            if expected_bold:
+                msg = '图片标题应加粗'
+            report['messages'].append(f"{msg}（当前：{'加粗' if actual_bold else '不加粗'}）")
+    
+    # 检查斜体
+    if not should_skip_check('italic') and 'italic' in expected_format:
+        expected_italic = expected_format.get('italic', False)
+        actual_size, actual_font, actual_bold, actual_italic, _ = detect_font_for_run(main_run, paragraph)
+        if actual_italic != expected_italic:
+            report['ok'] = False
+            msg = tpl.get('messages', {}).get('caption_italic_error', '图片标题应为正体')
+            if expected_italic:
+                msg = '图片标题应为斜体'
+            report['messages'].append(f"{msg}（当前：{'斜体' if actual_italic else '正体'}）")
+    
     # 检查对齐方式
-    if expected_format.get('alignment') == 'center':
+    if not should_skip_check('alignment') and expected_format.get('alignment') == 'center':
         actual_alignment = detect_paragraph_alignment(paragraph)
         
         # 对齐方式名称映射
@@ -337,9 +423,8 @@ def check_caption_format(caption_info, tpl):
             report['messages'].append(f"{msg}（当前：{actual_alignment_name}）")
     
     # 检查字体大小
-    expected_size = expected_format.get('font_size_pt', 10.5)
-    main_run = next((r for r in paragraph.runs if r.text.strip()), None)
-    if main_run:
+    if not should_skip_check('font_size'):
+        expected_size = expected_format.get('font_size_pt', 10.5)
         actual_size, actual_font, _, _, _ = detect_font_for_run(main_run, paragraph)
         if abs(actual_size - expected_size) > 0.5:
             report['ok'] = False
@@ -349,8 +434,8 @@ def check_caption_format(caption_info, tpl):
             report['messages'].append(f"{msg}（期望：{expected_size_name}，实际：{actual_size_name}）")
     
     # 检查字体名称
-    expected_font = expected_format.get('font_name', 'Times New Roman')
-    if main_run:
+    if not should_skip_check('font_name'):
+        expected_font = expected_format.get('font_name', 'Times New Roman')
         actual_size, actual_font, _, _, _ = detect_font_for_run(main_run, paragraph)
         if actual_font and actual_font != expected_font:
             report['ok'] = False
@@ -388,7 +473,7 @@ def check_figure_numbering(captions, tpl):
     
     return report
 
-def check_doc_with_template(doc_path, template_identifier, enable_content_check=True):
+def check_doc_with_template(doc_path, template_identifier, enable_content_check=True, api_key=None, skip_checks=None):
     """
     使用指定的模板检测文档中的图片格式
     
@@ -396,9 +481,16 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
         doc_path: Word文档路径
         template_identifier: 模板标识符（文件路径或模板名称）
         enable_content_check: 是否启用图片内容智能检测（需要API密钥）
+        api_key: 硅基流动API密钥（启用内容检测时需要）
+        skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
+    
     返回:
         检测报告字典
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     # 加载模板
     tpl = load_template(template_identifier)
     
@@ -416,8 +508,8 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
                 # 如果失败，尝试相对导入
                 from .Figure_content_detect import FigureContentDetector
             
-            # 初始化检测器（会自动从配置文件读取）
-            content_detector = FigureContentDetector()
+            # 初始化检测器（会自动从配置文件读取，或使用传入的api_key）
+            content_detector = FigureContentDetector(api_key=api_key)
             print(f"✓ 图片内容智能检测已启用")
             if content_detector.save_images:
                 print(f"  图片将保存到: {content_detector.image_dir}/ 目录")

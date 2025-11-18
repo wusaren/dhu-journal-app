@@ -10,6 +10,25 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
+
+
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
+
+
 """
 === 论文格式检测系统 - 正文内容检测器 ===
 
@@ -742,7 +761,7 @@ def check_title_format(titles, tpl):
         actual_size_pt, actual_font_name, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
         
         # 字体大小检查
-        if 'font_size_pt' in title_rules:
+        if not should_skip_check('font_size') and 'font_size_pt' in title_rules:
             expected_size_pt = float(title_rules['font_size_pt'])
             actual_size_name = get_font_size(actual_size_pt, tpl)
             expected_size_name = get_font_size(expected_size_pt, tpl)
@@ -751,14 +770,14 @@ def check_title_format(titles, tpl):
                 issues.append(f"{title_prefix}标题 '{title_text}' 字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
         
         # 字体名称检查
-        if 'font_name' in title_rules:
+        if not should_skip_check('font_name') and 'font_name' in title_rules:
             expected_font_name = str(title_rules['font_name'])
             print(f"{title_prefix}标题 '{title_text}' 字体名称: {actual_font_name} (期望: {expected_font_name})")
             if expected_font_name.lower() not in actual_font_name.lower():
                 issues.append(f"{title_prefix}标题 '{title_text}' 字体应为{expected_font_name}，实际为{actual_font_name}")
         
         # 加粗检查
-        if 'bold' in title_rules:
+        if not should_skip_check('bold') and 'bold' in title_rules:
             expected_bold = bool(title_rules['bold'])
             print(f"{title_prefix}标题 '{title_text}' 加粗: {'是' if actual_bold else '否'} (期望: {'是' if expected_bold else '否'})")
             if actual_bold != expected_bold:
@@ -767,7 +786,7 @@ def check_title_format(titles, tpl):
                 issues.append(f"{title_prefix}标题 '{title_text}' 应为{bold_status}，实际为{actual_status}")
         
         # 斜体检查
-        if 'italic' in title_rules:
+        if not should_skip_check('italic') and 'italic' in title_rules:
             expected_italic = bool(title_rules['italic'])
             print(f"{title_prefix}标题 '{title_text}' 斜体: {'是' if actual_italic else '否'} (期望: {'是' if expected_italic else '否'})")
             if actual_italic != expected_italic:
@@ -1038,7 +1057,7 @@ def check_content_text_format(doc, titles, tpl):
         paragraph_issues = []
         
         # 字体大小检查
-        if 'font_size_pt' in format_rules:
+        if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
             expected_size_pt = float(format_rules['font_size_pt'])
             if abs(actual_size_pt - expected_size_pt) > 0.5:
                 actual_size_name = get_font_size(actual_size_pt, tpl)
@@ -1046,13 +1065,13 @@ def check_content_text_format(doc, titles, tpl):
                 paragraph_issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
         
         # 字体名称检查
-        if 'font_name' in format_rules:
+        if not should_skip_check('font_name') and 'font_name' in format_rules:
             expected_font_name = str(format_rules['font_name'])
             if expected_font_name.lower() not in actual_font_name.lower():
                 paragraph_issues.append(f"字体应为{expected_font_name}，实际为{actual_font_name}")
         
         # 加粗检查
-        if 'bold' in format_rules:
+        if not should_skip_check('bold') and 'bold' in format_rules:
             expected_bold = bool(format_rules['bold'])
             if actual_bold != expected_bold:
                 bold_status = "加粗" if expected_bold else "不加粗"
@@ -1060,7 +1079,7 @@ def check_content_text_format(doc, titles, tpl):
                 paragraph_issues.append(f"应为{bold_status}，实际为{actual_status}")
         
         # 斜体检查
-        if 'italic' in format_rules:
+        if not should_skip_check('italic') and 'italic' in format_rules:
             expected_italic = bool(format_rules['italic'])
             if actual_italic != expected_italic:
                 italic_status = "斜体" if expected_italic else "正体"
@@ -1068,7 +1087,7 @@ def check_content_text_format(doc, titles, tpl):
                 paragraph_issues.append(f"应为{italic_status}，实际为{actual_status}")
         
         # 行间距检查
-        if 'line_spacing' in format_rules:
+        if not should_skip_check('spacing') and 'line_spacing' in format_rules:
             expected_line_spacing = float(format_rules['line_spacing'])
             if abs(actual_line_spacing - expected_line_spacing) > 0.1:
                 actual_spacing_name = get_line_spacing_name(actual_line_spacing, tpl)
@@ -1076,7 +1095,7 @@ def check_content_text_format(doc, titles, tpl):
                 paragraph_issues.append(f"行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）")
         
         # 对齐方式检查
-        if 'alignment' in format_rules:
+        if not should_skip_check('alignment') and 'alignment' in format_rules:
             expected_alignment_str = str(format_rules['alignment'])
             alignment_map = {"left": 0, "center": 1, "right": 2, "justify": 3}
             expected_alignment = alignment_map.get(expected_alignment_str, 0)
@@ -1087,7 +1106,7 @@ def check_content_text_format(doc, titles, tpl):
                 paragraph_issues.append(f"对齐方式应为{expected_alignment_name}，实际为{actual_alignment_name}")
         
         # 首行缩进检查
-        if 'first_line_indent' in format_rules:
+        if not should_skip_check('indent') and 'first_line_indent' in format_rules:
             expected_first_indent = float(format_rules['first_line_indent'])
             first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
             if abs(first_line_indent - expected_first_indent) > 2.0:  # 2pt容差
@@ -1136,10 +1155,18 @@ def check_content_text_format(doc, titles, tpl):
     return report
 
 # ---------- 主检测函数 ----------
-def check_content_with_template(doc_path, template_identifier):
+def check_content_with_template(doc_path, template_identifier, skip_checks=None):
     """
     主检查函数：检查正文内容格式
+    参数:
+        doc_path: 文档路径
+        template_identifier: 模板标识符
+        skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     tpl = load_template(template_identifier)
     doc = Document(doc_path)
     
