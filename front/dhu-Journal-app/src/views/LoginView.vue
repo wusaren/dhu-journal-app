@@ -37,8 +37,19 @@
         </el-form-item>
       </el-form>
       
-      
+      <!-- 忘记密码链接 -->
+      <div class="forgot-password">
+        <a href="javascript:void(0)" @click="showForgotPasswordDialog = true" class="forgot-link">
+          忘记密码？
+        </a>
+      </div>
     </div>
+
+    <!-- 忘记密码对话框 -->
+    <ForgotPasswordDialog 
+      v-model="showForgotPasswordDialog"
+      @saved="handlePasswordReset"
+    />
   </div>
 </template>
 
@@ -47,7 +58,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { authService } from '@/api/authService'
+import { authService } from '../api/authService'
+import ForgotPasswordDialog from '../components/ForgotPasswordDialog.vue'
 
 const router = useRouter()
 const form = ref({
@@ -56,6 +68,12 @@ const form = ref({
 })
 
 const loading = ref(false)
+const showForgotPasswordDialog = ref(false)
+
+// 处理密码重置成功
+const handlePasswordReset = () => {
+  ElMessage.success('密码重置成功，请使用新密码登录')
+}
 
 const handleLogin = async () => {
   if (!form.value.username || !form.value.password) {
@@ -168,6 +186,24 @@ const handleLogin = async () => {
 .login-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(156, 14, 14, 0.3);
+}
+
+.forgot-password {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.forgot-link {
+  color: #9c0e0e;
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+  color: #7a0b0b;
+  text-decoration: underline;
 }
 
 .login-footer {

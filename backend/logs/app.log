@@ -9920,3 +9920,108 @@
 2025-11-15 15:26:00,200 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:26:00] "GET /api/template/system-fields HTTP/1.1" 200 -
 2025-11-15 15:26:01,861 - services.template_config_service - INFO - 已加载用户 6 的模板配置
 2025-11-15 15:26:01,862 - werkzeug - INFO - 127.0.0.1 - - [15/Nov/2025 15:26:01] "GET /api/user/template HTTP/1.1" 200 -
+2025-11-17 21:34:55,089 - app - ERROR - 发送密码重置邮件错误: Could not build url for endpoint 'security.reset_password' with values ['token']. Did you mean 'reset_password' instead?
+2025-11-17 21:36:22,817 - app - ERROR - 发送密码重置邮件错误: Could not build url for endpoint 'security.reset_password' with values ['token']. Did you mean 'reset_password' instead?
+2025-11-17 22:00:12,244 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.html.txt
+2025-11-17 22:05:17,204 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.html.txt
+2025-11-17 22:06:51,761 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.html.txt
+2025-11-17 22:11:30,697 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.html.txt
+2025-11-17 22:12:34,552 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.html.txt
+2025-11-17 22:14:08,589 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.html.txt
+2025-11-17 22:16:05,968 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.txt
+2025-11-17 22:16:42,170 - app - ERROR - 发送密码重置邮件错误: security/email/_base.html
+2025-11-17 22:18:23,375 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.txt
+2025-11-17 22:19:00,630 - app - ERROR - 发送密码重置邮件错误: security/email/security/email/reset_instructions.txt
+2025-11-17 22:59:59,246 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:59:59,295 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2025-11-17 22:59:59,295 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 22:59:59,295 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 23:00:01,529 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 23:00:01,552 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 23:00:01,577 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 23:00:33,480 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:00:33] "POST /api/login HTTP/1.1" 200 -
+2025-11-17 23:00:35,518 - __main__ - ERROR - 发送邮件失败: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2025-11-17 23:00:35,518 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:00:35] "[35m[1mPOST /api/send-verification-code HTTP/1.1[0m" 500 -
+2025-11-17 23:02:06,271 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 23:02:06,485 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 23:02:08,770 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 23:02:08,799 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 23:02:08,820 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 23:03:17,717 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:03:17] "POST /api/login HTTP/1.1" 200 -
+2025-11-17 23:03:18,279 - __main__ - INFO - 验证码已发送到邮箱: 507048182@qq.com
+2025-11-17 23:03:18,281 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:03:18] "POST /api/send-verification-code HTTP/1.1" 200 -
+2025-11-17 23:03:41,384 - __main__ - INFO - 用户 dhuwsr 的密码已通过邮箱验证更新
+2025-11-17 23:03:41,384 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:03:41] "POST /api/verify-and-change-password HTTP/1.1" 200 -
+2025-11-17 23:03:41,601 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:03:41] "POST /api/login HTTP/1.1" 200 -
+2025-11-17 23:03:42,045 - __main__ - INFO - 用户 dhuwsr 的密码已更新
+2025-11-17 23:03:42,045 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 23:03:42] "POST /api/change-password HTTP/1.1" 200 -
+2025-11-18 10:29:21,620 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:29:21,667 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.206.201.234:5000
+2025-11-18 10:29:21,668 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 10:29:21,670 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 10:29:24,084 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:29:24,113 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 10:29:24,135 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-18 10:29:31,244 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:29:31] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-11-18 10:29:40,777 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:29:40] "POST /api/login HTTP/1.1" 200 -
+2025-11-18 10:29:42,492 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:29:42] "GET /api/me HTTP/1.1" 200 -
+2025-11-18 10:30:04,140 - __main__ - INFO - 用户 dhu003 的密码已更新
+2025-11-18 10:30:04,141 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:30:04] "POST /api/change-password HTTP/1.1" 200 -
+2025-11-18 10:30:31,383 - __main__ - INFO - 用户 dhu003 的密码已更新
+2025-11-18 10:30:31,384 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:30:31] "POST /api/change-password HTTP/1.1" 200 -
+2025-11-18 10:30:36,445 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:30:36] "POST /api/logout HTTP/1.1" 200 -
+2025-11-18 10:35:09,335 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:35:09,382 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.206.201.234:5000
+2025-11-18 10:35:09,382 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 10:35:09,385 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 10:35:11,734 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:35:11,762 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 10:35:11,785 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-18 10:43:08,232 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-18 10:43:08,605 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 10:43:10,967 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:43:10,996 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 10:43:11,017 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-18 10:46:59,291 - __main__ - INFO - 忘记密码验证码已发送到邮箱: 507048182@qq.com
+2025-11-18 10:46:59,294 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:46:59] "POST /api/send-forgot-password-code HTTP/1.1" 200 -
+2025-11-18 10:48:35,207 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:48:35] "[31m[1mPOST /api/verify-and-change-password HTTP/1.1[0m" 401 -
+2025-11-18 10:49:11,861 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-18 10:49:12,110 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 10:49:14,530 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:49:14,558 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 10:49:14,578 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-18 10:49:28,336 - __main__ - ERROR - 验证并修改密码错误: 'AnonymousUser' object has no attribute 'id'
+2025-11-18 10:49:28,337 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:49:28] "[35m[1mPOST /api/verify-and-change-password HTTP/1.1[0m" 500 -
+2025-11-18 10:52:37,527 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-18 10:52:37,768 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 10:52:40,042 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:52:40,070 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 10:52:40,090 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-18 10:54:35,844 - __main__ - INFO - 忘记密码验证码已发送到邮箱: 507048182@qq.com
+2025-11-18 10:54:35,847 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:54:35] "POST /api/send-forgot-password-code HTTP/1.1" 200 -
+2025-11-18 10:54:48,199 - __main__ - INFO - 用户 dhuwsr 的密码已通过忘记密码重置
+2025-11-18 10:54:48,201 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:54:48] "POST /api/reset-forgot-password HTTP/1.1" 200 -
+2025-11-18 10:56:09,557 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:56:09] "POST /api/login HTTP/1.1" 200 -
+2025-11-18 11:23:40,834 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:23:40] "GET /api/me HTTP/1.1" 200 -
+2025-11-18 11:24:28,183 - __main__ - INFO - 用户 dhuwsr 的密码已更新
+2025-11-18 11:24:28,184 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:24:28] "POST /api/change-password HTTP/1.1" 200 -
+2025-11-18 11:24:32,650 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:24:32] "POST /api/logout HTTP/1.1" 200 -
+2025-11-18 11:24:43,342 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:24:43] "POST /api/login HTTP/1.1" 200 -
+2025-11-18 11:24:48,457 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:24:48] "POST /api/logout HTTP/1.1" 200 -
+2025-11-18 11:25:12,716 - __main__ - INFO - 忘记密码验证码已发送到邮箱: 507048182@qq.com
+2025-11-18 11:25:12,718 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:25:12] "POST /api/send-forgot-password-code HTTP/1.1" 200 -
+2025-11-18 11:25:36,921 - __main__ - INFO - 用户 dhuwsr 的密码已通过忘记密码重置
+2025-11-18 11:25:36,923 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:25:36] "POST /api/reset-forgot-password HTTP/1.1" 200 -
+2025-11-18 11:25:47,868 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:25:47] "POST /api/login HTTP/1.1" 200 -
+2025-11-18 11:26:00,048 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:26:00] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-18 11:26:16,970 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:26:16] "GET /api/me HTTP/1.1" 200 -
+2025-11-18 11:26:54,093 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 11:26:54] "GET /api/paper-format/files HTTP/1.1" 200 -

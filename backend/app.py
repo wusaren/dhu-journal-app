@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, url_for, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, auth_required, roles_required, hash_password, logout_user,verify_password, current_user
 from flask_security.models import fsqla_v3 as fsqla
+from flask_mail import Mail
 from flask_cors import CORS
 from flask_session import Session
 import redis
@@ -41,8 +42,19 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1小时
 
 Session(app)
 # Flask-Security 配置
+app.config['SECURITY_RECOVERABLE'] = True
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 app.config['SECURITY_PASSWORD_SALT'] = os.environ.get("SECURITY_PASSWORD_SALT")
+app.config['MAIL_SERVER'] = 'smtp.163.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = '13304980722@163.com'
+app.config['MAIL_PASSWORD'] = 'GZsv363MZheuABtj'
+app.config['MAIL_DEFAULT_SENDER'] = '13304980722@163.com'
+# 邮件模板配置
+
+app.config['SECURITY_EMAIL_PLAIN_TEMPLATE'] = 'reset_instructions.txt'
 if not app.config['SECRET_KEY'] or not app.config['SECURITY_PASSWORD_SALT']:
     logging.warning("SECRET_KEY or SECURITY_PASSWORD_SALT not set in environment; sessions/tokens will be unstable. Set them before production.")    # ...existing code...
     @app.route('/api/login', methods=['POST'])
@@ -94,6 +106,9 @@ app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['SECURITY_PASSWORD_SINGLE_HASH'] = False
 app.config['SECURITY_TOKEN_AUTHENTICATION_HEADER'] = 'Authorization'
 app.config['SECURITY_TOKEN_MAX_AGE'] = 3600  # 1小时
+
+# 初始化邮件扩展
+mail = Mail(app)
 
 # 初始化扩展
 db.init_app(app)
@@ -320,11 +335,327 @@ def logout():
         logger.error(f"登出错误: {str(e)}")
         return jsonify({'message': f'登出失败: {str(e)}'}), 500
 
-# 修改密码
+# @app.route('/api/forgot-password', methods=['POST'])
+# def forgot_password():
+#     """发送密码重置邮件"""
+#     try:
+#         data = request.get_json()
+#         email = data.get('email')
+        
+#         if not email:
+#             return jsonify({'success': False, 'message': '邮箱不能为空'}), 400
+        
+#         # 查找用户
+#         user = user_datastore.find_user(email=email)
+#         if not user:
+#             print("用户不存在")
+#             # 出于安全考虑，不透露用户是否存在
+#             return jsonify({
+#                 'success': True,
+#                 'message': '如果该邮箱存在，重置链接已发送到您的邮箱'
+#             })
+        
+#         # 使用Flask-Security发送密码重置邮件
+#         from flask_security.recoverable import send_reset_password_instructions
+#         send_reset_password_instructions(user)
+        
+#         logger.info(f"密码重置邮件已发送到: {email}")
+#         return jsonify({
+#             'success': True,
+#             'message': '如果该邮箱存在，重置链接已发送到您的邮箱'
+#         })
+    
+#     except Exception as e:
+#         logger.error(f"发送密码重置邮件错误: {str(e)}")
+#         return jsonify({'success': False, 'message': f'发送重置邮件失败: {str(e)}'}), 500
+
+# @app.route('/api/reset-password', methods=['POST'])
+# def reset_password():
+#     """通过邮箱验证重置密码"""
+#     try:
+#         data = request.get_json()
+#         token = data.get('token')
+#         new_password = data.get('newPassword')
+        
+#         if not token or not new_password:
+#             return jsonify({'success': False, 'message': '重置令牌和新密码不能为空'}), 400
+        
+#         if len(new_password) < 6:
+#             return jsonify({'success': False, 'message': '新密码长度不能少于6位'}), 400
+        
+#         # 使用Flask-Security重置密码
+#         from flask_security.recoverable import reset_password_token_status
+#         expired, invalid, user = reset_password_token_status(token)
+        
+#         if invalid:
+#             return jsonify({'success': False, 'message': '重置令牌无效'}), 401
+        
+#         if expired:
+#             return jsonify({'success': False, 'message': '重置令牌已过期'}), 401
+        
+#         if not user:
+#             return jsonify({'success': False, 'message': '用户不存在'}), 404
+        
+#         # 重置密码
+#         user.password = hash_password(new_password)
+#         db.session.commit()
+        
+#         # 更新JSON配置文件中的密码
+#         try:
+#             import json
+#             user_config_path = 'config/users.json'
+#             with open(user_config_path, 'r', encoding='utf-8') as f:
+#                 user_config = json.load(f)
+            
+#             # 找到当前用户并更新密码
+#             for user_data in user_config['users']:
+#                 if user_data['username'] == user.username:
+#                     user_data['password'] = new_password
+#                     break
+            
+#             # 写回配置文件
+#             with open(user_config_path, 'w', encoding='utf-8') as f:
+#                 json.dump(user_config, f, indent=2, ensure_ascii=False)
+            
+#             logger.info(f"用户 {user.username} 的密码已通过邮箱验证重置")
+            
+#         except Exception as e:
+#             logger.warning(f"更新用户配置文件失败: {e}")
+#             # 数据库更新成功，配置文件更新失败不影响主要功能
+        
+#         return jsonify({
+#             'success': True,
+#             'message': '密码重置成功'
+#         })
+    
+#     except Exception as e:
+#         logger.error(f"重置密码错误: {str(e)}")
+#         return jsonify({'success': False, 'message': f'密码重置失败: {str(e)}'}), 500
+
+# 发送邮箱验证码（需要认证，用于个人中心修改密码）
+@app.route('/api/send-verification-code', methods=['POST'])
+@auth_required()
+def send_verification_code():
+    """发送邮箱验证码（需要认证）"""
+    try:
+        # 生成6位验证码
+        import random
+        code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
+        # 存储验证码到Redis（15分钟过期）
+        redis_client = redis.from_url('redis://localhost:6379')
+        redis_client.setex(f'password_verify:{current_user.id}', 900, code)
+        
+        # 发送邮件
+        try:
+            from flask_mail import Message
+            msg = Message(
+                subject='密码修改验证码',
+                recipients=[current_user.email],
+                body=f'您的密码修改验证码是：{code}，请在15分钟内完成验证。'
+            )
+            mail.send(msg)
+            logger.info(f"验证码已发送到邮箱: {current_user.email}")
+        except Exception as e:
+            logger.error(f"发送邮件失败: {str(e)}")
+            return jsonify({'success': False, 'message': f'发送验证码失败: {str(e)}'}), 500
+        
+        return jsonify({
+            'success': True,
+            'message': '验证码已发送到您的邮箱'
+        })
+    
+    except Exception as e:
+        logger.error(f"发送验证码错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'发送验证码失败: {str(e)}'}), 500
+
+# 发送忘记密码验证码（不需要认证）
+@app.route('/api/send-forgot-password-code', methods=['POST'])
+def send_forgot_password_code():
+    """发送忘记密码验证码（不需要认证）"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        email = data.get('email')
+        
+        if not username or not email:
+            return jsonify({'success': False, 'message': '用户名和邮箱不能为空'}), 400
+        
+        # 验证用户名和邮箱是否匹配
+        user = user_datastore.find_user(username=username)
+        if not user or user.email != email:
+            # 出于安全考虑，不透露具体错误信息
+            return jsonify({
+                'success': True,
+                'message': '如果用户名和邮箱匹配，验证码已发送到您的邮箱'
+            })
+        
+        # 生成6位验证码
+        import random
+        code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
+        # 存储验证码到Redis（15分钟过期）
+        redis_client = redis.from_url('redis://localhost:6379')
+        redis_client.setex(f'forgot_password_verify:{user.id}', 900, code)
+        
+        # 发送邮件
+        try:
+            from flask_mail import Message
+            msg = Message(
+                subject='密码重置验证码',
+                recipients=[user.email],
+                body=f'您的密码重置验证码是：{code}，请在15分钟内完成验证。'
+            )
+            mail.send(msg)
+            logger.info(f"忘记密码验证码已发送到邮箱: {user.email}")
+        except Exception as e:
+            logger.error(f"发送邮件失败: {str(e)}")
+            return jsonify({'success': False, 'message': f'发送验证码失败: {str(e)}'}), 500
+        
+        return jsonify({
+            'success': True,
+            'message': '验证码已发送到您的邮箱'
+        })
+    
+    except Exception as e:
+        logger.error(f"发送忘记密码验证码错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'发送验证码失败: {str(e)}'}), 500
+
+# 验证验证码并修改密码（需要认证，用于个人中心修改密码）
+@app.route('/api/verify-and-change-password', methods=['POST'])
+@auth_required()
+def verify_and_change_password():
+    """验证验证码并修改密码（需要认证）"""
+    try:
+        data = request.get_json()
+        verification_code = data.get('verificationCode')
+        new_password = data.get('newPassword')
+        
+        if not verification_code or not new_password:
+            return jsonify({'success': False, 'message': '验证码和新密码不能为空'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'success': False, 'message': '新密码长度不能少于6位'}), 400
+        
+        # 验证验证码
+        redis_client = redis.from_url('redis://localhost:6379')
+        stored_code = redis_client.get(f'password_verify:{current_user.id}')
+        
+        if not stored_code or stored_code.decode() != verification_code:
+            return jsonify({'success': False, 'message': '验证码错误或已过期'}), 401
+        
+        # 修改密码
+        current_user.password = hash_password(new_password)
+        db.session.commit()
+        
+        # 删除验证码
+        redis_client.delete(f'password_verify:{current_user.id}')
+        
+        # 更新JSON配置文件中的密码
+        try:
+            import json
+            user_config_path = 'config/users.json'
+            with open(user_config_path, 'r', encoding='utf-8') as f:
+                user_config = json.load(f)
+            
+            # 找到当前用户并更新密码
+            for user in user_config['users']:
+                if user['username'] == current_user.username:
+                    user['password'] = new_password
+                    break
+            
+            # 写回配置文件
+            with open(user_config_path, 'w', encoding='utf-8') as f:
+                json.dump(user_config, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"用户 {current_user.username} 的密码已通过邮箱验证更新")
+            
+        except Exception as e:
+            logger.warning(f"更新用户配置文件失败: {e}")
+            # 数据库更新成功，配置文件更新失败不影响主要功能
+        
+        return jsonify({
+            'success': True,
+            'message': '密码修改成功'
+        })
+    
+    except Exception as e:
+        logger.error(f"验证并修改密码错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'密码修改失败: {str(e)}'}), 500
+
+# 忘记密码重置（不需要认证）
+@app.route('/api/reset-forgot-password', methods=['POST'])
+def reset_forgot_password():
+    """忘记密码重置（不需要认证）"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        email = data.get('email')
+        verification_code = data.get('verificationCode')
+        new_password = data.get('newPassword')
+        
+        if not username or not email or not verification_code or not new_password:
+            return jsonify({'success': False, 'message': '用户名、邮箱、验证码和新密码不能为空'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'success': False, 'message': '新密码长度不能少于6位'}), 400
+        
+        # 验证用户是否存在
+        user = user_datastore.find_user(username=username)
+        if not user or user.email != email:
+            return jsonify({'success': False, 'message': '用户名或邮箱错误'}), 401
+        
+        # 验证验证码
+        redis_client = redis.from_url('redis://localhost:6379')
+        stored_code = redis_client.get(f'forgot_password_verify:{user.id}')
+        
+        if not stored_code or stored_code.decode() != verification_code:
+            return jsonify({'success': False, 'message': '验证码错误或已过期'}), 401
+        
+        # 修改密码
+        user.password = hash_password(new_password)
+        db.session.commit()
+        
+        # 删除验证码
+        redis_client.delete(f'forgot_password_verify:{user.id}')
+        
+        # 更新JSON配置文件中的密码
+        try:
+            import json
+            user_config_path = 'config/users.json'
+            with open(user_config_path, 'r', encoding='utf-8') as f:
+                user_config = json.load(f)
+            
+            # 找到当前用户并更新密码
+            for user_data in user_config['users']:
+                if user_data['username'] == user.username:
+                    user_data['password'] = new_password
+                    break
+            
+            # 写回配置文件
+            with open(user_config_path, 'w', encoding='utf-8') as f:
+                json.dump(user_config, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"用户 {user.username} 的密码已通过忘记密码重置")
+            
+        except Exception as e:
+            logger.warning(f"更新用户配置文件失败: {e}")
+            # 数据库更新成功，配置文件更新失败不影响主要功能
+        
+        return jsonify({
+            'success': True,
+            'message': '密码重置成功，请使用新密码登录'
+        })
+    
+    except Exception as e:
+        logger.error(f"忘记密码重置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'密码重置失败: {str(e)}'}), 500
+
+# 修改密码（旧版本，保留兼容性）
 @app.route('/api/change-password', methods=['POST'])
 @auth_required()
 def change_password():
-    """修改用户密码"""
+    """修改用户密码（旧版本，保留兼容性）"""
     try:
         data = request.get_json()
         current_password = data.get('currentPassword')

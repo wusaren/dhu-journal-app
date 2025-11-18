@@ -442,8 +442,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { paperFormatService } from '@/api/paperFormatService'
-import type { ApiResponse, CheckAllResult } from '@/api/paperFormatService'
+import { paperFormatService } from '../api/paperFormatService'
+import type { ApiResponse, CheckAllResult } from '../api/paperFormatService'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 

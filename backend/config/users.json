@@ -62,6 +62,15 @@
         "managing_editor"
       ],
       "active": true
+    },
+    {
+      "username": "dhuwsr",
+      "email": "507048182@qq.com",
+      "password": "dhuwsr1207",
+      "roles": [
+        "managing_editor"
+      ],
+      "active": true
     }
   ],
   "roles": [

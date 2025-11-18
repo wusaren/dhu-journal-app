@@ -14,3 +14,184 @@
 2025-11-14 15:33:32,159 - backend.app - INFO - 创建目录: uploads/format_check/temp
 2025-11-14 15:33:32,159 - backend.app - INFO - 创建目录: uploads/format_check/reports
 2025-11-14 15:33:32,164 - backend.app - INFO - 创建目录: user_configs
+2025-11-17 21:22:05,290 - app - INFO - 创建目录: uploads/format_check/annotate
+2025-11-17 21:26:14,755 - __main__ - INFO - 用户 admin 已创建
+2025-11-17 21:26:14,963 - __main__ - INFO - 用户 editor 已创建
+2025-11-17 21:26:15,164 - __main__ - INFO - 用户 editor2 已创建
+2025-11-17 21:26:15,377 - __main__ - INFO - 用户 managing_editor 已创建
+2025-11-17 21:26:15,584 - __main__ - INFO - 用户 dhu001 已创建
+2025-11-17 21:26:15,792 - __main__ - INFO - 用户 dhu002 已创建
+2025-11-17 21:26:16,000 - __main__ - INFO - 用户 dhu003 已创建
+2025-11-17 21:26:16,208 - __main__ - INFO - 用户 dhuwsr 已创建
+2025-11-17 21:26:16,208 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:26:16,284 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2025-11-17 21:26:16,284 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 21:26:16,291 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:26:18,754 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:26:18,780 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:26:18,792 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:27:27,569 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 21:27:27,719 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:27:29,826 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:27:29,855 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:27:29,872 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:33:41,449 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\check_users.py', reloading
+2025-11-17 21:33:41,644 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:33:43,901 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:33:43,927 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:33:43,942 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:36:02,620 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 21:36:02,893 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:36:05,162 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:36:05,190 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:36:05,203 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:37:22,760 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 21:37:23,207 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:37:25,664 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:37:25,692 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:37:25,712 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:42:35,841 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\blueprints\\admin.py', reloading
+2025-11-17 21:42:36,172 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:42:38,431 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:42:38,456 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:42:38,481 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:55:57,077 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 21:55:57,368 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:55:59,559 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:55:59,584 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:55:59,608 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 21:58:50,123 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 21:58:50,360 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 21:58:52,804 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 21:58:52,828 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 21:58:52,849 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:03:04,227 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:03:04,471 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:03:06,709 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:03:06,741 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:03:06,761 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:06:48,503 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:06:48,715 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:06:51,045 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:06:51,076 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:06:51,096 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:07:10,569 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:07:10,740 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:07:12,966 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:07:12,990 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:07:13,010 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:10:00,002 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 22:10:00,178 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:10:02,388 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:10:02,416 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:10:02,437 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:13:57,349 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:13:57,710 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:14:00,203 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:14:00,225 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:14:00,249 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:15:06,791 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:15:06,990 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:15:09,226 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:15:09,247 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:15:09,269 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:15:42,567 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_fix.py', reloading
+2025-11-17 22:15:42,755 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:15:44,970 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:15:44,994 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:15:45,017 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:16:34,680 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:16:34,881 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:16:37,082 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:16:37,113 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:16:37,133 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:17:20,261 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:17:20,444 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:17:22,669 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:17:22,694 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:17:22,714 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:18:50,066 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:18:50,282 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:18:52,476 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:18:52,500 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:18:52,518 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:18:56,567 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\app.py', reloading
+2025-11-17 22:18:56,747 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:18:58,902 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:18:58,926 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:18:58,947 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:42:27,509 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:42:27,565 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2025-11-17 22:42:27,565 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 22:42:27,565 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:42:30,210 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:42:30,238 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:42:30,267 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:42:43,016 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 22:42:43] "POST /api/login HTTP/1.1" 200 -
+2025-11-17 22:42:43,023 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 22:42:43] "[31m[1mPOST /api/send-verification-code HTTP/1.1[0m" 401 -
+2025-11-17 22:44:19,609 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 22:44:19,831 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:44:22,247 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:44:22,270 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:44:22,294 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:45:01,929 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 22:45:02,124 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:45:04,346 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:45:04,372 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:45:04,388 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:45:54,271 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 22:45:54,542 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:45:56,931 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:45:56,960 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:45:56,980 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:47:44,798 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 22:47:45,039 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:47:47,330 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:47:47,361 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:47:47,382 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:51:41,628 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_email_verification.py', reloading
+2025-11-17 22:51:41,876 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:51:44,128 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:51:44,156 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:51:44,170 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:52:14,356 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 22:52:14] "POST /api/login HTTP/1.1" 200 -
+2025-11-17 22:52:16,410 - __main__ - ERROR - 发送邮件失败: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2025-11-17 22:52:16,410 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 22:52:16] "[35m[1mPOST /api/send-verification-code HTTP/1.1[0m" 500 -
+2025-11-17 22:54:19,737 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_mail_config.py', reloading
+2025-11-17 22:56:46,833 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:56:46,889 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2025-11-17 22:56:46,889 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-17 22:56:46,896 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:56:49,200 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:56:49,232 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:56:49,253 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:57:21,610 - werkzeug - INFO -  * Detected change in 'D:\\wsr\\project\\dhu-Journal-app\\backend\\test_mail_config.py', reloading
+2025-11-17 22:57:21,842 - werkzeug - INFO -  * Restarting with stat
+2025-11-17 22:57:24,047 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-17 22:57:24,076 - werkzeug - WARNING -  * Debugger is active!
+2025-11-17 22:57:24,089 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-17 22:58:26,549 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 22:58:26] "POST /api/login HTTP/1.1" 200 -
+2025-11-17 22:58:28,597 - __main__ - ERROR - 发送邮件失败: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2025-11-17 22:58:28,598 - werkzeug - INFO - 127.0.0.1 - - [17/Nov/2025 22:58:28] "[35m[1mPOST /api/send-verification-code HTTP/1.1[0m" 500 -
+2025-11-18 10:07:12,390 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:07:12,445 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.206.201.234:5000
+2025-11-18 10:07:12,445 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 10:07:12,448 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 10:07:14,924 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 10:07:14,949 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 10:07:14,975 - werkzeug - INFO -  * Debugger PIN: 514-742-416
+2025-11-18 10:08:02,963 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:08:02] "[31m[1mPOST /api/logout HTTP/1.1[0m" 401 -
+2025-11-18 10:08:29,154 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:08:29] "POST /api/login HTTP/1.1" 200 -
+2025-11-18 10:08:30,906 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 10:08:30] "GET /api/me HTTP/1.1" 200 -

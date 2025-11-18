@@ -305,3 +305,90 @@ def get_admin_stats():
         'total_roles': total_roles,
         'role_stats': role_stats
     })
+
+@admin_bp.route('/users/<int:user_id>/info', methods=['GET'])
+@auth_required()
+@roles_required('admin')
+def get_user_info(user_id):
+    """获取特定用户的用户名和邮箱信息"""
+    try:
+        user = user_datastore.find_user(id=user_id)
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': '用户不存在'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            },
+            'message': '获取用户信息成功'
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取用户信息失败: {str(e)}'
+        }), 500
+
+@admin_bp.route('/users/by-username/<username>', methods=['GET'])
+@auth_required()
+@roles_required('admin')
+def get_user_by_username(username):
+    """通过用户名获取用户信息"""
+    try:
+        user = user_datastore.find_user(username=username)
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': '用户不存在'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            },
+            'message': '获取用户信息成功'
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取用户信息失败: {str(e)}'
+        }), 500
+
+@admin_bp.route('/users/by-email/<email>', methods=['GET'])
+@auth_required()
+@roles_required('admin')
+def get_user_by_email(email):
+    """通过邮箱获取用户信息"""
+    try:
+        user = user_datastore.find_user(email=email)
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': '用户不存在'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            },
+            'message': '获取用户信息成功'
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取用户信息失败: {str(e)}'
+        }), 500

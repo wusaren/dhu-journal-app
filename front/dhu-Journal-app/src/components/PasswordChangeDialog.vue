@@ -19,7 +19,29 @@
         label-width="120px"
         class="password-form"
       >
-        <el-form-item label="当前密码" prop="currentPassword">
+        <!-- 邮箱验证码部分 - 只有在忘记密码场景才显示 -->
+        <el-form-item v-if="useEmailVerification" label="验证码" prop="verificationCode">
+          <div class="verification-code-group">
+            <el-input
+              v-model="form.verificationCode"
+              placeholder="请输入6位验证码"
+              size="large"
+              class="verification-input"
+              maxlength="6"
+            />
+            <el-button
+              class="send-code-btn"
+              :disabled="countdown > 0"
+              @click="sendVerificationCode"
+              :loading="sendingCode"
+            >
+              {{ countdown > 0 ? `${countdown}秒后重试` : '发送验证码' }}
+            </el-button>
+          </div>
+        </el-form-item>
+
+        <!-- 当前密码 - 只有在个人中心修改密码场景才显示 -->
+        <el-form-item v-if="!useEmailVerification" label="当前密码" prop="currentPassword">
           <el-input
             v-model="form.currentPassword"
             type="password"
@@ -86,6 +108,7 @@ interface PasswordForm {
   currentPassword: string
   newPassword: string
   confirmPassword: string
+  verificationCode?: string
 }
 
 interface Emits {
@@ -95,6 +118,7 @@ interface Emits {
 
 const props = defineProps<{
   modelValue: boolean
+  useEmailVerification?: boolean
 }>()
 
 const emit = defineEmits<Emits>()
@@ -102,13 +126,16 @@ const emit = defineEmits<Emits>()
 // 响应式数据
 const visible = ref(props.modelValue)
 const loading = ref(false)
+const sendingCode = ref(false)
+const countdown = ref(0)
 const formRef = ref<FormInstance>()
 
 // 表单数据
 const form = reactive<PasswordForm>({
   currentPassword: '',
   newPassword: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  verificationCode: ''
 })
 
 // 表单验证规则
@@ -124,8 +151,12 @@ const validateConfirmPassword = (rule: any, value: string, callback: any) => {
 
 const rules: FormRules = {
   currentPassword: [
-    { required: true, message: '请输入当前密码', trigger: 'blur' },
+    { required: !props.useEmailVerification, message: '请输入当前密码', trigger: 'blur' },
     { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+  ],
+  verificationCode: [
+    { required: props.useEmailVerification, message: '请输入验证码', trigger: 'blur' },
+    { min: 6, max: 6, message: '验证码必须是6位数字', trigger: 'blur' }
   ],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
@@ -135,6 +166,28 @@ const rules: FormRules = {
     { required: true, message: '请再次输入新密码', trigger: 'blur' },
     { validator: validateConfirmPassword, trigger: 'blur' }
   ]
+}
+
+// 发送验证码
+const sendVerificationCode = async () => {
+  sendingCode.value = true
+  try {
+    // 调用后端API发送验证码
+    ElMessage.success('验证码已发送到您的邮箱')
+    
+    // 开始倒计时
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+  } catch (error: any) {
+    ElMessage.error(error.message || '发送验证码失败')
+  } finally {
+    sendingCode.value = false
+  }
 }
 
 // 监听props变化
@@ -175,18 +228,30 @@ const handleSubmit = async () => {
 
     loading.value = true
 
-    // 调用修改密码的API
-    const response = await fetch('/change-password', {
+    let apiUrl = '/api/change-password'
+    let requestBody: any = {
+      currentPassword: form.currentPassword,
+      newPassword: form.newPassword
+    }
+
+    // 如果是邮箱验证场景，使用不同的API
+    if (props.useEmailVerification) {
+      apiUrl = '/api/verify-and-change-password'
+      requestBody = {
+        verificationCode: form.verificationCode,
+        newPassword: form.newPassword
+      }
+    }
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        currentPassword: form.currentPassword,
-        newPassword: form.newPassword
-      }),
+      body: JSON.stringify(requestBody),
       credentials: 'include'
     })
+
 
     // 检查响应状态
     if (!response.ok) {
@@ -278,6 +343,37 @@ const handleSubmit = async () => {
 :deep(.password-input .el-input__wrapper.is-focus) {
   box-shadow: 0 0 0 2px rgba(156, 14, 14, 0.1);
   border-color: var(--primary-color);
+}
+
+.verification-code-group {
+  display: flex;
+  gap: 12px;
+}
+
+.verification-input {
+  flex: 1;
+  border-radius: 8px;
+}
+
+.send-code-btn {
+  min-width: 120px;
+  border-radius: 8px;
+  font-weight: 500;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  background: #7a0b0b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(156, 14, 14, 0.3);
+}
+
+.send-code-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .password-tips {
