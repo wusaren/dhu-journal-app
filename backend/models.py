@@ -222,3 +222,31 @@ class FormatCheckFile(db.Model):
         db.Index('idx_submit_date', 'submit_date'),
         db.Index('idx_check_status', 'check_status'),
     )
+
+class Term(db.Model):
+    """术语表 - 存储学术术语数据集"""
+    __tablename__ = 'terms'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # CSV原始字段
+    term = db.Column(db.String(500), nullable=False)  # 术语
+    category = db.Column(db.String(200))  # 类别
+    sentence = db.Column(db.Text)  # 句子
+    label = db.Column(db.Integer)  # 标签
+    definition = db.Column(db.Text)  # 定义
+    gen_definition = db.Column(db.Text)  # 生成的定义
+    ner_tags = db.Column(db.Text)  # 命名实体识别标签
+    tokens = db.Column(db.Text)  # 词元
+    
+    # 额外字段
+    is_original_dataset = db.Column(db.Integer, default=0, nullable=False)  # 0=原始数据集, 1=新添加数据
+    created_at = db.Column(db.Date, default=datetime.utcnow().date, nullable=False)  # 存入日期
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_term', 'term'),
+        db.Index('idx_category', 'category'),
+        db.Index('idx_label', 'label'),
+        db.Index('idx_is_original_dataset', 'is_original_dataset'),
+    )

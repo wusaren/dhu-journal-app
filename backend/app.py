@@ -1480,6 +1480,79 @@ def open_annotated_by_id(file_id):
         }), 500
 
 
+@app.route('/api/paper-format/detect-terms', methods=['POST'])
+def detect_terms():
+    """执行论文术语检测"""
+    try:
+        from services.term_detector import detect_terms_from_file
+        
+        data = request.get_json()
+        temp_file_path = data.get('temp_file_path')
+        
+        if not temp_file_path:
+            return jsonify({
+                'success': False,
+                'message': '缺少临时文件路径'
+            }), 400
+        
+        if not os.path.exists(temp_file_path):
+            return jsonify({
+                'success': False,
+                'message': '临时文件不存在'
+            }), 404
+        
+        # 执行术语检测
+        result = detect_terms_from_file(temp_file_path)
+        
+        if result.get('success'):
+            logger.info(f"术语检测完成: 共检测到 {result['data']['total_terms']} 个术语")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"术语检测错误: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'术语检测失败: {str(e)}'
+        }), 500
+
+
+@app.route('/api/paper-format/confirm-new-term', methods=['POST'])
+def confirm_new_term():
+    """用户确认新术语"""
+    try:
+        data = request.get_json()
+        term = data.get('term')
+        confirmed = data.get('confirmed', False)
+        file_id = data.get('file_id')
+        
+        if not term:
+            return jsonify({
+                'success': False,
+                'message': '缺少术语参数'
+            }), 400
+        
+        # 这里可以将确认结果保存到数据库
+        # 暂时只返回确认结果
+        logger.info(f"用户确认新术语: {term}, 确认结果: {confirmed}")
+        
+        return jsonify({
+            'success': True,
+            'message': '确认成功',
+            'data': {
+                'term': term,
+                'confirmed': confirmed
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"确认新术语错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'确认失败: {str(e)}'
+        }), 500
+
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)

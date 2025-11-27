@@ -150,6 +150,30 @@ export const paperFormatService = {
      */
     getReportDownloadUrl(filename: string): string {
         return `/api/download/${filename}`
+    },
+
+    /**
+     * 执行术语检测
+     * @param tempFilePath 临时文件路径
+     */
+    async detectTerms(tempFilePath: string): Promise<ApiResponse<any>> {
+        return await apiClient.post('/paper-format/detect-terms', {
+            temp_file_path: tempFilePath
+        })
+    },
+
+    /**
+     * 用户确认新术语
+     * @param term 术语
+     * @param confirmed 是否确认为新术语
+     * @param fileId 文件ID（可选）
+     */
+    async confirmNewTerm(term: string, confirmed: boolean, fileId?: number): Promise<ApiResponse<any>> {
+        return await apiClient.post('/paper-format/confirm-new-term', {
+            term,
+            confirmed,
+            file_id: fileId
+        })
     }
 }
 

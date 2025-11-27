@@ -10163,3 +10163,1231 @@
 2025-11-18 19:33:46,020 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 19:33:46] "GET /api/paper-format/files HTTP/1.1" 200 -
 2025-11-18 19:37:36,876 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_detector.py', reloading
 2025-11-18 19:37:37,838 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 19:37:39,983 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 19:37:39,983 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-18 19:37:40,011 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 19:37:40,024 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-18 20:29:00,430 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 20:29:00] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-18 22:18:15,126 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 22:18:15] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-18 23:58:39,040 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 23:58:39,045 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-18 23:58:39,110 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-18 23:58:39,110 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 23:58:39,110 - werkzeug - INFO -  * Restarting with stat
+2025-11-18 23:58:41,076 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-18 23:58:41,081 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-18 23:58:41,099 - werkzeug - WARNING -  * Debugger is active!
+2025-11-18 23:58:41,114 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-18 23:58:48,612 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 23:58:48] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-18 23:58:51,585 - werkzeug - INFO - 127.0.0.1 - - [18/Nov/2025 23:58:51] "[33mGET /api/paper-format/get-report-text/6 HTTP/1.1[0m" 404 -
+2025-11-19 00:01:56,809 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 00:01:56] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-19 00:01:59,637 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 00:01:59] "[33mGET /api/paper-format/get-report-text/6 HTTP/1.1[0m" 404 -
+2025-11-19 00:03:41,629 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 00:03:41] "[33mGET /api/paper-format/open-report/6 HTTP/1.1[0m" 404 -
+2025-11-19 00:03:47,208 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 00:03:47] "[33mGET /api/paper-format/get-report-text/6 HTTP/1.1[0m" 404 -
+2025-11-19 00:03:55,233 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 00:03:55] "[33mGET /api/paper-format/get-report-text/6 HTTP/1.1[0m" 404 -
+2025-11-19 00:30:09,122 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 00:30:09] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-19 16:03:33,230 - werkzeug - INFO - 127.0.0.1 - - [19/Nov/2025 16:03:33] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 14:00:53,278 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 14:00:53,282 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 14:00:53,380 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-21 14:00:53,380 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-21 14:00:53,393 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 14:00:55,503 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 14:00:55,506 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 14:00:55,519 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 14:00:55,536 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 14:01:12,964 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 14:01:12] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 14:20:16,867 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 14:20:16] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 16:34:52,155 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 16:34:52] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 17:03:42,310 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 17:03:42] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 17:21:24,485 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_format_detector.py', reloading
+2025-11-21 17:21:24,732 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 17:21:27,670 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 17:21:27,674 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 17:21:27,693 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 17:21:27,713 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 17:21:27,774 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 17:21:27] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 17:21:27,781 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 17:21:27] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 17:34:58,190 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-21 17:34:58,399 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 19:49:26,500 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:49:26,503 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:49:26,526 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-21 19:49:26,526 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-21 19:49:26,529 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 19:49:28,735 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:49:28,738 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:49:28,751 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 19:49:28,765 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 19:49:30,499 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:49:30] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:49:38,579 - __main__ - ERROR - 术语检测错误: unterminated string literal (detected at line 100) (term_detector.py, line 100)
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1487, in detect_terms
+    from services.term_detector import detect_terms_from_file
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 100
+    r''([^']{2,30})'',  # 中文单引号
+                    ^
+SyntaxError: unterminated string literal (detected at line 100)
+2025-11-21 19:49:38,582 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:49:38] "[35m[1mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 500 -
+2025-11-21 19:49:45,273 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:49:45] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-21 19:49:45,287 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251121_194945_aa.docx
+2025-11-21 19:49:45,301 - __main__ - INFO - 格式审查文件记录已创建: ID=7
+2025-11-21 19:49:45,305 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:49:45] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-21 19:49:45,315 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:49:45] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:49:49,198 - __main__ - ERROR - 术语检测错误: unterminated string literal (detected at line 100) (term_detector.py, line 100)
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1487, in detect_terms
+    from services.term_detector import detect_terms_from_file
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 100
+    r''([^']{2,30})'',  # 中文单引号
+                    ^
+SyntaxError: unterminated string literal (detected at line 100)
+2025-11-21 19:49:49,199 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:49:49] "[35m[1mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 500 -
+2025-11-21 19:50:03,852 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:50:03,854 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:50:03,881 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-21 19:50:03,882 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-21 19:50:03,883 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 19:50:05,915 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:50:05,920 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:50:05,938 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 19:50:05,964 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 19:50:06,495 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:50:06] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:50:10,319 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:50:10] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:50:12,695 - __main__ - ERROR - 术语检测错误: unterminated string literal (detected at line 100) (term_detector.py, line 100)
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1487, in detect_terms
+    from services.term_detector import detect_terms_from_file
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 100
+    r''([^']{2,30})'',  # 中文单引号
+                    ^
+SyntaxError: unterminated string literal (detected at line 100)
+2025-11-21 19:50:12,696 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:50:12] "[35m[1mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 500 -
+2025-11-21 19:51:00,434 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-11-21 19:51:00,714 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 19:51:02,859 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:51:02,863 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:51:02,881 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 19:51:02,900 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 19:53:20,659 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-21 19:53:21,116 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 19:53:23,640 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:53:23,643 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:53:23,661 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 19:53:23,684 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 19:53:41,263 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-21 19:53:41,442 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 19:53:43,233 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 19:53:43,236 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 19:53:43,248 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 19:53:43,263 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 19:54:19,578 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:54:19] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:54:22,496 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:54:22] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:54:29,019 - __main__ - INFO - 开始术语检测: uploads/format_check/temp\20251121_194945_aa.docx
+2025-11-21 19:54:29,019 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_194945_aa.docx
+2025-11-21 19:54:29,038 - services.term_detector - INFO - 提取到 0 个关键词
+2025-11-21 19:54:29,042 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-21 19:54:29,047 - services.term_detector - INFO - 提取到 1 个高频词
+2025-11-21 19:54:29,047 - services.term_detector - INFO - 合并后共 1 个候选术语
+2025-11-21 19:54:29,051 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-21 19:54:29,080 - services.term_detector - INFO - 检测到 0 对相似术语
+2025-11-21 19:54:29,084 - services.term_detector - INFO - 检测到 0 个术语一致性问题
+2025-11-21 19:54:29,084 - __main__ - INFO - 术语检测完成: 共检测到 1 个术语
+2025-11-21 19:54:29,085 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:54:29] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-21 19:55:15,031 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:15] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-21 19:55:30,689 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:30] "[33mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 404 -
+2025-11-21 19:55:47,404 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:47] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-21 19:55:48,454 - __main__ - INFO - 已删除格式审查文件记录: ID=5
+2025-11-21 19:55:48,455 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:48] "DELETE /api/paper-format/delete/5 HTTP/1.1" 200 -
+2025-11-21 19:55:48,471 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 19:55:48,485 - __main__ - INFO - 格式审查文件记录已创建: ID=8
+2025-11-21 19:55:48,486 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:48] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-21 19:55:48,496 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:48] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 19:55:52,395 - __main__ - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 19:55:52,396 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 19:55:52,414 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-21 19:55:52,443 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-21 19:55:52,474 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-21 19:55:52,474 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-21 19:55:54,104 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-21 19:55:54,121 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-21 19:55:54,731 - services.term_detector - INFO - 检测到 12 个术语一致性问题
+2025-11-21 19:55:54,732 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-21 19:55:54,734 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 19:55:54] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-21 20:07:22,421 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-21 20:07:22,680 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 20:07:24,699 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-21 20:07:24,702 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-21 20:07:24,719 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 20:07:24,734 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-21 20:22:03,447 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-11-21 20:22:03,448 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-21 20:22:08,876 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-21 20:22:08,906 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-21 20:22:08,906 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 20:22:08,907 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-21 20:22:09,184 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-21 20:22:09,293 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-21 20:22:09,534 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-21 20:22:09,880 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-21 20:22:10,218 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-21 20:22:10,268 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-21 20:22:10,309 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-21 20:22:10,318 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-21 20:22:10,321 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-21 20:22:10,328 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251121_202210_format_report.txt
+2025-11-21 20:22:10,338 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251121_202210_paper1_annotated.docx
+2025-11-21 20:22:10,339 - services.document_annotator - INFO - 共识别出 65 个问题
+2025-11-21 20:22:11,497 - services.document_annotator - INFO - 批注添加完成！共添加 65 个批注
+2025-11-21 20:22:11,498 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251121_202210_paper1_annotated.docx
+2025-11-21 20:22:11,509 - __main__ - INFO - 数据库记录已更新: ID=8
+2025-11-21 20:22:11,512 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 20:22:11] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-21 20:22:11,535 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 20:22:11] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 20:31:00,739 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 20:31:00] "[33mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 404 -
+2025-11-21 20:31:21,567 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 20:31:21] "[33mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 404 -
+2025-11-21 20:31:24,424 - __main__ - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 20:31:24,426 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 20:31:24,446 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-21 20:31:24,472 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-21 20:31:24,501 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-21 20:31:24,502 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-21 20:31:25,916 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-21 20:31:25,931 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-21 20:31:26,460 - services.term_detector - INFO - 检测到 12 个术语一致性问题
+2025-11-21 20:31:26,461 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-21 20:31:26,463 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 20:31:26] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-21 21:21:56,919 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 21:21:56] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 21:27:43,512 - __main__ - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 21:27:43,513 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 21:27:43,533 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-21 21:27:43,565 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-21 21:27:43,595 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-21 21:27:43,595 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-21 21:27:45,187 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-21 21:27:45,205 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-21 21:27:45,825 - services.term_detector - INFO - 检测到 12 个术语一致性问题
+2025-11-21 21:27:45,825 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-21 21:27:45,830 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 21:27:45] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-21 21:47:22,866 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 21:47:22] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 21:47:49,382 - __main__ - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 21:47:49,383 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-21 21:47:49,404 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-21 21:47:49,431 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-21 21:47:49,460 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-21 21:47:49,461 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-21 21:47:51,097 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-21 21:47:51,113 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-21 21:47:51,729 - services.term_detector - INFO - 检测到 12 个术语一致性问题
+2025-11-21 21:47:51,730 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-21 21:47:51,731 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 21:47:51] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-21 23:18:17,884 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 23:18:17] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-21 23:19:12,827 - werkzeug - INFO - 127.0.0.1 - - [21/Nov/2025 23:19:12] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 00:06:26,039 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 00:06:26] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 01:34:49,632 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-22 01:34:51,611 - werkzeug - INFO -  * Restarting with stat
+2025-11-22 01:34:54,393 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-22 01:34:54,396 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-22 01:34:54,422 - werkzeug - WARNING -  * Debugger is active!
+2025-11-22 01:34:54,438 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-22 11:25:51,157 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-22 11:25:51,160 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-22 11:25:51,183 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.9:5000
+2025-11-22 11:25:51,184 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-22 11:25:51,186 - werkzeug - INFO -  * Restarting with stat
+2025-11-22 11:25:53,110 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-22 11:25:53,114 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-22 11:25:53,127 - werkzeug - WARNING -  * Debugger is active!
+2025-11-22 11:25:53,151 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-22 11:26:28,983 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:26:28] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 11:26:33,429 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-22 11:26:33,447 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-22 11:26:33,469 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 11:26:33,496 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-22 11:26:33,496 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-22 11:26:34,773 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 11:26:34,783 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-22 11:26:35,257 - services.term_detector - INFO - 检测到 8 个术语一致性问题
+2025-11-22 11:26:35,257 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-22 11:26:35,259 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:26:35] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-22 11:26:45,687 - __main__ - INFO - 打开原始文档: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-22 11:26:45,689 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:26:45] "GET /api/paper-format/open-original/8 HTTP/1.1" 200 -
+2025-11-22 11:33:53,532 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:33:53] "[33mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 404 -
+2025-11-22 11:34:03,132 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:34:03] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-22 11:34:04,101 - __main__ - INFO - 已删除格式审查文件记录: ID=6
+2025-11-22 11:34:04,102 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:34:04] "DELETE /api/paper-format/delete/6 HTTP/1.1" 200 -
+2025-11-22 11:34:04,115 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251122_113404_test.docx
+2025-11-22 11:34:04,126 - __main__ - INFO - 格式审查文件记录已创建: ID=9
+2025-11-22 11:34:04,127 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:34:04] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-22 11:34:04,137 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:34:04] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 11:34:07,387 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251122_113404_test.docx
+2025-11-22 11:34:07,397 - services.term_detector - INFO - 提取到 4 个关键词
+2025-11-22 11:34:07,412 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 11:34:07,424 - services.term_detector - INFO - 提取到 35 个高频词
+2025-11-22 11:34:07,425 - services.term_detector - INFO - 合并后共 37 个候选术语
+2025-11-22 11:34:07,914 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 11:34:07,920 - services.term_detector - INFO - 检测到 8 对相似术语
+2025-11-22 11:34:08,170 - services.term_detector - INFO - 检测到 3 个术语一致性问题
+2025-11-22 11:34:08,170 - __main__ - INFO - 术语检测完成: 共检测到 37 个术语
+2025-11-22 11:34:08,172 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:34:08] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-22 11:36:39,535 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:36:39] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 11:36:43,176 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251122_113404_test.docx
+2025-11-22 11:36:43,190 - services.term_detector - INFO - 提取到 4 个关键词
+2025-11-22 11:36:43,207 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 11:36:43,223 - services.term_detector - INFO - 提取到 35 个高频词
+2025-11-22 11:36:43,223 - services.term_detector - INFO - 合并后共 37 个候选术语
+2025-11-22 11:36:43,756 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 11:36:43,760 - services.term_detector - INFO - 检测到 8 对相似术语
+2025-11-22 11:36:44,049 - services.term_detector - INFO - 检测到 3 个术语一致性问题
+2025-11-22 11:36:44,049 - __main__ - INFO - 术语检测完成: 共检测到 37 个术语
+2025-11-22 11:36:44,051 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:36:44] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-22 11:37:20,715 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:37:20] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 11:37:25,162 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251122_113404_test.docx
+2025-11-22 11:37:25,175 - services.term_detector - INFO - 提取到 4 个关键词
+2025-11-22 11:37:25,187 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 11:37:25,200 - services.term_detector - INFO - 提取到 35 个高频词
+2025-11-22 11:37:25,200 - services.term_detector - INFO - 合并后共 37 个候选术语
+2025-11-22 11:37:25,624 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 11:37:25,630 - services.term_detector - INFO - 检测到 8 对相似术语
+2025-11-22 11:37:25,869 - services.term_detector - INFO - 检测到 3 个术语一致性问题
+2025-11-22 11:37:25,870 - __main__ - INFO - 术语检测完成: 共检测到 37 个术语
+2025-11-22 11:37:25,872 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:37:25] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-22 11:46:59,904 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-22 11:47:10,334 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-22 11:47:18,891 - werkzeug - INFO -  * Restarting with stat
+2025-11-22 11:47:20,757 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-22 11:47:20,761 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-22 11:47:20,773 - werkzeug - WARNING -  * Debugger is active!
+2025-11-22 11:47:20,788 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-22 11:47:34,879 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-22 11:47:34,898 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-22 11:47:34,922 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 11:47:34,945 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-22 11:47:34,946 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-22 11:47:36,269 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 11:47:36,286 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-22 11:47:36,745 - services.term_detector - INFO - 检测到 10 个术语一致性问题
+2025-11-22 11:47:36,746 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-22 11:47:36,748 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 11:47:36] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-22 12:27:09,715 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-22 12:27:09,912 - werkzeug - INFO -  * Restarting with stat
+2025-11-22 12:27:12,189 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-22 12:27:12,193 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-22 12:27:12,208 - werkzeug - WARNING -  * Debugger is active!
+2025-11-22 12:27:12,225 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-22 12:27:13,717 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 12:27:13] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-22 12:27:20,816 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-22 12:27:20,835 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-22 12:27:20,861 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 12:27:20,903 - services.term_detector - INFO - 提取到 50 个高频词
+2025-11-22 12:27:20,905 - services.term_detector - INFO - 合并后共 53 个候选术语
+2025-11-22 12:27:22,189 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 12:27:22,206 - services.term_detector - INFO - 检测到 5 对相似术语
+2025-11-22 12:27:22,687 - services.term_detector - INFO - 检测到 8 个术语一致性问题
+2025-11-22 12:27:22,687 - __main__ - INFO - 术语检测完成: 共检测到 53 个术语
+2025-11-22 12:27:22,689 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 12:27:22] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-22 12:29:29,754 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-22 12:29:30,039 - werkzeug - INFO -  * Restarting with stat
+2025-11-22 12:29:32,108 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-22 12:29:32,111 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-22 12:29:32,125 - werkzeug - WARNING -  * Debugger is active!
+2025-11-22 12:29:32,142 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-22 12:29:33,891 - services.term_detector - INFO - 开始术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-22 12:29:33,910 - services.term_detector - INFO - 提取到 3 个关键词
+2025-11-22 12:29:33,933 - services.term_detector - INFO - 提取到 0 个引号术语
+2025-11-22 12:29:33,934 - services.term_detector - INFO - 提取到 0 个高频词
+2025-11-22 12:29:33,935 - services.term_detector - INFO - 合并后共 3 个候选术语
+2025-11-22 12:29:34,002 - services.term_detector - INFO - 检测到 0 个疑似新术语
+2025-11-22 12:29:34,003 - services.term_detector - INFO - 检测到 0 对相似术语
+2025-11-22 12:29:34,071 - services.term_detector - INFO - 检测到 3 个术语一致性问题
+2025-11-22 12:29:34,072 - __main__ - INFO - 术语检测完成: 共检测到 3 个术语
+2025-11-22 12:29:34,074 - werkzeug - INFO - 127.0.0.1 - - [22/Nov/2025 12:29:34] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 11:22:11,999 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 11:22:12,003 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 11:22:12,071 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.2.171:5000
+2025-11-23 11:22:12,071 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-23 11:22:12,074 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 11:22:14,262 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 11:22:14,265 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 11:22:14,278 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 11:22:14,293 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 11:22:23,047 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 11:22:23] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 11:22:35,584 - __main__ - ERROR - 术语检测错误: invalid syntax (term_detector.py, line 111)
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1487, in detect_terms
+    from services.term_detector import detect_terms_from_file
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 111
+    r""([^""]{2,30})"",    # 中文双引号
+         ^
+SyntaxError: invalid syntax
+2025-11-23 11:22:35,586 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 11:22:35] "[35m[1mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 500 -
+2025-11-23 11:24:05,422 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 11:24:05,641 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 11:24:07,710 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 11:24:07,714 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 11:24:07,728 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 11:24:07,744 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 11:24:12,262 - __main__ - ERROR - 术语检测错误: No module named 'jieba'
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1487, in detect_terms
+    from services.term_detector import detect_terms_from_file
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 22, in <module>
+    import jieba
+ModuleNotFoundError: No module named 'jieba'
+2025-11-23 11:24:12,265 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 11:24:12] "[35m[1mPOST /api/paper-format/detect-terms HTTP/1.1[0m" 500 -
+2025-11-23 11:24:14,524 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 11:24:14] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 11:25:38,378 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 11:25:38,963 - jieba - DEBUG - Dumping model to file cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 11:25:39,023 - jieba - DEBUG - Loading model cost 0.643 seconds.
+2025-11-23 11:25:39,025 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 11:25:39,026 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 11:25:39,047 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 11:25:39,089 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 11:25:39,089 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 11:25:39,117 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 11:25:39,162 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 11:25:39,172 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 11:25:39,173 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 11:25:40,018 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 11:25:40,029 - services.term_detector - INFO - 提取到 50 个多词术语
+2025-11-23 11:25:40,029 - services.term_detector - INFO - ✓ 提取到 50 个多词术语
+2025-11-23 11:25:40,030 - services.term_detector - INFO - ✓ 合并后共 52 个候选术语
+2025-11-23 11:25:41,573 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 11:25:41,667 - services.term_detector - INFO - ✓ 检测到 5 对相似术语
+2025-11-23 11:25:41,668 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 11:25:41,678 - __main__ - INFO - 术语检测完成: 共检测到 52 个术语
+2025-11-23 11:25:41,679 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 11:25:41] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 13:23:01,081 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 13:23:01] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 13:23:06,579 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 13:23:06,595 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 13:23:06,619 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 13:23:06,620 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 13:23:06,643 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 13:23:06,674 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 13:23:06,683 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 13:23:06,683 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 13:23:07,410 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 13:23:07,423 - services.term_detector - INFO - 提取到 50 个多词术语
+2025-11-23 13:23:07,424 - services.term_detector - INFO - ✓ 提取到 50 个多词术语
+2025-11-23 13:23:07,424 - services.term_detector - INFO - ✓ 合并后共 52 个候选术语
+2025-11-23 13:23:08,721 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 13:23:08,813 - services.term_detector - INFO - ✓ 检测到 5 对相似术语
+2025-11-23 13:23:08,813 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 13:23:08,815 - __main__ - INFO - 术语检测完成: 共检测到 52 个术语
+2025-11-23 13:23:08,816 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 13:23:08] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 13:32:57,077 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 13:32:57,317 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 13:32:59,450 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 13:32:59,453 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 13:32:59,468 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 13:32:59,484 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 13:37:03,790 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 13:37:03] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 13:37:39,296 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 13:37:39,299 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 13:37:39,911 - jieba - DEBUG - Loading model cost 0.614 seconds.
+2025-11-23 13:37:39,913 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 13:37:39,917 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 13:37:39,935 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 13:37:39,961 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 13:37:39,962 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 13:37:39,989 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 13:37:40,026 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 13:37:40,037 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 13:37:40,037 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 13:37:40,870 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 13:37:40,884 - services.term_detector - INFO - 提取到 50 个多词术语
+2025-11-23 13:37:40,884 - services.term_detector - INFO - ✓ 提取到 50 个多词术语
+2025-11-23 13:37:40,885 - services.term_detector - INFO - ✓ 合并后共 52 个候选术语
+2025-11-23 13:37:42,189 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 13:37:42,294 - services.term_detector - INFO - ✓ 检测到 5 对相似术语
+2025-11-23 13:37:42,294 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 13:37:42,296 - __main__ - INFO - 术语检测完成: 共检测到 52 个术语
+2025-11-23 13:37:42,298 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 13:37:42] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 13:51:18,080 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 13:51:18,328 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 13:51:20,960 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 13:51:20,963 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 13:51:20,979 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 13:51:20,997 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 13:53:00,750 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 13:53:01,047 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 13:53:03,056 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 13:53:03,059 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 13:53:03,074 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 13:53:03,092 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 14:02:44,478 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 14:02:44,650 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 14:02:46,511 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 14:02:46,514 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 14:02:46,528 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 14:02:46,546 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:50:36,919 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:50:37,292 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:50:39,531 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:50:39,534 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:50:39,549 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:50:39,565 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:50:58,116 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:50:58,375 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:51:00,485 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:51:00,488 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:51:00,504 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:51:00,519 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:51:14,980 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:51:15,254 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:51:17,199 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:51:17,202 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:51:17,216 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:51:17,231 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:51:44,145 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:51:44,627 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:51:46,927 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:51:46,931 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:51:46,945 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:51:46,961 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:51:47,002 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:51:47] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 19:51:53,789 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:51:53] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 19:52:00,799 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 19:52:00,804 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 19:52:01,490 - jieba - DEBUG - Loading model cost 0.686 seconds.
+2025-11-23 19:52:01,491 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 19:52:01,493 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 19:52:01,514 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 19:52:01,554 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 19:52:01,555 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 19:52:01,584 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 19:52:01,646 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 19:52:01,668 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 19:52:01,669 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 19:52:02,280 - services.term_detector - INFO - 嵌套关系构建完成，共 3352 个短语被嵌套
+2025-11-23 19:52:02,307 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.19729729543843), ('sound absorbing material', 25.822580645161292), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 19:52:02,321 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 19:52:02,330 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 19:52:02,331 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 19:52:02,891 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 19:52:02,909 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 19:52:02,911 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 19:52:02,913 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 19:52:02,915 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:52:02] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 19:54:39,744 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:54:39,997 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:54:42,414 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:54:42,417 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:54:42,433 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:54:42,452 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:54:45,684 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 19:54:45,687 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 19:54:46,289 - jieba - DEBUG - Loading model cost 0.604 seconds.
+2025-11-23 19:54:46,297 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 19:54:46,298 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 19:54:46,338 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 19:54:46,367 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 19:54:46,369 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 19:54:46,398 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 19:54:46,439 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 19:54:46,461 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 19:54:46,463 - services.term_detector - ERROR - ✗ 术语检测失败: dictionary update sequence element #0 has length 11; 2 is required
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 464, in detect_terms
+    multi_word_terms = self.extract_multi_word_terms(doc, top_k=20)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 304, in extract_multi_word_terms
+    ngrams = self.extract_ngrams(text, min_n=2, max_n=5)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 176, in extract_ngrams
+    print("提取到的N-gram短语：",dict(word_list))
+                          ^^^^^^^^^^^^^^^
+ValueError: dictionary update sequence element #0 has length 11; 2 is required
+2025-11-23 19:54:46,466 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:54:46] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 19:54:59,706 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:54:59,968 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:55:02,664 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:55:02,670 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:55:02,687 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:55:02,705 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:55:05,564 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 19:55:05,566 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 19:55:06,262 - jieba - DEBUG - Loading model cost 0.696 seconds.
+2025-11-23 19:55:06,263 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 19:55:06,265 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 19:55:06,289 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 19:55:06,322 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 19:55:06,326 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 19:55:06,353 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 19:55:06,392 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 19:55:06,413 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 19:55:06,516 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 19:55:07,135 - services.term_detector - INFO - 嵌套关系构建完成，共 3352 个短语被嵌套
+2025-11-23 19:55:07,149 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.19729729543843), ('sound absorbing material', 25.822580645161292), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 19:55:07,159 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 19:55:07,160 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 19:55:07,162 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 19:55:07,745 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 19:55:07,761 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 19:55:07,762 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 19:55:07,763 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 19:55:07,764 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:55:07] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 19:56:41,880 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:56:42,113 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:56:44,241 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:56:44,244 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:56:44,259 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:56:44,275 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:56:52,556 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:56:52,878 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:56:55,232 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:56:55,237 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:56:55,250 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:56:55,267 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:56:57,040 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 19:56:57,045 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 19:56:57,792 - jieba - DEBUG - Loading model cost 0.749 seconds.
+2025-11-23 19:56:57,793 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 19:56:57,795 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 19:56:57,820 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 19:56:57,850 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 19:56:57,852 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 19:56:57,878 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 19:56:57,925 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 19:56:57,934 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 19:56:57,935 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 19:56:58,893 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 19:56:58,907 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 19:56:58,908 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 19:56:58,912 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 19:56:59,456 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 19:56:59,471 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 19:56:59,472 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 19:56:59,472 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 19:56:59,474 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:56:59] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 19:58:07,763 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 19:58:11,835 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 19:58:49,532 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 19:58:51,536 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 19:58:51,542 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 19:58:51,559 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 19:58:51,579 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 19:58:52,448 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 19:58:52,450 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 19:58:53,180 - jieba - DEBUG - Loading model cost 0.731 seconds.
+2025-11-23 19:58:53,181 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 19:58:53,181 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 19:58:53,204 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 19:58:53,233 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 19:58:53,235 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 19:58:53,265 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 19:58:53,313 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 19:58:53,327 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 19:58:53,328 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 19:58:56,960 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 19:58:56,971 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 19:58:56,972 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 19:58:56,974 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 19:58:57,459 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 19:58:57,470 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 19:58:57,470 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 19:58:57,471 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 19:58:57,472 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 19:58:57] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 21:09:17,954 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 21:09:18,318 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 21:09:20,394 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 21:09:20,397 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 21:09:20,411 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 21:09:20,425 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 21:11:38,975 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 21:11:39,150 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 21:11:40,924 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 21:11:40,927 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 21:11:40,939 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 21:11:40,953 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 21:12:04,007 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 21:12:04] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 21:12:07,067 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 21:12:07,069 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 21:12:07,696 - jieba - DEBUG - Loading model cost 0.627 seconds.
+2025-11-23 21:12:07,696 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 21:12:07,697 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 21:12:07,714 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 21:12:07,747 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 21:12:07,749 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 21:12:07,771 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 21:12:07,816 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 21:12:07,826 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 21:12:07,827 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 21:12:07,827 - services.term_detector - ERROR - ✗ 术语检测失败: 'NoneType' object has no attribute 'keys'
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 447, in detect_terms
+    multi_word_terms = self.extract_multi_word_terms(doc, top_k=20)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 290, in extract_multi_word_terms
+    cvalue_scores = self.calculate_cvalue(ngrams)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 199, in calculate_cvalue
+    sorted_ngrams = sorted(ngrams.keys(), key=lambda x: len(x.split()), reverse=True)
+                           ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'keys'
+2025-11-23 21:12:07,830 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 21:12:07] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 21:12:39,220 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 21:12:39] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 21:12:41,762 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 21:12:41,778 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 21:12:41,800 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 21:12:41,801 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 21:12:41,822 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 21:12:41,854 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 21:12:41,861 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 21:12:41,861 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 21:12:41,861 - services.term_detector - ERROR - ✗ 术语检测失败: 'NoneType' object has no attribute 'keys'
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 447, in detect_terms
+    multi_word_terms = self.extract_multi_word_terms(doc, top_k=20)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 290, in extract_multi_word_terms
+    cvalue_scores = self.calculate_cvalue(ngrams)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 199, in calculate_cvalue
+    sorted_ngrams = sorted(ngrams.keys(), key=lambda x: len(x.split()), reverse=True)
+                           ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'keys'
+2025-11-23 21:12:41,863 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 21:12:41] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 21:13:16,507 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 21:13:16,718 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 21:13:19,132 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 21:13:19,135 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 21:13:19,151 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 21:13:19,172 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 21:13:21,511 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 21:13:21,515 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 21:13:22,139 - jieba - DEBUG - Loading model cost 0.627 seconds.
+2025-11-23 21:13:22,140 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 21:13:22,140 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 21:13:22,163 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 21:13:22,192 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 21:13:22,193 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 21:13:22,223 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 21:13:22,272 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 21:13:22,283 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 21:13:22,284 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 21:13:23,107 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 21:13:23,120 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 21:13:23,120 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 21:13:23,122 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 21:13:23,654 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 21:13:23,669 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 21:13:23,669 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 21:13:23,669 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 21:13:23,670 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 21:13:23] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 22:05:46,879 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 22:05:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 22:43:46,994 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 22:43:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 23:25:14,470 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:25:14] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-23 23:28:42,351 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 23:28:42,371 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 23:28:42,395 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 23:28:42,395 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 23:28:42,415 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 23:28:42,451 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 23:28:42,459 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 23:28:42,460 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 23:28:43,218 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 23:28:43,231 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 23:28:43,231 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 23:28:43,233 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 23:28:43,790 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 23:28:43,805 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 23:28:43,806 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 23:28:43,806 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 23:28:43,806 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:28:43] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 23:31:35,189 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 23:31:35,627 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 23:31:38,050 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 23:31:38,053 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 23:31:38,070 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 23:31:38,087 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 23:31:38,453 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 23:31:38,455 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 23:31:39,106 - jieba - DEBUG - Loading model cost 0.653 seconds.
+2025-11-23 23:31:39,106 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 23:31:39,106 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 23:31:39,125 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 23:31:39,155 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 23:31:39,155 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 23:31:39,182 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 23:31:39,231 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 23:31:39,241 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 23:31:39,241 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 23:31:40,034 - services.term_detector - ERROR - ✗ 术语检测失败: object of type 'int' has no len()
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 449, in detect_terms
+    multi_word_terms = self.extract_multi_word_terms(doc, top_k=20)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 292, in extract_multi_word_terms
+    cvalue_scores = self.calculate_cvalue(ngrams)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\term_detector.py", line 214, in calculate_cvalue
+    print(ngram,len(sum(ngrams[parent] for parent in nested_in[ngram])))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: object of type 'int' has no len()
+2025-11-23 23:31:40,038 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:31:40] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 23:32:00,691 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 23:32:05,350 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 23:32:07,329 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 23:32:07,332 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 23:32:07,346 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 23:32:07,362 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 23:32:10,821 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 23:32:10,823 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 23:32:11,513 - jieba - DEBUG - Loading model cost 0.691 seconds.
+2025-11-23 23:32:11,514 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 23:32:11,514 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 23:32:11,536 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 23:32:11,567 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 23:32:11,568 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 23:32:11,594 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 23:32:11,629 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 23:32:11,637 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 23:32:11,638 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 23:32:12,427 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 23:32:12,435 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 23:32:12,436 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 23:32:12,441 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 23:32:13,012 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 23:32:13,026 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 23:32:13,028 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 23:32:13,028 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 23:32:13,029 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:32:13] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 23:33:09,165 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 23:33:21,379 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 23:33:23,339 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 23:33:23,342 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 23:33:23,358 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 23:33:23,377 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 23:33:26,450 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 23:33:26,452 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 23:33:27,129 - jieba - DEBUG - Loading model cost 0.678 seconds.
+2025-11-23 23:33:27,130 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 23:33:27,131 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 23:33:27,153 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 23:33:27,186 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 23:33:27,187 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 23:33:27,217 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 23:33:27,266 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 23:33:27,272 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 23:33:27,273 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 23:33:28,132 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 23:33:28,151 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 23:33:28,152 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 23:33:28,153 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 23:33:28,746 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 23:33:28,761 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 23:33:28,762 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 23:33:28,762 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 23:33:28,763 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:33:28] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 23:50:42,393 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 23:53:43,590 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 23:53:45,553 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 23:53:45,557 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 23:53:45,569 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 23:53:45,585 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 23:53:49,234 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 23:53:49,237 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 23:53:49,898 - jieba - DEBUG - Loading model cost 0.663 seconds.
+2025-11-23 23:53:49,899 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 23:53:49,900 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 23:53:49,920 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 23:53:49,948 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 23:53:49,949 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 23:53:49,974 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 23:53:50,019 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 23:53:50,027 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 23:53:50,027 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 23:53:50,861 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 23:53:50,876 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-23 23:53:50,877 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-23 23:53:50,877 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-23 23:53:50,877 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-23 23:53:50,878 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-23 23:53:50,878 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 23:53:50,879 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 23:53:50,881 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 23:53:51,466 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 23:53:51,485 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 23:53:51,487 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 23:53:51,488 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 23:53:51,489 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:53:51] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-23 23:55:42,094 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-23 23:55:42,328 - werkzeug - INFO -  * Restarting with stat
+2025-11-23 23:55:44,615 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-23 23:55:44,618 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-23 23:55:44,634 - werkzeug - WARNING -  * Debugger is active!
+2025-11-23 23:55:44,652 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-23 23:55:58,464 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-23 23:55:58,468 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-23 23:55:59,133 - jieba - DEBUG - Loading model cost 0.665 seconds.
+2025-11-23 23:55:59,134 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-23 23:55:59,134 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-23 23:55:59,154 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-23 23:55:59,187 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-23 23:55:59,189 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-23 23:55:59,215 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-23 23:55:59,263 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-23 23:55:59,271 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-23 23:55:59,271 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-23 23:56:00,087 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-23 23:56:00,110 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-23 23:56:00,110 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-23 23:56:00,111 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-23 23:56:00,111 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-23 23:56:00,111 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-23 23:56:00,111 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-23 23:56:00,112 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-23 23:56:00,113 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-23 23:56:00,667 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-23 23:56:00,678 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-23 23:56:00,679 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-23 23:56:00,680 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-23 23:56:00,680 - werkzeug - INFO - 127.0.0.1 - - [23/Nov/2025 23:56:00] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-24 00:02:28,146 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-24 11:28:23,775 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:28:23] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-24 15:47:22,879 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:47:22] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-24 16:01:23,141 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 16:01:23] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 09:24:00,640 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 09:24:00] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 09:42:57,798 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 09:42:57] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 09:43:01,005 - werkzeug - INFO -  * Restarting with stat
+2025-11-25 09:43:03,712 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-25 09:43:03,714 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-25 09:43:03,738 - werkzeug - WARNING -  * Debugger is active!
+2025-11-25 09:43:03,754 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-25 10:04:23,014 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:04:23] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 10:04:32,388 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251121_202210_format_report.txt
+2025-11-25 10:04:32,390 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:04:32] "GET /api/paper-format/get-report-text/8 HTTP/1.1" 200 -
+2025-11-25 10:10:19,261 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-25 10:10:19,263 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-25 10:10:19,877 - jieba - DEBUG - Loading model cost 0.616 seconds.
+2025-11-25 10:10:19,879 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-25 10:10:19,880 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-25 10:10:19,900 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-25 10:10:19,927 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-25 10:10:19,928 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-25 10:10:19,950 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-25 10:10:19,987 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-25 10:10:19,998 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-25 10:10:19,999 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-25 10:10:20,813 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-25 10:10:20,830 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-25 10:10:20,830 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-25 10:10:20,830 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-25 10:10:20,831 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-25 10:10:20,831 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-25 10:10:20,831 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-25 10:10:20,831 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-25 10:10:20,833 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-25 10:10:21,364 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-25 10:10:21,375 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-25 10:10:21,376 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-25 10:10:21,376 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-25 10:10:21,377 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:10:21] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-25 10:23:41,336 - __main__ - INFO - 接收到skip_checks参数: {'Figure': ['italic', 'bold'], 'Abstract': ['bold', 'italic'], 'Title': ['font_size', 'bold', 'italic', 'alignment', 'indent', 'spacing']}
+2025-11-25 10:23:41,336 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-25 10:23:46,392 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-25 10:23:46,393 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-25 10:23:46,393 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-25 10:23:46,394 - services.paper_format_service - INFO - 跳过检测项配置: {'Figure': ['italic', 'bold'], 'Abstract': ['bold', 'italic'], 'Title': ['font_size', 'bold', 'italic', 'alignment', 'indent', 'spacing']}
+2025-11-25 10:23:46,395 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-25 10:23:46,639 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-25 10:23:46,736 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-25 10:23:46,917 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-25 10:23:47,159 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-25 10:23:47,306 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-25 10:23:47,349 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-25 10:23:47,385 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-25 10:23:47,389 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-25 10:23:47,389 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-25 10:23:47,390 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251125_102347_format_report.txt
+2025-11-25 10:23:47,392 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251125_102347_paper1_annotated.docx
+2025-11-25 10:23:47,393 - services.document_annotator - INFO - 共识别出 64 个问题
+2025-11-25 10:23:48,392 - services.document_annotator - INFO - 批注添加完成！共添加 64 个批注
+2025-11-25 10:23:48,392 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251125_102347_paper1_annotated.docx
+2025-11-25 10:23:48,403 - __main__ - INFO - 数据库记录已更新: ID=8
+2025-11-25 10:23:48,405 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:23:48] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-25 10:23:48,420 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:23:48] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 10:24:57,655 - __main__ - INFO - 接收到skip_checks参数: {'Figure': ['italic', 'bold'], 'Abstract': ['bold', 'italic'], 'Title': ['font_size', 'bold', 'italic', 'alignment', 'indent', 'spacing'], 'Content': ['font_size', 'bold', 'italic', 'alignment', 'spacing', 'indent']}
+2025-11-25 10:24:57,656 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-25 10:24:57,656 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-25 10:24:57,656 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-25 10:24:57,656 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-25 10:24:57,657 - services.paper_format_service - INFO - 跳过检测项配置: {'Figure': ['italic', 'bold'], 'Abstract': ['bold', 'italic'], 'Title': ['font_size', 'bold', 'italic', 'alignment', 'indent', 'spacing'], 'Content': ['font_size', 'bold', 'italic', 'alignment', 'spacing', 'indent']}
+2025-11-25 10:24:57,657 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-25 10:24:57,909 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-25 10:24:58,047 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-25 10:24:58,236 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-25 10:24:58,463 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-25 10:24:58,633 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-25 10:24:58,677 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-25 10:24:58,715 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-25 10:24:58,717 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-25 10:24:58,717 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-25 10:24:58,719 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251125_102458_format_report.txt
+2025-11-25 10:24:58,723 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251125_102458_paper1_annotated.docx
+2025-11-25 10:24:58,724 - services.document_annotator - INFO - 共识别出 32 个问题
+2025-11-25 10:24:59,141 - services.document_annotator - INFO - 批注添加完成！共添加 32 个批注
+2025-11-25 10:24:59,142 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251125_102458_paper1_annotated.docx
+2025-11-25 10:24:59,151 - __main__ - INFO - 数据库记录已更新: ID=8
+2025-11-25 10:24:59,152 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:24:59] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-25 10:24:59,166 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:24:59] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 10:25:44,246 - __main__ - INFO - 接收到skip_checks参数: {'Figure': [], 'Abstract': ['font_size', 'bold', 'italic'], 'Title': ['font_size', 'bold', 'italic', 'alignment', 'indent', 'spacing'], 'Content': ['font_size', 'bold', 'italic', 'alignment', 'spacing', 'indent']}
+2025-11-25 10:25:44,247 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-25 10:25:44,248 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-25 10:25:44,248 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-25 10:25:44,248 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-25 10:25:44,249 - services.paper_format_service - INFO - 跳过检测项配置: {'Figure': [], 'Abstract': ['font_size', 'bold', 'italic'], 'Title': ['font_size', 'bold', 'italic', 'alignment', 'indent', 'spacing'], 'Content': ['font_size', 'bold', 'italic', 'alignment', 'spacing', 'indent']}
+2025-11-25 10:25:44,250 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-25 10:25:44,467 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-25 10:25:44,574 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-25 10:25:44,764 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-25 10:25:44,978 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-25 10:25:45,135 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-25 10:25:45,177 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-25 10:25:45,214 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-25 10:25:45,218 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-25 10:25:45,218 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-25 10:25:45,219 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251125_102545_format_report.txt
+2025-11-25 10:25:45,224 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251125_102545_paper1_annotated.docx
+2025-11-25 10:25:45,224 - services.document_annotator - INFO - 共识别出 32 个问题
+2025-11-25 10:25:45,613 - services.document_annotator - INFO - 批注添加完成！共添加 32 个批注
+2025-11-25 10:25:45,613 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251125_102545_paper1_annotated.docx
+2025-11-25 10:25:45,620 - __main__ - INFO - 数据库记录已更新: ID=8
+2025-11-25 10:25:45,621 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:25:45] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-25 10:25:45,633 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:25:45] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 10:28:54,884 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:28:54] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-25 10:28:56,399 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:28:56] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-11-25 10:28:56,401 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:28:56] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-11-25 10:28:59,108 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:28:59] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 10:29:00,424 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:29:00] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-11-25 10:29:03,882 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 10:29:03] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 11:00:18,672 - __main__ - INFO - 读取检测报告文本: uploads/format_check/reports\20251125_102545_format_report.txt
+2025-11-25 11:00:18,674 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 11:00:18] "GET /api/paper-format/get-report-text/8 HTTP/1.1" 200 -
+2025-11-25 11:16:59,084 - __main__ - INFO - 接收到skip_checks参数: {'Title': ['font_size', 'bold', 'italic', 'alignment', 'spacing', 'indent'], 'Content': ['font_size', 'bold', 'italic']}
+2025-11-25 11:16:59,084 - services.paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\31943\Desktop\pro\dhu-journal-app\backend\services\paper_detect_templates
+2025-11-25 11:16:59,085 - services.paper_format_detector - INFO - 所有检测模块已加载
+2025-11-25 11:16:59,085 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-11-25 11:16:59,085 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-25 11:16:59,085 - services.paper_format_service - INFO - 跳过检测项配置: {'Title': ['font_size', 'bold', 'italic', 'alignment', 'spacing', 'indent'], 'Content': ['font_size', 'bold', 'italic']}
+2025-11-25 11:16:59,086 - services.paper_format_detector - INFO - 执行 Title 检测
+2025-11-25 11:16:59,364 - services.paper_format_detector - INFO - 执行 Abstract 检测
+2025-11-25 11:16:59,491 - services.paper_format_detector - INFO - 执行 Keywords 检测
+2025-11-25 11:16:59,692 - services.paper_format_detector - INFO - 执行 Content 检测
+2025-11-25 11:16:59,954 - services.paper_format_detector - INFO - 执行 Formula 检测
+2025-11-25 11:17:00,194 - services.paper_format_detector - INFO - 执行 Figure 检测
+2025-11-25 11:17:00,239 - services.paper_format_detector - INFO - 执行 Table 检测
+2025-11-25 11:17:00,298 - services.paper_format_service - INFO - 格式检测成功！
+2025-11-25 11:17:00,302 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-11-25 11:17:00,303 - services.paper_format_service - INFO - 开始生成检测报告
+2025-11-25 11:17:00,307 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251125_111700_format_report.txt
+2025-11-25 11:17:00,311 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251125_111700_paper1_annotated.docx
+2025-11-25 11:17:00,312 - services.document_annotator - INFO - 共识别出 59 个问题
+2025-11-25 11:17:01,387 - services.document_annotator - INFO - 批注添加完成！共添加 59 个批注
+2025-11-25 11:17:01,387 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251125_111700_paper1_annotated.docx
+2025-11-25 11:17:01,395 - __main__ - INFO - 数据库记录已更新: ID=8
+2025-11-25 11:17:01,395 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 11:17:01] "POST /api/paper-format/check-all HTTP/1.1" 200 -
+2025-11-25 11:17:01,413 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 11:17:01] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-25 11:17:23,465 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251121_195548_paper1.docx
+2025-11-25 11:17:23,487 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-25 11:17:23,513 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-25 11:17:23,514 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-25 11:17:23,536 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-25 11:17:23,612 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-25 11:17:23,619 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-25 11:17:23,620 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-25 11:17:24,456 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-25 11:17:24,481 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-25 11:17:24,482 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-25 11:17:24,482 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-25 11:17:24,482 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-25 11:17:24,483 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-25 11:17:24,483 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-25 11:17:24,484 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-25 11:17:24,487 - services.term_detector - INFO - ✓ 合并后共 22 个候选术语
+2025-11-25 11:17:25,079 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-25 11:17:25,096 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-25 11:17:25,098 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-25 11:17:25,098 - __main__ - INFO - 术语检测完成: 共检测到 22 个术语
+2025-11-25 11:17:25,100 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 11:17:25] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-25 20:34:43,457 - werkzeug - INFO - 127.0.0.1 - - [25/Nov/2025 20:34:43] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-27 19:14:42,925 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:14:45,812 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:14:50,456 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:14:50,462 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:14:50,501 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:14:50,522 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:16:27,857 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:16:28,119 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:16:30,174 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:16:30,177 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:16:30,190 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:16:30,211 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:16:33,366 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:16:33,636 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:16:35,807 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:16:35,810 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:16:35,822 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:16:35,836 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:19:07,857 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:19:08,126 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:19:10,904 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:19:10,907 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:19:10,923 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:19:10,941 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:22:15,351 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:22:15,539 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:22:17,464 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:22:17,467 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:22:17,481 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:22:17,496 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:22:37,140 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:22:37,629 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:22:40,690 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:22:40,696 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:22:40,716 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:22:40,740 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:24:20,836 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:24:21,118 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:24:23,638 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:24:23,643 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:24:23,660 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:24:23,678 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:24:57,826 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\create_terms_table.py', reloading
+2025-11-27 19:24:58,122 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:25:00,613 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:25:00,616 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:25:00,632 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:25:00,649 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:25:58,430 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\create_terms_table.py', reloading
+2025-11-27 19:25:58,691 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:26:01,212 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:26:01,215 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:26:01,233 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:26:01,253 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:26:08,647 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\import_terms.py', reloading
+2025-11-27 19:26:08,925 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:26:11,540 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:26:11,543 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:26:11,559 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:26:11,578 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:28:29,754 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\create_terms_table.py', reloading
+2025-11-27 19:28:30,049 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:28:32,370 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:28:32,374 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:28:32,387 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:28:32,406 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:38:38,463 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:38:38,851 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:38:41,508 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:38:41,511 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:38:41,528 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:38:41,546 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:40:05,188 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\import_terms.py', reloading
+2025-11-27 19:40:05,488 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:40:07,982 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:40:07,985 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:40:08,001 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:40:08,020 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:40:21,505 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\import_terms.py', reloading
+2025-11-27 19:40:21,760 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:40:24,611 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:40:24,617 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:40:24,633 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:40:24,651 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:40:31,933 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\import_terms.py', reloading
+2025-11-27 19:40:32,228 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:40:34,984 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:40:34,988 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:40:35,011 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:40:35,031 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:41:32,039 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:41:32,291 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:41:34,596 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:41:34,599 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:41:34,614 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:41:34,629 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:51:26,254 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:51:26,679 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:51:28,885 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:51:28,889 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:51:28,908 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:51:28,931 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:53:29,449 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-11-27 19:53:29,702 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:53:32,123 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:53:32,127 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:53:32,140 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:53:32,157 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:53:50,831 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 19:53:51,107 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:53:53,540 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:53:53,543 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:53:53,555 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:53:53,570 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:54:25,925 - werkzeug - INFO - 127.0.0.1 - - [27/Nov/2025 19:54:25] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-27 19:55:05,762 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 19:55:05,964 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:55:08,298 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:55:08,301 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:55:08,313 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:55:08,327 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:56:21,558 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 19:56:21,783 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:56:23,748 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:56:23,751 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:56:23,763 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:56:23,778 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:57:34,899 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 19:57:35,177 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:57:37,554 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:57:37,557 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:57:37,573 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:57:37,590 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:57:45,899 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 19:57:46,210 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:57:48,750 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:57:48,755 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:57:48,775 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:57:48,794 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 19:58:57,956 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 19:58:58,208 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 19:59:00,275 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 19:59:00,278 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 19:59:00,292 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 19:59:00,308 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 20:03:14,569 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 20:03:14,988 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 20:03:17,251 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 20:03:17,253 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 20:03:17,266 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 20:03:17,283 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 20:03:20,440 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\paper_term\\import_terms.py', reloading
+2025-11-27 20:03:20,646 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 20:03:22,999 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 20:03:23,002 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 20:03:23,024 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 20:03:23,046 - werkzeug - INFO -  * Debugger PIN: 640-321-877
+2025-11-27 20:09:14,898 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\import_terms.py', reloading
+2025-11-27 20:09:15,181 - werkzeug - INFO -  * Restarting with stat
+2025-11-27 20:09:18,023 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-27 20:09:18,027 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-27 20:09:18,045 - werkzeug - WARNING -  * Debugger is active!
+2025-11-27 20:09:18,068 - werkzeug - INFO -  * Debugger PIN: 640-321-877
