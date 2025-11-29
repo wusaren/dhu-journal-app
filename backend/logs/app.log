@@ -13177,3 +13177,630 @@ TypeError: object of type 'int' has no len()
 2025-11-29 15:47:05,164 - services.term_detector - INFO - ✓ 术语检测全部完成
 2025-11-29 15:47:05,209 - __main__ - INFO - 术语检测完成: 共检测到 60 个术语
 2025-11-29 15:47:05,211 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 15:47:05] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 16:42:09,831 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 16:42:09,886 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 16:42:09,913 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 16:42:09,914 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 16:42:09,939 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 16:42:10,042 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-29 16:42:10,053 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-29 16:42:10,054 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 16:42:10,927 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-29 16:42:10,947 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-29 16:42:10,947 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 16:42:10,948 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 16:42:10,948 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-29 16:42:10,948 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 16:42:10,949 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 16:42:10,949 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 16:42:10,951 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 16:42:11,571 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 16:42:11,571 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 16:42:20,637 - services.term_detector - INFO - SciBERT检测到 50 个科学术语
+2025-11-29 16:42:20,638 - services.term_detector - INFO - ✓ SciBERT检测到 50 个科学术语
+2025-11-29 16:42:20,643 - services.term_detector - INFO - ✓ 合并后共 60 个候选术语
+2025-11-29 16:42:22,017 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-29 16:42:22,067 - services.term_detector - INFO - ✓ 检测到 10 对相似术语
+2025-11-29 16:42:22,068 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 16:42:22,112 - __main__ - INFO - 术语检测完成: 共检测到 60 个术语
+2025-11-29 16:42:22,121 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 16:42:22] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 16:48:29,644 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 16:48:33,257 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 16:48:36,415 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 16:48:36,430 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 16:48:36,468 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 16:48:36,492 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 16:48:52,509 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 16:48:53,005 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 16:48:55,276 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 16:48:55,281 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 16:48:55,299 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 16:48:55,315 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 16:50:28,714 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 16:50:28,903 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 16:50:31,469 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 16:50:31,472 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 16:50:31,486 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 16:50:31,503 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 17:09:47,018 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:09:47] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 17:10:02,655 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-29 17:10:02,658 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-29 17:10:03,258 - jieba - DEBUG - Loading model cost 0.602 seconds.
+2025-11-29 17:10:03,743 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-29 17:10:03,763 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 17:10:03,786 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 17:10:03,817 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 17:10:03,820 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 17:10:03,847 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 17:10:03,890 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-29 17:10:03,899 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-29 17:10:03,900 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:10:04,665 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-29 17:10:04,692 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-29 17:10:04,692 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 17:10:04,693 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 17:10:04,694 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-29 17:10:04,694 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 17:10:04,695 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 17:10:04,695 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 17:10:04,698 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 17:10:06,005 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 17:10:06,006 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 17:10:13,838 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 17:10:15,200 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 17:10:15,207 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:10:15,227 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 17:10:15,227 - services.term_detector - INFO - SciBERT最终检测到 50 个科学术语（已计算C-value）
+2025-11-29 17:10:15,231 - services.term_detector - INFO - ✓ SciBERT检测到 50 个科学术语
+2025-11-29 17:10:15,234 - services.term_detector - INFO - ✓ 合并后共 63 个候选术语
+2025-11-29 17:10:16,626 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-29 17:10:16,675 - services.term_detector - INFO - ✓ 检测到 6 对相似术语
+2025-11-29 17:10:16,677 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 17:10:16,719 - __main__ - INFO - 术语检测完成: 共检测到 63 个术语
+2025-11-29 17:10:16,721 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:10:16] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 17:16:49,117 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 17:16:50,099 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 17:16:52,644 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 17:16:52,647 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 17:16:52,663 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 17:16:52,679 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 17:18:33,191 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 17:18:33,422 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 17:18:35,424 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 17:18:35,429 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 17:18:35,445 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 17:18:35,461 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 17:18:42,444 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:18:42] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 17:18:56,116 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-29 17:18:56,122 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-29 17:18:56,709 - jieba - DEBUG - Loading model cost 0.589 seconds.
+2025-11-29 17:18:56,711 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-29 17:18:56,713 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 17:18:56,733 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 17:18:56,760 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 17:18:56,763 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 17:18:56,786 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 17:18:56,826 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-29 17:18:56,835 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-29 17:18:56,835 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:18:57,579 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-29 17:18:57,602 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-29 17:18:57,603 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 17:18:57,603 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 17:18:57,604 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-29 17:18:57,605 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 17:18:57,605 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 17:18:57,606 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 17:18:57,608 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 17:18:58,806 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 17:18:58,807 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 17:19:06,846 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 17:19:10,917 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 17:19:10,939 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:19:10,946 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 17:19:10,951 - services.term_detector - INFO - SciBERT最终检测到 50 个科学术语（已计算C-value）
+2025-11-29 17:19:10,951 - services.term_detector - INFO - ✓ SciBERT检测到 50 个科学术语
+2025-11-29 17:19:10,956 - services.term_detector - INFO - ✓ 合并后共 63 个候选术语
+2025-11-29 17:19:12,375 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-29 17:19:12,453 - services.term_detector - INFO - ✓ 检测到 6 对相似术语
+2025-11-29 17:19:12,455 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 17:19:12,502 - __main__ - INFO - 术语检测完成: 共检测到 63 个术语
+2025-11-29 17:19:12,504 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:19:12] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 17:30:33,908 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 17:30:34,813 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 17:30:38,421 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 17:30:38,424 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 17:30:38,446 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 17:30:38,469 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 17:30:38,709 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:30:38] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 17:31:01,760 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2025-11-29 17:31:01,766 - jieba - DEBUG - Loading model from cache C:\Users\31943\AppData\Local\Temp\jieba.cache
+2025-11-29 17:31:02,425 - jieba - DEBUG - Loading model cost 0.660 seconds.
+2025-11-29 17:31:02,426 - jieba - DEBUG - Prefix dict has been built successfully.
+2025-11-29 17:31:02,428 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 17:31:02,452 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 17:31:02,484 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 17:31:02,485 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 17:31:02,518 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 17:31:02,586 - services.term_detector - INFO - 分词后有效词数: 1458
+2025-11-29 17:31:02,594 - services.term_detector - INFO - 提取到 4697 个不同的N-gram短语
+2025-11-29 17:31:02,595 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:31:03,387 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 75.51074432448075), ('sound absorption coefficient', 59.3109243697479), ('absorption coefficient', 57.881225501019436), ('flow resistance', 40.98754554266675), ('sound absorbing', 40.73438384206351), ('absorbing material', 28.111244353341764), ('sound absorbing material', 25.632), ('sound absorbing materials', 23.719298245614034), ('absorbing materials', 21.846780415345666), ('impedance tube', 17.206245452744074)]
+2025-11-29 17:31:03,410 - services.term_detector - INFO - 模式过滤完成: 保留 4683 个，过滤 14 个
+2025-11-29 17:31:03,410 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 17:31:03,411 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 17:31:03,411 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-29 17:31:03,412 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 17:31:03,413 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 17:31:03,413 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 17:31:03,415 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 17:31:04,749 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 17:31:04,749 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 17:31:12,644 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 17:31:12,644 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 17:31:12,649 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:31:12,652 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 17:31:12,652 - services.term_detector - INFO - SciBERT最终检测到 9 个科学术语（已计算C-value）
+2025-11-29 17:31:12,653 - services.term_detector - INFO - ✓ SciBERT检测到 9 个科学术语
+2025-11-29 17:31:12,654 - services.term_detector - INFO - ✓ 合并后共 25 个候选术语
+2025-11-29 17:31:13,202 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-29 17:31:13,221 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-29 17:31:13,223 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 17:31:13,265 - __main__ - INFO - 术语检测完成: 共检测到 25 个术语
+2025-11-29 17:31:13,266 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:31:13] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 17:46:56,305 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:46:56] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-29 17:46:56,321 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251129_174656_docx
+2025-11-29 17:46:56,339 - __main__ - INFO - 格式审查文件记录已创建: ID=16
+2025-11-29 17:46:56,341 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:46:56] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-29 17:46:56,357 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:46:56] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 17:46:59,670 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_174656_docx
+2025-11-29 17:46:59,691 - services.term_detector - INFO - ✓ 提取到 0 个关键词
+2025-11-29 17:46:59,703 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 17:46:59,704 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 17:46:59,717 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 17:46:59,780 - services.term_detector - INFO - 分词后有效词数: 2581
+2025-11-29 17:46:59,797 - services.term_detector - INFO - 提取到 8872 个不同的N-gram短语
+2025-11-29 17:46:59,797 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:47:02,557 - services.term_detector - INFO - C-value计算完成，前10个术语: [('B1H1 GL', 71.31514262265449), ('B1H1 GL Dilor', 54.32911392405063), ('GL Dilor', 42.92218301585307), ('drug loading efficiency', 41.755102040816325), ('drug loading', 40.915227091787116), ('loading efficiency', 35.951588430992075), ('BC HA', 34.35101419832198), ('B1H1 GL Dilor film', 28.46020436304795), ('B1H1 GL B1H1 GL Dilor', 28.43458750793272), ('film forming', 26.569295050256937)]
+2025-11-29 17:47:02,588 - services.term_detector - INFO - 模式过滤完成: 保留 8852 个，过滤 20 个
+2025-11-29 17:47:02,588 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 17:47:02,588 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 17:47:02,589 - services.term_detector - INFO -   - 重复单词: 14
+2025-11-29 17:47:02,589 - services.term_detector - INFO -   - 数字过多: 6
+2025-11-29 17:47:02,589 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 17:47:02,591 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 17:47:02,592 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 17:47:03,033 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 17:47:03,033 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 17:47:22,056 - services.term_detector - INFO - SciBERT提取到 314 个不同的术语
+2025-11-29 17:47:22,056 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 17:47:22,058 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:47:22,063 - services.term_detector - INFO - C-value计算完成，前10个术语: [('drug loading efficiency', 36.0), ('ODF', 35.0), ('drug', 24.90909090909091), ('tensile', 17.0), ('Dilor', 15.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 17:47:22,064 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 17:47:22,064 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 17:47:22,065 - services.term_detector - INFO - ✓ 合并后共 30 个候选术语
+2025-11-29 17:47:22,408 - services.term_detector - INFO - ✓ 检测到 0 个疑似新术语
+2025-11-29 17:47:22,419 - services.term_detector - INFO - ✓ 检测到 4 对相似术语
+2025-11-29 17:47:22,420 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 17:47:22,468 - __main__ - INFO - 术语检测完成: 共检测到 30 个术语
+2025-11-29 17:47:22,470 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:47:22] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 17:50:27,753 - __main__ - INFO - 已删除格式审查文件记录: ID=16
+2025-11-29 17:50:27,754 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:50:27] "DELETE /api/paper-format/delete/16 HTTP/1.1" 200 -
+2025-11-29 17:50:27,768 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:50:27] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 17:50:32,215 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:50:32] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-11-29 17:50:32,240 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 17:50:32,262 - __main__ - INFO - 格式审查文件记录已创建: ID=17
+2025-11-29 17:50:32,264 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:50:32] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-11-29 17:50:32,276 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:50:32] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 17:50:35,190 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 17:50:35,250 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-11-29 17:50:35,517 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 17:50:35,518 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 17:50:35,812 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 17:50:35,906 - services.term_detector - INFO - 分词后有效词数: 3111
+2025-11-29 17:50:35,928 - services.term_detector - INFO - 提取到 10859 个不同的N-gram短语
+2025-11-29 17:50:35,929 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:50:39,982 - services.term_detector - INFO - C-value计算完成，前10个术语: [('B1H1 GL', 74.39619901344201), ('B1H1 GL Dilor', 56.2962962962963), ('GL Dilor', 44.51384044578566), ('drug loading', 42.50378311793072), ('drug loading efficiency', 41.755102040816325), ('Dilor ODF', 36.383868243155604), ('loading efficiency', 35.951588430992075), ('BC HA', 35.885943412554475), ('et al', 34.78022303878414), ('B1H1 GL B1H1 GL Dilor', 31.019550008653873)]
+2025-11-29 17:50:40,020 - services.term_detector - INFO - 模式过滤完成: 保留 10840 个，过滤 19 个
+2025-11-29 17:50:40,020 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 17:50:40,020 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 17:50:40,021 - services.term_detector - INFO -   - 重复单词: 13
+2025-11-29 17:50:40,022 - services.term_detector - INFO -   - 数字过多: 6
+2025-11-29 17:50:40,022 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 17:50:40,023 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 17:50:40,025 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 17:50:40,441 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 17:50:40,442 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 17:51:03,172 - services.term_detector - INFO - SciBERT提取到 374 个不同的术语
+2025-11-29 17:51:03,172 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 17:51:03,173 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 17:51:03,179 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 44.0), ('drug loading efficiency', 36.0), ('Dilor', 31.0), ('drug', 30.0), ('tensile', 17.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 17:51:03,179 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 17:51:03,180 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 17:51:03,180 - services.term_detector - INFO - ✓ 合并后共 35 个候选术语
+2025-11-29 17:51:11,661 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 17:51:11,676 - services.term_detector - INFO - ✓ 检测到 4 对相似术语
+2025-11-29 17:51:11,678 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 17:51:11,722 - __main__ - INFO - 术语检测完成: 共检测到 35 个术语
+2025-11-29 17:51:11,723 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:51:11] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 17:52:33,458 - __main__ - INFO - 用户确认新术语: et al, 确认结果: True
+2025-11-29 17:52:33,459 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:52:33] "POST /api/paper-format/confirm-new-term HTTP/1.1" 200 -
+2025-11-29 17:52:34,265 - __main__ - INFO - 用户确认新术语: et al, 确认结果: False
+2025-11-29 17:52:34,266 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 17:52:34] "POST /api/paper-format/confirm-new-term HTTP/1.1" 200 -
+2025-11-29 18:17:19,443 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 18:17:19] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 18:17:41,734 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 18:17:41,792 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-11-29 18:17:42,053 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 18:17:42,054 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 18:17:42,330 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 18:17:42,429 - services.term_detector - INFO - 分词后有效词数: 3111
+2025-11-29 18:17:42,449 - services.term_detector - INFO - 提取到 10859 个不同的N-gram短语
+2025-11-29 18:17:42,450 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 18:17:46,624 - services.term_detector - INFO - C-value计算完成，前10个术语: [('B1H1 GL', 74.39619901344201), ('B1H1 GL Dilor', 56.2962962962963), ('GL Dilor', 44.51384044578566), ('drug loading', 42.50378311793072), ('drug loading efficiency', 41.755102040816325), ('Dilor ODF', 36.383868243155604), ('loading efficiency', 35.951588430992075), ('BC HA', 35.885943412554475), ('et al', 34.78022303878414), ('B1H1 GL B1H1 GL Dilor', 31.019550008653873)]
+2025-11-29 18:17:46,669 - services.term_detector - INFO - 模式过滤完成: 保留 10840 个，过滤 19 个
+2025-11-29 18:17:46,669 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 18:17:46,669 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 18:17:46,669 - services.term_detector - INFO -   - 重复单词: 13
+2025-11-29 18:17:46,669 - services.term_detector - INFO -   - 数字过多: 6
+2025-11-29 18:17:46,669 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 18:17:46,670 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 18:17:46,673 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 18:17:47,122 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 18:17:47,122 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 18:18:11,241 - services.term_detector - INFO - SciBERT提取到 374 个不同的术语
+2025-11-29 18:18:11,241 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 18:18:11,242 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 18:18:11,247 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 44.0), ('drug loading efficiency', 36.0), ('Dilor', 31.0), ('drug', 30.0), ('tensile', 17.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 18:18:11,248 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 18:18:11,248 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 18:18:11,248 - services.term_detector - INFO - ✓ 合并后共 35 个候选术语
+2025-11-29 18:18:20,327 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 18:18:20,344 - services.term_detector - INFO - ✓ 检测到 4 对相似术语
+2025-11-29 18:18:20,345 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 18:18:20,392 - __main__ - INFO - 术语检测完成: 共检测到 35 个术语
+2025-11-29 18:18:20,394 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 18:18:20] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 18:54:33,295 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 18:54:33] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 18:54:40,180 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 18:54:40,245 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-11-29 18:54:40,555 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 18:54:40,556 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 18:54:40,888 - services.term_detector - INFO - 开始提取N-gram短语...
+2025-11-29 18:54:40,983 - services.term_detector - INFO - 分词后有效词数: 3111
+2025-11-29 18:54:41,007 - services.term_detector - INFO - 提取到 10859 个不同的N-gram短语
+2025-11-29 18:54:41,008 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 18:54:45,914 - services.term_detector - INFO - C-value计算完成，前10个术语: [('B1H1 GL', 74.39619901344201), ('B1H1 GL Dilor', 56.2962962962963), ('GL Dilor', 44.51384044578566), ('drug loading', 42.50378311793072), ('drug loading efficiency', 41.755102040816325), ('Dilor ODF', 36.383868243155604), ('loading efficiency', 35.951588430992075), ('BC HA', 35.885943412554475), ('et al', 34.78022303878414), ('B1H1 GL B1H1 GL Dilor', 31.019550008653873)]
+2025-11-29 18:54:45,959 - services.term_detector - INFO - 模式过滤完成: 保留 10840 个，过滤 19 个
+2025-11-29 18:54:45,960 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 18:54:45,960 - services.term_detector - INFO -   - 单字组合: 0
+2025-11-29 18:54:45,960 - services.term_detector - INFO -   - 重复单词: 13
+2025-11-29 18:54:45,961 - services.term_detector - INFO -   - 数字过多: 6
+2025-11-29 18:54:45,961 - services.term_detector - INFO - 提取到 20 个多词术语
+2025-11-29 18:54:45,963 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 18:54:45,963 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 18:54:46,525 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 18:54:46,525 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 18:55:11,855 - services.term_detector - INFO - SciBERT提取到 374 个不同的术语
+2025-11-29 18:55:11,855 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 18:55:11,859 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 18:55:11,865 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 44.0), ('drug loading efficiency', 36.0), ('Dilor', 31.0), ('drug', 30.0), ('tensile', 17.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 18:55:11,865 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 18:55:11,866 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 18:55:11,867 - services.term_detector - INFO - ✓ 合并后共 35 个候选术语
+2025-11-29 18:55:21,619 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 18:55:29,042 - services.term_detector - INFO - ✓ 检测到 4 对相似术语
+2025-11-29 18:55:29,044 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 18:55:29,095 - __main__ - INFO - 术语检测完成: 共检测到 35 个术语
+2025-11-29 18:55:29,096 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 18:55:29] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 18:59:12,909 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 18:59:14,870 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 18:59:17,747 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 18:59:17,751 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 18:59:17,778 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 18:59:17,797 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 18:59:38,126 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 18:59:38,377 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 18:59:40,274 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 18:59:40,278 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 18:59:40,292 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 18:59:40,306 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 18:59:51,655 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 18:59:51,912 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 18:59:53,720 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 18:59:53,722 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 18:59:53,737 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 18:59:53,751 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:00:18,374 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:00:18,606 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:00:20,339 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:00:20,342 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:00:20,355 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:00:20,370 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:00:41,135 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:00:41,381 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:00:43,160 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:00:43,163 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:00:43,177 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:00:43,192 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:00:55,577 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:00:55,791 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:00:57,511 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:00:57,514 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:00:57,527 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:00:57,541 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:01:11,320 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:01:11,597 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:01:13,505 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:01:13,509 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:01:13,528 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:01:13,549 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:03:04,143 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:03:04,566 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:03:06,364 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:03:06,368 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:03:06,384 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:03:06,403 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:38:28,913 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\test.py', reloading
+2025-11-29 19:38:29,274 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:38:31,568 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:38:31,571 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:38:31,599 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:38:31,618 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:38:49,047 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\test.py', reloading
+2025-11-29 19:38:49,287 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:38:51,457 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:38:51,460 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:38:51,475 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:38:51,493 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:40:35,291 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:40:35,493 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:40:38,024 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:40:38,027 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:40:38,051 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:40:38,069 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:48:01,382 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 19:48:01] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 19:48:20,867 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-11-29 19:48:20,869 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 19:48:20,896 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 19:48:20,917 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 19:48:20,918 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 19:48:20,937 - services.term_detector - INFO - 文档总字符数: 16437
+2025-11-29 19:48:20,938 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 19:48:21,686 - services.term_detector - INFO - SpaCy提取到 461 个不同的N-gram短语
+2025-11-29 19:48:21,687 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 19:48:21,700 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 73.671405126113), ('sound absorption coefficient', 60.0), ('absorption coefficient', 56.186920650564986), ('flow resistance', 41.071202192600396), ('absorbing material', 24.858885537626552), ('sound absorbing materials', 22.571428571428573), ('sound absorbing material', 20.22222222222222), ('absorbing materials', 20.151666080597558), ('impedance tube', 19.019550008653873), ('acoustic impedance', 12.151379172195531)]
+2025-11-29 19:48:21,705 - services.term_detector - INFO - 模式过滤完成: 保留 461 个，过滤 0 个
+2025-11-29 19:48:21,705 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 19:48:21,706 - services.term_detector - INFO -   - 单字母组合: 0
+2025-11-29 19:48:21,706 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 19:48:21,706 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 19:48:21,706 - services.term_detector - INFO -   - 无效模式: 0
+2025-11-29 19:48:21,707 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 19:48:21,708 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 19:48:21,710 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 19:48:22,934 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 19:48:22,935 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 19:48:33,276 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 19:48:33,277 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 19:48:33,278 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 19:48:33,281 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 19:48:33,282 - services.term_detector - INFO - SciBERT最终检测到 9 个科学术语（已计算C-value）
+2025-11-29 19:48:33,282 - services.term_detector - INFO - ✓ SciBERT检测到 9 个科学术语
+2025-11-29 19:48:33,283 - services.term_detector - INFO - ✓ 合并后共 25 个候选术语
+2025-11-29 19:48:34,064 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 19:48:34,078 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-29 19:48:34,079 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 19:48:34,122 - __main__ - INFO - 术语检测完成: 共检测到 25 个术语
+2025-11-29 19:48:34,124 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 19:48:34] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 19:48:58,719 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 19:48:58,815 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-11-29 19:48:59,484 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 19:48:59,485 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 19:49:00,176 - services.term_detector - INFO - 文档总字符数: 32176
+2025-11-29 19:49:00,176 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 19:49:01,275 - services.term_detector - INFO - SpaCy提取到 831 个不同的N-gram短语
+2025-11-29 19:49:01,276 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 19:49:01,299 - services.term_detector - INFO - C-value计算完成，前10个术语: [('drug loading', 40.55639340080605), ('drug loading efficiency', 40.0), ('loading efficiency', 31.170929180849406), ('simulated oral saliva', 20.0), ('drug release', 19.217670321244018), ('disintegration time', 19.019550008653873), ('B1H1 film', 17.43458750793272), ('forming agents', 15.84962500721156), ('BC film', 14.264662506490405), ('drug release rate', 14.0)]
+2025-11-29 19:49:01,303 - services.term_detector - INFO - 模式过滤完成: 保留 824 个，过滤 7 个
+2025-11-29 19:49:01,303 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 19:49:01,303 - services.term_detector - INFO -   - 单字母组合: 2
+2025-11-29 19:49:01,304 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 19:49:01,305 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 19:49:01,306 - services.term_detector - INFO -   - 无效模式: 5
+2025-11-29 19:49:01,306 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 19:49:01,306 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 19:49:01,308 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 19:49:01,405 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 19:49:01,406 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 19:49:25,222 - services.term_detector - INFO - SciBERT提取到 374 个不同的术语
+2025-11-29 19:49:25,222 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 19:49:25,223 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 19:49:25,229 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 44.0), ('drug loading efficiency', 36.0), ('Dilor', 31.0), ('drug', 30.0), ('tensile', 17.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 19:49:25,229 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 19:49:25,229 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 19:49:25,230 - services.term_detector - INFO - ✓ 合并后共 33 个候选术语
+2025-11-29 19:49:34,137 - services.term_detector - INFO - ✓ 检测到 2 个疑似新术语
+2025-11-29 19:49:34,159 - services.term_detector - INFO - ✓ 检测到 3 对相似术语
+2025-11-29 19:49:34,160 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 19:49:34,203 - __main__ - INFO - 术语检测完成: 共检测到 33 个术语
+2025-11-29 19:49:34,205 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 19:49:34] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 19:55:46,864 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:55:47,810 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:55:49,961 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:55:49,964 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:55:49,983 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:55:49,999 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:56:22,191 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 19:56:22,423 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 19:56:24,299 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 19:56:24,302 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 19:56:24,317 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 19:56:24,332 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 19:56:42,544 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-11-29 19:56:42,545 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 19:56:42,571 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 19:56:42,593 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 19:56:42,595 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 19:56:42,616 - services.term_detector - INFO - 文档总字符数: 16437
+2025-11-29 19:56:42,616 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 19:56:43,058 - services.term_detector - INFO - SpaCy提取到 515 个不同的N-gram短语
+2025-11-29 19:56:43,058 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 19:56:43,067 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 73.64415047993657), ('sound absorption coefficient', 59.5), ('absorption coefficient', 56.12208127553548), ('flow resistance', 41.071202192600396), ('sound absorbing', 31.963410431209983), ('absorbing material', 24.858885537626552), ('sound absorbing materials', 22.571428571428573), ('sound absorbing material', 20.22222222222222), ('absorbing materials', 20.151666080597558), ('impedance tube', 19.019550008653873)]
+2025-11-29 19:56:43,070 - services.term_detector - INFO - 模式过滤完成: 保留 500 个，过滤 15 个
+2025-11-29 19:56:43,071 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 19:56:43,071 - services.term_detector - INFO -   - 单字母组合: 15
+2025-11-29 19:56:43,073 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 19:56:43,073 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 19:56:43,073 - services.term_detector - INFO -   - 无效模式: 0
+2025-11-29 19:56:43,074 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 19:56:43,074 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 19:56:43,076 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 19:56:43,999 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 19:56:43,999 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 19:56:52,638 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 19:56:52,639 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 19:56:52,640 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 19:56:52,643 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 19:56:52,644 - services.term_detector - INFO - SciBERT最终检测到 9 个科学术语（已计算C-value）
+2025-11-29 19:56:52,644 - services.term_detector - INFO - ✓ SciBERT检测到 9 个科学术语
+2025-11-29 19:56:52,645 - services.term_detector - INFO - ✓ 合并后共 25 个候选术语
+2025-11-29 19:56:53,212 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 19:56:53,226 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-29 19:56:53,227 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 19:56:53,271 - __main__ - INFO - 术语检测完成: 共检测到 25 个术语
+2025-11-29 19:56:53,273 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 19:56:53] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 20:02:16,490 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 20:02:16,557 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-11-29 20:02:16,828 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 20:02:16,830 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 20:02:17,096 - services.term_detector - INFO - 文档总字符数: 32176
+2025-11-29 20:02:17,096 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 20:02:18,116 - services.term_detector - INFO - SpaCy提取到 982 个不同的N-gram短语
+2025-11-29 20:02:18,117 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 20:02:18,151 - services.term_detector - INFO - C-value计算完成，前10个术语: [('drug loading', 40.791929623823435), ('drug loading efficiency', 40.0), ('loading efficiency', 32.09549063960341), ('simulated oral saliva', 20.0), ('drug release', 19.49503875887022), ('disintegration time', 19.019550008653873), ('forming agents', 15.84962500721156), ('GL@ Dilor', 15.84962500721156), ('B1H1 film', 15.057143756850984), ('BC film', 14.264662506490405)]
+2025-11-29 20:02:18,156 - services.term_detector - INFO - 模式过滤完成: 保留 950 个，过滤 32 个
+2025-11-29 20:02:18,157 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 20:02:18,157 - services.term_detector - INFO -   - 单字母组合: 27
+2025-11-29 20:02:18,158 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 20:02:18,160 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 20:02:18,160 - services.term_detector - INFO -   - 无效模式: 5
+2025-11-29 20:02:18,161 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 20:02:18,161 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 20:02:18,164 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 20:02:18,254 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 20:02:18,254 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 20:02:40,463 - services.term_detector - INFO - SciBERT提取到 374 个不同的术语
+2025-11-29 20:02:40,463 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 20:02:40,464 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 20:02:40,471 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 44.0), ('drug loading efficiency', 36.0), ('Dilor', 31.0), ('drug', 30.0), ('tensile', 17.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 20:02:40,472 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 20:02:40,472 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 20:02:40,473 - services.term_detector - INFO - ✓ 合并后共 33 个候选术语
+2025-11-29 20:02:49,119 - services.term_detector - INFO - ✓ 检测到 2 个疑似新术语
+2025-11-29 20:02:49,137 - services.term_detector - INFO - ✓ 检测到 3 对相似术语
+2025-11-29 20:02:49,139 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 20:02:49,180 - __main__ - INFO - 术语检测完成: 共检测到 33 个术语
+2025-11-29 20:02:49,182 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 20:02:49] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 20:15:57,135 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\services\\term_detector.py', reloading
+2025-11-29 20:15:58,732 - werkzeug - INFO -  * Restarting with stat
+2025-11-29 20:16:00,689 - __main__ - INFO - 所有默认用户已创建完成
+2025-11-29 20:16:00,692 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-11-29 20:16:00,709 - werkzeug - WARNING -  * Debugger is active!
+2025-11-29 20:16:00,726 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-11-29 20:16:18,528 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-11-29 20:16:18,529 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 20:16:18,546 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 20:16:18,570 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 20:16:18,571 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 20:16:18,593 - services.term_detector - INFO - 文档总字符数: 16437
+2025-11-29 20:16:18,594 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 20:16:19,028 - services.term_detector - INFO - SpaCy提取到 515 个不同的N-gram短语
+2025-11-29 20:16:19,029 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 20:16:19,037 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 147.45811837066472), ('sound absorption coefficient', 119.75), ('absorption coefficient', 112.67642505126764), ('flow resistance', 82.14240438520079), ('absorbing material', 49.717771075253104), ('sound absorbing materials', 45.142857142857146), ('sound absorbing material', 40.44444444444444), ('absorbing materials', 40.303332161195115), ('impedance tube', 38.039100017307746), ('sound absorbing', 26.812282303866226)]
+2025-11-29 20:16:19,040 - services.term_detector - INFO - 模式过滤完成: 保留 500 个，过滤 15 个
+2025-11-29 20:16:19,041 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 20:16:19,041 - services.term_detector - INFO -   - 单字母组合: 15
+2025-11-29 20:16:19,041 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 20:16:19,042 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 20:16:19,042 - services.term_detector - INFO -   - 无效模式: 0
+2025-11-29 20:16:19,043 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 20:16:19,043 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 20:16:19,044 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 20:16:19,858 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 20:16:19,859 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 20:16:27,432 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 20:16:27,432 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 20:16:27,432 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 20:16:27,434 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 20:16:27,435 - services.term_detector - INFO - SciBERT最终检测到 9 个科学术语（已计算C-value）
+2025-11-29 20:16:27,435 - services.term_detector - INFO - ✓ SciBERT检测到 9 个科学术语
+2025-11-29 20:16:27,436 - services.term_detector - INFO - ✓ 合并后共 25 个候选术语
+2025-11-29 20:16:28,140 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 20:16:28,160 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-29 20:16:28,161 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 20:16:28,203 - __main__ - INFO - 术语检测完成: 共检测到 25 个术语
+2025-11-29 20:16:28,204 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 20:16:28] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 20:17:15,694 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-11-29 20:17:15,753 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-11-29 20:17:16,010 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 20:17:16,011 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 20:17:16,271 - services.term_detector - INFO - 文档总字符数: 32176
+2025-11-29 20:17:16,271 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 20:17:17,331 - services.term_detector - INFO - SpaCy提取到 982 个不同的N-gram短语
+2025-11-29 20:17:17,332 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 20:17:17,365 - services.term_detector - INFO - C-value计算完成，前10个术语: [('drug loading', 81.75069740561753), ('drug loading efficiency', 80.5), ('loading efficiency', 64.5872219043871), ('simulated oral saliva', 40.0), ('drug release', 39.30707001788467), ('disintegration time', 38.039100017307746), ('B1H1 film', 32.4917312647837), ('forming agents', 32.22757084799684), ('GL@ Dilor', 32.22757084799684), ('BC film', 29.585966680128248)]
+2025-11-29 20:17:17,371 - services.term_detector - INFO - 模式过滤完成: 保留 950 个，过滤 32 个
+2025-11-29 20:17:17,371 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 20:17:17,372 - services.term_detector - INFO -   - 单字母组合: 27
+2025-11-29 20:17:17,372 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 20:17:17,373 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 20:17:17,374 - services.term_detector - INFO -   - 无效模式: 5
+2025-11-29 20:17:17,374 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 20:17:17,375 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 20:17:17,376 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 20:17:17,457 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 20:17:17,457 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 20:17:39,455 - services.term_detector - INFO - SciBERT提取到 374 个不同的术语
+2025-11-29 20:17:39,455 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 20:17:39,456 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 20:17:39,462 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 44.0), ('drug loading efficiency', 36.0), ('Dilor', 31.0), ('drug', 30.0), ('tensile', 17.5), ('disintegration', 15.0), ('encapsulation rate', 14.264662506490405), ('saliva', 12.0), ('mass', 11.0), ('elongation', 10.0)]
+2025-11-29 20:17:39,462 - services.term_detector - INFO - SciBERT最终检测到 11 个科学术语（已计算C-value）
+2025-11-29 20:17:39,463 - services.term_detector - INFO - ✓ SciBERT检测到 11 个科学术语
+2025-11-29 20:17:39,463 - services.term_detector - INFO - ✓ 合并后共 33 个候选术语
+2025-11-29 20:17:47,700 - services.term_detector - INFO - ✓ 检测到 2 个疑似新术语
+2025-11-29 20:17:47,723 - services.term_detector - INFO - ✓ 检测到 3 对相似术语
+2025-11-29 20:17:47,724 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 20:17:47,771 - __main__ - INFO - 术语检测完成: 共检测到 33 个术语
+2025-11-29 20:17:47,773 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 20:17:47] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-11-29 22:19:58,735 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 22:19:58] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-11-29 22:21:04,733 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-11-29 22:21:04,759 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-11-29 22:21:04,783 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-11-29 22:21:04,786 - services.term_detector - INFO - 开始提取多词术语...
+2025-11-29 22:21:04,811 - services.term_detector - INFO - 文档总字符数: 16437
+2025-11-29 22:21:04,812 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-11-29 22:21:05,235 - services.term_detector - INFO - SpaCy提取到 515 个不同的N-gram短语
+2025-11-29 22:21:05,236 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 22:21:05,248 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 147.45811837066472), ('sound absorption coefficient', 119.75), ('absorption coefficient', 112.67642505126764), ('flow resistance', 82.14240438520079), ('absorbing material', 49.717771075253104), ('sound absorbing materials', 45.142857142857146), ('sound absorbing material', 40.44444444444444), ('absorbing materials', 40.303332161195115), ('impedance tube', 38.039100017307746), ('sound absorbing', 26.812282303866226)]
+2025-11-29 22:21:05,252 - services.term_detector - INFO - 模式过滤完成: 保留 500 个，过滤 15 个
+2025-11-29 22:21:05,253 - services.term_detector - INFO -   - 长度不符: 0
+2025-11-29 22:21:05,253 - services.term_detector - INFO -   - 单字母组合: 15
+2025-11-29 22:21:05,253 - services.term_detector - INFO -   - 重复单词: 0
+2025-11-29 22:21:05,254 - services.term_detector - INFO -   - 数字过多: 0
+2025-11-29 22:21:05,254 - services.term_detector - INFO -   - 无效模式: 0
+2025-11-29 22:21:05,254 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语
+2025-11-29 22:21:05,254 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-11-29 22:21:05,255 - services.term_detector - INFO - Loading SciBERT model...
+2025-11-29 22:21:05,385 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-11-29 22:21:05,385 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-11-29 22:21:17,736 - services.term_detector - INFO - SciBERT提取到 171 个不同的术语
+2025-11-29 22:21:17,736 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-11-29 22:21:17,737 - services.term_detector - INFO - 开始计算C-value分数...
+2025-11-29 22:21:17,739 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 31.43508959763626), ('impedance tube', 19.019550008653873), ('impedance', 14.571428571428571), ('porous sound absorbing materials', 13.931568569324174), ('sound absorbing material', 13.0), ('measurement', 10.75), ('frequencies', 10.0), ('sound absorption material', 10.0), ('wave', 8.555555555555555)]
+2025-11-29 22:21:17,739 - services.term_detector - INFO - SciBERT最终检测到 9 个科学术语（已计算C-value）
+2025-11-29 22:21:17,740 - services.term_detector - INFO - ✓ SciBERT检测到 9 个科学术语
+2025-11-29 22:21:17,740 - services.term_detector - INFO - ✓ 合并后共 25 个候选术语
+2025-11-29 22:21:18,405 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-11-29 22:21:18,419 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-11-29 22:21:18,420 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-11-29 22:21:18,469 - __main__ - INFO - 术语检测完成: 共检测到 25 个术语
+2025-11-29 22:21:18,471 - werkzeug - INFO - 127.0.0.1 - - [29/Nov/2025 22:21:18] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -

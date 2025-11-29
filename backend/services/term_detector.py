@@ -1,5 +1,5 @@
 """
-论文术语检测模块（改进版）
+论文术语检测模块
 
 功能：
 1. 智能提取多词术语（使用N-gram + C-value算法）
@@ -8,11 +8,12 @@
 4. 使用SciBERT模型进行科学术语NER检测
 
 算法：
+- SpaCy英文NLP：精准的英文分词和词性标注
 - N-gram提取：提取2-5词的短语组合
 - C-value算法：经典的多词术语自动抽取算法
-- 词性过滤：只保留名词性短语
-- PMI（点互信息）：评估词组结合强度
+- 词性过滤：只保留名词、专有名词、形容词等
 - SciBERT NER：基于深度学习的科学术语识别
+- 命名实体识别：利用SpaCy的NER辅助术语提取
 """
 
 import re
@@ -22,8 +23,6 @@ import os
 from typing import List, Dict, Tuple, Set, Any
 from collections import Counter, defaultdict
 from docx import Document
-import jieba
-import jieba.posseg as pseg
 import logging
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ logger = logging.getLogger(__name__)
 # 延迟导入深度学习相关库（避免启动时加载过慢）
 _transformers_available = False
 _spacy_available = False
-_model_cache = None
+_nlp_english = None  # SpaCy英文模型
 
 try:
     from transformers import AutoTokenizer, AutoModelForTokenClassification
@@ -43,50 +42,64 @@ except ImportError:
 try:
     import spacy
     _spacy_available = True
+    # 加载英文模型
+    try:
+        _nlp_english = spacy.load("en_core_web_sm")
+        logger.info("SpaCy English model loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load SpaCy English model: {e}")
+        _spacy_available = False
 except ImportError:
-    logger.warning("spacy not available, SciBERT detection will be disabled")
+    logger.warning("spacy not available, term extraction will be limited")
 
 
 class TermDetector:
     """智能术语检测器"""
     
-    # 定义性触发词（中英文）
+    # 定义性触发词
     NEW_TERM_TRIGGERS = [
-        "我们提出", "本文提出", "本文定义", "引入了", "定义为", "称为", 
-        "新颖的", "一种新的", "首次提出", "创新性地", "本研究提出",
         "we propose", "we introduce", "we define", "is defined as", 
-        "we call", "novel", "new approach", "introduce a new",
-        "first proposed", "innovative", "we present"
+        "is termed", "we call", "we term", "referred to as",
+        "novel", "new approach", "new method", "introduce a new",
+        "first proposed", "first introduced", "innovative", "we present",
+        "a novel", "newly developed", "termed as", "called the",
+        "introduce the concept", "we coin", "we name", "known as"
     ]
     
-    # 停用词（扩展版）
+    # 英文停用词（学术论文扩展版）
     STOP_WORDS = {
-        # 中文停用词
-        "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一", "一个", 
-        "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好",
-        "自己", "这", "那", "里", "个", "们", "能", "对", "可以", "但是", "然而", "因此",
-        "所以", "如果", "虽然", "或者", "以及", "等", "等等", "通过", "由于", "关于",
-        "进行", "提出", "研究", "方法", "结果", "本文", "实验", "数据", "分析",
-        # 英文停用词
+        # 基础停用词
         "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
         "of", "with", "by", "from", "as", "is", "are", "was", "were", "be",
         "been", "being", "have", "has", "had", "do", "does", "did", "will",
         "would", "could", "should", "may", "might", "can", "this", "that",
         "these", "those", "it", "its", "which", "who", "what", "where", "when",
-        "why", "how", "we", "our", "they", "their", "etc", "such", "also",
-        "using", "used", "based", "proposed", "paper", "study", "method",
-        "results", "data", "analysis", "experiment"
+        "why", "how", "we", "our", "they", "their", "them", "there", "then",
+        # 学术论文常见词（非术语）
+        "etc", "such", "also", "thus", "therefore", "however", "moreover",
+        "furthermore", "additionally", "consequently", "hence", "nevertheless",
+        "using", "used", "use", "based", "shown", "shows", "show",
+        "proposed", "propose", "proposes", "paper", "study", "research",
+        "method", "methods", "results", "result", "data", "analysis",
+        "experiment", "experiments", "approach", "approaches", "technique",
+        "work", "works", "section", "figure", "table", "described",
+        "obtained", "observed", "presented", "demonstrate", "demonstrated",
+        "via", "versus", "vs", "e.g.", "i.e.", "cf.", "et", "al"
     }
+    
+    # 有效词性标签（SpaCy英文）
+    VALID_POS = {'NOUN', 'PROPN', 'ADJ', 'VERB'}
+    
+    # 术语核心词性（必须包含）
+    CORE_POS = {'NOUN', 'PROPN'}
     
     def __init__(self):
         """初始化术语检测器"""
-        # 初始化jieba（添加学术领域常见词）
-        jieba.initialize()
         
         # SciBERT模型相关
         self.model = None
         self.tokenizer = None
-        self.nlp = None
+        self.nlp = _nlp_english  # SciBERT使用的spacy模型
         self.id2label = None
         self._model_loaded = False
     
@@ -132,12 +145,10 @@ class TermDetector:
         for para in doc.paragraphs:
             text = para.text
             
-            # 匹配各种引号格式
+            # 只匹配英文引号格式
             patterns = [
-                r'"([^"]{2,30})"',  # 双引号
-                r"'([^']{2,30})'",  # 英文单引号
-                r"‘([^‘’]{2,30})’",  # 中文双引号
-                r"“([^“”]{2,30})”",  # 中文双引号
+                r'"([^"]{2,50})"',  # 双引号
+                r"'([^']{2,50})'",  # 单引号
             ]
             
             for pattern in patterns:
@@ -160,47 +171,87 @@ class TermDetector:
         """
         提取N-gram短语
         
+        使用SpaCy进行英文分词和词性标注，提取有意义的多词术语候选
+        
         Args:
             text: 文本
-            min_n: 最小词数
-            max_n: 最大词数
+            min_n: 最小词数（默认2）
+            max_n: 最大词数（默认5）
             
         Returns:
             {n-gram: 出现次数} 字典
         """
-        logger.info("开始提取N-gram短语...")
+        if not self.nlp:
+            logger.error("SpaCy English model not available")
+            return {}
         
-        # 使用jieba分词和词性标注
-        words_with_pos = pseg.cut(text)
+        logger.info("开始使用SpaCy提取英文N-gram短语...")
         
-        # 只保留名词、动词、形容词、英文词
-        valid_pos = {'n', 'nr', 'ns', 'nt', 'nz', 'v', 'vn', 'a', 'eng'}
+        # 使用SpaCy处理文本
+        doc = self.nlp(text)
         
-        # 构建词序列
-        word_list = []
-        for word, pos in words_with_pos:
-            word = word.strip()
-            # 过滤停用词和单字符
-            if (len(word) >= 2 and 
-                word.lower() not in self.STOP_WORDS and
-                not re.match(r'^[\d\s\W]+$', word)):  # 排除纯数字、空格、标点
-                word_list.append(word)
+        # 构建有效词序列（带词性标注）
+        tokens_with_pos = []
+        for token in doc:
+            # 跳过标点、空格、数字
+            if token.is_punct or token.is_space or token.like_num:
+                tokens_with_pos.append(None)  # 作为分隔符
+                continue
+            
+            # 跳过停用词
+            if token.lower_ in self.STOP_WORDS:
+                tokens_with_pos.append(None)
+                continue
+            
+            # 只保留有效词性
+            if token.pos_ in self.VALID_POS:
+                # 保留原始形式（不词形还原，保持术语的原始表达）
+                tokens_with_pos.append((token.text, token.pos_))
         
-        logger.info(f"分词后有效词数: {len(word_list)}")
-        # print("分词后有效词数：",word_list)
-        
-        # 提取N-gram
+        # 提取N-gram（考虑词性模式）
         ngram_counter = Counter()
         
-        for n in range(min_n, max_n + 1):
-            for i in range(len(word_list) - n + 1):
-                ngram = ' '.join(word_list[i:i+n])
-                # 再次过滤：不能全是停用词
-                words_in_ngram = ngram.split()
-                if not all(w.lower() in self.STOP_WORDS for w in words_in_ngram):
-                    ngram_counter[ngram] += 1
+        # 滑动窗口提取
+        i = 0
+        while i < len(tokens_with_pos):
+            # 跳过None（分隔符）
+            if tokens_with_pos[i] is None:
+                i += 1
+                continue
+            
+            # 从当前位置开始提取N-gram
+            for n in range(min_n, max_n + 1):
+                # 收集n个有效词
+                ngram_tokens = []
+                j = i
+                while len(ngram_tokens) < n and j < len(tokens_with_pos):
+                    if tokens_with_pos[j] is not None:
+                        ngram_tokens.append(tokens_with_pos[j])
+                    else:
+                        # 遇到分隔符，终止当前N-gram
+                        break
+                    j += 1
+                
+                # 检查是否收集到足够的词
+                if len(ngram_tokens) == n:
+                    # 词性验证：至少包含一个核心词性（名词或专有名词）
+                    pos_list = [pos for _, pos in ngram_tokens]
+                    if any(pos in self.CORE_POS for pos in pos_list):
+                        # 构建N-gram字符串
+                        ngram = ' '.join([word for word, _ in ngram_tokens])
+                        
+                        # 额外过滤：
+                        # 1. 不以动词或形容词结尾（术语通常以名词结尾）
+                        if ngram_tokens[-1][1] in self.CORE_POS:
+                            # 2. 长度合理（2-80字符）
+                            if 4 <= len(ngram) <= 80:
+                                ngram_counter[ngram] += 1
+
+                        ngram_counter[ngram] += 1
+            
+            i += 1
         
-        logger.info(f"提取到 {len(ngram_counter)} 个不同的N-gram短语")
+        logger.info(f"SpaCy提取到 {len(ngram_counter)} 个不同的N-gram短语")
         
         return dict(ngram_counter)
     
@@ -237,9 +288,7 @@ class TermDetector:
         
         for ngram, freq in ngrams.items():
             length = len(ngram.split())  # 词数
-            if ngram == 'sound absorption' or ngram == 'sound absorption coefficient':
-                print(ngram,len(nested_in[ngram]))
-                print(ngram,sum(ngrams[parent] for parent in nested_in[ngram]))
+            
             if ngram not in nested_in:
                 # 不被其他短语包含
                 cvalue = math.log2(length + 1) * freq
@@ -263,14 +312,15 @@ class TermDetector:
         基于模式过滤术语候选
         
         保留的模式：
-        - 全中文（2-8个词）
-        - 全英文（2-5个词）
-        - 中英混合（2-6个词）
+        - 英文术语（2-6个词）
+        - 包含连字符的复合词
         
         过滤规则：
-        - 排除全是单字的组合
+        - 排除全是单字母的组合
         - 排除包含太多数字的
         - 排除相同单词重复的短语（如"Hz Hz Hz"）
+        - 排除纯停用词组合
+        - 排除过短的术语（少于4个字符）
         
         Args:
             candidates: [(术语, 分数), ...] 列表
@@ -283,53 +333,72 @@ class TermDetector:
             'length': 0,
             'single_char': 0,
             'repeated_word': 0,
-            'too_many_digits': 0
+            'too_many_digits': 0,
+            'too_short': 0,
+            'invalid_pattern': 0
         }
         
         for term, score in candidates:
             words = term.split()
             word_count = len(words)
             
-            # 基本长度过滤
-            if not (2 <= word_count <= 8):
+            # 基本长度过滤（2-6个词）
+            if not (2 <= word_count <= 6):
                 filtered_out['length'] += 1
                 continue
             
-            # 检查是否是有意义的组合
-            # 排除全是单字的组合
+            # # 术语太短（总字符数 < 4）
+            # if len(term) < 4:
+            #     filtered_out['too_short'] += 1
+            #     continue
+            
+            # 排除全是单字母的组合
             if all(len(w) == 1 for w in words):
                 filtered_out['single_char'] += 1
                 continue
             
-            # 排除相同单词重复的短语（如"Hz Hz Hz Hz Hz"）
+            # 排除相同单词重复的短语（如"Hz Hz Hz"）
             if word_count >= 2 and len(set(w.lower() for w in words)) == 1:
-                print(f"过滤重复单词短语: {term}")
                 filtered_out['repeated_word'] += 1
                 continue
             
-            # 排除包含太多数字的
+            # 排除包含太多数字的（超过30%）
             digit_ratio = sum(1 for c in term if c.isdigit()) / len(term)
             if digit_ratio > 0.3:
                 filtered_out['too_many_digits'] += 1
+                continue
+            
+            # 检查是否包含字母（必须是文本术语）
+            if not re.search(r'[a-zA-Z]', term):
+                filtered_out['invalid_pattern'] += 1
+                continue
+            
+            # 排除全是停用词的组合
+            if all(w.lower() in self.STOP_WORDS for w in words):
+                filtered_out['invalid_pattern'] += 1
                 continue
             
             filtered.append((term, score))
         
         logger.info(f"模式过滤完成: 保留 {len(filtered)} 个，过滤 {sum(filtered_out.values())} 个")
         logger.info(f"  - 长度不符: {filtered_out['length']}")
-        logger.info(f"  - 单字组合: {filtered_out['single_char']}")
+        # logger.info(f"  - 过短: {filtered_out['too_short']}")
+        logger.info(f"  - 单字母组合: {filtered_out['single_char']}")
         logger.info(f"  - 重复单词: {filtered_out['repeated_word']}")
         logger.info(f"  - 数字过多: {filtered_out['too_many_digits']}")
+        logger.info(f"  - 无效模式: {filtered_out['invalid_pattern']}")
         
         return filtered
     
-    def extract_multi_word_terms(self, doc: Document, top_k: int = 20) -> List[Dict[str, Any]]:
+    def extract_multi_word_terms(self, doc: Document, top_k: int = 30) -> List[Dict[str, Any]]:
         """
-        提取多词术语（核心方法）
+        提取多词术语
+        
+        使用N-gram + C-value算法提取英文多词术语
         
         Args:
             doc: python-docx Document对象
-            top_k: 返回前k个术语
+            top_k: 返回前k个术语（默认30）
             
         Returns:
             术语列表，包含术语、分数、频率等信息
@@ -338,15 +407,24 @@ class TermDetector:
         
         # 1. 获取全文
         text = self.get_all_text(doc)
+        logger.info(f"文档总字符数: {len(text)}")
         
-        # 2. 提取N-gram
+        # 2. 提取N-gram（2-6词）
         ngrams = self.extract_ngrams(text, min_n=2, max_n=5)
+        
+        if not ngrams:
+            logger.warning("未提取到任何N-gram短语")
+            return []
         
         # 3. 计算C-value
         cvalue_scores = self.calculate_cvalue(ngrams)
         
         # 4. 基于模式过滤
         filtered_candidates = self.filter_by_patterns(cvalue_scores)
+        
+        if not filtered_candidates:
+            logger.warning("过滤后无有效术语候选")
+            return []
         
         # 5. 取Top K
         top_terms = filtered_candidates[:top_k]
@@ -361,7 +439,7 @@ class TermDetector:
                 'word_count': len(term.split()) # 术语次数
             })
         
-        logger.info(f"提取到 {len(results)} 个多词术语")
+        logger.info(f"✓ 最终提取到 {len(results)} 个高质量多词术语")
         
         return results
     
@@ -497,9 +575,6 @@ class TermDetector:
                 logger.error(f"Model not found at: {model_path}")
                 return False
             
-            # 加载spacy
-            self.nlp = spacy.load("en_core_web_sm")
-            
             # 加载tokenizer和model
             self.tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
             self.model = AutoModelForTokenClassification.from_pretrained(model_path, local_files_only=True)
@@ -625,16 +700,27 @@ class TermDetector:
                 term_text = ' '.join(current_term)
                 term_counter[term_text] += 1
         
-        # 整理结果
-        for term, freq in term_counter.most_common(50):  # 返回前50个
-            detected_terms.append({
-                'term': term,
-                'frequency': freq,
-                'source': 'SciBERT-NER',
-                'confidence': 'high' if freq >= 10 else 'medium'
-            })
+        logger.info(f"SciBERT提取到 {len(term_counter)} 个不同的术语")
         
-        logger.info(f"SciBERT检测到 {len(detected_terms)} 个科学术语")
+        # 为SciBERT检测到的术语计算C-value分数
+        if term_counter:
+            logger.info("开始为SciBERT术语计算C-value分数...")
+            ngrams_dict = dict(term_counter)
+            cvalue_scores = self.calculate_cvalue(ngrams_dict)
+            
+            # 整理结果（按C-value排序）
+            for term, cvalue in cvalue_scores:  
+                # 返回C-value分数大于10的术语
+                if cvalue >= 10:
+                    freq = term_counter[term]
+                    detected_terms.append({
+                        'term': term,
+                        'frequency': freq,
+                        'cvalue_score': round(cvalue, 2),
+                        # 'confidence': 'high' if freq >= 10 else 'medium'
+                    })
+        
+        logger.info(f"SciBERT最终检测到 {len(detected_terms)} 个科学术语（已计算C-value）")
         
         return detected_terms
     

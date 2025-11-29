@@ -490,24 +490,24 @@
                    />
                    <el-table :data="termDetectResult.data.scibert_terms" border stripe>
                      <el-table-column type="index" label="排名" width="80" align="center" />
-                     <el-table-column prop="term" label="科学术语" min-width="250">
+                     <el-table-column prop="term" label="科学术语" min-width="220">
                        <template #default="scope">
-                         <el-tag size="large" effect="dark" type="primary">{{ scope.row.term }}</el-tag>
+                         <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
                        </template>
                      </el-table-column>
                      <el-table-column prop="frequency" label="出现次数" width="100" align="center" />
-                     <el-table-column prop="confidence" label="置信度" width="100" align="center">
+                     <el-table-column prop="cvalue_score" label="C-value分数" width="130" align="center">
+                       <template #default="scope">
+                         <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
+                       </template>
+                     </el-table-column>
+                     <!-- <el-table-column prop="confidence" label="置信度" width="100" align="center">
                        <template #default="scope">
                          <el-tag :type="scope.row.confidence === 'high' ? 'success' : 'warning'">
                            {{ scope.row.confidence === 'high' ? '高' : '中' }}
                          </el-tag>
                        </template>
-                     </el-table-column>
-                     <el-table-column prop="source" label="来源" width="150" align="center">
-                       <template #default="scope">
-                         <el-tag type="info">{{ scope.row.source }}</el-tag>
-                       </template>
-                     </el-table-column>
+                     </el-table-column> -->
                    </el-table>
                  </div>
                  <el-empty v-else description="未检测到科学术语" />
@@ -548,6 +548,7 @@
                     v-for="term in termDetectResult.data.all_candidate_terms" 
                     :key="term" 
                     style="margin: 5px;"
+                    size="large" effect="plain"
                   >
                     {{ term }}
                   </el-tag>
@@ -614,7 +615,7 @@
                     <el-table-column prop="term1" label="术语1" width="200" />
                     <el-table-column prop="term2" label="术语2" width="200" />
                     <el-table-column prop="distance" label="编辑距离" width="100" align="center" />
-                    <el-table-column prop="severity" label="严重程度" width="120" align="center">
+                    <el-table-column prop="severity" label="相似程度" width="120" align="center">
                       <template #default="scope">
                         <el-tag :type="scope.row.severity === 'high' ? 'danger' : 'warning'">
                           {{ scope.row.severity === 'high' ? '高' : '中' }}
