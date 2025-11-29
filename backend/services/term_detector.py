@@ -5,17 +5,20 @@
 1. 智能提取多词术语（使用N-gram + C-value算法）
 2. 检测作者新提出的术语
 3. 检测术语使用规范性（是否混用相似词）
+4. 使用SciBERT模型进行科学术语NER检测
 
 算法：
 - N-gram提取：提取2-5词的短语组合
 - C-value算法：经典的多词术语自动抽取算法
 - 词性过滤：只保留名词性短语
 - PMI（点互信息）：评估词组结合强度
+- SciBERT NER：基于深度学习的科学术语识别
 """
 
 import re
 import json
 import math
+import os
 from typing import List, Dict, Tuple, Set, Any
 from collections import Counter, defaultdict
 from docx import Document
@@ -24,6 +27,24 @@ import jieba.posseg as pseg
 import logging
 
 logger = logging.getLogger(__name__)
+
+# 延迟导入深度学习相关库（避免启动时加载过慢）
+_transformers_available = False
+_spacy_available = False
+_model_cache = None
+
+try:
+    from transformers import AutoTokenizer, AutoModelForTokenClassification
+    import torch
+    _transformers_available = True
+except ImportError:
+    logger.warning("transformers or torch not available, SciBERT detection will be disabled")
+
+try:
+    import spacy
+    _spacy_available = True
+except ImportError:
+    logger.warning("spacy not available, SciBERT detection will be disabled")
 
 
 class TermDetector:
@@ -61,6 +82,13 @@ class TermDetector:
         """初始化术语检测器"""
         # 初始化jieba（添加学术领域常见词）
         jieba.initialize()
+        
+        # SciBERT模型相关
+        self.model = None
+        self.tokenizer = None
+        self.nlp = None
+        self.id2label = None
+        self._model_loaded = False
     
     def extract_keywords_from_doc(self, doc: Document) -> List[str]:
         """
@@ -444,6 +472,172 @@ class TermDetector:
         
         return similar_pairs
     
+    def load_scibert_model(self) -> bool:
+        """
+        加载SciBERT模型（延迟加载）
+        
+        Returns:
+            是否加载成功
+        """
+        if self._model_loaded:
+            return True
+        
+        if not _transformers_available or not _spacy_available:
+            logger.warning("Dependencies not available for SciBERT model")
+            return False
+        
+        try:
+            logger.info("Loading SciBERT model...")
+            
+            # 模型路径（相对于当前文件）
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            model_path = os.path.join(current_dir, 'scibert-NER-finetuned-improved')
+            
+            if not os.path.exists(model_path):
+                logger.error(f"Model not found at: {model_path}")
+                return False
+            
+            # 加载spacy
+            self.nlp = spacy.load("en_core_web_sm")
+            
+            # 加载tokenizer和model
+            self.tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+            self.model = AutoModelForTokenClassification.from_pretrained(model_path, local_files_only=True)
+            self.id2label = self.model.config.id2label
+            
+            self._model_loaded = True
+            logger.info("SciBERT model loaded successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to load SciBERT model: {e}", exc_info=True)
+            return False
+    
+    def predict_scibert_labels(self, sentence: str) -> List[Tuple[str, str]]:
+        """
+        使用SciBERT模型预测句子中的科学术语
+        
+        Args:
+            sentence: 输入句子
+            
+        Returns:
+            [(词, 标签), ...] 列表
+        """
+        if not self._model_loaded:
+            if not self.load_scibert_model():
+                return []
+        
+        try:
+            # Step 1: SpaCy tokenization
+            words = [token.text for token in self.nlp(sentence) if not token.is_space]
+            
+            if not words:
+                return []
+            
+            # Step 2: Tokenize with SciBERT
+            inputs = self.tokenizer(
+                words,
+                is_split_into_words=True,
+                return_tensors="pt",
+                truncation=True,
+                padding=True
+            )
+            
+            with torch.no_grad():
+                outputs = self.model(**inputs).logits
+            
+            predictions = torch.argmax(outputs, dim=-1).squeeze().tolist()
+            
+            # 处理单个词的情况
+            if isinstance(predictions, int):
+                predictions = [predictions]
+            
+            word_ids = inputs.word_ids()
+            
+            # Step 3: Align predictions to original words (skip subwords)
+            final_tokens = []
+            final_labels = []
+            
+            previous_word_idx = None
+            for i, word_idx in enumerate(word_ids):
+                if word_idx is None or word_idx == previous_word_idx:
+                    continue
+                label = self.id2label[predictions[i]]
+                final_tokens.append(words[word_idx])
+                final_labels.append(label)
+                previous_word_idx = word_idx
+            
+            return list(zip(final_tokens, final_labels))
+            
+        except Exception as e:
+            logger.error(f"Error in SciBERT prediction: {e}", exc_info=True)
+            return []
+    
+    def extract_scibert_terms(self, doc: Document) -> List[Dict[str, Any]]:
+        """
+        使用SciBERT模型从文档中提取科学术语
+        
+        Args:
+            doc: python-docx Document对象
+            
+        Returns:
+            术语列表，包含术语和上下文信息
+        """
+        if not self._model_loaded:
+            if not self.load_scibert_model():
+                logger.warning("SciBERT model not available")
+                return []
+        
+        logger.info("开始使用SciBERT模型提取术语...")
+        
+        # 收集所有句子
+        all_text = ' '.join([para.text for para in doc.paragraphs if para.text.strip()])
+        
+        # 按句子分割
+        sentences = [s.strip() for s in all_text.split('.') if s.strip()]
+        
+        # 存储检测到的术语
+        detected_terms = []
+        term_counter = Counter()
+        
+        for sentence in sentences:
+            if not sentence:
+                continue
+            
+            predictions = self.predict_scibert_labels(sentence)
+            
+            # 提取科学术语（B-Scns 和 I-Scns），相邻的术语（没有O标签间隔）合并为一个完整术语
+            current_term = []
+            for word, label in predictions:
+                if label.startswith('B-Scns') or label.startswith('I-Scns'):
+                    # 科学术语标签（B-Scns 或 I-Scns）
+                    # 直接添加到当前术语中，实现相邻术语的自动拼接
+                    current_term.append(word)
+                else:
+                    # 遇到非术语标签（O）时，才结束当前术语
+                    if current_term:
+                        term_text = ' '.join(current_term)
+                        term_counter[term_text] += 1
+                        current_term = []
+            
+            # 处理句子末尾的术语
+            if current_term:
+                term_text = ' '.join(current_term)
+                term_counter[term_text] += 1
+        
+        # 整理结果
+        for term, freq in term_counter.most_common(50):  # 返回前50个
+            detected_terms.append({
+                'term': term,
+                'frequency': freq,
+                'source': 'SciBERT-NER',
+                'confidence': 'high' if freq >= 10 else 'medium'
+            })
+        
+        logger.info(f"SciBERT检测到 {len(detected_terms)} 个科学术语")
+        
+        return detected_terms
+    
     def detect_terms(self, docx_path: str) -> Dict[str, Any]:
         """
         执行完整的术语检测（改进版）
@@ -475,18 +669,29 @@ class TermDetector:
             multi_word_terms = self.extract_multi_word_terms(doc, top_k=20)
             logger.info(f"✓ 提取到 {len(multi_word_terms)} 个多词术语")
             print("多词术语：",multi_word_terms)
+            
+            # 4. 使用SciBERT模型提取科学术语（新增）
+            scibert_terms = []
+            try:
+                scibert_terms = self.extract_scibert_terms(doc)
+                logger.info(f"✓ SciBERT检测到 {len(scibert_terms)} 个科学术语")
+                print("SciBERT术语：",scibert_terms)
+            except Exception as e:
+                logger.warning(f"SciBERT检测失败: {e}")
+                print("SciBERT检测失败，跳过此步骤")
 
-            # 4. 合并所有候选术语
+            # 6. 合并所有候选术语
             all_candidate_terms = set()
             all_candidate_terms.update(keywords)
             all_candidate_terms.update(quoted_terms)
             all_candidate_terms.update([t['term'] for t in multi_word_terms])
+            all_candidate_terms.update([t['term'] for t in scibert_terms])
             
             candidate_terms = list(all_candidate_terms)
             logger.info(f"✓ 合并后共 {len(candidate_terms)} 个候选术语")            
             print("候选术语：",candidate_terms)
 
-            # 5. 检测新术语
+            # 7. 检测新术语
             new_terms = []
             for term in candidate_terms:
                 contexts = self.get_term_contexts(doc, term, context_window=80)
@@ -496,26 +701,27 @@ class TermDetector:
                         new_terms.append({
                             'term': term,
                             'trigger': trigger,
-                            'contexts': contexts[:2],  # 只保留前2个上下文
+                            'contexts': contexts[:2],  # 只保留前2个上下文(*可能出现问题)
                             'confirmed': False  # 需要用户确认
                         })
             
             logger.info(f"✓ 检测到 {len(new_terms)} 个疑似新术语")
             print("疑似新术语：",new_terms)
             
-            # 6. 检测相似术语（可能的混用）
+            # 8. 检测相似术语（可能的混用）
             similar_pairs = self.find_similar_terms(candidate_terms, threshold=3)
             logger.info(f"✓ 检测到 {len(similar_pairs)} 对相似术语")
             print("相似术语：",similar_pairs)
 
-            # 7. 组装结果
+            # 9. 组装结果
             result = {
                 'success': True,
                 'data': {
                     'total_terms': len(candidate_terms),
                     'keywords': keywords,
                     'quoted_terms': quoted_terms,
-                    'multi_word_terms': multi_word_terms,  # 新增：多词术语列表
+                    'multi_word_terms': multi_word_terms,  # N-gram + C-value多词术语
+                    'scibert_terms': scibert_terms,  # SciBERT检测的科学术语
                     'all_candidate_terms': sorted(list(candidate_terms)),
                     'new_terms': new_terms,
                     'similar_pairs': [
