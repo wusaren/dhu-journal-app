@@ -167,6 +167,96 @@ class TermDetector:
         """获取文档所有文本"""
         return ' '.join([para.text for para in doc.paragraphs])
     
+    def normalize_term(self, term: str) -> str:
+        """
+        术语标准化（词形还原）
+        
+        将术语中的每个词还原为基本形式，用于术语去重和聚合
+        例如：
+        - "sound absorbing materials" -> "sound absorb material"
+        - "neural networks" -> "neural network"
+        
+        Args:
+            term: 原始术语
+            
+        Returns:
+            标准化后的术语
+        """
+        if not self.nlp:
+            return term.lower()
+        
+        doc = self.nlp(term)
+        lemmatized_words = []
+        
+        for token in doc:
+            # 跳过标点和空格
+            if token.is_punct or token.is_space:
+                continue
+            
+            # 使用词形还原
+            lemma = token.lemma_.lower()
+            
+            # 特殊处理：保留某些形式
+            # 例如 "learning" 在 "machine learning" 中应该保留
+            if token.pos_ == 'VERB' and token.tag_ == 'VBG':
+                # 动名词形式，如果是术语的一部分，可能需要保留
+                # 但我们还是用lemma来做聚合
+                lemmatized_words.append(lemma)
+            else:
+                lemmatized_words.append(lemma)
+        
+        return ' '.join(lemmatized_words)
+    
+    def aggregate_term_variants(self, ngrams: Dict[str, int]) -> Tuple[Dict[str, int], Dict[str, str]]:
+        """
+        聚合术语变体
+        
+        将词形变体（单复数、动名词等）聚合到同一个标准形式下
+        例如：
+        - "sound absorbing material" (5次) + "sound absorption material" (3次) 
+          -> "sound absorbing material" (8次)
+        
+        Args:
+            ngrams: {原始术语: 频率} 字典
+            
+        Returns:
+            (聚合后的ngrams, {标准形式: 最常见的原始形式})
+        """
+        logger.info("开始聚合术语变体...")
+        
+        # 1. 构建映射：标准形式 -> [(原始形式, 频率), ...]
+        normalized_to_originals = defaultdict(list)
+        
+        for term, freq in ngrams.items():
+            normalized = self.normalize_term(term)
+            normalized_to_originals[normalized].append((term, freq))
+        
+        # 2. 为每个标准形式选择最常见的原始形式
+        aggregated_ngrams = {}
+        normalized_to_representative = {}
+        
+        for normalized, variants in normalized_to_originals.items():
+            # 按频率排序，选择最常见的原始形式作为代表
+            variants.sort(key=lambda x: x[1], reverse=True)
+            representative_term = variants[0][0]  # 最常见的原始形式
+            
+            # 聚合频率
+            total_freq = sum(freq for _, freq in variants)
+            
+            aggregated_ngrams[representative_term] = total_freq
+            normalized_to_representative[normalized] = representative_term
+            
+            # 如果有多个变体，记录日志
+            if len(variants) > 1:
+                logger.info(f"聚合术语变体: {representative_term} (总频率: {total_freq})")
+                for variant_term, variant_freq in variants:
+                    if variant_term != representative_term:
+                        logger.info(f"  - {variant_term} ({variant_freq}次) -> {representative_term}")
+        
+        logger.info(f"聚合前: {len(ngrams)} 个术语，聚合后: {len(aggregated_ngrams)} 个术语")
+        
+        return aggregated_ngrams, normalized_to_representative
+    
     def extract_ngrams(self, text: str, min_n: int = 2, max_n: int = 5) -> Dict[str, int]:
         """
         提取N-gram短语
@@ -394,7 +484,7 @@ class TermDetector:
         """
         提取多词术语
         
-        使用N-gram + C-value算法提取英文多词术语
+        使用N-gram + C-value算法提取英文多词术语，并应用词形还原聚合变体
         
         Args:
             doc: python-docx Document对象
@@ -409,37 +499,46 @@ class TermDetector:
         text = self.get_all_text(doc)
         logger.info(f"文档总字符数: {len(text)}")
         
-        # 2. 提取N-gram（2-6词）
+        # 2. 提取N-gram（2-5词）
         ngrams = self.extract_ngrams(text, min_n=2, max_n=5)
         
         if not ngrams:
             logger.warning("未提取到任何N-gram短语")
             return []
         
-        # 3. 计算C-value
-        cvalue_scores = self.calculate_cvalue(ngrams)
+        logger.info(f"提取到 {len(ngrams)} 个原始N-gram")
         
-        # 4. 基于模式过滤
+        # 3. 聚合术语变体（词形还原）
+        aggregated_ngrams, _ = self.aggregate_term_variants(ngrams)
+        
+        if not aggregated_ngrams:
+            logger.warning("聚合后无有效术语")
+            return []
+        
+        # 4. 计算C-value（使用聚合后的频率）
+        cvalue_scores = self.calculate_cvalue(aggregated_ngrams)
+        
+        # 5. 基于模式过滤
         filtered_candidates = self.filter_by_patterns(cvalue_scores)
         
         if not filtered_candidates:
             logger.warning("过滤后无有效术语候选")
             return []
         
-        # 5. 取Top K
+        # 6. 取Top K
         top_terms = filtered_candidates[:top_k]
         
-        # 6. 构建返回结果
+        # 7. 构建返回结果
         results = []
         for term, score in top_terms:
             results.append({
-                'term': term, # 术语
+                'term': term, # 术语（最常见的原始形式）
                 'cvalue_score': round(score, 2), # C-value
-                'frequency': ngrams[term], # 频率
-                'word_count': len(term.split()) # 术语次数
+                'frequency': aggregated_ngrams[term], # 聚合后的频率
+                'word_count': len(term.split()) # 术语词数
             })
         
-        logger.info(f"✓ 最终提取到 {len(results)} 个高质量多词术语")
+        logger.info(f"✓ 最终提取到 {len(results)} 个高质量多词术语（已聚合变体）")
         
         return results
     
@@ -700,27 +799,32 @@ class TermDetector:
                 term_text = ' '.join(current_term)
                 term_counter[term_text] += 1
         
-        logger.info(f"SciBERT提取到 {len(term_counter)} 个不同的术语")
+        logger.info(f"SciBERT提取到 {len(term_counter)} 个原始术语")
         
         # 为SciBERT检测到的术语计算C-value分数
         if term_counter:
+            # 聚合术语变体（词形还原）
+            logger.info("开始聚合SciBERT术语变体...")
+            aggregated_terms, _ = self.aggregate_term_variants(dict(term_counter))
+            
+            logger.info(f"聚合后剩余 {len(aggregated_terms)} 个唯一术语")
+            
+            # 计算C-value分数
             logger.info("开始为SciBERT术语计算C-value分数...")
-            ngrams_dict = dict(term_counter)
-            cvalue_scores = self.calculate_cvalue(ngrams_dict)
+            cvalue_scores = self.calculate_cvalue(aggregated_terms)
             
             # 整理结果（按C-value排序）
             for term, cvalue in cvalue_scores:  
                 # 返回C-value分数大于10的术语
                 if cvalue >= 10:
-                    freq = term_counter[term]
+                    freq = aggregated_terms[term]
                     detected_terms.append({
                         'term': term,
                         'frequency': freq,
                         'cvalue_score': round(cvalue, 2),
-                        # 'confidence': 'high' if freq >= 10 else 'medium'
                     })
         
-        logger.info(f"SciBERT最终检测到 {len(detected_terms)} 个科学术语（已计算C-value）")
+        logger.info(f"SciBERT最终检测到 {len(detected_terms)} 个科学术语（已聚合变体并计算C-value）")
         
         return detected_terms
     
