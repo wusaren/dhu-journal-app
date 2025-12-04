@@ -167,6 +167,210 @@ class TermDetector:
         """获取文档所有文本"""
         return ' '.join([para.text for para in doc.paragraphs])
     
+    def preprocess_document(self, doc: Document) -> str:
+        """
+        论文预处理：去除无关内容，只保留正文和摘要
+        
+        去除以下部分：
+        - 参考文献（References, Bibliography）
+        - 图题（Figure 1:, Fig. 1:）
+        - 表题（Table 1:, Tab. 1:）
+        - 目录（Table of Contents, Contents）
+        - 致谢（Acknowledgements, Acknowledgments）
+        - 附录（Appendix, Appendices）
+        
+        Args:
+            doc: python-docx Document对象
+            
+        Returns:
+            预处理后的纯文本
+        """
+        logger.info("开始预处理论文，去除无关内容...")
+        
+        # 定义需要跳过的章节标题模式（开始跳过的标志）
+        skip_section_patterns = [
+            # 参考文献
+            r'^references?\s*$',
+            r'^bibliography\s*$',
+            r'^cited\s+references?\s*$',
+            r'^literature\s+cited\s*$',
+            # 目录
+            r'^table\s+of\s+contents?\s*$',
+            r'^contents?\s*$',
+            # 致谢
+            r'^acknowledge?ments?\s*$',
+            r'^acknowledgement\s*$',
+            # 附录
+            r'^appendi(x|ces)\s*',
+            r'^supplementary\s+(material|information)\s*$',
+            # 作者信息
+            r'^author\s+(information|contributions?)\s*$',
+            r'^conflict\s+of\s+interest\s*$',
+            r'^competing\s+interests?\s*$',
+            # 资金声明
+            r'^funding\s*$',
+            r'^financial\s+support\s*$',
+        ]
+        
+        # 定义图题和表题的模式（单独段落跳过）
+        figure_table_patterns = [
+            # 图题
+            r'^fig(?:ure)?\.?\s*\d+',
+            r'^figure\s+\d+',
+            # 表题
+            r'^tab(?:le)?\.?\s*\d+',
+            r'^table\s+\d+',
+            # 图表说明
+            r'^note\s*[:：]',
+            r'^source\s*[:：]',
+        ]
+        
+        # 定义恢复正文的标志（结束跳过的标志）
+        resume_patterns = [
+            r'^abstract\s*$',
+            r'^\d+\.?\s*(introduction|background)',
+            r'^introduction\s*$',
+            r'^\d+\.?\s*methods?\s*$',
+            r'^\d+\.?\s*results?\s*$',
+            r'^\d+\.?\s*discussion\s*$',
+            r'^\d+\.?\s*conclusion\s*$',
+        ]
+        
+        # 编译正则表达式
+        skip_patterns_compiled = [re.compile(p, re.IGNORECASE) for p in skip_section_patterns]
+        figure_table_compiled = [re.compile(p, re.IGNORECASE) for p in figure_table_patterns]
+        resume_compiled = [re.compile(p, re.IGNORECASE) for p in resume_patterns]
+        
+        # 处理段落
+        filtered_paragraphs = []
+        skip_mode = False  # 是否处于跳过模式
+        skip_reason = ""   # 跳过原因
+        
+        stats = {
+            'total_paragraphs': 0,
+            'kept_paragraphs': 0,
+            'skipped_references': 0,
+            'skipped_figures': 0,
+            'skipped_tables': 0,
+            'skipped_others': 0
+        }
+        
+        for para in doc.paragraphs:
+            text = para.text.strip()
+            stats['total_paragraphs'] += 1
+            
+            # 跳过空段落
+            if not text:
+                continue
+            
+            # 检查是否是图题或表题（单独段落跳过）
+            is_figure_table = False
+            for pattern in figure_table_compiled:
+                if pattern.match(text):
+                    is_figure_table = True
+                    if 'fig' in text.lower():
+                        stats['skipped_figures'] += 1
+                        logger.info(f"跳过图题: {text}...")
+                    else:
+                        stats['skipped_tables'] += 1
+                        logger.info(f"跳过表题: {text}...")
+                    break
+            
+            if is_figure_table:
+                continue
+            
+            # 检查是否进入跳过章节
+            if not skip_mode:
+                for pattern in skip_patterns_compiled:
+                    if pattern.match(text):
+                        skip_mode = True
+                        skip_reason = text[:30]
+                        logger.info(f"进入跳过模式: {text}...")
+                        
+                        # 特殊处理：参考文献通常到文档结尾
+                        if 'reference' in text.lower() or 'bibliography' in text.lower():
+                            stats['skipped_references'] += 1
+                        else:
+                            stats['skipped_others'] += 1
+                        break
+            
+            # 如果处于跳过模式，检查是否恢复
+            if skip_mode:
+                # 检查是否遇到恢复标志
+                for pattern in resume_compiled:
+                    if pattern.match(text):
+                        skip_mode = False
+                        logger.info(f"恢复正文: {text}...")
+                        break
+                
+                # 如果仍在跳过模式，跳过当前段落
+                if skip_mode:
+                    continue
+            
+            # 额外过滤：去除页眉页脚类内容
+            # 通常是很短的、纯数字、或特定格式的内容
+            if self._is_header_footer(text):
+                logger.info(f"跳过页眉页脚: {text}...")
+                continue
+            
+            # 保留段落
+            filtered_paragraphs.append(text)
+            stats['kept_paragraphs'] += 1
+        
+        # 统计日志
+        logger.info(f"预处理完成:")
+        logger.info(f"  - 总段落数: {stats['total_paragraphs']}")
+        logger.info(f"  - 保留段落: {stats['kept_paragraphs']}")
+        logger.info(f"  - 跳过参考文献: {stats['skipped_references']}")
+        logger.info(f"  - 跳过图题: {stats['skipped_figures']}")
+        logger.info(f"  - 跳过表题: {stats['skipped_tables']}")
+        logger.info(f"  - 跳过其他: {stats['skipped_others']}")
+        
+        # 合并段落
+        processed_text = ' '.join(filtered_paragraphs)
+        
+        logger.info(f"预处理后文本长度: {len(processed_text)} 字符")
+        
+        return processed_text
+    
+    def _is_header_footer(self, text: str) -> bool:
+        """
+        判断是否是页眉页脚内容
+        
+        Args:
+            text: 段落文本
+            
+        Returns:
+            是否是页眉页脚
+        """
+        text = text.strip()
+        
+        # 纯数字（页码）
+        if text.isdigit():
+            return True
+        
+        # 非常短且包含页码模式
+        if len(text) < 20:
+            # "Page 1", "1 of 10", "- 1 -" 等
+            if re.match(r'^(page\s*)?\d+(\s*(of|/)\s*\d+)?$', text, re.IGNORECASE):
+                return True
+            if re.match(r'^[-–—]\s*\d+\s*[-–—]$', text):
+                return True
+        
+        # 版权声明
+        if re.match(r'^©|copyright', text, re.IGNORECASE):
+            return True
+        
+        # DOI
+        if re.match(r'^doi\s*[:：]', text, re.IGNORECASE):
+            return True
+        
+        # 期刊信息行（通常很短，包含年份和卷号）
+        if len(text) < 50 and re.search(r'\d{4}.*vol\.?\s*\d+', text, re.IGNORECASE):
+            return True
+        
+        return False
+    
     def normalize_term(self, term: str) -> str:
         """
         术语标准化（词形还原）
@@ -480,7 +684,8 @@ class TermDetector:
         
         return filtered
     
-    def extract_multi_word_terms(self, doc: Document, top_k: int = 30) -> List[Dict[str, Any]]:
+    def extract_multi_word_terms(self, doc: Document, top_k: int = 30, 
+                                   preprocessed_text: str = None) -> List[Dict[str, Any]]:
         """
         提取多词术语
         
@@ -489,15 +694,20 @@ class TermDetector:
         Args:
             doc: python-docx Document对象
             top_k: 返回前k个术语（默认30）
+            preprocessed_text: 预处理后的文本（可选，如果提供则使用此文本）
             
         Returns:
             术语列表，包含术语、分数、频率等信息
         """
         logger.info("开始提取多词术语...")
         
-        # 1. 获取全文
-        text = self.get_all_text(doc)
-        logger.info(f"文档总字符数: {len(text)}")
+        # 1. 获取文本（优先使用预处理后的文本）
+        if preprocessed_text:
+            text = preprocessed_text
+            logger.info(f"使用预处理后的文本，字符数: {len(text)}")
+        else:
+            text = self.get_all_text(doc)
+            logger.info(f"使用原始文档文本，字符数: {len(text)}")
         
         # 2. 提取N-gram（2-5词）
         ngrams = self.extract_ngrams(text, min_n=2, max_n=5)
@@ -747,12 +957,13 @@ class TermDetector:
             logger.error(f"Error in SciBERT prediction: {e}", exc_info=True)
             return []
     
-    def extract_scibert_terms(self, doc: Document) -> List[Dict[str, Any]]:
+    def extract_scibert_terms(self, doc: Document, preprocessed_text: str = None) -> List[Dict[str, Any]]:
         """
         使用SciBERT模型从文档中提取科学术语
         
         Args:
             doc: python-docx Document对象
+            preprocessed_text: 预处理后的文本（可选，如果提供则使用此文本）
             
         Returns:
             术语列表，包含术语和上下文信息
@@ -764,8 +975,13 @@ class TermDetector:
         
         logger.info("开始使用SciBERT模型提取术语...")
         
-        # 收集所有句子
-        all_text = ' '.join([para.text for para in doc.paragraphs if para.text.strip()])
+        # 使用预处理后的文本或从文档中获取
+        if preprocessed_text:
+            all_text = preprocessed_text
+            logger.info(f"使用预处理后的文本，字符数: {len(all_text)}")
+        else:
+            all_text = ' '.join([para.text for para in doc.paragraphs if para.text.strip()])
+            logger.info(f"使用原始文档文本，字符数: {len(all_text)}")
         
         # 按句子分割
         sentences = [s.strip() for s in all_text.split('.') if s.strip()]
@@ -844,26 +1060,31 @@ class TermDetector:
             # 加载文档
             doc = Document(docx_path)
             
-            # 1. 提取关键词（高置信度术语）
+            # ========== 0. 预处理文档 ==========
+            # 去除参考文献、图题、表题、目录、致谢、附录等无关内容
+            preprocessed_text = self.preprocess_document(doc)
+            logger.info(f"✓ 文档预处理完成，正文字符数: {len(preprocessed_text)}")
+            
+            # 1. 提取关键词（从原始文档提取，因为关键词通常在摘要附近）
             keywords = self.extract_keywords_from_doc(doc)
             logger.info(f"✓ 提取到 {len(keywords)} 个关键词")
             print("关键词：",keywords)
             
-            # 2. 提取引号术语（高置信度术语）
+            # 2. 提取引号术语（从原始文档提取）
             quoted_terms_with_context = self.extract_quoted_terms(doc)
             quoted_terms = list(set([term for term, _ in quoted_terms_with_context]))
             logger.info(f"✓ 提取到 {len(quoted_terms)} 个引号术语")
             print("引号术语：",quoted_terms)
 
-            # 3. 使用N-gram + C-value提取多词术语（核心改进）
-            multi_word_terms = self.extract_multi_word_terms(doc, top_k=20)
+            # 3. 使用N-gram + C-value提取多词术语（使用预处理后的文本）
+            multi_word_terms = self.extract_multi_word_terms(doc, top_k=20, preprocessed_text=preprocessed_text)
             logger.info(f"✓ 提取到 {len(multi_word_terms)} 个多词术语")
             print("多词术语：",multi_word_terms)
             
-            # 4. 使用SciBERT模型提取科学术语（新增）
+            # 4. 使用SciBERT模型提取科学术语（使用预处理后的文本）
             scibert_terms = []
             try:
-                scibert_terms = self.extract_scibert_terms(doc)
+                scibert_terms = self.extract_scibert_terms(doc, preprocessed_text=preprocessed_text)
                 logger.info(f"✓ SciBERT检测到 {len(scibert_terms)} 个科学术语")
                 print("SciBERT术语：",scibert_terms)
             except Exception as e:

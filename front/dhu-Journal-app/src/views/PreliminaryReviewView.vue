@@ -409,7 +409,7 @@
     <el-dialog v-model="showTermDetectDialog" title="论文术语检测" width="900px">
       <div class="review-content">
         <p class="paper-title-display"><strong>论文标题：</strong>{{ termDetectPaper?.title }}</p>
-        <el-card class="term-detect-card" shadow="never" style="margin-top: 20px;">
+        <el-card class="term-detect-card" shadow="never">
           <template #header>
             <div class="card-header-format">
               <span>论文术语检测</span>
@@ -480,69 +480,71 @@
               </el-tab-pane>
             
                <!-- Tab 2: SciBERT模型检测的科学术语 -->
-               <el-tab-pane label="SciBERT术语" name="scibert_terms">
-                 <div v-if="termDetectResult.data?.scibert_terms?.length > 0">
-                   <el-alert 
-                     title="使用SciBERT深度学习模型识别的科学术语" 
+              <el-tab-pane label="SciBERT术语" name="scibert_terms">
+                <div v-if="termDetectResult.data?.scibert_terms?.length > 0">
+                  <el-alert 
+                     title="使用SciBERT深度学习模型识别的科学术语。" 
                      type="primary" 
                      :closable="false"
+                     description="C-Value通过结合候选术语的长度、出现频率和候选术语间的嵌套关系进行打分。分数越高，该候选术语越可能是专业术语。"
                      style="margin-bottom: 15px;"
-                   />
-                   <el-table :data="termDetectResult.data.scibert_terms" border stripe>
-                     <el-table-column type="index" label="排名" width="80" align="center" />
-                     <el-table-column prop="term" label="科学术语" min-width="220">
-                       <template #default="scope">
-                         <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
-                       </template>
-                     </el-table-column>
-                     <el-table-column prop="frequency" label="出现次数" width="100" align="center" />
-                     <el-table-column prop="cvalue_score" label="C-value分数" width="130" align="center">
-                       <template #default="scope">
-                         <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
-                       </template>
-                     </el-table-column>
-                     <!-- <el-table-column prop="confidence" label="置信度" width="100" align="center">
-                       <template #default="scope">
-                         <el-tag :type="scope.row.confidence === 'high' ? 'success' : 'warning'">
-                           {{ scope.row.confidence === 'high' ? '高' : '中' }}
-                         </el-tag>
-                       </template>
-                     </el-table-column> -->
-                   </el-table>
-                 </div>
-                 <el-empty v-else description="未检测到科学术语" />
-               </el-tab-pane>
+                  />
+                  <el-table :data="termDetectResult.data.scibert_terms" border stripe>
+                    <el-table-column type="index" label="排名" width="80" align="center" />
+                    <el-table-column prop="term" label="科学术语" min-width="220">
+                      <template #default="scope">
+                        <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="frequency" label="出现次数" width="100" align="center" />
+                    <el-table-column prop="cvalue_score" label="C-value分数" width="130" align="center">
+                      <template #default="scope">
+                        <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
+                      </template>
+                    </el-table-column>
+                    <!-- <el-table-column prop="confidence" label="置信度" width="100" align="center">
+                      <template #default="scope">
+                        <el-tag :type="scope.row.confidence === 'high' ? 'success' : 'warning'">
+                          {{ scope.row.confidence === 'high' ? '高' : '中' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column> -->
+                  </el-table>
+                </div>
+                <el-empty v-else description="未检测到科学术语" />
+              </el-tab-pane>
 
-               <!-- Tab 3: 智能提取的多词术语 -->
-               <el-tab-pane label="多词术语" name="multi_word_terms">
-                 <div v-if="termDetectResult.data?.multi_word_terms?.length > 0">
-                   <el-alert 
-                     title="使用N-gram+C-value算法提取多词术语" 
-                     type="success" 
-                     :closable="false"
-                     style="margin-bottom: 15px;"
-                   />
-                   <el-table :data="termDetectResult.data.multi_word_terms" border stripe>
-                     <el-table-column type="index" label="排名" width="80" align="center" />
-                     <el-table-column prop="term" label="术语" min-width="200">
-                       <template #default="scope">
-                         <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
-                       </template>
-                     </el-table-column>
-                     <el-table-column prop="word_count" label="词数" width="80" align="center" />
-                     <el-table-column prop="frequency" label="频率" width="80" align="center" />
-                     <el-table-column prop="cvalue_score" label="C-value分数" width="120" align="center">
-                       <template #default="scope">
-                         <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
-                       </template>
-                     </el-table-column>
-                   </el-table>
-                 </div>
-                 <el-empty v-else description="未检测到多词术语" />
-               </el-tab-pane>
+              <!-- Tab 3: 智能提取的多词术语 -->
+              <el-tab-pane label="多词术语" name="multi_word_terms">
+                <div v-if="termDetectResult.data?.multi_word_terms?.length > 0">
+                  <el-alert 
+                    title="使用N-gram+C-value算法提取多词术语。" 
+                    type="success" 
+                    :closable="false"
+                    description="C-Value通过结合候选术语的长度、出现频率和候选术语间的嵌套关系进行打分。分数越高，该候选术语越可能是专业术语。"
+                    style="margin-bottom: 15px;"
+                  />
+                  <el-table :data="termDetectResult.data.multi_word_terms" border stripe>
+                    <el-table-column type="index" label="排名" width="80" align="center" />
+                    <el-table-column prop="term" label="术语" min-width="200">
+                      <template #default="scope">
+                        <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="word_count" label="词数" width="80" align="center" />
+                    <el-table-column prop="frequency" label="频率" width="80" align="center" />
+                    <el-table-column prop="cvalue_score" label="C-value分数" width="120" align="center">
+                      <template #default="scope">
+                        <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                <el-empty v-else description="未检测到多词术语" />
+              </el-tab-pane>
 
                <!-- Tab 4: 所有候选术语 -->
-               <el-tab-pane label="术语列表" name="all_terms">
+              <el-tab-pane label="术语列表" name="all_terms">
                 <div v-if="termDetectResult.data?.all_candidate_terms?.length > 0">
                   <el-tag 
                     v-for="term in termDetectResult.data.all_candidate_terms" 
@@ -559,12 +561,12 @@
                <!-- Tab 5: 疑似新术语 -->
                <el-tab-pane label="疑似新术语" name="new_terms">
                 <div v-if="termDetectResult.data?.new_terms?.length > 0">
-                  <el-alert 
+                  <!-- <el-alert 
                     title="以下术语可能是作者新提出的，请确认" 
                     type="warning" 
                     :closable="false"
                     style="margin-bottom: 15px;"
-                  />
+                  /> -->
                   <div v-for="(newTerm, index) in termDetectResult.data.new_terms" :key="index" class="new-term-item">
                     <div class="new-term-header">
                       <span class="term-text">{{ newTerm.term }}</span>
@@ -602,8 +604,8 @@
                 <el-empty v-else description="未检测到疑似新术语" />
               </el-tab-pane>
 
-               <!-- Tab 6: 相似术语（规范性问题） -->
-               <el-tab-pane label="相似术语" name="similar_pairs">
+              <!-- Tab 6: 相似术语（规范性问题） -->
+              <el-tab-pane label="相似术语" name="similar_pairs">
                 <div v-if="termDetectResult.data?.similar_pairs?.length > 0">
                   <el-alert 
                     title="以下术语相似，可能存在混用情况，请检查使用规范性" 
