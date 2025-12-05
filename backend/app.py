@@ -126,6 +126,7 @@ FORMAT_CHECK_FOLDER = 'uploads/format_check'
 FORMAT_CHECK_TEMP_FOLDER = 'uploads/format_check/temp'
 FORMAT_CHECK_REPORTS_FOLDER = 'uploads/format_check/reports'
 FORMAT_CHECK_ANNOTATE_FOLDER = 'uploads/format_check/annotate'
+FORMAT_CHECK_TERM_FOLDER = 'uploads/format_check/term'
 # 新增：用户配置目录（用于用户模板、用户配置文件等，和 uploads 分离）
 USER_CONFIG_FOLDER = 'user_configs'
 
@@ -136,10 +137,12 @@ app.config['FORMAT_CHECK_FOLDER'] = FORMAT_CHECK_FOLDER
 app.config['FORMAT_CHECK_TEMP_FOLDER'] = FORMAT_CHECK_TEMP_FOLDER
 app.config['FORMAT_CHECK_REPORTS_FOLDER'] = FORMAT_CHECK_REPORTS_FOLDER
 app.config['FORMAT_CHECK_ANNOTATE_FOLDER'] = FORMAT_CHECK_ANNOTATE_FOLDER
+app.config['FORMAT_CHECK_TERM_FOLDER'] = FORMAT_CHECK_TERM_FOLDER
 app.config['USER_CONFIG_FOLDER'] = USER_CONFIG_FOLDER
 
 # 创建必要的目录
-for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER, FORMAT_CHECK_ANNOTATE_FOLDER, USER_CONFIG_FOLDER]:
+for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER,
+    FORMAT_CHECK_ANNOTATE_FOLDER, FORMAT_CHECK_TERM_FOLDER, USER_CONFIG_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
         logger.info(f"创建目录: {folder}")
@@ -1485,10 +1488,13 @@ def detect_terms():
     """执行论文术语检测"""
     try:
         from services.term_detector import detect_terms_from_file
+        import json
         
         data = request.get_json()
         temp_file_path = data.get('temp_file_path')
-        
+        file_id = data.get('file_id')  # 数据库记录ID
+        title = data.get('title')
+
         if not temp_file_path:
             return jsonify({
                 'success': False,
@@ -1506,6 +1512,38 @@ def detect_terms():
         
         if result.get('success'):
             logger.info(f"术语检测完成: 共检测到 {result['data']['total_terms']} 个术语")
+            
+            # 保存结果到JSON文件
+            try:
+                # term目录
+                term_dir = app.config['FORMAT_CHECK_TERM_FOLDER']
+                # 生成文件名: %Y%m%d_%H%M%S_论文名_term.json
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                json_filename = f"{timestamp}_{title}_term.json"
+                json_path = os.path.join(term_dir, json_filename)
+                
+                # 保存JSON文件
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    json.dump(result, f, ensure_ascii=False, indent=2)
+                
+                logger.info(f"术语检测结果已保存: {json_path}")
+                
+                # 更新数据库记录
+                if file_id:
+                    format_file = FormatCheckFile.query.get(file_id)
+                    if format_file:
+                        format_file.term_result_path = json_path
+                        db.session.commit()
+                        logger.info(f"数据库记录已更新: file_id={file_id}, term_result_path={json_path}")
+                
+                # 在返回结果中添加保存信息
+                result['data']['term_result_saved'] = True
+                result['data']['term_result_path'] = json_path
+                result['data']['term_result_filename'] = json_filename
+                
+            except Exception as save_error:
+                logger.error(f"保存术语检测结果失败: {save_error}", exc_info=True)
+                result['data']['term_result_saved'] = False
         
         return jsonify(result)
         
@@ -1514,6 +1552,56 @@ def detect_terms():
         return jsonify({
             'success': False,
             'message': f'术语检测失败: {str(e)}'
+        }), 500
+
+
+@app.route('/api/paper-format/term-result/<int:file_id>', methods=['GET'])
+def get_term_result(file_id):
+    """获取历史术语检测结果"""
+    try:
+        import json
+        
+        # 查找数据库记录
+        format_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        if not format_file.term_result_path:
+            return jsonify({
+                'success': True,
+                'data': None,
+                'message': '该论文尚未进行术语检测'
+            })
+        
+        if not os.path.exists(format_file.term_result_path):
+            return jsonify({
+                'success': False,
+                'message': '术语检测结果文件不存在'
+            }), 404
+        
+        # 读取JSON文件
+        with open(format_file.term_result_path, 'r', encoding='utf-8') as f:
+            result = json.load(f)
+        
+        logger.info(f"读取术语检测历史结果: file_id={file_id}")
+        
+        return jsonify({
+            'success': True,
+            'data': result.get('data') if result.get('success') else None,
+            'has_result': True,
+            'result_path': format_file.term_result_path,
+            'message': '获取历史术语检测结果成功'
+        })
+        
+    except Exception as e:
+        logger.error(f"获取术语检测结果错误: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'获取结果失败: {str(e)}'
         }), 500
 
 

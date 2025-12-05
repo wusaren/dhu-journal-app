@@ -155,11 +155,28 @@ export const paperFormatService = {
     /**
      * 执行术语检测
      * @param tempFilePath 临时文件路径
+     * @param fileId 文件ID（可选，用于保存结果到数据库）
+     * @param title 论文标题
      */
-    async detectTerms(tempFilePath: string): Promise<ApiResponse<any>> {
-        return await apiClient.post('/paper-format/detect-terms', {
+    async detectTerms(tempFilePath: string, fileId?: number, title?: string): Promise<ApiResponse<any>> {
+        const data: any = {
             temp_file_path: tempFilePath
-        })
+        }
+        if (fileId) {
+            data.file_id = fileId
+        }
+        if (title) {
+            data.title = title
+        }
+        return await apiClient.post('/paper-format/detect-terms', data)
+    },
+
+    /**
+     * 获取历史术语检测结果
+     * @param fileId 文件ID
+     */
+    async getTermResult(fileId: number): Promise<ApiResponse<any>> {
+        return await apiClient.get(`/paper-format/term-result/${fileId}`)
     },
 
     /**

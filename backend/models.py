@@ -203,6 +203,7 @@ class FormatCheckFile(db.Model):
     report_path = db.Column(db.String(500))  # 检测报告路径
     annotated_path = db.Column(db.String(500))  # 批注文档路径
     content_details_path = db.Column(db.String(500))  # content_details文件路径
+    term_result_path = db.Column(db.String(500))  # 术语检测结果JSON文件路径
     
     # 检测状态
     check_status = db.Column(db.Enum('pending', 'completed', 'failed'), default='pending')  # 检测状态

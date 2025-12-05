@@ -17701,3 +17701,1784 @@ TypeError: object of type 'int' has no len()
 2025-12-04 14:56:18,246 - services.term_detector - INFO - ✓ 术语检测全部完成
 2025-12-04 14:56:18,295 - __main__ - INFO - 术语检测完成: 共检测到 28 个术语
 2025-12-04 14:56:18,296 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 14:56:18] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-04 17:07:18,009 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 17:07:18] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-04 20:00:31,436 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 20:00:31] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-04 20:00:32,525 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 20:00:32] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-12-04 20:00:32,529 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 20:00:32] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-12-04 20:00:33,464 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 20:00:33] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-04 20:05:32,600 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-12-04 20:05:32,639 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-04 20:05:32,647 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-04 20:05:32,658 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-04 20:05:32,665 - services.term_detector - INFO - 预处理完成:
+2025-12-04 20:05:32,665 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-04 20:05:32,665 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-04 20:05:32,665 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-04 20:05:32,666 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-04 20:05:32,666 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-04 20:05:32,667 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-04 20:05:32,668 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-04 20:05:32,668 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-04 20:05:32,670 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-04 20:05:32,694 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-04 20:05:32,696 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-04 20:05:32,697 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-04 20:05:32,697 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-04 20:05:33,094 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-04 20:05:33,095 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-04 20:05:33,097 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-04 20:05:34,758 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-04 20:05:34,759 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-04 20:05:34,759 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-04 20:05:34,760 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-04 20:05:34,760 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-04 20:05:34,761 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-04 20:05:34,761 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-04 20:05:34,762 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-04 20:05:34,765 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-04 20:05:34,767 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-04 20:05:34,767 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-04 20:05:34,767 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-04 20:05:34,767 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-04 20:05:34,768 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-04 20:05:34,768 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-04 20:05:34,768 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-04 20:05:34,768 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-04 20:05:34,768 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-04 20:05:34,769 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-04 20:05:34,769 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-04 20:05:34,769 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-04 20:05:34,769 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-04 20:05:34,769 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-04 20:05:34,769 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-04 20:05:34,770 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-04 20:05:34,770 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-04 20:05:34,771 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-04 20:05:34,771 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-04 20:05:34,771 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-04 20:05:34,772 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-04 20:05:34,772 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-04 20:05:34,772 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-04 20:05:34,772 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-04 20:05:34,772 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-04 20:05:34,772 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-04 20:05:34,773 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-04 20:05:34,773 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-04 20:05:34,773 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-04 20:05:34,773 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-04 20:05:34,773 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-04 20:05:34,773 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-04 20:05:34,774 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-04 20:05:34,774 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-04 20:05:34,774 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-04 20:05:34,774 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-04 20:05:34,774 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-04 20:05:34,775 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-04 20:05:34,775 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-04 20:05:34,775 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-04 20:05:34,775 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-04 20:05:34,776 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-04 20:05:34,776 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-04 20:05:34,776 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-04 20:05:34,776 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-04 20:05:34,777 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-04 20:05:34,777 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-04 20:05:34,778 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-04 20:05:34,778 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-04 20:05:34,779 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-04 20:05:34,779 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-04 20:05:34,779 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-04 20:05:34,779 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-04 20:05:34,779 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-04 20:05:34,780 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-04 20:05:34,780 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-04 20:05:34,780 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-04 20:05:34,785 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-04 20:05:34,787 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-04 20:05:34,787 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-04 20:05:34,787 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-04 20:05:34,787 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-04 20:05:34,788 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-04 20:05:34,788 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-04 20:05:34,788 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-04 20:05:34,788 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-04 20:05:34,789 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-04 20:05:34,949 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-04 20:05:34,950 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-04 20:05:34,950 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-04 20:05:41,424 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-04 20:05:41,424 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-04 20:05:41,424 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-04 20:05:41,928 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-04 20:05:41,928 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-04 20:05:41,929 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-04 20:05:41,929 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-04 20:05:41,930 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-04 20:05:41,931 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-04 20:05:41,931 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-04 20:05:41,931 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-04 20:05:41,931 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-04 20:05:41,931 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-04 20:05:41,932 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-04 20:05:41,933 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-04 20:05:41,933 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-04 20:05:41,933 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-04 20:05:41,933 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-04 20:05:41,934 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-04 20:05:41,934 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-04 20:05:41,934 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-04 20:05:41,934 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-04 20:05:41,934 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-04 20:05:41,936 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-04 20:05:41,936 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-04 20:05:41,937 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-04 20:05:41,937 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-04 20:05:41,939 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-04 20:05:41,939 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-04 20:05:41,939 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-04 20:05:41,939 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-04 20:05:41,939 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-04 20:05:41,940 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-04 20:05:41,940 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-04 20:05:41,940 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-04 20:05:41,940 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-04 20:05:41,941 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-04 20:05:41,941 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-04 20:05:41,941 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-04 20:05:41,942 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-04 20:05:41,942 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-04 20:05:41,943 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-04 20:05:42,537 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-04 20:05:42,552 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-04 20:05:42,553 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-04 20:05:42,595 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-04 20:05:42,596 - werkzeug - INFO - 127.0.0.1 - - [04/Dec/2025 20:05:42] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 13:32:20,636 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 13:32:20] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 17:05:46,370 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 17:05:46,373 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 17:05:46,455 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.65:5000
+2025-12-05 17:05:46,456 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-05 17:05:46,468 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 17:05:48,188 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 17:05:48,192 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 17:05:48,206 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 17:05:48,225 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-12-05 17:05:52,211 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:05:52] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 17:05:54,447 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:05:54] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 17:05:56,641 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:05:56] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:06:10,824 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-12-05 17:06:14,531 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-12-05 17:06:14,549 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 17:06:14,579 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-05 17:06:14,591 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 17:06:14,635 - services.term_detector - INFO - 预处理完成:
+2025-12-05 17:06:14,635 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-05 17:06:14,636 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-05 17:06:14,636 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 17:06:14,637 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-05 17:06:14,637 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 17:06:14,637 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 17:06:14,638 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-05 17:06:14,638 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-05 17:06:14,641 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-05 17:06:14,665 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 17:06:14,717 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 17:06:14,717 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 17:06:14,720 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 17:06:15,067 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-05 17:06:15,067 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-05 17:06:15,070 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 17:06:16,210 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-05 17:06:16,211 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-05 17:06:16,218 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-05 17:06:16,219 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-05 17:06:16,220 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-05 17:06:16,220 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-05 17:06:16,221 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-05 17:06:16,221 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-05 17:06:16,222 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-05 17:06:16,222 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-05 17:06:16,223 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-05 17:06:16,224 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-05 17:06:16,224 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-05 17:06:16,225 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-05 17:06:16,225 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-05 17:06:16,225 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-05 17:06:16,226 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-05 17:06:16,226 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-05 17:06:16,227 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-05 17:06:16,227 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-05 17:06:16,227 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-05 17:06:16,228 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-05 17:06:16,228 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-05 17:06:16,228 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-05 17:06:16,228 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-05 17:06:16,229 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-05 17:06:16,229 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-05 17:06:16,229 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-05 17:06:16,238 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-05 17:06:16,239 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-05 17:06:16,239 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-05 17:06:16,240 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-05 17:06:16,240 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-05 17:06:16,241 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-05 17:06:16,241 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-05 17:06:16,241 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-05 17:06:16,242 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-05 17:06:16,242 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-05 17:06:16,242 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-05 17:06:16,243 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-05 17:06:16,243 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 17:06:16,243 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 17:06:16,244 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-05 17:06:16,244 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-05 17:06:16,244 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-05 17:06:16,245 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-05 17:06:16,245 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-05 17:06:16,245 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-05 17:06:16,246 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-05 17:06:16,246 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-05 17:06:16,246 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-05 17:06:16,247 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-05 17:06:16,247 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-05 17:06:16,247 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-05 17:06:16,248 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-05 17:06:16,248 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-05 17:06:16,248 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-05 17:06:16,249 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-05 17:06:16,249 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-05 17:06:16,249 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-05 17:06:16,250 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-05 17:06:16,250 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-05 17:06:16,250 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-05 17:06:16,251 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-05 17:06:16,251 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-05 17:06:16,251 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 17:06:16,256 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-05 17:06:16,258 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-05 17:06:16,258 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 17:06:16,258 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-05 17:06:16,259 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 17:06:16,259 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 17:06:16,259 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 17:06:16,260 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 17:06:16,260 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 17:06:16,261 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 17:06:17,310 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 17:06:17,311 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 17:06:17,311 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 17:06:22,522 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-05 17:06:22,522 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 17:06:22,524 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 17:06:22,995 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-05 17:06:22,996 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-05 17:06:22,997 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-05 17:06:22,999 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-05 17:06:22,999 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-05 17:06:23,000 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-05 17:06:23,000 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-05 17:06:23,001 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-05 17:06:23,002 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-05 17:06:23,002 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-05 17:06:23,003 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-05 17:06:23,003 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-05 17:06:23,004 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-05 17:06:23,004 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-05 17:06:23,004 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-05 17:06:23,005 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-05 17:06:23,005 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-05 17:06:23,005 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-05 17:06:23,006 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-05 17:06:23,006 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-05 17:06:23,006 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-05 17:06:23,007 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-05 17:06:23,007 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-05 17:06:23,008 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 17:06:23,008 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 17:06:23,008 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-05 17:06:23,009 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-05 17:06:23,009 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-05 17:06:23,009 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-05 17:06:23,010 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-05 17:06:23,010 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-05 17:06:23,010 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-05 17:06:23,011 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-05 17:06:23,011 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 17:06:23,011 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 17:06:23,012 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-05 17:06:23,013 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-05 17:06:23,013 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-05 17:06:23,014 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-05 17:06:23,470 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-05 17:06:23,493 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-05 17:06:23,493 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 17:06:23,536 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-05 17:06:23,538 - __main__ - INFO - 术语检测结果已保存: uploads\format_check\term\20251205_170623_paper1_term.json
+2025-12-05 17:06:23,546 - __main__ - INFO - 数据库记录已更新: file_id=14, term_result_path=uploads\format_check\term\20251205_170623_paper1_term.json
+2025-12-05 17:06:23,547 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:06:23] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 17:07:53,864 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:07:53,867 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:07:53] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:08:12,359 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:08:12,361 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:08:12] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:08:22,316 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:08:22] "GET /api/paper-format/term-result/17 HTTP/1.1" 200 -
+2025-12-05 17:08:24,106 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:08:24,113 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:08:24] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:08:29,692 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:08:29] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 17:08:30,555 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251201_133729_docx
+2025-12-05 17:08:30,600 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 17:08:30,602 - services.term_detector - INFO - 跳过页眉页脚: DOI: 10.19884 / j.1672-5220.202406006...
+2025-12-05 17:08:30,679 - services.term_detector - INFO - 跳过图题: Fig. 1  SEM images: ( a) VXC-72R; ( b) TBABF4 / VXC-72R; ( c) TBABr / VXC-72R; ( d) BMIMBF4 / VXC-72R...
+2025-12-05 17:08:30,689 - services.term_detector - INFO - 跳过图题: Fig. 2  FTIR spectra of VXC-72R...
+2025-12-05 17:08:30,696 - services.term_detector - INFO - 跳过图题: Fig. 3  Water contact angles on different electrode surfaces: ( a) GCE; ( b ) VXC-72R / GCE; ( c) TBABF4 / VXC-72R / GCE; ( d) TBABr / VXC-72R / GCE; ( e) BMIMBF4 / VXC-72R / GCE...
+2025-12-05 17:08:30,711 - services.term_detector - INFO - 跳过图题: Figure 4 ( b ) shows the CV curves of the K3 [ Fe( CN) 6 ] probe in 0. 1 mol / L PBS solution ( pH = 7) on different electrodes. Compared to the bare GCE, the redox current on VXC-72R / GCE is significantly enhanced, revealing the high conductivity of carbon black. Notably, the current is further enhanced with the addition of TBABF4 , TBABr and BMIMBF4 , respectively, which may result from the improved dispersion of VXC-72R as observed in Fig. 1, as well as the high conductivity of electrolytes. The electrochemically active surface areas ( ECSAs ) are estimated according to the Randles-Sevcik equation, and the values are 0. 07, 0. 41, 0. 73, 0. 62 and 0. 57 cm2 for GCE, VXC-72R / GCE, TBABF4 / VXC-72R / GCE, TBABr / VXC-72R / GCE  and  BMIMBF4 / VXC-72R /...
+2025-12-05 17:08:30,715 - services.term_detector - INFO - 跳过图题: Figure 5 shows the CV curve of CFL (50. 0 μmol / L) on TBABF4 / VXC-72R / GCE in 0. 1 mol / L PBS ( pH =...
+2025-12-05 17:08:30,721 - services.term_detector - INFO - 跳过图题: Fig. 5  CV curve of CFL in 0. 1 mol / L PBS ( pH = 4)...
+2025-12-05 17:08:30,729 - services.term_detector - INFO - 跳过图题: Fig. 6 ( a ), the current around 0. 22 V significantly increases after decoration with VXC-72R. As can be seen in Fig. 6 ( b ), the peak current Ip increases to approximately 1. 9, 1. 5 and 1. 4 times upon introduction of TBABF4 , TBABr and BMIMBF4 , respectively. This reveals that the decoration of VXC-72R with electrolytes substantially enhances the sensitivity of the electrochemical sensor. The greatest enhancement of TBABF4 / VXC-72R / GCE could be attributed to its larger electrochemically active area ( Fig. 4( b)), as well as optimized interfacial affinity toward CFL sensing....
+2025-12-05 17:08:30,733 - services.term_detector - INFO - 跳过图题: Fig. 6 DPV measurements of CFL on different electrodes: ( a) current vs. potential; ( b) peak current at the potential of 0. 22 V...
+2025-12-05 17:08:30,749 - services.term_detector - INFO - 跳过图题: Fig. 7 DPV measurements of CFL on TBABF4 / VXC-72R / GCE and corresponding peak currents under different conditions: ( a) -( b) mass ratio of TBABF4 to VXC-72R; ( c)-( d) pH value; ( e)-( f) accumulation time; ( g)-( h) volume of TBABF4 / VXC-72R...
+2025-12-05 17:08:30,760 - services.term_detector - INFO - 跳过图题: Fig. 8  CV measurements of CFL on TBABF4 / VXC-72R / GCE at various scanning rates: ( a) CV curves; ( b) relationship between peak current and scanning rate...
+2025-12-05 17:08:30,772 - services.term_detector - INFO - 跳过图题: Fig. 9 DPV measurements of CFL at various concentrations on TBABF4 / VXC-72R / GCE: ( a) current vs. potential; ( b) relationship between peak current and CFL concentration...
+2025-12-05 17:08:30,781 - services.term_detector - INFO - 跳过图题: Fig. 10 Reproducibility and stability: ( a) DPV curves of CFL on five TBABF4 / VXC-72R / GCEs; ( b) peak currents of CFL on the same TBABF4 / VXC-72R / GCE at different storage time...
+2025-12-05 17:08:30,793 - services.term_detector - INFO - 跳过表题: Table 1 Determination of CFL in real samples...
+2025-12-05 17:08:30,796 - services.term_detector - INFO - 跳过图题: Fig. 11	I1 / I0 of CFL on TBABF4 / VXC-72R / GCE in the presence of various potential interfering substances...
+2025-12-05 17:08:30,801 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 17:08:30,863 - services.term_detector - INFO - 预处理完成:
+2025-12-05 17:08:30,863 - services.term_detector - INFO -   - 总段落数: 327
+2025-12-05 17:08:30,865 - services.term_detector - INFO -   - 保留段落: 123
+2025-12-05 17:08:30,866 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 17:08:30,867 - services.term_detector - INFO -   - 跳过图题: 13
+2025-12-05 17:08:30,867 - services.term_detector - INFO -   - 跳过表题: 1
+2025-12-05 17:08:30,868 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 17:08:30,868 - services.term_detector - INFO - 预处理后文本长度: 20559 字符
+2025-12-05 17:08:30,869 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 20559
+2025-12-05 17:08:30,885 - services.term_detector - INFO - ✓ 提取到 4 个关键词
+2025-12-05 17:08:31,153 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 17:08:31,155 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 17:08:31,156 - services.term_detector - INFO - 使用预处理后的文本，字符数: 20559
+2025-12-05 17:08:31,157 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 17:08:31,873 - services.term_detector - INFO - SpaCy提取到 624 个不同的N-gram短语
+2025-12-05 17:08:31,874 - services.term_detector - INFO - 提取到 624 个原始N-gram
+2025-12-05 17:08:31,875 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 17:08:34,301 - services.term_detector - INFO - 聚合术语变体: conductive carbon (总频率: 14)
+2025-12-05 17:08:34,302 - services.term_detector - INFO -   - Conductive Carbon (2次) -> conductive carbon
+2025-12-05 17:08:34,304 - services.term_detector - INFO - 聚合术语变体: conductive carbon black (总频率: 11)
+2025-12-05 17:08:34,305 - services.term_detector - INFO -   - Conductive Carbon Black (2次) -> conductive carbon black
+2025-12-05 17:08:34,305 - services.term_detector - INFO - 聚合术语变体: carbon black (总频率: 15)
+2025-12-05 17:08:34,306 - services.term_detector - INFO -   - Carbon Black (2次) -> carbon black
+2025-12-05 17:08:34,306 - services.term_detector - INFO - 聚合术语变体: tetrabutylammonium tetrafluoroborate (总频率: 10)
+2025-12-05 17:08:34,307 - services.term_detector - INFO -   - Tetrabutylammonium Tetrafluoroborate (2次) -> tetrabutylammonium tetrafluoroborate
+2025-12-05 17:08:34,308 - services.term_detector - INFO - 聚合术语变体: electrochemical sensor (总频率: 28)
+2025-12-05 17:08:34,308 - services.term_detector - INFO -   - electrochemical sensors (12次) -> electrochemical sensor
+2025-12-05 17:08:34,308 - services.term_detector - INFO -   - Electrochemical sensors (2次) -> electrochemical sensor
+2025-12-05 17:08:34,309 - services.term_detector - INFO - 聚合术语变体: sensitive detection (总频率: 4)
+2025-12-05 17:08:34,310 - services.term_detector - INFO -   - Sensitive detection (2次) -> sensitive detection
+2025-12-05 17:08:34,312 - services.term_detector - INFO - 聚合术语变体: fetal bovine serum samples (总频率: 10)
+2025-12-05 17:08:34,312 - services.term_detector - INFO -   - fetal bovine serum sample (2次) -> fetal bovine serum samples
+2025-12-05 17:08:34,312 - services.term_detector - INFO - 聚合术语变体: bovine serum samples (总频率: 10)
+2025-12-05 17:08:34,312 - services.term_detector - INFO -   - bovine serum sample (2次) -> bovine serum samples
+2025-12-05 17:08:34,313 - services.term_detector - INFO - 聚合术语变体: serum samples (总频率: 12)
+2025-12-05 17:08:34,313 - services.term_detector - INFO -   - serum sample (2次) -> serum samples
+2025-12-05 17:08:34,314 - services.term_detector - INFO - 聚合术语变体: high sensitivity (总频率: 6)
+2025-12-05 17:08:34,314 - services.term_detector - INFO -   - highest sensitivity (2次) -> high sensitivity
+2025-12-05 17:08:34,314 - services.term_detector - INFO - 聚合术语变体: electrode surface (总频率: 8)
+2025-12-05 17:08:34,315 - services.term_detector - INFO -   - electrode surfaces (2次) -> electrode surface
+2025-12-05 17:08:34,315 - services.term_detector - INFO - 聚合术语变体: novel electrochemical sensors (总频率: 4)
+2025-12-05 17:08:34,315 - services.term_detector - INFO -   - novel electrochemical sensor (2次) -> novel electrochemical sensors
+2025-12-05 17:08:34,316 - services.term_detector - INFO - 聚合术语变体: electrode materials (总频率: 10)
+2025-12-05 17:08:34,316 - services.term_detector - INFO -   - Electrode material (2次) -> electrode materials
+2025-12-05 17:08:34,317 - services.term_detector - INFO - 聚合术语变体: contact angle (总频率: 8)
+2025-12-05 17:08:34,317 - services.term_detector - INFO -   - contact angles (2次) -> contact angle
+2025-12-05 17:08:34,317 - services.term_detector - INFO - 聚合术语变体: mass ratio (总频率: 10)
+2025-12-05 17:08:34,318 - services.term_detector - INFO -   - mass ratios (4次) -> mass ratio
+2025-12-05 17:08:34,318 - services.term_detector - INFO - 聚合术语变体: stretching vibrations (总频率: 8)
+2025-12-05 17:08:34,318 - services.term_detector - INFO -   - stretching vibration (4次) -> stretching vibrations
+2025-12-05 17:08:34,319 - services.term_detector - INFO - 聚合术语变体: H stretching vibrations (总频率: 4)
+2025-12-05 17:08:34,319 - services.term_detector - INFO -   - H stretching vibration (2次) -> H stretching vibrations
+2025-12-05 17:08:34,320 - services.term_detector - INFO - 聚合术语变体: anodic peak (总频率: 4)
+2025-12-05 17:08:34,320 - services.term_detector - INFO -   - anodic peaks (2次) -> anodic peak
+2025-12-05 17:08:34,320 - services.term_detector - INFO - 聚合术语变体: peak 1a (总频率: 4)
+2025-12-05 17:08:34,321 - services.term_detector - INFO -   - Peak 1a (2次) -> peak 1a
+2025-12-05 17:08:34,321 - services.term_detector - INFO - 聚合术语变体: peak current (总频率: 18)
+2025-12-05 17:08:34,322 - services.term_detector - INFO -   - peak currents (2次) -> peak current
+2025-12-05 17:08:34,322 - services.term_detector - INFO - 聚合术语变体: pH value (总频率: 6)
+2025-12-05 17:08:34,322 - services.term_detector - INFO -   - pH values (2次) -> pH value
+2025-12-05 17:08:34,323 - services.term_detector - INFO - 聚合术语变体: peak potential (总频率: 4)
+2025-12-05 17:08:34,323 - services.term_detector - INFO -   - peak potentials (2次) -> peak potential
+2025-12-05 17:08:34,324 - services.term_detector - INFO - 聚合术语变体: accumulation time (总频率: 6)
+2025-12-05 17:08:34,324 - services.term_detector - INFO -   - accumulation times (2次) -> accumulation time
+2025-12-05 17:08:34,325 - services.term_detector - INFO - 聚合术语变体: scanning rate (总频率: 10)
+2025-12-05 17:08:34,330 - services.term_detector - INFO -   - scanning rates (4次) -> scanning rate
+2025-12-05 17:08:34,330 - services.term_detector - INFO - 聚合术语变体: linear equations (总频率: 4)
+2025-12-05 17:08:34,331 - services.term_detector - INFO -   - linear equation (2次) -> linear equations
+2025-12-05 17:08:34,331 - services.term_detector - INFO - 聚合术语变体: linear relationships (总频率: 4)
+2025-12-05 17:08:34,331 - services.term_detector - INFO -   - linear relationship (2次) -> linear relationships
+2025-12-05 17:08:34,332 - services.term_detector - INFO - 聚合术语变体: recovery rate (总频率: 8)
+2025-12-05 17:08:34,332 - services.term_detector - INFO -   - recovery rates (2次) -> recovery rate
+2025-12-05 17:08:34,333 - services.term_detector - INFO -   - Recovery rate (2次) -> recovery rate
+2025-12-05 17:08:34,333 - services.term_detector - INFO - 聚合前: 624 个术语，聚合后: 595 个术语
+2025-12-05 17:08:34,334 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 17:08:34,346 - services.term_detector - INFO - C-value计算完成，前10个术语: [('electrochemical sensor', 41.57478559583956), ('peak current', 24.78305001127626), ('fetal bovine serum samples', 23.21928094887362), ('carbon black', 19.613910946424305), ('conductive carbon black', 17.666666666666668), ('deionized water', 17.43458750793272), ('conductive carbon', 17.258480563408146), ('VXC-72 R', 16.642106257572138), ('tetrabutylammonium tetrafluoroborate', 15.84962500721156), ('CFL detection', 13.472181256129826)]
+2025-12-05 17:08:34,349 - services.term_detector - INFO - 模式过滤完成: 保留 593 个，过滤 2 个
+2025-12-05 17:08:34,349 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 17:08:34,350 - services.term_detector - INFO -   - 单字母组合: 2
+2025-12-05 17:08:34,350 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 17:08:34,351 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 17:08:34,351 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 17:08:34,352 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 17:08:34,352 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 17:08:34,353 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 17:08:34,444 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 17:08:34,444 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 17:08:34,446 - services.term_detector - INFO - 使用预处理后的文本，字符数: 20559
+2025-12-05 17:08:47,125 - services.term_detector - INFO - SciBERT提取到 311 个原始术语
+2025-12-05 17:08:47,125 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 17:08:47,127 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 17:08:48,230 - services.term_detector - INFO - 聚合术语变体: electrochemical sensor (总频率: 14)
+2025-12-05 17:08:48,231 - services.term_detector - INFO -   - electrochemical sensors (6次) -> electrochemical sensor
+2025-12-05 17:08:48,232 - services.term_detector - INFO -   - Electrochemical Sensor (1次) -> electrochemical sensor
+2025-12-05 17:08:48,234 - services.term_detector - INFO -   - Electrochemical sensors (1次) -> electrochemical sensor
+2025-12-05 17:08:48,235 - services.term_detector - INFO - 聚合术语变体: Cefadroxil Antibiotic (总频率: 2)
+2025-12-05 17:08:48,235 - services.term_detector - INFO -   - cefadroxil antibiotic (1次) -> Cefadroxil Antibiotic
+2025-12-05 17:08:48,236 - services.term_detector - INFO - 聚合术语变体: conductive carbon (总频率: 6)
+2025-12-05 17:08:48,237 - services.term_detector - INFO -   - Conductive Carbon (1次) -> conductive carbon
+2025-12-05 17:08:48,237 - services.term_detector - INFO - 聚合术语变体: tetrabutylammonium tetrafluoroborate (总频率: 5)
+2025-12-05 17:08:48,237 - services.term_detector - INFO -   - Tetrabutylammonium Tetrafluoroborate (1次) -> tetrabutylammonium tetrafluoroborate
+2025-12-05 17:08:48,238 - services.term_detector - INFO - 聚合术语变体: analytical (总频率: 4)
+2025-12-05 17:08:48,238 - services.term_detector - INFO -   - Analytical (1次) -> analytical
+2025-12-05 17:08:48,239 - services.term_detector - INFO - 聚合术语变体: cefadroxil (总频率: 3)
+2025-12-05 17:08:48,239 - services.term_detector - INFO -   - Cefadroxil (1次) -> cefadroxil
+2025-12-05 17:08:48,239 - services.term_detector - INFO - 聚合术语变体: antibiotics (总频率: 7)
+2025-12-05 17:08:48,240 - services.term_detector - INFO -   - antibiotic (3次) -> antibiotics
+2025-12-05 17:08:48,240 - services.term_detector - INFO - 聚合术语变体: GCE (总频率: 52)
+2025-12-05 17:08:48,240 - services.term_detector - INFO -   - GCEs (1次) -> GCE
+2025-12-05 17:08:48,241 - services.term_detector - INFO - 聚合术语变体: linear (总频率: 5)
+2025-12-05 17:08:48,241 - services.term_detector - INFO -   - Linear (1次) -> linear
+2025-12-05 17:08:48,241 - services.term_detector - INFO - 聚合术语变体: reproducibility (总频率: 3)
+2025-12-05 17:08:48,242 - services.term_detector - INFO -   - Reproducibility (1次) -> reproducibility
+2025-12-05 17:08:48,242 - services.term_detector - INFO - 聚合术语变体: electrode materials (总频率: 5)
+2025-12-05 17:08:48,242 - services.term_detector - INFO -   - electrode material (1次) -> electrode materials
+2025-12-05 17:08:48,243 - services.term_detector - INFO - 聚合术语变体: fabrication (总频率: 3)
+2025-12-05 17:08:48,246 - services.term_detector - INFO -   - Fabrication (1次) -> fabrication
+2025-12-05 17:08:48,247 - services.term_detector - INFO - 聚合术语变体: electrode surface (总频率: 4)
+2025-12-05 17:08:48,248 - services.term_detector - INFO -   - electrode surfaces (1次) -> electrode surface
+2025-12-05 17:08:48,248 - services.term_detector - INFO - 聚合术语变体: disperse (总频率: 2)
+2025-12-05 17:08:48,249 - services.term_detector - INFO -   - dispersed (1次) -> disperse
+2025-12-05 17:08:48,249 - services.term_detector - INFO - 聚合术语变体: electrolytes (总频率: 7)
+2025-12-05 17:08:48,249 - services.term_detector - INFO -   - electrolyte (1次) -> electrolytes
+2025-12-05 17:08:48,250 - services.term_detector - INFO - 聚合术语变体: lake (总频率: 2)
+2025-12-05 17:08:48,250 - services.term_detector - INFO -   - Lake (1次) -> lake
+2025-12-05 17:08:48,251 - services.term_detector - INFO - 聚合术语变体: Reagents (总频率: 2)
+2025-12-05 17:08:48,251 - services.term_detector - INFO -   - Reagent (1次) -> Reagents
+2025-12-05 17:08:48,251 - services.term_detector - INFO - 聚合术语变体: chemicals (总频率: 2)
+2025-12-05 17:08:48,252 - services.term_detector - INFO -   - chemical (1次) -> chemicals
+2025-12-05 17:08:48,252 - services.term_detector - INFO - 聚合术语变体: electrodes (总频率: 9)
+2025-12-05 17:08:48,252 - services.term_detector - INFO -   - electrode (2次) -> electrodes
+2025-12-05 17:08:48,253 - services.term_detector - INFO - 聚合术语变体: ultrasonic (总频率: 2)
+2025-12-05 17:08:48,253 - services.term_detector - INFO -   - Ultrasonic (1次) -> ultrasonic
+2025-12-05 17:08:48,254 - services.term_detector - INFO - 聚合术语变体: peaks (总频率: 8)
+2025-12-05 17:08:48,254 - services.term_detector - INFO -   - Peak (1次) -> peaks
+2025-12-05 17:08:48,254 - services.term_detector - INFO -   - peak (1次) -> peaks
+2025-12-05 17:08:48,255 - services.term_detector - INFO - 聚合术语变体: stretching vibrations (总频率: 4)
+2025-12-05 17:08:48,255 - services.term_detector - INFO -   - stretching vibration (2次) -> stretching vibrations
+2025-12-05 17:08:48,255 - services.term_detector - INFO - 聚合术语变体: angle (总频率: 3)
+2025-12-05 17:08:48,256 - services.term_detector - INFO -   - angles (1次) -> angle
+2025-12-05 17:08:48,256 - services.term_detector - INFO - 聚合术语变体: Electrochemical (总频率: 2)
+2025-12-05 17:08:48,256 - services.term_detector - INFO -   - electrochemical (1次) -> Electrochemical
+2025-12-05 17:08:48,257 - services.term_detector - INFO - 聚合术语变体: anodic peak (总频率: 2)
+2025-12-05 17:08:48,257 - services.term_detector - INFO -   - anodic peaks (1次) -> anodic peak
+2025-12-05 17:08:48,258 - services.term_detector - INFO - 聚合术语变体: peak current (总频率: 12)
+2025-12-05 17:08:48,258 - services.term_detector - INFO -   - peak currents (1次) -> peak current
+2025-12-05 17:08:48,258 - services.term_detector - INFO - 聚合前: 311 个术语，聚合后: 282 个术语
+2025-12-05 17:08:48,259 - services.term_detector - INFO - 聚合后剩余 282 个唯一术语
+2025-12-05 17:08:48,265 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 17:08:48,265 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 17:08:48,268 - services.term_detector - INFO - C-value计算完成，前10个术语: [('VXC-72R', 57.2), ('GCE', 50.0), ('TBABF4', 49.0), ('electrochemical sensor', 20.604512509375027), ('peak current', 17.43458750793272), ('μmol', 15.0), ('BMIMBF4', 14.0), ('TBABr', 14.0), ('deionized water', 9.509775004326936), ('detection', 8.0)]
+2025-12-05 17:08:48,268 - services.term_detector - INFO - SciBERT最终检测到 8 个科学术语（已聚合变体并计算C-value）
+2025-12-05 17:08:48,268 - services.term_detector - INFO - ✓ SciBERT检测到 8 个科学术语
+2025-12-05 17:08:48,269 - services.term_detector - INFO - ✓ 合并后共 28 个候选术语
+2025-12-05 17:08:55,010 - services.term_detector - INFO - ✓ 检测到 6 个疑似新术语
+2025-12-05 17:08:55,020 - services.term_detector - INFO - ✓ 检测到 2 对相似术语
+2025-12-05 17:08:55,021 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 17:08:55,061 - __main__ - INFO - 术语检测完成: 共检测到 28 个术语
+2025-12-05 17:08:55,063 - __main__ - INFO - 术语检测结果已保存: uploads\format_check\term\20251205_170855_docx_term.json
+2025-12-05 17:08:55,069 - __main__ - INFO - 数据库记录已更新: file_id=18, term_result_path=uploads\format_check\term\20251205_170855_docx_term.json
+2025-12-05 17:08:55,070 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:08:55] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 17:09:21,707 - __main__ - INFO - 读取术语检测历史结果: file_id=18
+2025-12-05 17:09:21,709 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:09:21] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 17:10:13,399 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\models.py', reloading
+2025-12-05 17:10:14,209 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 17:10:16,172 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 17:10:16,176 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 17:10:16,194 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 17:10:16,213 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-12-05 17:11:09,144 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:11:09,144 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:11:09] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:12:26,422 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:12:26,422 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:12:26] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:12:52,541 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:12:52,547 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:12:52] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:13:46,405 - __main__ - INFO - 读取术语检测历史结果: file_id=18
+2025-12-05 17:13:46,415 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:13:46] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 17:14:09,937 - __main__ - INFO - 打开原始文档: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-12-05 17:14:09,939 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:14:09] "GET /api/paper-format/open-original/14 HTTP/1.1" 200 -
+2025-12-05 17:14:14,329 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:14:14,335 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:14:14] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:02,610 - __main__ - INFO - 读取术语检测历史结果: file_id=18
+2025-12-05 17:15:02,620 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:02] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 17:15:07,593 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:07,595 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:07] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:09,049 - __main__ - INFO - 读取术语检测历史结果: file_id=18
+2025-12-05 17:15:09,051 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:09] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 17:15:11,377 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:11,379 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:11] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:13,000 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:13,002 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:13] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:15,866 - __main__ - INFO - 打开原始文档: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-12-05 17:15:15,867 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:15] "[36mGET /api/paper-format/open-original/14 HTTP/1.1[0m" 304 -
+2025-12-05 17:15:20,501 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:20,501 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:20] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:21,898 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:21] "GET /api/paper-format/term-result/17 HTTP/1.1" 200 -
+2025-12-05 17:15:23,301 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:23,305 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:23] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:24,890 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:24,892 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:24] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:15:26,259 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:15:26,261 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:15:26] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 17:31:25,793 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:31:25] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 17:35:12,730 - __main__ - INFO - 打开原始文档: uploads/format_check/temp\20251128_115940_paper1.docx
+2025-12-05 17:35:12,731 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:35:12] "[36mGET /api/paper-format/open-original/14 HTTP/1.1[0m" 304 -
+2025-12-05 17:35:21,509 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 17:35:21,511 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 17:35:21] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 19:39:18,452 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:39:18] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 19:39:20,451 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:39:20] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 19:39:22,428 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 19:39:22,430 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:39:22] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 19:39:30,926 - __main__ - INFO - 读取术语检测历史结果: file_id=18
+2025-12-05 19:39:30,929 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:39:30] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 19:40:20,221 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:40:20] "GET /api/paper-format/term-result/17 HTTP/1.1" 200 -
+2025-12-05 19:40:31,082 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-12-05 19:40:31,082 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251129_175032_docx
+2025-12-05 19:40:31,132 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 19:40:31,142 - services.term_detector - INFO - 跳过页眉页脚: DOI: 10.19884 / j.1672-5220.202404007...
+2025-12-05 19:40:31,222 - services.term_detector - INFO - 跳过页眉页脚: 14...
+2025-12-05 19:40:31,262 - services.term_detector - INFO - 跳过图题: Fig. 1 Optical photographs of films: ( a) BC; ( b) HA; ( c) B1H1; ( d) B1H1 / GL; ( e) B1H1 / GL@ Dilor...
+2025-12-05 19:40:31,262 - services.term_detector - INFO - 跳过图题: Fig. 2  Thicknesses of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@ Dilor films...
+2025-12-05 19:40:31,262 - services.term_detector - INFO - 跳过图题: Fig. 3 SEM images: ( a) BC film; ( b) HA film; ( c) B1H1 film; ( d) B1H1 / GL film; ( e) B1H1 / GL@ Dilor film; ( f) Dilor...
+2025-12-05 19:40:31,272 - services.term_detector - INFO - 跳过图题: Fig. 4(b), the presence of characteristic absorption peaks related to Dilor in the FTIR spectrum of the B1H1 / GL@ Dilor film confirms that Dilor is indeed loaded within the film. The peak positions of the B1H1 / GL@Dilor film remain unchanged, indicating that the drug does not react chemically with the film-forming agents or plasticizer....
+2025-12-05 19:40:31,282 - services.term_detector - INFO - 跳过图题: Fig. 4 FTIR spectra: ( a) BC, HA and B1H1 films; ( b) B1H1 / GL and B1H1 / GL@ Dilor films, and Dilor...
+2025-12-05 19:40:31,292 - services.term_detector - INFO - 跳过图题: Fig. 5 Thermal properties of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@ Dilor films, and Dilor: ( a) TG curves; ( b) DTG curves...
+2025-12-05 19:40:31,312 - services.term_detector - INFO - 跳过图题: Fig. 6 Drug loading properties: ( a) absorbance curves of Dilor solutions at different mass concentrations; ( b) absorbance-mass concentration standard curve of Dilor; ( c) drug loading efficiency of B1H1 / GL@ Dilor films; ( d) encapsulation rate of B1H1 / GL@ Dilor films...
+2025-12-05 19:40:31,322 - services.term_detector - INFO - 跳过图题: Fig. 7  Drug release properties: ( a) disintegration time of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@120%Dilor films; ( b) drug release rate of B1H1 / GL@120%Dilor film...
+2025-12-05 19:40:31,332 - services.term_detector - INFO - 跳过图题: Fig. 8 Tensile properties of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@ 120% Dilor films: ( a) tensile stress-strain curves; ( b) tensile strengths and elongations at break...
+2025-12-05 19:40:31,342 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 19:40:31,383 - services.term_detector - INFO - 预处理完成:
+2025-12-05 19:40:31,383 - services.term_detector - INFO -   - 总段落数: 225
+2025-12-05 19:40:31,383 - services.term_detector - INFO -   - 保留段落: 110
+2025-12-05 19:40:31,383 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 19:40:31,393 - services.term_detector - INFO -   - 跳过图题: 9
+2025-12-05 19:40:31,393 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 19:40:31,393 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 19:40:31,393 - services.term_detector - INFO - 预处理后文本长度: 25892 字符
+2025-12-05 19:40:31,393 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 25892
+2025-12-05 19:40:31,403 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-12-05 19:40:31,660 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 19:40:31,661 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 19:40:31,665 - services.term_detector - INFO - 使用预处理后的文本，字符数: 25892
+2025-12-05 19:40:31,665 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 19:40:32,634 - services.term_detector - INFO - SpaCy提取到 724 个不同的N-gram短语
+2025-12-05 19:40:32,634 - services.term_detector - INFO - 提取到 724 个原始N-gram
+2025-12-05 19:40:32,644 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: Oral Disintegrating (总频率: 4)
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - oral disintegrating (2次) -> Oral Disintegrating
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: Oral Disintegrating Films (总频率: 4)
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - oral disintegrating films (2次) -> Oral Disintegrating Films
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: disintegrating film (总频率: 10)
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - Disintegrating Films (2次) -> disintegrating film
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - disintegrating films (2次) -> disintegrating film
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: drug loading (总频率: 56)
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - Drug loading (4次) -> drug loading
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: drug loading efficiency (总频率: 44)
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - Drug loading efficiency (4次) -> drug loading efficiency
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: bacterial cellulose (总频率: 8)
+2025-12-05 19:40:35,225 - services.term_detector - INFO -   - Bacterial cellulose (2次) -> bacterial cellulose
+2025-12-05 19:40:35,225 - services.term_detector - INFO - 聚合术语变体: hyaluronic acid (总频率: 8)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - Hyaluronic acid (2次) -> hyaluronic acid
+2025-12-05 19:40:35,235 - services.term_detector - INFO - 聚合术语变体: disintegration time (总频率: 26)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - Disintegration time (4次) -> disintegration time
+2025-12-05 19:40:35,235 - services.term_detector - INFO - 聚合术语变体: release rate (总频率: 16)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - releasing rate (2次) -> release rate
+2025-12-05 19:40:35,235 - services.term_detector - INFO - 聚合术语变体: tensile properties (总频率: 22)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - Tensile property (2次) -> tensile properties
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - Tensile properties (2次) -> tensile properties
+2025-12-05 19:40:35,235 - services.term_detector - INFO - 聚合术语变体: tensile strength (总频率: 18)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - tensile strengths (2次) -> tensile strength
+2025-12-05 19:40:35,235 - services.term_detector - INFO - 聚合术语变体: decomposition temperature (总频率: 16)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - decomposition temperatures (2次) -> decomposition temperature
+2025-12-05 19:40:35,235 - services.term_detector - INFO - 聚合术语变体: high drug (总频率: 6)
+2025-12-05 19:40:35,235 - services.term_detector - INFO -   - higher drug (2次) -> high drug
+2025-12-05 19:40:35,242 - services.term_detector - INFO - 聚合术语变体: large quantities (总频率: 4)
+2025-12-05 19:40:35,242 - services.term_detector - INFO -   - larger quantity (2次) -> large quantities
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: forming properties (总频率: 6)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - forming property (2次) -> forming properties
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: high drug loading (总频率: 4)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - higher drug loading (2次) -> high drug loading
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: high drug loading efficiency (总频率: 4)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - higher drug loading efficiency (2次) -> high drug loading efficiency
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: above solution (总频率: 4)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - above solutions (2次) -> above solution
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: mass ratio (总频率: 14)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - mass ratios (2次) -> mass ratio
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: chemical structure (总频率: 10)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - Chemical structure (4次) -> chemical structure
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: Thermal stability (总频率: 6)
+2025-12-05 19:40:35,243 - services.term_detector - INFO -   - thermal stability (2次) -> Thermal stability
+2025-12-05 19:40:35,243 - services.term_detector - INFO - 聚合术语变体: mass concentration (总频率: 14)
+2025-12-05 19:40:35,253 - services.term_detector - INFO -   - mass concentrations (2次) -> mass concentration
+2025-12-05 19:40:35,253 - services.term_detector - INFO - 聚合术语变体: GL@ Dilor films (总频率: 8)
+2025-12-05 19:40:35,253 - services.term_detector - INFO -   - GL@ Dilor film (4次) -> GL@ Dilor films
+2025-12-05 19:40:35,253 - services.term_detector - INFO - 聚合术语变体: Dilor film (总频率: 20)
+2025-12-05 19:40:35,253 - services.term_detector - INFO -   - Dilor films (6次) -> Dilor film
+2025-12-05 19:40:35,253 - services.term_detector - INFO - 聚合术语变体: GL@Dilor film (总频率: 10)
+2025-12-05 19:40:35,253 - services.term_detector - INFO -   - GL@Dilor films (4次) -> GL@Dilor film
+2025-12-05 19:40:35,253 - services.term_detector - INFO - 聚合术语变体: HA film (总频率: 18)
+2025-12-05 19:40:35,253 - services.term_detector - INFO -   - HA films (2次) -> HA film
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合术语变体: absorption peak (总频率: 12)
+2025-12-05 19:40:35,257 - services.term_detector - INFO -   - absorption peaks (2次) -> absorption peak
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合术语变体: highest mass loss (总频率: 4)
+2025-12-05 19:40:35,257 - services.term_detector - INFO -   - high mass loss (2次) -> highest mass loss
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合术语变体: intermolecular force (总频率: 4)
+2025-12-05 19:40:35,257 - services.term_detector - INFO -   - intermolecular forces (2次) -> intermolecular force
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合术语变体: existing ODF (总频率: 4)
+2025-12-05 19:40:35,257 - services.term_detector - INFO -   - existing ODFs (2次) -> existing ODF
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合术语变体: film decrease (总频率: 3)
+2025-12-05 19:40:35,257 - services.term_detector - INFO -   - film decreases (1次) -> film decrease
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合术语变体: strain curves (总频率: 6)
+2025-12-05 19:40:35,257 - services.term_detector - INFO -   - strain curve (2次) -> strain curves
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 聚合前: 724 个术语，聚合后: 690 个术语
+2025-12-05 19:40:35,257 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 19:40:35,274 - services.term_detector - INFO - C-value计算完成，前10个术语: [('drug loading efficiency', 84.0), ('drug loading', 80.30476670320523), ('loading efficiency', 60.070078777331815), ('disintegration time', 41.209025018750054), ('simulated oral saliva', 40.0), ('tensile properties', 31.69925001442312), ('drug release', 29.718046888521677), ('B1H1 film', 29.321806263341387), ('forming agents', 29.057645846554525), ('Dilor film', 26.416041678685936)]
+2025-12-05 19:40:35,274 - services.term_detector - INFO - 模式过滤完成: 保留 684 个，过滤 6 个
+2025-12-05 19:40:35,274 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 19:40:35,274 - services.term_detector - INFO -   - 单字母组合: 6
+2025-12-05 19:40:35,284 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 19:40:35,284 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 19:40:35,284 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 19:40:35,284 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 19:40:35,284 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 19:40:35,284 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 19:40:36,065 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 19:40:36,065 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 19:40:36,065 - services.term_detector - INFO - 使用预处理后的文本，字符数: 25892
+2025-12-05 19:40:52,660 - services.term_detector - INFO - SciBERT提取到 306 个原始术语
+2025-12-05 19:40:52,660 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 19:40:52,660 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 19:40:53,660 - services.term_detector - INFO - 聚合术语变体: bacterial cellulose (总频率: 5)
+2025-12-05 19:40:53,660 - services.term_detector - INFO -   - Bacterial Cellulose (1次) -> bacterial cellulose
+2025-12-05 19:40:53,660 - services.term_detector - INFO -   - Bacterial cellulose (1次) -> bacterial cellulose
+2025-12-05 19:40:53,670 - services.term_detector - INFO - 聚合术语变体: hyaluronic acid (总频率: 5)
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - Hyaluronic Acid (1次) -> hyaluronic acid
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - Hyaluronic acid (1次) -> hyaluronic acid
+2025-12-05 19:40:53,670 - services.term_detector - INFO - 聚合术语变体: disintegrating (总频率: 9)
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - disintegrates (2次) -> disintegrating
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - Disintegrating (1次) -> disintegrating
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - disintegrated (1次) -> disintegrating
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - disintegrate (1次) -> disintegrating
+2025-12-05 19:40:53,670 - services.term_detector - INFO - 聚合术语变体: Materials (总频率: 3)
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - material (1次) -> Materials
+2025-12-05 19:40:53,670 - services.term_detector - INFO - 聚合术语变体: ODF (总频率: 39)
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - ODFs (3次) -> ODF
+2025-12-05 19:40:53,670 - services.term_detector - INFO - 聚合术语变体: drug loading efficiency (总频率: 21)
+2025-12-05 19:40:53,670 - services.term_detector - INFO -   - Drug loading efficiency (2次) -> drug loading efficiency
+2025-12-05 19:40:53,677 - services.term_detector - INFO - 聚合术语变体: glycerol (总频率: 2)
+2025-12-05 19:40:53,677 - services.term_detector - INFO -   - Glycerol (1次) -> glycerol
+2025-12-05 19:40:53,677 - services.term_detector - INFO - 聚合术语变体: diprophylline (总频率: 3)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - Diprophylline (1次) -> diprophylline
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: elongation (总频率: 11)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - elongations (1次) -> elongation
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: disintegration (总频率: 16)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - Disintegration (2次) -> disintegration
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: tensile (总频率: 20)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - Tensile (1次) -> tensile
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: Chemical (总频率: 6)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - chemical (3次) -> Chemical
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: thermal stability (总频率: 2)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - Thermal stability (1次) -> thermal stability
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: sample (总频率: 9)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - sampling (1次) -> sample
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: curve (总频率: 7)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - curves (1次) -> curve
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: mass concentration (总频率: 6)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - mass concentrations (1次) -> mass concentration
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: B1H1 (总频率: 13)
+2025-12-05 19:40:53,678 - services.term_detector - INFO -   - B1H1 / (2次) -> B1H1
+2025-12-05 19:40:53,678 - services.term_detector - INFO - 聚合术语变体: absorption peak (总频率: 6)
+2025-12-05 19:40:53,688 - services.term_detector - INFO -   - absorption peaks (1次) -> absorption peak
+2025-12-05 19:40:53,688 - services.term_detector - INFO - 聚合术语变体: decomposition temperature (总频率: 3)
+2025-12-05 19:40:53,688 - services.term_detector - INFO -   - decomposition temperatures (1次) -> decomposition temperature
+2025-12-05 19:40:53,688 - services.term_detector - INFO - 聚合术语变体: strain curves (总频率: 3)
+2025-12-05 19:40:53,688 - services.term_detector - INFO -   - strain curve (1次) -> strain curves
+2025-12-05 19:40:53,688 - services.term_detector - INFO - 聚合前: 306 个术语，聚合后: 281 个术语
+2025-12-05 19:40:53,688 - services.term_detector - INFO - 聚合后剩余 281 个唯一术语
+2025-12-05 19:40:53,688 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 19:40:53,688 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 19:40:53,688 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 38.0), ('drug loading efficiency', 38.0), ('drug', 22.81818181818182), ('Dilor', 20.0), ('tensile', 18.0), ('disintegration', 16.0), ('encapsulation rate', 12.679700005769249), ('saliva', 12.0), ('B1H1', 12.0), ('elongation', 11.0)]
+2025-12-05 19:40:53,688 - services.term_detector - INFO - SciBERT最终检测到 12 个科学术语（已聚合变体并计算C-value）
+2025-12-05 19:40:53,688 - services.term_detector - INFO - ✓ SciBERT检测到 12 个科学术语
+2025-12-05 19:40:53,688 - services.term_detector - INFO - ✓ 合并后共 34 个候选术语
+2025-12-05 19:41:02,306 - services.term_detector - INFO - ✓ 检测到 2 个疑似新术语
+2025-12-05 19:41:02,326 - services.term_detector - INFO - ✓ 检测到 3 对相似术语
+2025-12-05 19:41:02,326 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 19:41:02,366 - __main__ - INFO - 术语检测完成: 共检测到 34 个术语
+2025-12-05 19:41:02,376 - __main__ - INFO - 术语检测结果已保存: uploads\format_check\term\20251205_194102_docx_term.json
+2025-12-05 19:41:02,376 - __main__ - INFO - 数据库记录已更新: file_id=17, term_result_path=uploads\format_check\term\20251205_194102_docx_term.json
+2025-12-05 19:41:02,376 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:41:02] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 19:41:19,702 - __main__ - INFO - 读取术语检测历史结果: file_id=14
+2025-12-05 19:41:19,705 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:41:19] "GET /api/paper-format/term-result/14 HTTP/1.1" 200 -
+2025-12-05 19:41:21,084 - __main__ - INFO - 读取术语检测历史结果: file_id=17
+2025-12-05 19:41:21,085 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:41:21] "GET /api/paper-format/term-result/17 HTTP/1.1" 200 -
+2025-12-05 19:41:23,659 - __main__ - INFO - 读取术语检测历史结果: file_id=17
+2025-12-05 19:41:23,661 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:41:23] "GET /api/paper-format/term-result/17 HTTP/1.1" 200 -
+2025-12-05 19:41:26,944 - __main__ - INFO - 读取术语检测历史结果: file_id=18
+2025-12-05 19:41:26,950 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:41:26] "GET /api/paper-format/term-result/18 HTTP/1.1" 200 -
+2025-12-05 19:44:35,430 - __main__ - INFO - 读取术语检测历史结果: file_id=17
+2025-12-05 19:44:35,432 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 19:44:35] "GET /api/paper-format/term-result/17 HTTP/1.1" 200 -
+2025-12-05 20:02:21,685 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-12-05 20:02:22,676 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 20:02:24,684 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 20:02:24,694 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 20:02:24,704 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 20:02:24,724 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-12-05 20:02:29,713 - __main__ - INFO - 已删除格式审查文件记录: ID=18
+2025-12-05 20:02:29,713 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:29] "DELETE /api/paper-format/delete/18 HTTP/1.1" 200 -
+2025-12-05 20:02:29,729 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:29] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:02:30,627 - __main__ - INFO - 已删除格式审查文件记录: ID=17
+2025-12-05 20:02:30,628 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:30] "DELETE /api/paper-format/delete/17 HTTP/1.1" 200 -
+2025-12-05 20:02:30,638 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:30] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:02:31,729 - __main__ - INFO - 已删除格式审查文件记录: ID=14
+2025-12-05 20:02:31,729 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:31] "DELETE /api/paper-format/delete/14 HTTP/1.1" 200 -
+2025-12-05 20:02:31,744 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:31] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:02:46,097 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:46] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-12-05 20:02:46,109 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251205_200246_paper1.docx
+2025-12-05 20:02:46,118 - __main__ - INFO - 格式审查文件记录已创建: ID=19
+2025-12-05 20:02:46,119 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:46] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-12-05 20:02:46,128 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:02:55,244 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:02:55] "GET /api/paper-format/term-result/19 HTTP/1.1" 200 -
+2025-12-05 20:03:05,942 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-12-05 20:03:05,942 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251205_200246_paper1.docx
+2025-12-05 20:03:05,961 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 20:03:05,971 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-05 20:03:05,981 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 20:03:05,991 - services.term_detector - INFO - 预处理完成:
+2025-12-05 20:03:05,991 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-05 20:03:05,991 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-05 20:03:05,991 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 20:03:06,001 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-05 20:03:06,001 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 20:03:06,001 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 20:03:06,001 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-05 20:03:06,001 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-05 20:03:06,001 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-05 20:03:06,031 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 20:03:06,031 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 20:03:06,031 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 20:03:06,031 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 20:03:06,352 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-05 20:03:06,352 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-05 20:03:06,362 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:03:07,612 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-05 20:03:07,612 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-05 20:03:07,622 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-05 20:03:07,622 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 20:03:07,632 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 20:03:07,632 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-05 20:03:07,642 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-05 20:03:07,642 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:03:07,652 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-05 20:03:07,652 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-05 20:03:07,652 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 20:03:07,652 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-05 20:03:07,652 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 20:03:07,652 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 20:03:07,652 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 20:03:07,652 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 20:03:07,652 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 20:03:07,652 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 20:03:08,690 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 20:03:08,690 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 20:03:08,690 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 20:03:14,378 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-05 20:03:14,378 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 20:03:14,378 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-05 20:03:14,828 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-05 20:03:14,828 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-05 20:03:14,838 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 20:03:14,838 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:03:14,838 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-05 20:03:14,838 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-05 20:03:14,838 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-05 20:03:14,838 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-05 20:03:15,309 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-05 20:03:15,329 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-05 20:03:15,329 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 20:03:15,359 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-05 20:03:15,369 - __main__ - ERROR - 保存术语检测结果失败: [Errno 2] No such file or directory: 'uploads/format_check/term\\20251205_200315_paper1_term.json'
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1536, in detect_terms
+    with open(json_path, 'w', encoding='utf-8') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'uploads/format_check/term\\20251205_200315_paper1_term.json'
+2025-12-05 20:03:15,369 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:03:15] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 20:04:02,431 - __main__ - INFO - 创建目录: uploads/format_check/term
+2025-12-05 20:04:02,521 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 20:04:02,521 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 20:04:02,541 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.65:5000
+2025-12-05 20:04:02,541 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-05 20:04:02,541 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 20:04:04,476 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 20:04:04,476 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 20:04:04,511 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 20:04:04,534 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-12-05 20:04:46,447 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:04:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:04:48,235 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:04:48] "GET /api/paper-format/term-result/19 HTTP/1.1" 200 -
+2025-12-05 20:04:58,061 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-12-05 20:04:58,061 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251205_200246_paper1.docx
+2025-12-05 20:04:58,071 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 20:04:58,081 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-05 20:04:58,091 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 20:04:58,101 - services.term_detector - INFO - 预处理完成:
+2025-12-05 20:04:58,101 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-05 20:04:58,101 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-05 20:04:58,101 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 20:04:58,101 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-05 20:04:58,101 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 20:04:58,101 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 20:04:58,101 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-05 20:04:58,101 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-05 20:04:58,111 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-05 20:04:58,131 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 20:04:58,131 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 20:04:58,131 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 20:04:58,131 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 20:04:58,451 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-05 20:04:58,451 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-05 20:04:58,451 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:05:00,008 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-05 20:05:00,008 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-05 20:05:00,008 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-05 20:05:00,018 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-05 20:05:00,020 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-05 20:05:00,020 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-05 20:05:00,021 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-05 20:05:00,023 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-05 20:05:00,023 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-05 20:05:00,033 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-05 20:05:00,039 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-05 20:05:00,039 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-05 20:05:00,039 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-05 20:05:00,040 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-05 20:05:00,040 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-05 20:05:00,040 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-05 20:05:00,040 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-05 20:05:00,040 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-05 20:05:00,040 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-05 20:05:00,040 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:05:00,041 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-05 20:05:00,041 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 20:05:00,041 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 20:05:00,051 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 20:05:00,051 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 20:05:00,057 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 20:05:00,836 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 20:05:00,846 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 20:05:00,846 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 20:05:05,476 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-05 20:05:46,473 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 20:05:46,481 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:05:46,894 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-05 20:05:46,894 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-05 20:05:46,894 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-05 20:05:46,894 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-05 20:05:46,894 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-05 20:05:46,894 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-05 20:05:46,904 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 20:05:46,904 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:05:46,904 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-05 20:05:46,904 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-05 20:05:46,904 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-05 20:05:46,904 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-05 20:05:47,383 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-05 20:05:47,396 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-05 20:05:47,396 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 20:05:47,436 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-05 20:05:47,446 - __main__ - INFO - 术语检测结果已保存: uploads/format_check/term\20251205_200547_paper1_term.json
+2025-12-05 20:05:47,456 - __main__ - INFO - 数据库记录已更新: file_id=19, term_result_path=uploads/format_check/term\20251205_200547_paper1_term.json
+2025-12-05 20:05:47,456 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:05:47] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 20:08:38,344 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:08:38] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:08:49,612 - __main__ - INFO - 读取术语检测历史结果: file_id=19
+2025-12-05 20:08:49,614 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:08:49] "GET /api/paper-format/term-result/19 HTTP/1.1" 200 -
+2025-12-05 20:08:52,802 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251205_200246_paper1.docx
+2025-12-05 20:08:52,817 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 20:08:52,827 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-05 20:08:52,843 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 20:08:52,846 - services.term_detector - INFO - 预处理完成:
+2025-12-05 20:08:52,846 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-05 20:08:52,846 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-05 20:08:52,846 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 20:08:52,846 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-05 20:08:52,846 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 20:08:52,846 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 20:08:52,856 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-05 20:08:52,856 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-05 20:08:52,856 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-05 20:08:52,879 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 20:08:52,879 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 20:08:52,879 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 20:08:52,879 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 20:08:53,227 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-05 20:08:53,227 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-05 20:08:53,229 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:08:54,706 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-05 20:08:54,707 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-05 20:08:54,708 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-05 20:08:54,710 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-05 20:08:54,710 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-05 20:08:54,711 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-05 20:08:54,711 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-05 20:08:54,712 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-05 20:08:54,712 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-05 20:08:54,713 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-05 20:08:54,713 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-05 20:08:54,714 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-05 20:08:54,715 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-05 20:08:54,716 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-05 20:08:54,716 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-05 20:08:54,717 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-05 20:08:54,717 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-05 20:08:54,718 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-05 20:08:54,718 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-05 20:08:54,719 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-05 20:08:54,719 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-05 20:08:54,720 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-05 20:08:54,720 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-05 20:08:54,720 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-05 20:08:54,721 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-05 20:08:54,721 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-05 20:08:54,722 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-05 20:08:54,722 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-05 20:08:54,723 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-05 20:08:54,723 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-05 20:08:54,723 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-05 20:08:54,724 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-05 20:08:54,724 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-05 20:08:54,724 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-05 20:08:54,725 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-05 20:08:54,725 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-05 20:08:54,726 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-05 20:08:54,727 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-05 20:08:54,729 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-05 20:08:54,729 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-05 20:08:54,739 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-05 20:08:54,739 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-05 20:08:54,739 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-05 20:08:54,739 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-05 20:08:54,739 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-05 20:08:54,739 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:08:54,745 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-05 20:08:54,745 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-05 20:08:54,745 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 20:08:54,745 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-05 20:08:54,745 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 20:08:54,745 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 20:08:54,745 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 20:08:54,745 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 20:08:54,745 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 20:08:54,755 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 20:08:54,855 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 20:08:54,855 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 20:08:54,861 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 20:08:59,898 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-05 20:08:59,898 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 20:08:59,900 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:09:00,353 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-05 20:09:00,354 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-05 20:09:00,354 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-05 20:09:00,357 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-05 20:09:00,358 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-05 20:09:00,359 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-05 20:09:00,359 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-05 20:09:00,369 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-05 20:09:00,373 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-05 20:09:00,373 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 20:09:00,374 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:09:00,376 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-05 20:09:00,377 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-05 20:09:00,377 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-05 20:09:00,379 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-05 20:09:00,882 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-05 20:09:00,897 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-05 20:09:00,898 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 20:09:00,940 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-05 20:09:00,942 - __main__ - INFO - 术语检测结果已保存: uploads/format_check/term\20251205_200900_paper1_term.json
+2025-12-05 20:09:00,947 - __main__ - INFO - 数据库记录已更新: file_id=19, term_result_path=uploads/format_check/term\20251205_200900_paper1_term.json
+2025-12-05 20:09:00,949 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:09:00] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 20:09:25,738 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:09:25] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-12-05 20:09:25,767 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251205_200925_docx
+2025-12-05 20:09:25,787 - __main__ - INFO - 格式审查文件记录已创建: ID=20
+2025-12-05 20:09:25,789 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:09:25] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-12-05 20:09:25,800 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:09:25] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 20:09:27,018 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:09:27] "GET /api/paper-format/term-result/20 HTTP/1.1" 200 -
+2025-12-05 20:09:27,622 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251205_200925_docx
+2025-12-05 20:09:27,669 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 20:09:27,671 - services.term_detector - INFO - 跳过页眉页脚: DOI: 10.19884 / j.1672-5220.202404007...
+2025-12-05 20:09:27,764 - services.term_detector - INFO - 跳过页眉页脚: 14...
+2025-12-05 20:09:27,814 - services.term_detector - INFO - 跳过图题: Fig. 1 Optical photographs of films: ( a) BC; ( b) HA; ( c) B1H1; ( d) B1H1 / GL; ( e) B1H1 / GL@ Dilor...
+2025-12-05 20:09:27,814 - services.term_detector - INFO - 跳过图题: Fig. 2  Thicknesses of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@ Dilor films...
+2025-12-05 20:09:27,814 - services.term_detector - INFO - 跳过图题: Fig. 3 SEM images: ( a) BC film; ( b) HA film; ( c) B1H1 film; ( d) B1H1 / GL film; ( e) B1H1 / GL@ Dilor film; ( f) Dilor...
+2025-12-05 20:09:27,824 - services.term_detector - INFO - 跳过图题: Fig. 4(b), the presence of characteristic absorption peaks related to Dilor in the FTIR spectrum of the B1H1 / GL@ Dilor film confirms that Dilor is indeed loaded within the film. The peak positions of the B1H1 / GL@Dilor film remain unchanged, indicating that the drug does not react chemically with the film-forming agents or plasticizer....
+2025-12-05 20:09:27,834 - services.term_detector - INFO - 跳过图题: Fig. 4 FTIR spectra: ( a) BC, HA and B1H1 films; ( b) B1H1 / GL and B1H1 / GL@ Dilor films, and Dilor...
+2025-12-05 20:09:27,854 - services.term_detector - INFO - 跳过图题: Fig. 5 Thermal properties of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@ Dilor films, and Dilor: ( a) TG curves; ( b) DTG curves...
+2025-12-05 20:09:27,874 - services.term_detector - INFO - 跳过图题: Fig. 6 Drug loading properties: ( a) absorbance curves of Dilor solutions at different mass concentrations; ( b) absorbance-mass concentration standard curve of Dilor; ( c) drug loading efficiency of B1H1 / GL@ Dilor films; ( d) encapsulation rate of B1H1 / GL@ Dilor films...
+2025-12-05 20:09:27,884 - services.term_detector - INFO - 跳过图题: Fig. 7  Drug release properties: ( a) disintegration time of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@120%Dilor films; ( b) drug release rate of B1H1 / GL@120%Dilor film...
+2025-12-05 20:09:27,894 - services.term_detector - INFO - 跳过图题: Fig. 8 Tensile properties of BC, HA, B1H1, B1H1 / GL and B1H1 / GL@ 120% Dilor films: ( a) tensile stress-strain curves; ( b) tensile strengths and elongations at break...
+2025-12-05 20:09:27,904 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 20:09:27,975 - services.term_detector - INFO - 预处理完成:
+2025-12-05 20:09:27,976 - services.term_detector - INFO -   - 总段落数: 225
+2025-12-05 20:09:27,977 - services.term_detector - INFO -   - 保留段落: 110
+2025-12-05 20:09:27,978 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 20:09:27,978 - services.term_detector - INFO -   - 跳过图题: 9
+2025-12-05 20:09:27,979 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 20:09:27,979 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 20:09:27,980 - services.term_detector - INFO - 预处理后文本长度: 25892 字符
+2025-12-05 20:09:27,980 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 25892
+2025-12-05 20:09:28,001 - services.term_detector - INFO - ✓ 提取到 5 个关键词
+2025-12-05 20:09:28,340 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 20:09:28,341 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 20:09:28,341 - services.term_detector - INFO - 使用预处理后的文本，字符数: 25892
+2025-12-05 20:09:28,343 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 20:09:29,153 - services.term_detector - INFO - SpaCy提取到 724 个不同的N-gram短语
+2025-12-05 20:09:29,154 - services.term_detector - INFO - 提取到 724 个原始N-gram
+2025-12-05 20:09:29,158 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:09:32,075 - services.term_detector - INFO - 聚合术语变体: Oral Disintegrating (总频率: 4)
+2025-12-05 20:09:32,075 - services.term_detector - INFO -   - oral disintegrating (2次) -> Oral Disintegrating
+2025-12-05 20:09:32,075 - services.term_detector - INFO - 聚合术语变体: Oral Disintegrating Films (总频率: 4)
+2025-12-05 20:09:32,080 - services.term_detector - INFO -   - oral disintegrating films (2次) -> Oral Disintegrating Films
+2025-12-05 20:09:32,080 - services.term_detector - INFO - 聚合术语变体: disintegrating film (总频率: 10)
+2025-12-05 20:09:32,081 - services.term_detector - INFO -   - Disintegrating Films (2次) -> disintegrating film
+2025-12-05 20:09:32,081 - services.term_detector - INFO -   - disintegrating films (2次) -> disintegrating film
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: drug loading (总频率: 56)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Drug loading (4次) -> drug loading
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: drug loading efficiency (总频率: 44)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Drug loading efficiency (4次) -> drug loading efficiency
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: bacterial cellulose (总频率: 8)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Bacterial cellulose (2次) -> bacterial cellulose
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: hyaluronic acid (总频率: 8)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Hyaluronic acid (2次) -> hyaluronic acid
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: disintegration time (总频率: 26)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Disintegration time (4次) -> disintegration time
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: release rate (总频率: 16)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - releasing rate (2次) -> release rate
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: tensile properties (总频率: 22)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Tensile property (2次) -> tensile properties
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - Tensile properties (2次) -> tensile properties
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: tensile strength (总频率: 18)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - tensile strengths (2次) -> tensile strength
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: decomposition temperature (总频率: 16)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - decomposition temperatures (2次) -> decomposition temperature
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: high drug (总频率: 6)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - higher drug (2次) -> high drug
+2025-12-05 20:09:32,082 - services.term_detector - INFO - 聚合术语变体: large quantities (总频率: 4)
+2025-12-05 20:09:32,082 - services.term_detector - INFO -   - larger quantity (2次) -> large quantities
+2025-12-05 20:09:32,092 - services.term_detector - INFO - 聚合术语变体: forming properties (总频率: 6)
+2025-12-05 20:09:32,092 - services.term_detector - INFO -   - forming property (2次) -> forming properties
+2025-12-05 20:09:32,096 - services.term_detector - INFO - 聚合术语变体: high drug loading (总频率: 4)
+2025-12-05 20:09:32,096 - services.term_detector - INFO -   - higher drug loading (2次) -> high drug loading
+2025-12-05 20:09:32,097 - services.term_detector - INFO - 聚合术语变体: high drug loading efficiency (总频率: 4)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - higher drug loading efficiency (2次) -> high drug loading efficiency
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: above solution (总频率: 4)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - above solutions (2次) -> above solution
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: mass ratio (总频率: 14)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - mass ratios (2次) -> mass ratio
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: chemical structure (总频率: 10)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - Chemical structure (4次) -> chemical structure
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: Thermal stability (总频率: 6)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - thermal stability (2次) -> Thermal stability
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: mass concentration (总频率: 14)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - mass concentrations (2次) -> mass concentration
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: GL@ Dilor films (总频率: 8)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - GL@ Dilor film (4次) -> GL@ Dilor films
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: Dilor film (总频率: 20)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - Dilor films (6次) -> Dilor film
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: GL@Dilor film (总频率: 10)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - GL@Dilor films (4次) -> GL@Dilor film
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: HA film (总频率: 18)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - HA films (2次) -> HA film
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: absorption peak (总频率: 12)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - absorption peaks (2次) -> absorption peak
+2025-12-05 20:09:32,098 - services.term_detector - INFO - 聚合术语变体: highest mass loss (总频率: 4)
+2025-12-05 20:09:32,098 - services.term_detector - INFO -   - high mass loss (2次) -> highest mass loss
+2025-12-05 20:09:32,108 - services.term_detector - INFO - 聚合术语变体: intermolecular force (总频率: 4)
+2025-12-05 20:09:32,108 - services.term_detector - INFO -   - intermolecular forces (2次) -> intermolecular force
+2025-12-05 20:09:32,113 - services.term_detector - INFO - 聚合术语变体: existing ODF (总频率: 4)
+2025-12-05 20:09:32,113 - services.term_detector - INFO -   - existing ODFs (2次) -> existing ODF
+2025-12-05 20:09:32,114 - services.term_detector - INFO - 聚合术语变体: film decrease (总频率: 3)
+2025-12-05 20:09:32,115 - services.term_detector - INFO -   - film decreases (1次) -> film decrease
+2025-12-05 20:09:32,115 - services.term_detector - INFO - 聚合术语变体: strain curves (总频率: 6)
+2025-12-05 20:09:32,115 - services.term_detector - INFO -   - strain curve (2次) -> strain curves
+2025-12-05 20:09:32,115 - services.term_detector - INFO - 聚合前: 724 个术语，聚合后: 690 个术语
+2025-12-05 20:09:32,115 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:09:32,131 - services.term_detector - INFO - C-value计算完成，前10个术语: [('drug loading efficiency', 84.0), ('drug loading', 80.30476670320523), ('loading efficiency', 60.070078777331815), ('disintegration time', 41.209025018750054), ('simulated oral saliva', 40.0), ('tensile properties', 31.69925001442312), ('drug release', 29.718046888521677), ('B1H1 film', 29.321806263341387), ('forming agents', 29.057645846554525), ('Dilor film', 26.416041678685936)]
+2025-12-05 20:09:32,132 - services.term_detector - INFO - 模式过滤完成: 保留 684 个，过滤 6 个
+2025-12-05 20:09:32,132 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 20:09:32,132 - services.term_detector - INFO -   - 单字母组合: 6
+2025-12-05 20:09:32,132 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 20:09:32,132 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 20:09:32,132 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 20:09:32,132 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 20:09:32,132 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 20:09:32,132 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 20:09:32,231 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 20:09:32,231 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 20:09:32,231 - services.term_detector - INFO - 使用预处理后的文本，字符数: 25892
+2025-12-05 20:09:51,367 - services.term_detector - INFO - SciBERT提取到 306 个原始术语
+2025-12-05 20:09:51,368 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 20:09:51,369 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 20:09:52,402 - services.term_detector - INFO - 聚合术语变体: bacterial cellulose (总频率: 5)
+2025-12-05 20:09:52,402 - services.term_detector - INFO -   - Bacterial Cellulose (1次) -> bacterial cellulose
+2025-12-05 20:09:52,404 - services.term_detector - INFO -   - Bacterial cellulose (1次) -> bacterial cellulose
+2025-12-05 20:09:52,405 - services.term_detector - INFO - 聚合术语变体: hyaluronic acid (总频率: 5)
+2025-12-05 20:09:52,406 - services.term_detector - INFO -   - Hyaluronic Acid (1次) -> hyaluronic acid
+2025-12-05 20:09:52,406 - services.term_detector - INFO -   - Hyaluronic acid (1次) -> hyaluronic acid
+2025-12-05 20:09:52,407 - services.term_detector - INFO - 聚合术语变体: disintegrating (总频率: 9)
+2025-12-05 20:09:52,407 - services.term_detector - INFO -   - disintegrates (2次) -> disintegrating
+2025-12-05 20:09:52,408 - services.term_detector - INFO -   - Disintegrating (1次) -> disintegrating
+2025-12-05 20:09:52,408 - services.term_detector - INFO -   - disintegrated (1次) -> disintegrating
+2025-12-05 20:09:52,408 - services.term_detector - INFO -   - disintegrate (1次) -> disintegrating
+2025-12-05 20:09:52,409 - services.term_detector - INFO - 聚合术语变体: Materials (总频率: 3)
+2025-12-05 20:09:52,409 - services.term_detector - INFO -   - material (1次) -> Materials
+2025-12-05 20:09:52,409 - services.term_detector - INFO - 聚合术语变体: ODF (总频率: 39)
+2025-12-05 20:09:52,410 - services.term_detector - INFO -   - ODFs (3次) -> ODF
+2025-12-05 20:09:52,410 - services.term_detector - INFO - 聚合术语变体: drug loading efficiency (总频率: 21)
+2025-12-05 20:09:52,410 - services.term_detector - INFO -   - Drug loading efficiency (2次) -> drug loading efficiency
+2025-12-05 20:09:52,411 - services.term_detector - INFO - 聚合术语变体: glycerol (总频率: 2)
+2025-12-05 20:09:52,411 - services.term_detector - INFO -   - Glycerol (1次) -> glycerol
+2025-12-05 20:09:52,411 - services.term_detector - INFO - 聚合术语变体: diprophylline (总频率: 3)
+2025-12-05 20:09:52,412 - services.term_detector - INFO -   - Diprophylline (1次) -> diprophylline
+2025-12-05 20:09:52,412 - services.term_detector - INFO - 聚合术语变体: elongation (总频率: 11)
+2025-12-05 20:09:52,413 - services.term_detector - INFO -   - elongations (1次) -> elongation
+2025-12-05 20:09:52,413 - services.term_detector - INFO - 聚合术语变体: disintegration (总频率: 16)
+2025-12-05 20:09:52,417 - services.term_detector - INFO -   - Disintegration (2次) -> disintegration
+2025-12-05 20:09:52,417 - services.term_detector - INFO - 聚合术语变体: tensile (总频率: 20)
+2025-12-05 20:09:52,418 - services.term_detector - INFO -   - Tensile (1次) -> tensile
+2025-12-05 20:09:52,418 - services.term_detector - INFO - 聚合术语变体: Chemical (总频率: 6)
+2025-12-05 20:09:52,418 - services.term_detector - INFO -   - chemical (3次) -> Chemical
+2025-12-05 20:09:52,419 - services.term_detector - INFO - 聚合术语变体: thermal stability (总频率: 2)
+2025-12-05 20:09:52,419 - services.term_detector - INFO -   - Thermal stability (1次) -> thermal stability
+2025-12-05 20:09:52,419 - services.term_detector - INFO - 聚合术语变体: sample (总频率: 9)
+2025-12-05 20:09:52,420 - services.term_detector - INFO -   - sampling (1次) -> sample
+2025-12-05 20:09:52,420 - services.term_detector - INFO - 聚合术语变体: curve (总频率: 7)
+2025-12-05 20:09:52,420 - services.term_detector - INFO -   - curves (1次) -> curve
+2025-12-05 20:09:52,421 - services.term_detector - INFO - 聚合术语变体: mass concentration (总频率: 6)
+2025-12-05 20:09:52,421 - services.term_detector - INFO -   - mass concentrations (1次) -> mass concentration
+2025-12-05 20:09:52,422 - services.term_detector - INFO - 聚合术语变体: B1H1 (总频率: 13)
+2025-12-05 20:09:52,422 - services.term_detector - INFO -   - B1H1 / (2次) -> B1H1
+2025-12-05 20:09:52,422 - services.term_detector - INFO - 聚合术语变体: absorption peak (总频率: 6)
+2025-12-05 20:09:52,423 - services.term_detector - INFO -   - absorption peaks (1次) -> absorption peak
+2025-12-05 20:09:52,423 - services.term_detector - INFO - 聚合术语变体: decomposition temperature (总频率: 3)
+2025-12-05 20:09:52,423 - services.term_detector - INFO -   - decomposition temperatures (1次) -> decomposition temperature
+2025-12-05 20:09:52,424 - services.term_detector - INFO - 聚合术语变体: strain curves (总频率: 3)
+2025-12-05 20:09:52,424 - services.term_detector - INFO -   - strain curve (1次) -> strain curves
+2025-12-05 20:09:52,424 - services.term_detector - INFO - 聚合前: 306 个术语，聚合后: 281 个术语
+2025-12-05 20:09:52,425 - services.term_detector - INFO - 聚合后剩余 281 个唯一术语
+2025-12-05 20:09:52,425 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 20:09:52,425 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 20:09:52,428 - services.term_detector - INFO - C-value计算完成，前10个术语: [('ODF', 38.0), ('drug loading efficiency', 38.0), ('drug', 22.81818181818182), ('Dilor', 20.0), ('tensile', 18.0), ('disintegration', 16.0), ('encapsulation rate', 12.679700005769249), ('saliva', 12.0), ('B1H1', 12.0), ('elongation', 11.0)]
+2025-12-05 20:09:52,428 - services.term_detector - INFO - SciBERT最终检测到 12 个科学术语（已聚合变体并计算C-value）
+2025-12-05 20:09:52,429 - services.term_detector - INFO - ✓ SciBERT检测到 12 个科学术语
+2025-12-05 20:09:52,429 - services.term_detector - INFO - ✓ 合并后共 34 个候选术语
+2025-12-05 20:10:00,400 - services.term_detector - INFO - ✓ 检测到 2 个疑似新术语
+2025-12-05 20:10:00,410 - services.term_detector - INFO - ✓ 检测到 3 对相似术语
+2025-12-05 20:10:00,410 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 20:10:00,450 - __main__ - INFO - 术语检测完成: 共检测到 34 个术语
+2025-12-05 20:10:00,460 - __main__ - INFO - 术语检测结果已保存: uploads/format_check/term\20251205_201000_docx_term.json
+2025-12-05 20:10:00,460 - __main__ - INFO - 数据库记录已更新: file_id=20, term_result_path=uploads/format_check/term\20251205_201000_docx_term.json
+2025-12-05 20:10:00,460 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 20:10:00] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 21:44:12,680 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:44:12] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:45:42,799 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-12-05 21:45:43,565 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 21:45:49,111 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 21:45:49,111 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 21:45:49,141 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.5.65:5000
+2025-12-05 21:45:49,141 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-05 21:45:49,141 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 21:45:50,918 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 21:45:50,918 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 21:45:50,938 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 21:45:50,948 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-12-05 21:45:54,102 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:45:54] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:45:56,152 - __main__ - INFO - 已删除格式审查文件记录: ID=20
+2025-12-05 21:45:56,155 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:45:56] "DELETE /api/paper-format/delete/20 HTTP/1.1" 200 -
+2025-12-05 21:45:56,170 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:45:56] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:45:57,449 - __main__ - INFO - 已删除格式审查文件记录: ID=19
+2025-12-05 21:45:57,449 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:45:57] "DELETE /api/paper-format/delete/19 HTTP/1.1" 200 -
+2025-12-05 21:45:57,468 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:45:57] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:46:25,746 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:25] "[31m[1mGET /api/journals HTTP/1.1[0m" 401 -
+2025-12-05 21:46:25,756 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:25] "[31m[1mGET /api/papers HTTP/1.1[0m" 401 -
+2025-12-05 21:46:27,066 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:27] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:46:33,726 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:33] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-12-05 21:46:33,741 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251205_214633_paper1.docx
+2025-12-05 21:46:33,748 - __main__ - INFO - 格式审查文件记录已创建: ID=21
+2025-12-05 21:46:33,749 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:33] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-12-05 21:46:33,761 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:33] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:46:36,068 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:36] "GET /api/paper-format/term-result/21 HTTP/1.1" 200 -
+2025-12-05 21:46:45,806 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-12-05 21:46:45,806 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251205_214633_paper1.docx
+2025-12-05 21:46:45,826 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 21:46:45,836 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-05 21:46:45,846 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 21:46:45,846 - services.term_detector - INFO - 预处理完成:
+2025-12-05 21:46:45,856 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-05 21:46:45,856 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-05 21:46:45,856 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 21:46:45,856 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-05 21:46:45,856 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 21:46:45,856 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 21:46:45,856 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-05 21:46:45,856 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-05 21:46:45,856 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-05 21:46:45,886 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 21:46:45,886 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 21:46:45,886 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 21:46:45,886 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 21:46:46,206 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-05 21:46:46,206 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-05 21:46:46,206 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 21:46:47,406 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-05 21:46:47,406 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-05 21:46:47,406 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-05 21:46:47,416 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-05 21:46:47,416 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 21:46:47,426 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 21:46:47,426 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-05 21:46:47,436 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-05 21:46:47,436 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 21:46:47,446 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-05 21:46:47,446 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-05 21:46:47,446 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 21:46:47,446 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-05 21:46:47,446 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 21:46:47,446 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 21:46:47,446 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 21:46:47,446 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 21:46:47,446 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 21:46:47,446 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 21:46:48,246 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 21:46:48,246 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 21:46:48,246 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 21:46:52,965 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-05 21:46:52,965 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 21:46:52,965 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 21:46:53,536 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-05 21:46:53,536 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-05 21:46:53,536 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-05 21:46:53,541 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-05 21:46:53,542 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-05 21:46:53,542 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-05 21:46:53,542 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-05 21:46:53,543 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-05 21:46:53,543 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-05 21:46:53,543 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-05 21:46:53,544 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-05 21:46:53,544 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-05 21:46:53,544 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-05 21:46:53,545 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-05 21:46:53,545 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-05 21:46:53,545 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-05 21:46:53,546 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-05 21:46:53,547 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-05 21:46:53,547 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-05 21:46:53,548 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-05 21:46:53,548 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-05 21:46:53,548 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-05 21:46:53,549 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-05 21:46:53,549 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 21:46:53,549 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 21:46:53,550 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-05 21:46:53,550 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-05 21:46:53,550 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-05 21:46:53,551 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-05 21:46:53,551 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-05 21:46:53,551 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-05 21:46:53,552 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-05 21:46:53,555 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-05 21:46:53,555 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 21:46:53,556 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 21:46:53,557 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-05 21:46:53,557 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-05 21:46:53,558 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-05 21:46:53,559 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-05 21:46:54,133 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-05 21:46:54,148 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-05 21:46:54,150 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 21:46:54,195 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-05 21:46:54,195 - __main__ - ERROR - 保存术语检测结果失败: normalize() argument 2 must be str, not None
+Traceback (most recent call last):
+  File "C:\Users\31943\Desktop\pro\dhu-journal-app\backend\app.py", line 1523, in detect_terms
+    json_filename = f"{timestamp}_{secure_filename(title)}_term.json"
+                                   ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\31943\Desktop\pro\journal_venv\Lib\site-packages\werkzeug\utils.py", line 219, in secure_filename
+    filename = unicodedata.normalize("NFKD", filename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: normalize() argument 2 must be str, not None
+2025-12-05 21:46:54,199 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:46:54] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 21:48:23,792 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-12-05 21:48:24,945 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 21:48:26,980 - __main__ - INFO - 创建目录: uploads/format_check/term
+2025-12-05 21:48:27,096 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 21:48:27,102 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 21:48:27,115 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 21:48:27,134 - werkzeug - INFO -  * Debugger PIN: 103-944-543
+2025-12-05 21:48:28,932 - __main__ - INFO - 已删除格式审查文件记录: ID=21
+2025-12-05 21:48:28,932 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:28] "DELETE /api/paper-format/delete/21 HTTP/1.1" 200 -
+2025-12-05 21:48:28,950 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:28] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:48:33,206 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:33] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-12-05 21:48:33,221 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251205_214833_paper1.docx
+2025-12-05 21:48:33,230 - __main__ - INFO - 格式审查文件记录已创建: ID=22
+2025-12-05 21:48:33,231 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:33] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-12-05 21:48:33,243 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:33] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:48:34,276 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:34] "GET /api/paper-format/term-result/22 HTTP/1.1" 200 -
+2025-12-05 21:48:44,589 - services.term_detector - INFO - SpaCy English model loaded successfully
+2025-12-05 21:48:44,589 - services.term_detector - INFO - 开始智能术语检测: uploads/format_check/temp\20251205_214833_paper1.docx
+2025-12-05 21:48:44,599 - services.term_detector - INFO - 开始预处理论文，去除无关内容...
+2025-12-05 21:48:44,609 - services.term_detector - INFO - 跳过图题: Fig. 1 shows the acoustic impedance layout of the sound absorbing material:...
+2025-12-05 21:48:44,629 - services.term_detector - INFO - 进入跳过模式: References...
+2025-12-05 21:48:44,639 - services.term_detector - INFO - 预处理完成:
+2025-12-05 21:48:44,639 - services.term_detector - INFO -   - 总段落数: 95
+2025-12-05 21:48:44,639 - services.term_detector - INFO -   - 保留段落: 68
+2025-12-05 21:48:44,639 - services.term_detector - INFO -   - 跳过参考文献: 1
+2025-12-05 21:48:44,639 - services.term_detector - INFO -   - 跳过图题: 1
+2025-12-05 21:48:44,639 - services.term_detector - INFO -   - 跳过表题: 0
+2025-12-05 21:48:44,639 - services.term_detector - INFO -   - 跳过其他: 0
+2025-12-05 21:48:44,639 - services.term_detector - INFO - 预处理后文本长度: 13336 字符
+2025-12-05 21:48:44,639 - services.term_detector - INFO - ✓ 文档预处理完成，正文字符数: 13336
+2025-12-05 21:48:44,639 - services.term_detector - INFO - ✓ 提取到 3 个关键词
+2025-12-05 21:48:44,669 - services.term_detector - INFO - ✓ 提取到 0 个引号术语
+2025-12-05 21:48:44,669 - services.term_detector - INFO - 开始提取多词术语...
+2025-12-05 21:48:44,669 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 21:48:44,669 - services.term_detector - INFO - 开始使用SpaCy提取英文N-gram短语...
+2025-12-05 21:48:45,040 - services.term_detector - INFO - SpaCy提取到 380 个不同的N-gram短语
+2025-12-05 21:48:45,040 - services.term_detector - INFO - 提取到 380 个原始N-gram
+2025-12-05 21:48:45,040 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: sound absorption (总频率: 86)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Sound Absorption (2次) -> sound absorption
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Sound absorption (2次) -> sound absorption
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 64)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Sound Absorption Coefficient (2次) -> sound absorption coefficient
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Sound absorption coefficient (2次) -> sound absorption coefficient
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - sound absorption coefficients (2次) -> sound absorption coefficient
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 78)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Absorption Coefficient (2次) -> absorption coefficient
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Absorption coefficient (2次) -> absorption coefficient
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - absorption coefficients (2次) -> absorption coefficient
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: sound absorbing (总频率: 22)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Sound Absorbing (2次) -> sound absorbing
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 60)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Flow resistance (4次) -> flow resistance
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Flow Resistance (2次) -> flow resistance
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 44)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - sound absorbing materials (20次) -> sound absorbing material
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: absorbing material (总频率: 58)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - absorbing materials (24次) -> absorbing material
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: impedance tube (总频率: 26)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - impedance tubes (4次) -> impedance tube
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: MATLAB cycle (总频率: 10)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - MATLAB cycles (2次) -> MATLAB cycle
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: wave number (总频率: 9)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - wave numbers (3次) -> wave number
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 20)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Acoustic impedance (4次) -> acoustic impedance
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 6)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - fiber materials (2次) -> fiber material
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: imaginary part (总频率: 16)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - imaginary parts (2次) -> imaginary part
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 12)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - Theoretical calculation (2次) -> theoretical calculation
+2025-12-05 21:48:46,617 - services.term_detector - INFO - 聚合术语变体: calculated values (总频率: 14)
+2025-12-05 21:48:46,617 - services.term_detector - INFO -   - calculated value (2次) -> calculated values
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: measured values (总频率: 14)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - measured value (2次) -> measured values
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 10)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - Porous materials (2次) -> porous materials
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: waves propagating (总频率: 3)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - waves propagate (1次) -> waves propagating
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: inverse operations (总频率: 4)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - inverse operation (2次) -> inverse operations
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: experimental measurement (总频率: 14)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - Experimental measurement (4次) -> experimental measurement
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing materials (总频率: 6)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - acoustic absorbing material (2次) -> acoustic absorbing materials
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: standing wave (总频率: 10)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - Standing wave (4次) -> standing wave
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: Standing wave ratio (总频率: 8)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - standing wave ratio (4次) -> Standing wave ratio
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: physical diagram (总频率: 4)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - Physical diagram (2次) -> physical diagram
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: flow chart (总频率: 4)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - Flow chart (2次) -> flow chart
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: different thicknesses (总频率: 16)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - different thickness (2次) -> different thicknesses
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: experimental measured values (总频率: 6)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - experimental measured value (2次) -> experimental measured values
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合术语变体: theoretical calculated values (总频率: 8)
+2025-12-05 21:48:46,627 - services.term_detector - INFO -   - theoretical calculated value (2次) -> theoretical calculated values
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 聚合前: 380 个术语，聚合后: 345 个术语
+2025-12-05 21:48:46,627 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 21:48:46,637 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption', 127.98572193323335), ('sound absorption coefficient', 124.0), ('absorption coefficient', 116.70020190495032), ('flow resistance', 91.5548926887162), ('absorbing material', 84.87474191361791), ('sound absorbing material', 82.85714285714286), ('impedance tube', 41.209025018750054), ('acoustic impedance', 26.94436251225965), ('sound absorption material', 24.0), ('sound absorbing', 23.422223621768197)]
+2025-12-05 21:48:46,637 - services.term_detector - INFO - 模式过滤完成: 保留 345 个，过滤 0 个
+2025-12-05 21:48:46,637 - services.term_detector - INFO -   - 长度不符: 0
+2025-12-05 21:48:46,637 - services.term_detector - INFO -   - 单字母组合: 0
+2025-12-05 21:48:46,637 - services.term_detector - INFO -   - 重复单词: 0
+2025-12-05 21:48:46,637 - services.term_detector - INFO -   - 数字过多: 0
+2025-12-05 21:48:46,637 - services.term_detector - INFO -   - 无效模式: 0
+2025-12-05 21:48:46,637 - services.term_detector - INFO - ✓ 最终提取到 20 个高质量多词术语（已聚合变体）
+2025-12-05 21:48:46,637 - services.term_detector - INFO - ✓ 提取到 20 个多词术语
+2025-12-05 21:48:46,637 - services.term_detector - INFO - Loading SciBERT model...
+2025-12-05 21:48:47,548 - services.term_detector - INFO - SciBERT model loaded successfully
+2025-12-05 21:48:47,548 - services.term_detector - INFO - 开始使用SciBERT模型提取术语...
+2025-12-05 21:48:47,548 - services.term_detector - INFO - 使用预处理后的文本，字符数: 13336
+2025-12-05 21:48:52,770 - services.term_detector - INFO - SciBERT提取到 133 个原始术语
+2025-12-05 21:48:52,770 - services.term_detector - INFO - 开始聚合SciBERT术语变体...
+2025-12-05 21:48:52,771 - services.term_detector - INFO - 开始聚合术语变体...
+2025-12-05 21:48:53,249 - services.term_detector - INFO - 聚合术语变体: sound absorption coefficient (总频率: 28)
+2025-12-05 21:48:53,250 - services.term_detector - INFO -   - Sound Absorption Coefficient (1次) -> sound absorption coefficient
+2025-12-05 21:48:53,251 - services.term_detector - INFO -   - Sound absorption coefficient (1次) -> sound absorption coefficient
+2025-12-05 21:48:53,252 - services.term_detector - INFO -   - sound absorption coefficients (1次) -> sound absorption coefficient
+2025-12-05 21:48:53,254 - services.term_detector - INFO - 聚合术语变体: flow resistance (总频率: 24)
+2025-12-05 21:48:53,254 - services.term_detector - INFO -   - Flow resistance (2次) -> flow resistance
+2025-12-05 21:48:53,254 - services.term_detector - INFO -   - Flow Resistance (1次) -> flow resistance
+2025-12-05 21:48:53,255 - services.term_detector - INFO - 聚合术语变体: frequencies (总频率: 19)
+2025-12-05 21:48:53,255 - services.term_detector - INFO -   - frequency (9次) -> frequencies
+2025-12-05 21:48:53,255 - services.term_detector - INFO - 聚合术语变体: acoustic impedance (总频率: 4)
+2025-12-05 21:48:53,256 - services.term_detector - INFO -   - Acoustic impedance (1次) -> acoustic impedance
+2025-12-05 21:48:53,256 - services.term_detector - INFO - 聚合术语变体: fiber material (总频率: 3)
+2025-12-05 21:48:53,256 - services.term_detector - INFO -   - fiber materials (1次) -> fiber material
+2025-12-05 21:48:53,257 - services.term_detector - INFO - 聚合术语变体: material (总频率: 13)
+2025-12-05 21:48:53,257 - services.term_detector - INFO -   - materials (3次) -> material
+2025-12-05 21:48:53,258 - services.term_detector - INFO - 聚合术语变体: theoretical calculation (总频率: 5)
+2025-12-05 21:48:53,258 - services.term_detector - INFO -   - Theoretical calculation (1次) -> theoretical calculation
+2025-12-05 21:48:53,258 - services.term_detector - INFO - 聚合术语变体: absorption coefficient (总频率: 5)
+2025-12-05 21:48:53,259 - services.term_detector - INFO -   - Absorption coefficient (1次) -> absorption coefficient
+2025-12-05 21:48:53,259 - services.term_detector - INFO - 聚合术语变体: sound absorbing material (总频率: 19)
+2025-12-05 21:48:53,260 - services.term_detector - INFO -   - sound absorbing materials (7次) -> sound absorbing material
+2025-12-05 21:48:53,260 - services.term_detector - INFO - 聚合术语变体: porous materials (总频率: 5)
+2025-12-05 21:48:53,261 - services.term_detector - INFO -   - Porous materials (1次) -> porous materials
+2025-12-05 21:48:53,262 - services.term_detector - INFO - 聚合术语变体: sound waves propagating (总频率: 3)
+2025-12-05 21:48:53,262 - services.term_detector - INFO -   - sound waves propagate (1次) -> sound waves propagating
+2025-12-05 21:48:53,263 - services.term_detector - INFO - 聚合术语变体: flows (总频率: 2)
+2025-12-05 21:48:53,263 - services.term_detector - INFO -   - flow (1次) -> flows
+2025-12-05 21:48:53,263 - services.term_detector - INFO - 聚合术语变体: acoustic absorbing material (总频率: 2)
+2025-12-05 21:48:53,264 - services.term_detector - INFO -   - acoustic absorbing materials (1次) -> acoustic absorbing material
+2025-12-05 21:48:53,264 - services.term_detector - INFO - 聚合术语变体: standing wave ratio (总频率: 3)
+2025-12-05 21:48:53,264 - services.term_detector - INFO -   - Standing wave ratio (1次) -> standing wave ratio
+2025-12-05 21:48:53,265 - services.term_detector - INFO - 聚合前: 133 个术语，聚合后: 116 个术语
+2025-12-05 21:48:53,269 - services.term_detector - INFO - 聚合后剩余 116 个唯一术语
+2025-12-05 21:48:53,269 - services.term_detector - INFO - 开始为SciBERT术语计算C-value分数...
+2025-12-05 21:48:53,270 - services.term_detector - INFO - 开始计算C-value分数...
+2025-12-05 21:48:53,270 - services.term_detector - INFO - C-value计算完成，前10个术语: [('sound absorption coefficient', 54.0), ('flow resistance', 36.13714501644236), ('sound absorbing material', 32.0), ('frequencies', 19.0), ('impedance tube', 17.43458750793272), ('impedance', 12.857142857142858), ('sound absorption material', 10.0), ('material', 8.11111111111111), ('measurement', 8.0), ('wave', 8.0)]
+2025-12-05 21:48:53,271 - services.term_detector - INFO - SciBERT最终检测到 7 个科学术语（已聚合变体并计算C-value）
+2025-12-05 21:48:53,271 - services.term_detector - INFO - ✓ SciBERT检测到 7 个科学术语
+2025-12-05 21:48:53,272 - services.term_detector - INFO - ✓ 合并后共 24 个候选术语
+2025-12-05 21:48:53,762 - services.term_detector - INFO - ✓ 检测到 3 个疑似新术语
+2025-12-05 21:48:53,777 - services.term_detector - INFO - ✓ 检测到 0 对相似术语
+2025-12-05 21:48:53,777 - services.term_detector - INFO - ✓ 术语检测全部完成
+2025-12-05 21:48:53,816 - __main__ - INFO - 术语检测完成: 共检测到 24 个术语
+2025-12-05 21:48:53,817 - __main__ - INFO - 术语检测结果已保存: uploads/format_check/term\20251205_214853_None_term.json
+2025-12-05 21:48:53,826 - __main__ - INFO - 数据库记录已更新: file_id=22, term_result_path=uploads/format_check/term\20251205_214853_None_term.json
+2025-12-05 21:48:53,828 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:48:53] "POST /api/paper-format/detect-terms HTTP/1.1" 200 -
+2025-12-05 21:49:31,177 - __main__ - INFO - 读取术语检测历史结果: file_id=22
+2025-12-05 21:49:31,179 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:49:31] "GET /api/paper-format/term-result/22 HTTP/1.1" 200 -
+2025-12-05 21:53:11,205 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:53:11] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:54:11,870 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2025 21:54:11] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-05 21:54:52,603 - werkzeug - INFO -  * Detected change in 'C:\\Users\\31943\\Desktop\\pro\\dhu-journal-app\\backend\\app.py', reloading
+2025-12-05 21:54:53,367 - werkzeug - INFO -  * Restarting with stat
+2025-12-05 21:54:55,056 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-05 21:54:55,056 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-05 21:54:55,076 - werkzeug - WARNING -  * Debugger is active!
+2025-12-05 21:54:55,086 - werkzeug - INFO -  * Debugger PIN: 103-944-543

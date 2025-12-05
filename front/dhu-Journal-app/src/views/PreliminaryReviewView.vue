@@ -430,8 +430,16 @@
             <el-alert title="请先上传论文文件才能进行术语检测" type="info" :closable="false" />
           </div>
 
+          <!-- 加载历史结果 -->
+          <div v-if="isLoadingTermHistory" class="format-checking">
+            <el-progress :percentage="50" :indeterminate="true" />
+            <p style="text-align: center; margin-top: 10px; color: #666;">
+              正在加载历史检测结果...
+            </p>
+          </div>
+
           <!-- 检测进度 -->
-          <div v-if="isTermDetecting" class="format-checking">
+          <div v-if="isTermDetecting && !isLoadingTermHistory" class="format-checking">
             <el-progress :percentage="termDetectProgress" />
             <p style="text-align: center; margin-top: 10px; color: #666;">
               正在检测论文术语，请稍候...
@@ -873,6 +881,7 @@ const isTermDetecting = ref(false)
 const termDetectProgress = ref(0)
 const termDetectResult = ref<any>(null)
 const activeTermTab = ref('keywords')  // 默认显示keywords
+const isLoadingTermHistory = ref(false)  // 是否正在加载历史术语检测结果
 
 // 可用的检测模块列表
 const availableModules = [
@@ -1347,12 +1356,32 @@ const resetFormatCheck = () => {
 
 // 术语检测相关方法
 // 打开术语检测对话框
-const handleTermDetect = (paper: Paper) => {
+const handleTermDetect = async (paper: Paper) => {
   termDetectPaper.value = paper
   termDetectResult.value = null
   termDetectProgress.value = 0
   isTermDetecting.value = false
   showTermDetectDialog.value = true
+  
+  // 检查是否有历史术语检测结果
+  if (paper.fileId) {
+    try {
+      isLoadingTermHistory.value = true
+      const response = await paperFormatService.getTermResult(paper.fileId)
+      
+      if (response.success && response.has_result && response.data) {
+        // 有历史结果，直接展示
+        termDetectResult.value = { success: true, data: response.data }
+        termDetectProgress.value = 100
+        console.log('加载历史术语检测结果:', response.data)
+        ElMessage.info('已加载历史术语检测结果')
+      }
+    } catch (error) {
+      console.error('加载历史术语检测结果失败:', error)
+    } finally {
+      isLoadingTermHistory.value = false
+    }
+  }
 }
 
 const startTermDetection = async () => {
@@ -1373,8 +1402,8 @@ const startTermDetection = async () => {
       }
     }, 500)
     
-    // 执行术语检测
-    const result = await paperFormatService.detectTerms(paper.tempFilePath)
+    // 执行术语检测（传递file_id以保存结果）
+    const result = await paperFormatService.detectTerms(paper.tempFilePath, paper.fileId, paper.title)
     
     clearInterval(progressInterval)
     termDetectProgress.value = 100
@@ -1383,7 +1412,7 @@ const startTermDetection = async () => {
     termDetectResult.value = result
     
     if (result.success) {
-      ElMessage.success('术语检测完成')
+      ElMessage.success('术语检测完成，结果已保存')
       console.log('术语检测结果:', result)
     } else {
       ElMessage.error('术语检测失败: ' + result.message)
@@ -1402,6 +1431,7 @@ const resetTermDetection = () => {
   termDetectProgress.value = 0
   activeTermTab.value = 'keywords'
   isTermDetecting.value = false
+  isLoadingTermHistory.value = false
 }
 
 const confirmNewTerm = async (newTerm: any, confirmed: boolean) => {
