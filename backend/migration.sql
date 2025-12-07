@@ -24,3 +24,18 @@ PRAGMA table_info(papers);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

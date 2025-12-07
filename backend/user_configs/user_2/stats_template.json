@@ -1,6 +1,6 @@
 {
   "user_id": 2,
-  "template_file_path": "C:\\Users\\57189\\dhu-journal-app\\backend\\user_configs\\user_2\\stats_template_20251115_141229.xlsx",
+  "template_file_path": "C:\\Users\\57189\\dhu-journal-app\\backend\\user_configs\\user_2\\stats_template_20251118_113315.xlsx",
   "column_mapping": [
     {
       "system_key": "manuscript_id",
@@ -9,42 +9,42 @@
       "is_custom": false
     },
     {
+      "system_key": "pdf_pages",
+      "template_header": "页数",
+      "order": 2,
+      "is_custom": false
+    },
+    {
       "system_key": "first_author",
       "template_header": "一作",
-      "order": 2,
+      "order": 3,
       "is_custom": false
     },
     {
       "system_key": "corresponding",
       "template_header": "通讯",
-      "order": 3,
+      "order": 4,
       "is_custom": false
     },
     {
       "system_key": "issue",
       "template_header": "刊期",
-      "order": 4,
+      "order": 5,
       "is_custom": false
     },
     {
-      "system_key": "333",
-      "template_header": "333",
-      "order": 5,
-      "is_custom": true
+      "system_key": "is_dhu",
+      "template_header": "是否东华大学",
+      "order": 6,
+      "is_custom": false
     },
     {
       "system_key": "123",
       "template_header": "123",
-      "order": 6,
-      "is_custom": true
-    },
-    {
-      "system_key": "222",
-      "template_header": "222",
       "order": 7,
       "is_custom": true
     }
   ],
-  "created_at": "2025-11-15T14:12:29.130233",
-  "updated_at": "2025-11-15T14:12:29.130233"
+  "created_at": "2025-11-18T11:33:15.521094",
+  "updated_at": "2025-11-18T11:33:15.521094"
 }

@@ -8,6 +8,7 @@ import redis
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import os
+import json
 import logging
 import secrets
 from sqlalchemy import text
@@ -44,48 +45,8 @@ Session(app)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 app.config['SECURITY_PASSWORD_SALT'] = os.environ.get("SECURITY_PASSWORD_SALT")
 if not app.config['SECRET_KEY'] or not app.config['SECURITY_PASSWORD_SALT']:
-    logging.warning("SECRET_KEY or SECURITY_PASSWORD_SALT not set in environment; sessions/tokens will be unstable. Set them before production.")    # ...existing code...
-    @app.route('/api/login', methods=['POST'])
-    def login():
-        """使用 Flask-Security 的登录接口"""
-        try:
-            data = request.get_json()
-            username = data.get('username')
-            password = data.get('password')
-            
-            if not username or not password:
-                return jsonify({'message': '用户名或密码缺失'}), 400
-            
-            user = user_datastore.find_user(username=username)
-            if not user:
-                return jsonify({'message': '用户不存在'}), 404
-            
-            from flask_security.utils import verify_password, login_user
-            if not verify_password(password, user.password):
-                return jsonify({'message': '用户名或密码错误'}), 401
-            
-            # 登录建立 session（可选）
-            login_user(user)
-            
-            # 生成带过期时间的 token（前端可以使用 Bearer <token>）
-            s = Serializer(app.config['SECRET_KEY'], expires_in=app.config.get('SECURITY_TOKEN_MAX_AGE', 3600))
-            token = s.dumps({'user_id': user.id, 'fs': user.fs_uniquifier}).decode('utf-8')
-            
-            return jsonify({
-                'message': '登录成功',
-                'token': token,
-                'expires_in': app.config.get('SECURITY_TOKEN_MAX_AGE', 3600),
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'role': user.role,
-                    'email': user.email
-                }
-            })
-        except Exception as e:
-            logger.error(f"登录错误: {str(e)}")
-            return jsonify({'message': '服务器错误'}), 500
-    # ...existing code...
+    logging.warning("SECRET_KEY or SECURITY_PASSWORD_SALT not set in environment; sessions/tokens will be unstable. Set them before production.")
+
 app.config['SECURITY_REGISTERABLE'] = False
 app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
 app.config['SECURITY_USERNAME_ENABLE'] = True
@@ -394,7 +355,7 @@ def get_journals():
         logger.error(f"获取期刊列表错误: {str(e)}")
         return jsonify({'message': f'获取期刊列表失败: {str(e)}'}), 500
 
-# 创建期刊 
+# 创建期刊
 @app.route('/api/journals/create', methods=['POST'])
 @auth_required()
 def create_journal():
@@ -513,27 +474,26 @@ def export_tuiwen():
         export_service = ExportService()
         
         # 优先检查用户级别的推文模板配置
-        # user_id = current_user.id
-        # tuiwen_template_service = TuiwenTemplateService()
-        # user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+        user_id = current_user.id
+        result = export_service.export_tuiwen(journal_id, user_id)
         
-        # if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
-        #     # 使用用户模板生成
-        #     logger.info(f"使用用户推文模板生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
-        #     result = export_service.export_tuiwen(journal_id, user_id)
-        # else:
-            # 没有用户模板配置，使用默认格式生成
-        logger.info("用户没有推文模板配置，使用默认格式生成推文")
-        result = export_service.export_tuiwen(journal_id)
-        
-        if result['success']:
+        if result and result.get('success'):
             return jsonify(result)
         else:
-            return jsonify({'message': result['message']}), result['status_code']
+            # 确保错误响应也包含 success 字段
+            error_message = result.get('message', '推文生成失败') if result else '推文生成失败'
+            status_code = result.get('status_code', 500) if result else 500
+            return jsonify({
+                'success': False,
+                'message': error_message
+            }), status_code
     
     except Exception as e:
         logger.error(f"推文生成错误: {str(e)}")
-        return jsonify({'message': f'推文生成失败: {str(e)}'}), 500
+        return jsonify({
+            'success': False,
+            'message': f'推文生成失败: {str(e)}'
+        }), 500
 
 # 获取可用列定义
 @app.route('/api/export/columns', methods=['GET'])
@@ -618,45 +578,6 @@ def upload_template():
         return jsonify({'success': False, 'message': f'上传模板失败: {str(e)}'}), 500
 
 # 上传推文模板文件（亦改为用户配置目录）
-@app.route('/api/upload/tuiwen-format', methods=['POST'])
-def upload_tuiwen_template():
-    """上传Word推文模板文件"""
-    try:
-        if 'file' not in request.files:
-            return jsonify({'success': False, 'message': '没有上传文件'}), 400
-
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'success': False, 'message': '文件名为空'}), 400
-
-        # 检查文件类型
-        if not file.filename.endswith(('.docx', '.doc')):
-            return jsonify({'success': False, 'message': '只支持Word文件（.docx, .doc）'}), 400
-
-        # 保存到用户配置目录
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        try:
-            uid = getattr(current_user, 'id', None)
-        except Exception:
-            uid = None
-        uid_str = str(uid) if uid else 'anon'
-        safe_name = secure_filename(file.filename)
-        user_dir = os.path.join(app.config['USER_CONFIG_FOLDER'], f'user_{uid_str}')
-        os.makedirs(user_dir, exist_ok=True)
-        temp_filename = f"tuiwen_user_{uid_str}_{timestamp}_{safe_name}"
-        temp_path = os.path.join(user_dir, temp_filename)
-        file.save(temp_path)
-
-        return jsonify({
-            'success': True,
-            'message': '推文模板上传成功',
-            'template_file_path': temp_path
-        })
-
-    except Exception as e:
-        logger.error(f"上传推文模板错误: {str(e)}")
-        return jsonify({'success': False, 'message': f'上传模板失败: {str(e)}'}), 500
-
 # 保存用户模板配置
 @app.route('/api/user/template', methods=['PUT'])
 @auth_required()
@@ -664,7 +585,6 @@ def save_user_template():
     """保存用户模板配置"""
     try:
         data = request.get_json()
-        print(data)
         template_file_path = data.get('template_file_path')
         column_mapping = data.get('column_mapping', [])
         
@@ -735,6 +655,22 @@ def get_system_fields():
         return jsonify({'success': False, 'message': f'获取系统字段失败: {str(e)}'}), 500
 
 
+@app.route('/api/user/template', methods=['DELETE'])
+@auth_required()
+def delete_user_template():
+    """删除当前用户的统计表模板配置"""
+    try:
+        user_id = current_user.id
+        config_service = TemplateConfigService()
+        result = config_service.delete_user_config(user_id)
+
+        status_code = 200 if result.get('success') else 500
+        return jsonify(result), status_code
+    except Exception as e:
+        logger.error(f"删除用户模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'删除用户模板配置失败: {str(e)}'}), 500
+
+
 # 保存用户推文模板配置
 @app.route('/api/user/tuiwen-template', methods=['POST'])
 @auth_required()
@@ -743,13 +679,24 @@ def save_user_tuiwen_template():
     try:
         data = request.get_json()
         fields = data.get('fields', [])
+        template_file_path = data.get('template_file_path')  # 获取模板文件路径
+        image_fields = data.get('image_fields', [])
+        paper_file_path = data.get('paper_file_path')  # 获取论文文件路径
+        paper_cache_path = data.get('paper_cache_path')  # 论文解析缓存路径
         
         if not fields:
             return jsonify({'success': False, 'message': '字段配置不能为空'}), 400
         
         user_id = current_user.id
         config_service = TuiwenTemplateService()
-        result = config_service.save_user_template_config(user_id, fields)
+        result = config_service.save_user_template_config(
+            user_id,
+            fields,
+            template_file_path=template_file_path,
+            image_fields=image_fields,
+            paper_file_path=paper_file_path,
+            paper_cache_path=paper_cache_path
+        )
         
         if result['success']:
             return jsonify(result)
@@ -781,6 +728,10 @@ def get_user_tuiwen_template():
             'success': True,
             'has_template': True,
             'fields': config.get('fields', []),
+            'image_fields': config.get('image_fields', []),
+            'template_file_path': config.get('template_file_path'),  # 返回模板文件路径
+            'paper_file_path': config.get('paper_file_path'),  # 返回论文文件路径
+            'paper_cache_path': config.get('paper_cache_path'),  # 返回论文缓存路径
             'created_at': config.get('created_at'),
             'updated_at': config.get('updated_at')
         })
@@ -788,6 +739,294 @@ def get_user_tuiwen_template():
     except Exception as e:
         logger.error(f"获取用户推文模板配置错误: {str(e)}")
         return jsonify({'success': False, 'message': f'获取用户推文模板配置失败: {str(e)}'}), 500
+
+# 删除用户推文模板配置
+@app.route('/api/user/tuiwen-template', methods=['DELETE'])
+@auth_required()
+def delete_user_tuiwen_template():
+    """删除用户推文模板配置"""
+    try:
+        if not current_user or not hasattr(current_user, 'id'):
+            return jsonify({'success': False, 'message': '用户未登录'}), 401
+        
+        user_id = current_user.id
+        config_service = TuiwenTemplateService()
+        result = config_service.delete_user_config(user_id)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    
+    except Exception as e:
+        logger.error(f"删除用户推文模板配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'删除用户推文模板配置失败: {str(e)}'}), 500
+
+# 获取默认推文字段配置
+@app.route('/api/default/tuiwen-fields', methods=['GET'])
+@auth_required()
+def get_default_tuiwen_fields():
+    """获取默认推文字段配置"""
+    try:
+        from services.document_generator import load_default_tuiwen_fields_config
+        fields = load_default_tuiwen_fields_config()
+        return jsonify({
+            'success': True,
+            'fields': fields
+        })
+    except Exception as e:
+        logger.error(f"获取默认推文字段配置错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取默认推文字段配置失败: {str(e)}'}), 500
+
+# 上传并识别推文 Word 模板
+@app.route('/api/upload/tuiwen-template', methods=['POST'])
+@auth_required()
+def upload_tuiwen_template():
+    """上传 Word 模板和论文文件并识别字段"""
+    try:
+        if 'template_file' not in request.files:
+            return jsonify({'success': False, 'message': '没有上传模板文件'}), 400
+        
+        if 'paper_file' not in request.files:
+            return jsonify({'success': False, 'message': '没有上传论文文件'}), 400
+        
+        template_file = request.files['template_file']
+        paper_file = request.files['paper_file']
+        
+        if template_file.filename == '':
+            return jsonify({'success': False, 'message': '模板文件名为空'}), 400
+        
+        if paper_file.filename == '':
+            return jsonify({'success': False, 'message': '论文文件名为空'}), 400
+        
+        # 检查模板文件类型
+        if not template_file.filename.endswith(('.docx', '.doc')):
+            return jsonify({'success': False, 'message': '模板文件只支持 .docx 或 .doc 格式'}), 400
+        
+        # 检查论文文件类型（目前仅支持PDF）
+        if not paper_file.filename.endswith('.pdf'):
+            return jsonify({'success': False, 'message': '论文文件目前仅支持 .pdf 格式，请将Word文件转换为PDF后上传'}), 400
+        
+        # 保存文件
+        import tempfile
+        import os
+        from werkzeug.utils import secure_filename
+        
+        user_id = current_user.id
+        temp_dir = os.path.join('user_configs', f'user_{user_id}', 'templates')
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        # 保存模板文件
+        template_filename = secure_filename(template_file.filename)
+        template_path = os.path.join(temp_dir, f"tuiwen_template_{timestamp}_{template_filename}")
+        template_file.save(template_path)
+        
+        # 保存论文文件
+        paper_filename = secure_filename(paper_file.filename)
+        paper_path = os.path.join(temp_dir, f"paper_{timestamp}_{paper_filename}")
+        paper_file.save(paper_path)
+
+        # 解析论文数据（用于智能字段匹配）并缓存为 JSON
+        paper_data = None
+        paper_cache_path = None
+        try:
+            from services.pdf_parser import parse_pdf_to_papers
+            temp_output_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
+            os.makedirs(temp_output_dir, exist_ok=True)
+            
+            papers_data = parse_pdf_to_papers(paper_path, journal_id=0, output_dir=temp_output_dir)
+            if papers_data and len(papers_data) > 0:
+                paper_data = papers_data[0]
+                # 生成citation（如果不存在）
+                if 'citation' not in paper_data or not paper_data.get('citation'):
+                    from services.document_generator import generate_citation
+                    try:
+                        paper_data['citation'] = generate_citation(paper_data)
+                    except Exception as e:
+                        logger.warning(f"生成 citation 失败: {str(e)}")
+                        paper_data['citation'] = ''
+                logger.info("✅ 已解析论文数据，用于智能字段匹配")
+
+                # 缓存到 configs 目录
+                paper_cache_dir = os.path.join('configs', 'paper_cache')
+                os.makedirs(paper_cache_dir, exist_ok=True)
+                paper_cache_path = os.path.join(paper_cache_dir, f"user_{user_id}_paper_data.json")
+                with open(paper_cache_path, 'w', encoding='utf-8') as cache_file:
+                    json.dump(paper_data, cache_file, ensure_ascii=False, indent=2)
+                logger.info(f"✅ 已缓存论文数据: {paper_cache_path}")
+        except Exception as e:
+            logger.warning(f"解析论文数据失败（不影响模板识别）: {str(e)}")
+            paper_data = None
+            paper_cache_path = None
+        
+        # 分析模板（传入论文数据用于智能匹配）
+        from services.tuiwen_template_analyzer import analyze_word_template
+        result = analyze_word_template(template_path, paper_data=paper_data)
+        
+        if result['success']:
+            # 保存模板文件路径和论文文件路径
+            result['template_file_path'] = template_path
+            result['paper_file_path'] = paper_path
+            if paper_cache_path:
+                result['paper_cache_path'] = paper_cache_path
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    
+    except Exception as e:
+        logger.error(f"上传推文模板错误: {str(e)}", exc_info=True)
+        import traceback
+        error_detail = traceback.format_exc()
+        logger.error(f"详细错误信息: {error_detail}")
+        return jsonify({'success': False, 'message': f'上传模板失败: {str(e)}'}), 500
+
+# 生成推文预览
+@app.route('/api/tuiwen/preview', methods=['POST'])
+@auth_required()
+def generate_tuiwen_preview():
+    """根据字段配置生成推文预览 - 使用用户上传的论文"""
+    try:
+        data = request.get_json()
+        fields_config = data.get('fields', [])
+        
+        if not fields_config:
+            return jsonify({'success': False, 'message': '字段配置不能为空'}), 400
+        
+        # 获取用户配置，优先使用用户上传的论文
+        user_id = current_user.id
+        config_service = TuiwenTemplateService()
+        user_config = config_service.load_user_config(user_id)
+        
+        paper_file_path = None
+        paper_cache_path = None
+        if user_config:
+            paper_file_path = user_config.get('paper_file_path')
+            paper_cache_path = user_config.get('paper_cache_path')
+            if paper_file_path:
+                logger.info(f"使用用户上传的论文文件: {paper_file_path}")
+            if paper_cache_path:
+                logger.info(f"使用论文数据缓存: {paper_cache_path}")
+        
+        if not paper_file_path or not os.path.exists(paper_file_path):
+            return jsonify({
+                'success': False,
+                'message': '请先上传论文文件'
+            }), 400
+        
+        source_data = None
+        
+        # 优先从缓存加载
+        if paper_cache_path and os.path.exists(paper_cache_path):
+            try:
+                with open(paper_cache_path, 'r', encoding='utf-8') as cache_file:
+                    source_data = json.load(cache_file)
+                logger.info("✅ 已从缓存加载论文数据")
+            except Exception as e:
+                logger.warning(f"读取论文缓存失败，将重新解析PDF: {str(e)}")
+                source_data = None
+        
+        # 如果缓存不存在或读取失败，再解析PDF
+        if source_data is None:
+            try:
+                from services.pdf_parser import parse_pdf_to_papers
+                temp_output_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
+                os.makedirs(temp_output_dir, exist_ok=True)
+                
+                if paper_file_path.endswith('.pdf'):
+                    papers_data = parse_pdf_to_papers(paper_file_path, journal_id=0, output_dir=temp_output_dir)
+                else:
+                    return jsonify({
+                        'success': False,
+                        'message': '目前仅支持PDF格式的论文文件，请将Word文件转换为PDF后上传'
+                    }), 400
+                
+                if not papers_data:
+                    return jsonify({
+                        'success': False,
+                        'message': '无法从论文文件中提取数据'
+                    }), 400
+                
+                source_data = papers_data[0] if papers_data else {}
+                
+                # 生成citation（确保引用信息字段存在）
+                if 'citation' not in source_data or not source_data.get('citation'):
+                    from services.document_generator import generate_citation
+                    try:
+                        source_data['citation'] = generate_citation(source_data)
+                        logger.info("✅ 已生成citation引用信息")
+                    except Exception as e:
+                        logger.warning(f"生成 citation 失败: {str(e)}")
+                        source_data['citation'] = ''
+                
+                # 确保所有需要的字段都存在
+                if 'first_local_path' in source_data and source_data['first_local_path']:
+                    source_data['first_image_url'] = source_data['first_local_path']
+                if 'second_local_path' in source_data and source_data['second_local_path']:
+                    source_data['second_image_url'] = source_data['second_local_path']
+
+                # 保存到缓存
+                paper_cache_dir = os.path.join('configs', 'paper_cache')
+                os.makedirs(paper_cache_dir, exist_ok=True)
+                if not paper_cache_path:
+                    paper_cache_path = os.path.join(paper_cache_dir, f"user_{user_id}_paper_data.json")
+                with open(paper_cache_path, 'w', encoding='utf-8') as cache_file:
+                    json.dump(source_data, cache_file, ensure_ascii=False, indent=2)
+                logger.info(f"✅ 已更新论文数据缓存: {paper_cache_path}")
+
+                # 更新配置中的缓存路径
+                if user_config:
+                    config_service.save_user_template_config(
+                        user_id,
+                        user_config.get('fields', []),
+                        template_file_path=user_config.get('template_file_path'),
+                        image_fields=user_config.get('image_fields', []),
+                        paper_file_path=user_config.get('paper_file_path'),
+                        paper_cache_path=paper_cache_path
+                    )
+            except Exception as e:
+                logger.error(f"解析论文文件失败: {str(e)}")
+                return jsonify({
+                    'success': False,
+                    'message': f'解析论文文件失败: {str(e)}'
+                }), 400
+        
+        # 确保citation字段存在（双重检查）
+        if 'citation' not in source_data or not source_data.get('citation'):
+            from services.document_generator import generate_citation
+            try:
+                source_data['citation'] = generate_citation(source_data)
+                logger.info("✅ 已生成citation引用信息（补充生成）")
+            except Exception as e:
+                logger.warning(f"生成 citation 失败: {str(e)}")
+                source_data['citation'] = ''
+        
+        # 生成预览Word文档和文本预览数据
+        try:
+            from services.document_generator import generate_tuiwen_preview_from_config
+            preview_path, text_preview_data = generate_tuiwen_preview_from_config(
+                fields_config, source_data, return_text_preview=True
+            )
+            
+            # 返回预览文件路径和文本预览数据
+            preview_download_url = f'/api/download/preview/{os.path.basename(preview_path)}'
+            return jsonify({
+                'success': True,
+                'preview_file_path': preview_path,
+                'preview_download_url': preview_download_url,
+                'preview_text': text_preview_data
+            })
+        except Exception as e:
+            logger.error(f"生成预览失败: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'生成预览失败: {str(e)}'
+            }), 500
+    
+    except Exception as e:
+        logger.error(f"生成推文预览错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'生成推文预览失败: {str(e)}'}), 500
 
 # 生成统计表
 @app.route('/api/export/excel', methods=['POST'])
@@ -835,7 +1074,7 @@ def get_papers():
     try:
         journal_id = request.args.get('journalId', type=int)
         paper_service = PaperService()
-        result = paper_service.get_papers(journal_id, current_user)
+        result = paper_service.get_papers(journal_id)
         
         if result['success']:
             return jsonify(result['data'])
@@ -858,7 +1097,7 @@ def create_paper():
         # 手动获取管理员用户（临时解决方案）
         # from models import User
         # admin_user = User.query.filter_by(username='admin').first()
-        result = paper_service.create_paper(data, current_user)
+        result = paper_service.create_paper(data)
         
         if result['success']:
             return jsonify(result)
@@ -878,7 +1117,7 @@ def update_paper(paper_id):
     try:
         data = request.get_json()
         paper_service = PaperService()
-        result = paper_service.update_paper(paper_id, data, current_user)
+        result = paper_service.update_paper(paper_id, data)
         
         if result['success']:
             return jsonify(result)
@@ -897,7 +1136,7 @@ def delete_paper(paper_id):
     """删除论文"""
     try:
         paper_service = PaperService()
-        result = paper_service.delete_paper(paper_id, current_user)
+        result = paper_service.delete_paper(paper_id)
         
         if result['success']:
             return jsonify(result)
@@ -949,6 +1188,34 @@ def download_file(filename):
 
     except Exception as e:
         logger.error(f"文件下载错误: {str(e)}")
+        return jsonify({'message': f'文件下载失败: {str(e)}'}), 500
+
+@app.route('/api/download/preview/<filename>')
+@auth_required()
+def download_preview_file(filename):
+    """预览文件下载接口（从temp_images目录）"""
+    try:
+        import glob
+        from pathlib import Path
+        
+        # 在temp_images目录下查找文件（支持子目录）
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        temp_images_dir = os.path.join(base_dir, 'temp_images')
+        
+        # 查找文件（可能在子目录中）
+        pattern = os.path.join(temp_images_dir, '**', filename)
+        matches = glob.glob(pattern, recursive=True)
+        
+        if matches:
+            file_path = matches[0]
+            logger.info(f"找到预览文件: {file_path}")
+            return send_file(file_path, as_attachment=True, download_name=filename)
+        else:
+            logger.error(f"预览文件不存在: {filename}")
+            return jsonify({'message': '文件不存在'}), 404
+
+    except Exception as e:
+        logger.error(f"预览文件下载错误: {str(e)}")
         return jsonify({'message': f'文件下载失败: {str(e)}'}), 500
 
 # 文件预览 - 需要认证

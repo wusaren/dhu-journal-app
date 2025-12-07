@@ -3,7 +3,7 @@
 从 app.py 中提取导出相关业务逻辑，保持完全兼容
 """
 from models import Journal, Paper
-from services.document_generator import generate_toc_docx, generate_excel_stats, generate_excel_stats_from_template, generate_tuiwen_content
+from services.document_generator import generate_toc_docx, generate_excel_stats, generate_excel_stats_from_template, generate_tuiwen_content, generate_tuiwen_from_fields
 from typing import List, Dict
 import os
 import logging
@@ -45,11 +45,14 @@ class ExportService:
             logger.error(f"目录生成错误: {str(e)}")
             return {'success': False, 'message': f'目录生成失败: {str(e)}', 'status_code': 500}
     
-    # def export_tuiwen(self, journal_id, user_id=None):
-    def export_tuiwen(self, journal_id):
+    def export_tuiwen(self, journal_id, user_id=None):
         """
         生成推文 - 支持用户级别的推文模板配置
         返回格式与原来完全兼容
+        
+        Args:
+            journal_id: 期刊ID
+            user_id: 用户ID（可选），如果提供则检查用户模板配置
         """
         try:
             # 获取期刊信息
@@ -65,22 +68,22 @@ class ExportService:
                 return {'success': False, 'message': '该期刊没有论文数据，无法生成推文', 'status_code': 400}
             
             # 检查用户级别的推文模板配置
-            # if user_id:
-            #     from services.tuiwen_template_service import TuiwenTemplateService
-            #     tuiwen_template_service = TuiwenTemplateService()
-            #     user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
+            if user_id:
+                from services.tuiwen_template_service import TuiwenTemplateService
+                tuiwen_template_service = TuiwenTemplateService()
+                user_tuiwen_template_config = tuiwen_template_service.load_user_config(user_id)
                 
-            #     if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
-            #         # 使用用户字段配置生成推文
-            #         logger.info(f"使用用户推文字段配置生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
-            #         from services.document_generator import generate_tuiwen_from_fields
-            #         output_path = generate_tuiwen_from_fields(papers, journal, user_tuiwen_template_config['fields'])
-            #         return {
-            #             'success': True,
-            #             'message': '推文生成成功（使用用户模板）',
-            #             'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
-            #             'filePath': output_path
-            #         }
+                if user_tuiwen_template_config and user_tuiwen_template_config.get('fields'):
+                    # 优先使用用户字段配置生成推文（根据JSON配置的字段顺序和格式）
+                    # 模板文件仅用于预览，不用于最终生成
+                    logger.info(f"使用用户推文字段配置生成: {len(user_tuiwen_template_config.get('fields', []))} 个字段")
+                    output_path = generate_tuiwen_from_fields(papers, journal, user_tuiwen_template_config['fields'])
+                    return {
+                        'success': True,
+                        'message': '推文生成成功（使用用户字段配置）',
+                        'downloadUrl': f'/api/download/{os.path.basename(output_path)}',
+                        'filePath': output_path
+                    }
             
             # 没有用户模板配置，使用默认格式生成推文
             logger.info("用户没有推文模板配置，使用默认格式生成推文")

@@ -36,7 +36,19 @@ export interface UserTuiwenTemplateConfig {
     field: string
     label: string
     required: boolean
+    order?: number
+    prefix?: string
+    format?: { font_name: string; font_size: number; font_color: string }
+    prefix_format?: { font_name: string; font_size: number; font_color: string }
   }>
+  image_fields?: Array<{
+    template_field: string
+    selected_type: 'first_image' | 'second_image'
+    location?: string
+  }>
+  template_file_path?: string  // 模板文件路径
+  paper_file_path?: string  // 论文文件路径
+  paper_cache_path?: string  // 论文缓存路径
   created_at?: string
   updated_at?: string
 }
@@ -67,21 +79,7 @@ export const formatService = {
     // return response.data
   },
 
-  /**
-   * 上传推文格式文件
-   * @param file 推文格式文件
-   * @returns 上传结果
-   */
-  async uploadWeiboFormat(file: File): Promise<UploadResponse> {
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    const response = await apiClient.post('/upload/tuiwen-format', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    
-    return response.data
-  },
+
   /**
    * 保存用户统计表模板配置
    * @param templateConfig 模板配置
@@ -120,8 +118,8 @@ export const formatService = {
    * @returns 保存结果
    */
   async saveUserTuiwenTemplate(tuiwenConfig: UserTuiwenTemplateConfig): Promise<UploadResponse> {
-    const response = await apiClient.post('/user/tuiwen-template', tuiwenConfig)
-    return response.data
+    // axios 拦截器已经返回了 response.data，所以这里直接返回 response
+    return await apiClient.post('/user/tuiwen-template', tuiwenConfig) as any
   },
 
   /**
@@ -136,11 +134,28 @@ export const formatService = {
       label: string
       required: boolean
     }>
+    image_fields?: Array<{
+      template_field: string
+      selected_type: 'first_image' | 'second_image'
+      location?: string
+    }>
+    template_file_path?: string
+    paper_file_path?: string
+    paper_cache_path?: string
     created_at?: string
     updated_at?: string
   }> {
     const response = await apiClient.get('/user/tuiwen-template')
     return response as any
+  },
+
+  /**
+   * 删除用户推文模板配置
+   * @returns 删除结果
+   */
+  async deleteUserTuiwenTemplate(): Promise<UploadResponse> {
+    // axios 拦截器已经返回了 response.data，所以这里直接返回 response
+    return await apiClient.delete('/user/tuiwen-template') as any
   },
 
   /**
@@ -160,10 +175,7 @@ export const formatService = {
    * @returns 删除结果
    */
   async deleteUserTemplate(): Promise<UploadResponse> {
-    // 由于后端没有专门的用户级别删除接口，我们使用一个虚拟的journal_id
-    // 或者可以创建一个新的后端接口来处理用户级别的删除
-    const response = await apiClient.delete('/journal/0/template')
-    return response.data
+    return await apiClient.delete('/user/template')
   },
 
   /**
@@ -181,10 +193,10 @@ export const formatService = {
     template_file_path?: string
   }> {
     // 由于后端没有专门的用户级别获取表头接口，我们使用用户模板配置接口
-    const response = await apiClient.get('/user/template')
-    const data = response.data
+    // axios 拦截器已经返回了 response.data，所以这里直接使用 response
+    const data = await apiClient.get('/user/template') as any
     
-    if (data.success && data.has_template) {
+    if (data && data.success && data.has_template) {
       return {
         success: true,
         has_template: true,
@@ -199,6 +211,87 @@ export const formatService = {
         template_file_path: undefined
       }
     }
+  },
+
+  /**
+   * 获取默认推文字段配置
+   * @returns 默认推文字段列表
+   */
+  async getDefaultTuiwenFields(): Promise<{
+    success: boolean
+    fields: Array<{
+      field: string
+      label: string
+      required: boolean
+      order: number
+    }>
+  }> {
+    const response = await apiClient.get('/default/tuiwen-fields')
+    return response as any
+  },
+
+  /**
+   * 上传并识别推文 Word 模板和论文文件
+   * @param templateFile Word 模板文件
+   * @param paperFile 论文文件（PDF）
+   * @returns 识别结果
+   */
+  async uploadTuiwenTemplate(templateFile: File, paperFile: File): Promise<{
+    success: boolean
+    fields?: Array<{
+      field: string
+      label: string
+      type: 'placeholder' | 'text_label'
+      location: string
+      format: { font_name: string; font_size: number; font_color: string }
+    }>
+    image_fields?: Array<{
+      location: string
+      detected_type: 'first_image' | 'second_image' | null
+    }>
+    template_file_path?: string
+    paper_file_path?: string
+    paper_cache_path?: string
+    message?: string
+  }> {
+    const formData = new FormData()
+    formData.append('template_file', templateFile)
+    formData.append('paper_file', paperFile)
+    const response = await apiClient.post('/upload/tuiwen-template', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response as any
+  },
+
+  /**
+   * 生成推文预览
+   * @param fieldsConfig 字段配置列表
+   * @returns 预览结果
+   */
+  async generateTuiwenPreview(fieldsConfig: Array<{
+    field: string
+    label: string
+    order: number
+    prefix?: string
+    format?: { font_name: string; font_size: number; font_color: string }
+    prefix_format?: { font_name: string; font_size: number; font_color: string }
+  }>): Promise<{
+    success: boolean
+    preview_file_path?: string
+    preview_download_url?: string
+    preview_text?: Array<{
+      prefix: string
+      prefix_style: { font_name: string; font_size: number; font_color: string }
+      content: string
+      content_style: { font_name: string; font_size: number; font_color: string; font_style?: string }
+      is_citation?: boolean
+    }>
+    message?: string
+  }> {
+    const response = await apiClient.post('/tuiwen/preview', { fields: fieldsConfig })
+    return response as any
   },
 
 }

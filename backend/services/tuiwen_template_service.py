@@ -29,7 +29,15 @@ class TuiwenTemplateService:
         user_dir = self.get_user_config_dir(user_id)
         return user_dir / "weibo_template.json"
     
-    def save_user_template_config(self, user_id: int, fields: List[Dict]) -> Dict:
+    def save_user_template_config(
+        self,
+        user_id: int,
+        fields: List[Dict],
+        template_file_path: Optional[str] = None,
+        image_fields: Optional[List[Dict]] = None,
+        paper_file_path: Optional[str] = None,
+        paper_cache_path: Optional[str] = None
+    ) -> Dict:
         """
         保存用户推文模板字段配置到 JSON 文件
         
@@ -43,11 +51,23 @@ class TuiwenTemplateService:
         try:
             config_file = self.get_config_file_path(user_id)
             
+            existing_config: Optional[Dict] = None
+            if config_file.exists():
+                try:
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        existing_config = json.load(f)
+                except Exception:
+                    existing_config = None
+
             # 准备保存的数据
             config_data = {
                 'user_id': user_id,
                 'fields': fields,
-                'created_at': datetime.now().isoformat(),
+                'image_fields': image_fields if image_fields is not None else existing_config.get('image_fields') if existing_config else [],
+                'template_file_path': template_file_path or (existing_config.get('template_file_path') if existing_config else None),
+                'paper_file_path': paper_file_path or (existing_config.get('paper_file_path') if existing_config else None),
+                'paper_cache_path': paper_cache_path or (existing_config.get('paper_cache_path') if existing_config else None),
+                'created_at': existing_config.get('created_at') if existing_config else datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat()
             }
             
@@ -119,10 +139,33 @@ class TuiwenTemplateService:
                     'success': False,
                     'message': '配置文件不存在'
                 }
-            
+
+            # 读取配置以删除相关文件
+            related_files = []
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                    related_files.extend([
+                        config_data.get('template_file_path'),
+                        config_data.get('paper_file_path'),
+                        config_data.get('paper_cache_path')
+                    ])
+            except Exception as e:
+                logger.warning(f"读取配置文件失败，无法删除相关文件: {str(e)}")
+
             # 删除配置文件
             config_file.unlink()
             logger.info(f"已删除用户 {user_id} 的推文模板配置文件: {config_file}")
+
+            # 删除相关文件
+            for file_path in related_files:
+                if file_path and os.path.exists(file_path):
+                    try:
+                        os.remove(file_path)
+                        logger.info(f"已删除关联文件: {file_path}")
+                    except Exception as e:
+                        logger.warning(f"删除文件失败 {file_path}: {str(e)}")
+
             return {
                 'success': True,
                 'message': '推文模板配置删除成功'

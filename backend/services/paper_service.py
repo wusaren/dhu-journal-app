@@ -1,10 +1,8 @@
 """
 论文服务
 从 app.py 中提取论文相关业务逻辑，保持完全兼容
-集成数据层权限控制
 """
 from models import Paper, Journal, db
-from services.permission_service import PermissionService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,17 +10,21 @@ logger = logging.getLogger(__name__)
 class PaperService:
     """论文服务类"""
     
-    def get_papers(self, journal_id=None, user=None):
+    def get_papers(self, journal_id=None):
         """
-        获取论文列表 - 集成数据层权限控制
+        获取论文列表 - 从 app.py 中提取，保持完全兼容
         返回格式与原来完全一致
         """
         try:
-            # 使用权限服务获取可访问的论文
-            accessible_papers = PermissionService.get_accessible_papers(user, journal_id)
+            query = Paper.query
+            if journal_id:
+                query = query.filter_by(journal_id=journal_id)
+            
+            # 按页码排序
+            papers = query.order_by(Paper.page_start).all()
             paper_list = []
             
-            for paper in accessible_papers:
+            for paper in papers:
                 paper_list.append({
                     'id': paper.id,
                     'journal_id': paper.journal_id,
@@ -35,8 +37,6 @@ class PaperService:
                     'page_end': paper.page_end,
                     'pdf_pages': paper.pdf_pages,
                     'manuscript_id': paper.manuscript_id,
-                    'chinese_title': paper.chinese_title,
-                    'chinese_authors': paper.chinese_authors,
                     'issue': paper.issue,
                     'is_dhu': paper.is_dhu,
                     'abstract': paper.abstract,
@@ -51,9 +51,9 @@ class PaperService:
             logger.error(f"获取论文列表错误: {str(e)}")
             return {'success': False, 'message': f'获取论文列表失败: {str(e)}', 'status_code': 500}
     
-    def create_paper(self, data, user=None):
+    def create_paper(self, data):
         """
-        创建论文 - 集成数据层权限控制
+        创建论文 - 从 app.py 中提取，保持完全兼容
         返回格式与原来完全一致
         """
         try:
@@ -67,14 +67,6 @@ class PaperService:
             journal = Journal.query.get(data['journal_id'])
             if not journal:
                 return {'success': False, 'message': '期刊不存在', 'status_code': 404}
-            
-            # 检查创建权限
-            if not PermissionService.can_edit_journal(user, journal):
-                return {
-                    'success': False,
-                    'message': '您没有权限在此期刊中创建论文',
-                    'status_code': 403
-                }
             
             # 创建新论文
             new_paper = Paper(
@@ -91,15 +83,13 @@ class PaperService:
                 is_dhu=data.get('is_dhu', False),
                 abstract=data.get('abstract', ''),
                 keywords=data.get('keywords', ''),
-                file_path=data.get('file_path', ''),
-                chinese_title=data.get('chinese_title', ''),
-                chinese_authors=data.get('chinese_authors', '')
+                file_path=data.get('file_path', '')
             )
             
             db.session.add(new_paper)
             db.session.commit()
             
-            logger.info(f"新论文创建成功: {new_paper.title} (创建者: {user.id if user else '未知'})")
+            logger.info(f"新论文创建成功: {new_paper.title}")
             
             return {
                 'success': True,
@@ -118,23 +108,15 @@ class PaperService:
             db.session.rollback()
             return {'success': False, 'message': f'创建论文失败: {str(e)}', 'status_code': 500}
     
-    def update_paper(self, paper_id, data, user=None):
+    def update_paper(self, paper_id, data):
         """
-        更新论文 - 集成数据层权限控制
+        更新论文 - 从 app.py 中提取，保持完全兼容
         返回格式与原来完全一致
         """
         try:
             paper = Paper.query.get(paper_id)
             if not paper:
                 return {'success': False, 'message': '论文不存在', 'status_code': 404}
-            
-            # 检查编辑权限
-            if not PermissionService.can_edit_paper(user, paper):
-                return {
-                    'success': False,
-                    'message': '您没有权限编辑此论文',
-                    'status_code': 403
-                }
             
             # 更新字段
             if 'title' in data:
@@ -164,7 +146,7 @@ class PaperService:
             
             db.session.commit()
             
-            logger.info(f"论文更新成功: {paper.title} (更新者: {user.id if user else '未知'})")
+            logger.info(f"论文更新成功: {paper.title}")
             
             return {
                 'success': True,
@@ -176,23 +158,15 @@ class PaperService:
             db.session.rollback()
             return {'success': False, 'message': f'更新论文失败: {str(e)}', 'status_code': 500}
     
-    def delete_paper(self, paper_id, user=None):
+    def delete_paper(self, paper_id):
         """
-        删除论文 - 集成数据层权限控制
+        删除论文 - 从 app.py 中提取，保持完全兼容
         返回格式与原来完全一致
         """
         try:
             paper = Paper.query.get(paper_id)
             if not paper:
                 return {'success': False, 'message': '论文不存在', 'status_code': 404}
-            
-            # 检查删除权限
-            if not PermissionService.can_delete_paper(user, paper):
-                return {
-                    'success': False,
-                    'message': '您没有权限删除此论文',
-                    'status_code': 403
-                }
             
             # 获取期刊ID，用于后续更新paper_count
             journal_id = paper.journal_id
@@ -208,7 +182,7 @@ class PaperService:
                 db.session.commit()
                 logger.info(f"期刊 {journal.title} 论文数量已更新为: {journal.paper_count}")
             
-            logger.info(f"论文删除成功: {paper.title} (删除者: {user.id if user else '未知'})")
+            logger.info(f"论文删除成功: {paper.title}")
             
             return {
                 'success': True,
@@ -219,3 +193,4 @@ class PaperService:
             logger.error(f"删除论文错误: {str(e)}")
             db.session.rollback()
             return {'success': False, 'message': f'删除论文失败: {str(e)}', 'status_code': 500}
+

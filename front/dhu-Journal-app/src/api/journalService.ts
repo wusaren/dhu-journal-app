@@ -274,17 +274,6 @@ class JournalService {
     }
 
     /**
-     * 上传推文模板文件
-     */
-    async uploadTuiwenTemplate(journalId: number, formData: FormData): Promise<any> {
-        return await apiClient.post(`/journal/${journalId}/tuiwen-template`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-    }
-
-    /**
      * 保存推文模板字段配置
      */
     async saveTuiwenTemplateConfig(journalId: number, fields: Array<{ key: string; label: string; order: number }>): Promise<ApiResponse<void>> {

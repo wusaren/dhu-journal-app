@@ -87,51 +87,6 @@ def _get(a: Any, key: str):
         return a.get(key)
     return getattr(a, key)
 
-def format_authors_for_citation(authors: str, max_authors: int = 3) -> str:
-    """
-    格式化作者信息用于citation
-    规则：
-    1. 最多显示3个作者
-    2. 作者的名只取首字母（如 "HUANG Jiacui" -> "HUANG J"）
-    3. 如果超过3个作者，在第三个作者后加上 ", et al."
-    
-    示例：
-    - "HUANG Jiacui, ZHAO Mingbo, ZHANG Hongtao, WANG Li" 
-      -> "HUANG J, ZHAO M, ZHANG H, et al."
-    - "HUANG Jiacui, ZHAO Mingbo, ZHANG Hongtao" 
-      -> "HUANG J, ZHAO M, ZHANG H"
-    """
-    if not authors:
-        return ""
-    
-    # 分割作者（支持逗号或中文逗号分隔）
-    author_list = [a.strip() for a in re.split(r'[,，]', authors) if a.strip()]
-    
-    if not author_list:
-        return ""
-    
-    # 格式化每个作者：名字只取首字母
-    formatted_authors = []
-    for author in author_list[:max_authors]:
-        # 分割姓和名（通常格式：姓 名，如 "HUANG Jiacui"）
-        parts = author.split()
-        if len(parts) >= 2:
-            # 有姓和名：姓 + 名的首字母
-            last_name = parts[0]
-            first_name = parts[1]
-            formatted_author = f"{last_name} {first_name[0] if first_name else ''}"
-            formatted_authors.append(formatted_author.strip())
-        else:
-            # 只有一个部分，可能是只有姓或者格式不对，保持原样
-            formatted_authors.append(author)
-    
-    # 如果超过max_authors个作者，添加 ", et al."
-    if len(author_list) > max_authors:
-        formatted_authors.append("et al.")
-    
-    # 用逗号和空格连接
-    return ", ".join(formatted_authors)
-
 def generate_toc_docx(papers: List[Any], journal: Any) -> str:
     """
     生成目录Word文档 - 导出期刊内所有论文
@@ -526,20 +481,485 @@ def generate_excel_stats_from_template(articles, journal, template_file_path: st
 def get_local_image_path(image_path: str, temp_dir: str) -> Optional[str]:
     """
     获取本地图片路径，如果图片存在则返回路径，否则返回None
+    支持相对路径和绝对路径，会在多个可能的位置查找文件
+    
     返回: 本地图片路径，如果图片不存在则返回None
     """
     try:
-        # 检查图片路径是否存在
-        if image_path and os.path.exists(image_path):
-            logger.info(f"本地图片存在: {image_path}")
-            return image_path
-        else:
-            logger.warning(f"本地图片不存在: {image_path}")
+        if not image_path:
             return None
+        
+        # 首先尝试直接使用原始路径
+        if os.path.exists(image_path):
+            logger.info(f"本地图片存在（原始路径）: {image_path}")
+            return image_path
+        
+        # 如果是相对路径，尝试在多个位置查找
+        if not os.path.isabs(image_path):
+            # 获取backend目录的绝对路径
+            current_file = os.path.abspath(__file__)
+            backend_dir = os.path.dirname(os.path.dirname(current_file))
+            
+            # 可能的查找位置列表
+            possible_paths = [
+                # 1. 相对于backend目录
+                os.path.join(backend_dir, image_path),
+                # 2. 相对于当前工作目录
+                os.path.join(os.getcwd(), image_path),
+                # 3. 如果路径以images开头，尝试backend/images
+                os.path.join(backend_dir, 'images', os.path.basename(image_path)) if 'images' in image_path else None,
+                # 4. 如果路径包含images，尝试从backend目录查找
+                os.path.join(backend_dir, image_path.replace('images\\', 'images\\').replace('images/', 'images/')) if 'images' in image_path else None,
+            ]
+            
+            # 过滤掉None值
+            possible_paths = [p for p in possible_paths if p]
+            
+            # 尝试每个可能的路径
+            for possible_path in possible_paths:
+                if os.path.exists(possible_path):
+                    logger.info(f"本地图片存在（查找路径）: {possible_path} (原始路径: {image_path})")
+                    return possible_path
+        
+        # 如果都找不到，记录警告
+        logger.warning(f"本地图片不存在，已尝试多个位置: {image_path}")
+        logger.warning(f"当前工作目录: {os.getcwd()}")
+        logger.warning(f"backend目录: {os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}")
+        return None
             
     except Exception as e:
-        logger.error(f"检查本地图片时出错: {str(e)}")
+        logger.error(f"检查本地图片时出错: {str(e)}, 图片路径: {image_path}")
         return None
+
+def generate_citation(paper) -> str:
+    """
+    生成Citation格式的引用信息
+    
+    格式: GUAN Y, GUO F R, LIANG K, et al. Title[J]. Journal of Donghua University (English Edition), 2025, 42(5): 449-456.
+    
+    Args:
+        paper: Paper对象或字典，包含authors, chinese_authors, title, issue, page_start, page_end等字段
+    
+    Returns:
+        Citation字符串
+    """
+    try:
+        # 获取字段
+        if hasattr(paper, 'authors'):
+            authors_en = paper.authors
+            chinese_authors = getattr(paper, 'chinese_authors', '') or ''
+            title = paper.title
+            issue = getattr(paper, 'issue', '') or ''
+            page_start = getattr(paper, 'page_start', None)
+            page_end = getattr(paper, 'page_end', None)
+        else:
+            authors_en = paper.get('authors', '')
+            chinese_authors = paper.get('chinese_authors', '') or ''
+            title = paper.get('title', '')
+            issue = paper.get('issue', '') or ''
+            page_start = paper.get('page_start')
+            page_end = paper.get('page_end')
+        
+        # 1. 处理作者部分
+        def format_author_name(en_name: str, cn_name: str) -> str:
+            """
+            格式化作者名称为Citation格式
+            格式: 姓全大写 + 空格 + 名的首字母
+            
+            Args:
+                en_name: 英文名，如 "HUANG Jiacui"
+                cn_name: 中文名，如 "黄家淬"
+            
+            Returns:
+                格式化后的名称，如 "HUANG J C" 或 "HUANG J"
+            """
+            if not en_name or not cn_name:
+                return en_name.upper() if en_name else ''
+            
+            # 统计中文字符数（去掉标点、空格等）
+            cn_char_count = len(re.findall(r'[\u4e00-\u9fff]', cn_name))
+            
+            # 按空格分割英文名
+            parts = en_name.strip().split()
+            if not parts:
+                return en_name.upper()
+            
+            # 第一个词是姓
+            surname = parts[0].upper()
+            
+            # 剩余的词是名
+            given_names = parts[1:] if len(parts) > 1 else []
+            
+            if not given_names:
+                return surname
+            
+            # 根据中文名字符数判断
+            if cn_char_count == 2:
+                # 2个字的名字：只取名的首字母
+                given_name_initials = given_names[0][0].upper() if given_names[0] else ''
+            elif cn_char_count >= 3:
+                # 3个字或更多：如果英文名只有一个词，按音节拆分为两部分
+                # 如果英文名有多个词，取每个词的首字母
+                if len(given_names) == 1:
+                    # 单个词：拆分为两部分，每部分取首字母
+                    # 例如 "Jiacui" -> "Jia" + "cui" -> "J C"
+                    # "Mingbo" -> "Ming" + "bo" -> "M B"
+                    given_name = given_names[0]
+                    if len(given_name) >= 6:
+                        # 长度>=6：拆分为前半部分和后半部分
+                        mid = len(given_name) // 2
+                        # 前半部分取首字母
+                        first_part = given_name[0].upper()
+                        # 后半部分取首字母
+                        second_part = given_name[mid].upper()
+                        given_name_initials = f"{first_part} {second_part}"
+                    elif len(given_name) >= 4:
+                        # 长度4-5：拆分为前2-3个字符和后2个字符
+                        split_point = len(given_name) - 2
+                        first_part = given_name[0].upper()
+                        second_part = given_name[split_point].upper()
+                        given_name_initials = f"{first_part} {second_part}"
+                    else:
+                        # 短名字：取前两个字符的首字母
+                        initials = [given_name[0].upper()]
+                        if len(given_name) > 1:
+                            initials.append(given_name[1].upper())
+                        given_name_initials = ' '.join(initials)
+                else:
+                    # 多个词：取每个词的首字母
+                    given_name_initials = ' '.join([name[0].upper() for name in given_names if name])
+            else:
+                # 其他情况：取第一个词的首字母
+                given_name_initials = given_names[0][0].upper() if given_names[0] else ''
+            
+            return f"{surname} {given_name_initials}".strip()
+        
+        # 分割作者列表
+        if ',' in authors_en:
+            authors_en_list = [a.strip() for a in authors_en.split(',') if a.strip()]
+        else:
+            authors_en_list = [authors_en.strip()] if authors_en.strip() else []
+        
+        if ',' in chinese_authors:
+            chinese_authors_list = [a.strip() for a in chinese_authors.split(',') if a.strip()]
+        else:
+            chinese_authors_list = [chinese_authors.strip()] if chinese_authors.strip() else []
+        
+        # 格式化每个作者
+        formatted_authors = []
+        for i, en_author in enumerate(authors_en_list):
+            cn_author = chinese_authors_list[i] if i < len(chinese_authors_list) else ''
+            formatted_author = format_author_name(en_author, cn_author)
+            if formatted_author:
+                formatted_authors.append(formatted_author)
+        
+        # 根据作者数量决定是否加 et al.
+        if len(formatted_authors) > 3:
+            authors_part = ', '.join(formatted_authors[:3]) + ', et al.'
+        else:
+            authors_part = ', '.join(formatted_authors)
+        
+        # 2. 标题部分（去掉末尾的点号，因为后面会跟 [J]）
+        title_part = title.strip() if title else ''
+        if title_part and title_part.endswith('.'):
+            title_part = title_part[:-1].strip()
+        
+        # 3. 解析issue获取年份、卷号、期号
+        year = ''
+        volume = ''
+        issue_num = ''
+        if issue:
+            # 格式: "2025, 42(3)"
+            match = re.match(r'(\d{4}),\s*(\d+)\(([^)]+)\)', issue)
+            if match:
+                year = match.group(1)
+                volume = match.group(2)
+                issue_num = match.group(3)
+        
+        # 4. 页码范围
+        pages_part = ''
+        if page_start and page_end:
+            pages_part = f"{page_start}-{page_end}"
+        elif page_start:
+            pages_part = str(page_start)
+        
+        # 5. 组装Citation
+        citation_parts = []
+        
+        # 作者部分
+        if authors_part:
+            citation_parts.append(authors_part)
+        
+        # 标题部分（不添加点号，后面直接跟 [J]）
+        if title_part:
+            citation_parts.append(title_part)
+        
+        # 期刊信息部分
+        # [J]. 后面没有逗号，直接跟期刊名称
+        journal_info_parts = ['[J]. Journal of Donghua University (English Edition)']
+        
+        if year:
+            journal_info_parts.append(year)
+        
+        # 卷期号和页码范围合并为一个元素，避免中间出现逗号
+        volume_issue_pages = ''
+        if volume and issue_num:
+            volume_issue_pages = f"{volume}({issue_num})"
+        elif volume:
+            volume_issue_pages = str(volume)
+        
+        # 如果有页码范围，在卷期号后面直接加冒号和页码范围（不添加逗号）
+        if pages_part:
+            if volume_issue_pages:
+                volume_issue_pages = f"{volume_issue_pages}: {pages_part}"
+            else:
+                volume_issue_pages = f": {pages_part}"
+        
+        if volume_issue_pages:
+            journal_info_parts.append(volume_issue_pages)
+        
+        journal_info = ', '.join(journal_info_parts)
+        citation_parts.append(journal_info)
+        
+        # 组合所有部分：作者和标题之间用点号+空格，标题和[J]之间用空格
+        if len(citation_parts) == 1:
+            citation = citation_parts[0]
+        elif len(citation_parts) == 2:
+            # 只有作者和期刊信息
+            citation = f"{citation_parts[0]}. {citation_parts[1]}"
+        else:
+            # 作者、标题、期刊信息
+            citation = f"{citation_parts[0]}. {citation_parts[1]} {citation_parts[2]}"
+        
+        if not citation.endswith('.'):
+            citation += '.'
+        
+        return citation
+        
+    except Exception as e:
+        logger.error(f"生成Citation时出错: {str(e)}")
+        import traceback
+        logger.error(f"详细错误: {traceback.format_exc()}")
+        return ''
+
+def add_citation_to_word_paragraph(para, citation_text: str, font_size: int = 11, prefix: str = None, prefix_format: Dict = None):
+    """
+    将citation添加到Word段落，并设置期刊名称部分为斜体
+    
+    Args:
+        para: Word段落对象
+        citation_text: Citation文本
+        font_size: 字体大小
+        prefix: 前缀文本（如果为None，则使用默认的"Citation: "）
+        prefix_format: 前缀格式配置
+    """
+    from docx.shared import RGBColor, Pt
+    
+    try:
+        # 期刊名称（需要斜体的部分）
+        journal_name_main = "Journal of Donghua University"
+        journal_name_edition = "(English Edition)"
+        journal_name_full = f"{journal_name_main} {journal_name_edition}"
+        
+        # 查找期刊名称在citation中的位置
+        journal_start = citation_text.find(journal_name_main)
+        
+        # 确定使用的前缀
+        citation_prefix = prefix if prefix else "Citation: "
+        prefix_font_size = prefix_format.get('font_size', font_size) if prefix_format else font_size
+        
+        if journal_start == -1:
+            # 如果找不到期刊名称，直接添加整个citation
+            # 先添加前缀
+            if citation_prefix:
+                prefix_run = para.add_run(citation_prefix)
+                prefix_run.font.size = Pt(prefix_font_size)
+                # 应用前缀格式
+                if prefix_format:
+                    if prefix_format.get('font_name'):
+                        prefix_run.font.name = prefix_format['font_name']
+                    if prefix_format.get('font_color'):
+                        try:
+                            color = prefix_format['font_color']
+                            if color.startswith('#'):
+                                r = int(color[1:3], 16)
+                                g = int(color[3:5], 16)
+                                b = int(color[5:7], 16)
+                                prefix_run.font.color.rgb = RGBColor(r, g, b)
+                        except:
+                            pass
+                    if prefix_format.get('font_bold'):
+                        prefix_run.font.bold = True
+            
+            run = para.add_run(citation_text)
+            run.font.size = Pt(font_size)
+        else:
+            # 添加前缀
+            if citation_prefix:
+                prefix_run = para.add_run(citation_prefix)
+                prefix_run.font.size = Pt(prefix_font_size)
+                # 应用前缀格式
+                if prefix_format:
+                    if prefix_format.get('font_name'):
+                        prefix_run.font.name = prefix_format['font_name']
+                    if prefix_format.get('font_color'):
+                        try:
+                            color = prefix_format['font_color']
+                            if color.startswith('#'):
+                                r = int(color[1:3], 16)
+                                g = int(color[3:5], 16)
+                                b = int(color[5:7], 16)
+                                prefix_run.font.color.rgb = RGBColor(r, g, b)
+                        except:
+                            pass
+                    if prefix_format.get('font_bold'):
+                        prefix_run.font.bold = True
+            
+            # 添加期刊名称之前的部分
+            before_journal = citation_text[:journal_start]
+            if before_journal:
+                before_run = para.add_run(before_journal)
+                before_run.font.size = Pt(font_size)
+            
+            # 添加期刊名称（斜体）
+            journal_run = para.add_run(journal_name_main)
+            journal_run.font.size = Pt(font_size)
+            journal_run.font.italic = True
+            
+            # 添加 " (English Edition)"，其中括号不斜体
+            # 先添加空格和左括号（不斜体）
+            space_paren_run = para.add_run(" (")
+            space_paren_run.font.size = Pt(font_size)
+            space_paren_run.font.italic = False
+            
+            # 添加 "English Edition"（斜体）
+            edition_run = para.add_run("English Edition")
+            edition_run.font.size = Pt(font_size)
+            edition_run.font.italic = True
+            
+            # 添加右括号（不斜体）
+            close_paren_run = para.add_run(")")
+            close_paren_run.font.size = Pt(font_size)
+            close_paren_run.font.italic = False
+            
+            # 添加期刊名称之后的部分
+            after_journal = citation_text[journal_start + len(journal_name_full):]
+            if after_journal:
+                after_run = para.add_run(after_journal)
+                after_run.font.size = Pt(font_size)
+    
+    except Exception as e:
+        logger.error(f"添加citation到Word段落失败: {str(e)}")
+        # 如果出错，简单添加整个citation
+        run = para.runs[0] if para.runs else para.add_run()
+        run.text = f"Citation: {citation_text}"
+        run.font.size = Pt(font_size)
+
+def apply_field_format_to_paragraph(para, field_config: Dict, value: str, paper_idx: int = 1) -> Dict:
+    """
+    统一的字段格式应用函数，用于预览和最终生成
+    
+    Args:
+        para: Word段落对象
+        field_config: 字段配置，包含 prefix, format, prefix_format 等
+        value: 字段值
+        paper_idx: 论文编号（用于title字段）
+    
+    Returns:
+        文本预览数据字典
+    """
+    from docx.shared import RGBColor, Pt
+    
+    field_key = field_config.get('field') or field_config.get('key')
+    field_label = field_config.get('label', '')
+    prefix = field_config.get('prefix', '')
+    format_config = field_config.get('format', {})
+    prefix_format_config = field_config.get('prefix_format', {})
+    
+    # 准备文本预览数据
+    preview_item = {
+        'prefix': prefix,
+        'prefix_style': {
+            'font_name': prefix_format_config.get('font_name', ''),
+            'font_size': prefix_format_config.get('font_size', 12),
+            'font_color': prefix_format_config.get('font_color', '#000000')
+        },
+        'content': str(value),
+        'content_style': {
+            'font_name': format_config.get('font_name', ''),
+            'font_size': format_config.get('font_size', 12),
+            'font_color': format_config.get('font_color', '#000000')
+        },
+        'is_citation': field_key == 'citation'
+    }
+    
+    # 特殊处理citation字段
+    if field_key == 'citation':
+        font_size = format_config.get('font_size', 11)
+        # 使用配置中的prefix，如果没有则使用默认的"Citation: "
+        citation_prefix = prefix if prefix else None
+        add_citation_to_word_paragraph(para, value, font_size=font_size, prefix=citation_prefix, prefix_format=prefix_format_config)
+        preview_item['content_style']['font_style'] = 'italic'
+        # 更新预览数据中的prefix信息
+        preview_item['prefix'] = citation_prefix if citation_prefix else 'Citation: '
+        preview_item['prefix_style'] = {
+            'font_name': prefix_format_config.get('font_name', ''),
+            'font_size': prefix_format_config.get('font_size', font_size),
+            'font_color': prefix_format_config.get('font_color', '#000000')
+        }
+        return preview_item
+    
+    # 处理其他字段：应用prefix和format
+    # 如果有prefix，先添加prefix
+    if prefix:
+        prefix_run = para.add_run(prefix)
+        # 应用prefix格式
+        if prefix_format_config.get('font_name'):
+            prefix_run.font.name = prefix_format_config['font_name']
+        if prefix_format_config.get('font_size'):
+            prefix_run.font.size = Pt(prefix_format_config['font_size'])
+        if prefix_format_config.get('font_color'):
+            try:
+                color = prefix_format_config['font_color']
+                if color.startswith('#'):
+                    r = int(color[1:3], 16)
+                    g = int(color[3:5], 16)
+                    b = int(color[5:7], 16)
+                    prefix_run.font.color.rgb = RGBColor(r, g, b)
+            except:
+                pass
+        # 处理bold属性（用于title字段的论文编号）
+        if prefix_format_config.get('font_bold') or (field_key in ['chinese_title', 'title'] and not field_config.get('prefix')):
+            prefix_run.font.bold = True
+    
+    # 添加字段内容
+    content_run = para.add_run(str(value))
+    # 应用字段格式
+    if format_config.get('font_name'):
+        content_run.font.name = format_config['font_name']
+    if format_config.get('font_size'):
+        content_run.font.size = Pt(format_config['font_size'])
+    if format_config.get('font_color'):
+        try:
+            color = format_config['font_color']
+            if color.startswith('#'):
+                r = int(color[1:3], 16)
+                g = int(color[3:5], 16)
+                b = int(color[5:7], 16)
+                content_run.font.color.rgb = RGBColor(r, g, b)
+        except:
+            pass
+    # 处理bold属性（用于title字段）
+    if format_config.get('font_bold') or (field_key in ['chinese_title', 'title'] and not format_config.get('font_bold') is False):
+        # 如果配置了font_bold，或者title字段没有明确设置为False，则使用bold
+        # 但这里我们优先使用配置的值
+        if format_config.get('font_bold'):
+            content_run.font.bold = True
+        elif field_key in ['chinese_title', 'title']:
+            # title字段默认bold（如果没有配置）
+            content_run.font.bold = True
+    
+    return preview_item
 
 def generate_tuiwen_content(papers, journal):
     """
@@ -652,10 +1072,8 @@ def _generate_tuiwen_content_legacy(papers, journal):
                 # 获取图片URL
                 first_image_url = getattr(paper, 'first_image_url', '') or ''
                 second_image_url = getattr(paper, 'second_image_url', '') or ''
-                # 格式化作者用于citation（最多3个，名字只取首字母）
-                formatted_authors = format_authors_for_citation(authors, max_authors=3)
-                # 生成引用信息
-                citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+                # 生成Citation
+                citation = generate_citation(paper)
             
             # 添加中文标题（如果有）
             if chinese_title:
@@ -719,11 +1137,9 @@ def _generate_tuiwen_content_legacy(papers, journal):
             if doi:
                 doc.add_paragraph(f"DOI: {doi}")
             
-            # 添加引用信息（添加"Citation:"前缀，调整字体大小）
+            # 添加引用信息（添加"Citation:"前缀，调整字体大小，期刊名称斜体）
             citation_para = doc.add_paragraph()
-            citation_run = citation_para.runs[0] if citation_para.runs else citation_para.add_run()
-            citation_run.text = f"Citation: {citation}"
-            citation_run.font.size = Pt(11)  # 调整字体大小和其他内容一样
+            add_citation_to_word_paragraph(citation_para, citation, font_size=11)
             
             # 在论文版块最后添加"作者说链接/OSID"文字和第一张图片
             # 添加分隔线
@@ -874,8 +1290,6 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 doi = paper.doi or ''
                 page_start = paper.page_start
                 page_end = paper.page_end
-                formatted_authors = format_authors_for_citation(authors, max_authors=3)
-                citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
             else:
                 title = paper.get('title', '')
                 authors = paper.get('authors', '')
@@ -884,8 +1298,9 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 doi = paper.get('doi', '')
                 page_start = paper.get('page_start')
                 page_end = paper.get('page_end')
-                formatted_authors = format_authors_for_citation(authors, max_authors=3)
-                citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
+            
+            # 生成Citation
+            citation = generate_citation(paper)
             
             # 获取图片URL
             if hasattr(paper, 'first_image_url'):
@@ -894,6 +1309,10 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
             else:
                 first_image_url = paper.get('first_image_url', '') or ''
                 second_image_url = paper.get('second_image_url', '') or ''
+            
+            # 记录图片路径信息，便于排查
+            logger.info(f"论文 {paper_idx} 图片路径: first_image_url={first_image_url}, second_image_url={second_image_url}")
+            logger.info(f"论文 {paper_idx} 基本信息: title={title[:50] if title else ''}, page_start={page_start}, page_end={page_end}")
             
             # 字段值映射
             field_values = {
@@ -959,29 +1378,28 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                         except Exception as img_error:
                             logger.error(f"❌ 处理第一张图片失败: {str(img_error)}")
                     
-                    # 处理文本字段
+                    # 处理文本字段（使用统一的格式应用函数）
                     elif value and field_key not in ['first_image', 'second_image']:
-                        # 添加字段标签和值
                         para = doc.add_paragraph()
-                        run = para.runs[0] if para.runs else para.add_run()
                         
-                        # 根据字段类型设置格式
+                        # 对于title字段，如果没有自定义prefix，添加论文编号
                         if field_key in ['chinese_title', 'title']:
-                            run.text = f"{paper_idx}. {value}"
-                            run.font.size = Pt(12)
-                            run.font.bold = True
-                        elif field_key in ['chinese_authors', 'authors']:
-                            run.text = value
-                            run.font.size = Pt(11)
-                        elif field_key == 'doi':
-                            run.text = f"DOI: {value}"
-                            run.font.size = Pt(11)
-                        elif field_key == 'citation':
-                            run.text = f"Citation: {value}"
-                            run.font.size = Pt(11)
+                            if not field_config.get('prefix'):
+                                # 如果没有自定义prefix，使用论文编号作为prefix
+                                field_config_with_idx = field_config.copy()
+                                field_config_with_idx['prefix'] = f"{paper_idx}. "
+                                if not field_config_with_idx.get('prefix_format'):
+                                    field_config_with_idx['prefix_format'] = {}
+                                if 'font_size' not in field_config_with_idx['prefix_format']:
+                                    field_config_with_idx['prefix_format']['font_size'] = 12
+                                # 注意：bold属性需要在apply_field_format_to_paragraph中处理
+                                apply_field_format_to_paragraph(para, field_config_with_idx, value, paper_idx)
+                            else:
+                                # 有自定义prefix，直接使用
+                                apply_field_format_to_paragraph(para, field_config, value, paper_idx)
                         else:
-                            run.text = f"{field_label}: {value}"
-                            run.font.size = Pt(11)
+                            # 其他字段直接使用配置
+                            apply_field_format_to_paragraph(para, field_config, value, paper_idx)
             
             # 添加空行分隔
             doc.add_paragraph()
@@ -1013,33 +1431,40 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
         logger.error(f"根据字段配置生成推文失败: {str(e)}")
         raise Exception(f"根据字段配置生成推文失败: {str(e)}")
 
-def generate_tuiwen_from_template(papers, journal, template_file_path: str) -> str:
+def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: Dict, return_text_preview: bool = False) -> str:
     """
-    基于Word模板生成推文内容
+    根据字段配置和源数据生成推文预览（与最终生成保持一致）
     
     Args:
-        papers: 论文列表
-        journal: 期刊对象
-        template_file_path: 模板文件路径
+        fields_config: 字段配置列表，格式: [{'field': 'title', 'label': '标题', 'order': 1}, ...]
+        source_data: 源数据（论文数据字典）
+        return_text_preview: 是否返回文本预览数据
+    
+    Returns:
+        如果 return_text_preview=True，返回 (preview_path, text_preview_data)
+        否则返回 preview_path
     """
     try:
-        import re
-        from docx import Document
-        from docx.shared import Pt
+        from docx.shared import RGBColor, Pt
         from docx.oxml.ns import qn
         
-        # 创建临时目录用于存储下载的图片
-        temp_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
-        os.makedirs(temp_dir, exist_ok=True)
+        # 创建Word文档
+        doc = Document()
         
-        # 加载模板文件
-        doc = Document(template_file_path)
+        # 设置样式
+        style = doc.styles['Normal']
+        style.font.name = 'Times New Roman'
+        style._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+        style.font.size = Pt(11)
         
-        # 获取当前日期
+        # 获取当前日期（用于编辑信息）
         current_date = datetime.now().strftime('%Y年%m月%d日')
-        issue = journal.issue
         
-        # 转换期刊号格式
+        # 模拟期刊信息（预览使用默认值）
+        journal_title = "东华大学学报"
+        journal_issue = "2024, 41(1)"  # 默认期刊号
+        
+        # 转换期刊号格式（与最终生成保持一致）
         def convert_issue_format(issue_str):
             try:
                 match = re.match(r'(\d{4}),\s*(\d+)\(([^)]+)\)', issue_str)
@@ -1052,209 +1477,194 @@ def generate_tuiwen_from_template(papers, journal, template_file_path: str) -> s
             except:
                 return issue_str
         
-        issue_info = convert_issue_format(issue)
+        issue_info = convert_issue_format(journal_issue)
         
-        # 定义占位符映射
-        placeholders = {
-            '{journal_title}': journal.title or '东华大学学报',
-            '{issue}': issue_info,
-            '{current_date}': current_date,
+        # 添加期刊标题（与最终生成保持一致）
+        title_para = doc.add_paragraph()
+        title_run = title_para.runs[0] if title_para.runs else title_para.add_run()
+        title_run.text = journal_title
+        title_run.font.size = Pt(16)
+        title_run.font.bold = True
+        
+        # 添加期刊号
+        issue_para = doc.add_paragraph()
+        issue_run = issue_para.runs[0] if issue_para.runs else issue_para.add_run()
+        issue_run.text = issue_info
+        issue_run.font.size = Pt(12)
+        
+        # 添加分隔线
+        doc.add_paragraph("─" * 30)
+        
+        # 添加编辑信息
+        editor_para = doc.add_paragraph()
+        editor_run = editor_para.runs[0] if editor_para.runs else editor_para.add_run()
+        editor_run.text = f"本期责编: 编辑部 | {current_date}"
+        editor_run.font.size = Pt(10)
+        editor_run.font.italic = True
+        
+        # 添加空行
+        doc.add_paragraph()
+        
+        # 准备字段值映射
+        field_values = {
+            'title': source_data.get('title', ''),
+            'chinese_title': source_data.get('chinese_title', '') or '',
+            'authors': source_data.get('authors', ''),
+            'chinese_authors': source_data.get('chinese_authors', '') or '',
+            'doi': source_data.get('doi', ''),
+            'citation': source_data.get('citation', ''),
+            'page_start': str(source_data.get('page_start', '')) if source_data.get('page_start') else '',
+            'page_end': str(source_data.get('page_end', '')) if source_data.get('page_end') else '',
+            'first_image': source_data.get('first_image_url', '') or '',
+            'second_image': source_data.get('second_image_url', '') or '',
         }
         
-        # 替换文档中的占位符（全局替换）
-        def replace_placeholders_in_document(doc, placeholders):
-            """在文档中替换占位符"""
-            for paragraph in doc.paragraphs:
-                for run in paragraph.runs:
-                    text = run.text
-                    for placeholder, value in placeholders.items():
-                        if placeholder in text:
-                            text = text.replace(placeholder, str(value))
-                    run.text = text
-            
-            # 也处理表格中的占位符
-            for table in doc.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        for paragraph in cell.paragraphs:
-                            for run in paragraph.runs:
-                                text = run.text
-                                for placeholder, value in placeholders.items():
-                                    if placeholder in text:
-                                        text = text.replace(placeholder, str(value))
-                                run.text = text
+        # 如果citation为空，尝试生成
+        if not field_values['citation']:
+            try:
+                field_values['citation'] = generate_citation(source_data)
+            except Exception as e:
+                logger.warning(f"生成citation失败: {str(e)}")
+                field_values['citation'] = ''
         
-        # 先替换全局占位符
-        replace_placeholders_in_document(doc, placeholders)
+        # 按order排序字段
+        sorted_fields = sorted(fields_config, key=lambda x: x.get('order', 999))
         
-        # 查找论文循环标记（例如：{paper_loop_start} 和 {paper_loop_end}）
-        # 如果没有找到循环标记，则在整个文档中查找论文相关的占位符
-        paper_loop_start_idx = None
-        paper_loop_end_idx = None
+        # 文本预览数据
+        text_preview_data = []
         
-        for i, para in enumerate(doc.paragraphs):
-            text = para.text
-            if '{paper_loop_start}' in text or '{paper_start}' in text:
-                paper_loop_start_idx = i
-            if '{paper_loop_end}' in text or '{paper_end}' in text:
-                paper_loop_end_idx = i
+        # 创建临时目录用于存储图片
+        temp_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d_%H%M%S'))
+        os.makedirs(temp_dir, exist_ok=True)
         
-        # 如果找到了循环标记，在循环区域内为每篇论文生成内容
-        if paper_loop_start_idx is not None and paper_loop_end_idx is not None and paper_loop_end_idx > paper_loop_start_idx:
-            # 保存循环模板段落的内容（在删除前）
-            loop_template_data = []
-            for para_idx in range(paper_loop_start_idx + 1, paper_loop_end_idx):
-                template_para = doc.paragraphs[para_idx]
-                para_data = {
-                    'text': template_para.text,
-                    'style': template_para.style.name if template_para.style else None,
-                    'runs': []
-                }
-                # 保存每个run的信息
-                for run in template_para.runs:
-                    run_data = {
-                        'text': run.text,
-                        'font_name': run.font.name if run.font and run.font.name else None,
-                        'font_size': run.font.size if run.font and run.font.size else None,
-                        'bold': run.font.bold if run.font else None,
-                        'italic': run.font.italic if run.font else None,
-                        'color': run.font.color.rgb if run.font and run.font.color and run.font.color.rgb else None,
-                    }
-                    para_data['runs'].append(run_data)
-                loop_template_data.append(para_data)
+        # 论文编号（预览只显示一篇，编号为1）
+        paper_idx = 1
+        
+        # 遍历字段配置，生成内容（与最终生成保持一致的格式）
+        for field_config in sorted_fields:
+            field_key = field_config.get('field') or field_config.get('key')  # 支持两种格式
+            field_label = field_config.get('label', '')
             
-            # 删除循环标记段落和模板段落（从后往前删除，避免索引变化）
-            # 先收集要删除的段落元素
-            paras_to_remove = []
-            for para_idx in range(paper_loop_start_idx, paper_loop_end_idx + 1):
-                paras_to_remove.append(doc.paragraphs[para_idx]._element)
+            if field_key not in field_values:
+                continue
             
-            # 删除段落元素
-            for para_element in paras_to_remove:
-                para_element.getparent().remove(para_element)
+            value = field_values[field_key]
             
-            # 为每篇论文生成内容
-            for paper_idx, paper in enumerate(papers):
-                # 处理数据库Paper对象或字典
-                if hasattr(paper, 'title'):
-                    title = paper.title
-                    authors = paper.authors
-                    chinese_title = getattr(paper, 'chinese_title', '') or ''
-                    chinese_authors = getattr(paper, 'chinese_authors', '') or ''
-                    doi = paper.doi or ''
-                    page_start = paper.page_start
-                    page_end = paper.page_end
-                    formatted_authors = format_authors_for_citation(authors, max_authors=3)
-                    citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
-                else:
-                    # 字典格式
-                    title = paper.get('title', '')
-                    authors = paper.get('authors', '')
-                    chinese_title = paper.get('chinese_title', '') or ''
-                    chinese_authors = paper.get('chinese_authors', '') or ''
-                    doi = paper.get('doi', '')
-                    page_start = paper.get('page_start')
-                    page_end = paper.get('page_end')
-                    formatted_authors = format_authors_for_citation(authors, max_authors=3)
-                    citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
-                
-                # 论文占位符映射
-                paper_placeholders = {
-                    '{title}': title or '',
-                    '{chinese_title}': chinese_title or '',
-                    '{authors}': authors or '',
-                    '{chinese_authors}': chinese_authors or '',
-                    '{doi}': doi or '',
-                    '{citation}': citation or '',
-                    '{page_start}': str(page_start) if page_start else '',
-                    '{page_end}': str(page_end) if page_end else '',
-                    '{paper_index}': str(paper_idx + 1),
-                }
-                
-                # 根据模板数据创建新段落并替换占位符
-                for para_data in loop_template_data:
-                    new_para = doc.add_paragraph()
-                    
-                    # 设置段落样式
-                    if para_data['style']:
+            # 处理图片字段
+            if field_key == 'second_image' and value:
+                try:
+                    local_image_path = get_local_image_path(value, temp_dir)
+                    if local_image_path and os.path.exists(local_image_path):
                         try:
-                            new_para.style = para_data['style']
-                        except:
-                            pass
-                    
-                    # 创建runs并替换占位符
-                    text = para_data['text']
-                    # 替换占位符
-                    for placeholder, value in paper_placeholders.items():
-                        if placeholder in text:
-                            text = text.replace(placeholder, str(value))
-                    
-                    # 如果有多个runs，尝试保持原有格式
-                    if para_data['runs']:
-                        # 简化处理：将所有文本合并为一个run
-                        new_run = new_para.add_run(text)
-                        # 使用第一个run的样式（如果有）
-                        first_run_data = para_data['runs'][0]
+                            doc.add_picture(local_image_path, width=Pt(300))
+                            logger.info(f"✅ 预览中成功插入第二张图片")
+                            # 文本预览中标记图片
+                            text_preview_data.append({
+                                'prefix': '',
+                                'prefix_style': {},
+                                'content': '[论文配图]',
+                                'content_style': {'font_size': 11},
+                                'is_citation': False,
+                                'is_image': True
+                            })
+                        except Exception as picture_error:
+                            logger.error(f"❌ 预览中插入第二张图片失败: {str(picture_error)}")
+                            url_para = doc.add_paragraph()
+                            url_run = url_para.runs[0] if url_para.runs else url_para.add_run()
+                            url_run.text = f"图片路径: {value}"
+                            url_run.font.size = Pt(9)
+                except Exception as img_error:
+                    logger.error(f"❌ 预览中处理第二张图片失败: {str(img_error)}")
+            
+            elif field_key == 'first_image' and value:
+                # 添加分隔线
+                doc.add_paragraph("─" * 20)
+                # 添加"作者说链接/OSID"文字
+                osid_para = doc.add_paragraph()
+                osid_run = osid_para.runs[0] if osid_para.runs else osid_para.add_run()
+                osid_run.text = "作者说链接/OSID"
+                osid_run.font.size = Pt(10)
+                osid_run.font.bold = True
+                # 插入图片
+                try:
+                    local_image_path = get_local_image_path(value, temp_dir)
+                    if local_image_path and os.path.exists(local_image_path):
                         try:
-                            if first_run_data['font_name']:
-                                new_run.font.name = first_run_data['font_name']
-                            if first_run_data['font_size']:
-                                new_run.font.size = first_run_data['font_size']
-                            if first_run_data['bold'] is not None:
-                                new_run.font.bold = first_run_data['bold']
-                            if first_run_data['italic'] is not None:
-                                new_run.font.italic = first_run_data['italic']
-                            if first_run_data['color']:
-                                new_run.font.color.rgb = first_run_data['color']
-                        except Exception as style_error:
-                            logger.warning(f"应用run样式失败: {str(style_error)}")
+                            doc.add_picture(local_image_path, width=Pt(100))
+                            logger.info(f"✅ 预览中成功插入第一张图片(QRcode)")
+                            # 文本预览中标记图片
+                            text_preview_data.append({
+                                'prefix': '作者说链接/OSID: ',
+                                'prefix_style': {'font_size': 10, 'font_bold': True},
+                                'content': '[二维码]',
+                                'content_style': {'font_size': 11},
+                                'is_citation': False,
+                                'is_image': True
+                            })
+                        except Exception as picture_error:
+                            logger.error(f"❌ 预览中插入第一张图片失败: {str(picture_error)}")
+                            url_para = doc.add_paragraph()
+                            url_run = url_para.runs[0] if url_para.runs else url_para.add_run()
+                            url_run.text = f"二维码路径: {value}"
+                            url_run.font.size = Pt(9)
+                except Exception as img_error:
+                    logger.error(f"❌ 预览中处理第一张图片失败: {str(img_error)}")
+            
+            # 处理文本字段（使用统一的格式应用函数，与最终生成保持一致）
+            elif value and field_key not in ['first_image', 'second_image']:
+                para = doc.add_paragraph()
+                
+                # 对于title字段，如果没有自定义prefix，添加论文编号
+                if field_key in ['chinese_title', 'title']:
+                    if not field_config.get('prefix'):
+                        # 如果没有自定义prefix，使用论文编号作为prefix
+                        field_config_with_idx = field_config.copy()
+                        field_config_with_idx['prefix'] = f"{paper_idx}. "
+                        if not field_config_with_idx.get('prefix_format'):
+                            field_config_with_idx['prefix_format'] = {}
+                        if 'font_size' not in field_config_with_idx['prefix_format']:
+                            field_config_with_idx['prefix_format']['font_size'] = 12
+                        preview_item = apply_field_format_to_paragraph(para, field_config_with_idx, value, paper_idx)
                     else:
-                        # 没有runs，直接添加文本
-                        new_para.add_run(text)
+                        # 有自定义prefix，直接使用
+                        preview_item = apply_field_format_to_paragraph(para, field_config, value, paper_idx)
+                else:
+                    # 其他字段直接使用配置
+                    preview_item = apply_field_format_to_paragraph(para, field_config, value, paper_idx)
                 
-                # 论文之间添加空行（可选）
-                if paper_idx < len(papers) - 1:
-                    doc.add_paragraph()
-                
-        else:
-            # 没有找到循环标记，在整个文档中替换论文占位符（只替换第一篇论文）
-            if papers:
-                paper = papers[0]
-                if hasattr(paper, 'title'):
-                    title = paper.title
-                    authors = paper.authors
-                    chinese_title = getattr(paper, 'chinese_title', '') or ''
-                    chinese_authors = getattr(paper, 'chinese_authors', '') or ''
-                    doi = paper.doi or ''
-                    page_start = paper.page_start
-                    page_end = paper.page_end
-                    formatted_authors = format_authors_for_citation(authors, max_authors=3)
-                    citation = f"{formatted_authors}. {title} [J]. Journal of Donghua University (English Edition), 2025, 42(3): {page_start}-{page_end}."
-                
-                paper_placeholders = {
-                    '{title}': title or '',
-                    '{chinese_title}': chinese_title or '',
-                    '{authors}': authors or '',
-                    '{chinese_authors}': chinese_authors or '',
-                    '{doi}': doi or '',
-                    '{citation}': citation or '',
-                    '{page_start}': str(page_start) if page_start else '',
-                    '{page_end}': str(page_end) if page_end else '',
-                }
-                
-                replace_placeholders_in_document(doc, paper_placeholders)
+                # 添加到文本预览数据
+                text_preview_data.append(preview_item)
         
-        # 保存文件
+        # 添加空行分隔
+        doc.add_paragraph()
+        
+        # 添加页脚信息（与最终生成保持一致）
+        doc.add_paragraph("─" * 30)
+        footer_para = doc.add_paragraph()
+        footer_run = footer_para.runs[0] if footer_para.runs else footer_para.add_run()
+        footer_run.text = "感谢您的阅读！欢迎引用本文内容"
+        footer_run.font.size = Pt(10)
+        
+        copyright_para = doc.add_paragraph()
+        copyright_run = copyright_para.runs[0] if copyright_para.runs else copyright_para.add_run()
+        copyright_run.text = "© 2025 东华大学学报 版权所有"
+        copyright_run.font.size = Pt(9)
+        
+        # 保存预览文件
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"推文_{journal.issue}_{timestamp}.docx"
-        output_path = os.path.join('uploads', filename)
+        preview_filename = f"tuiwen_preview_{timestamp}.docx"
+        preview_dir = os.path.join('temp_images', datetime.now().strftime('%Y%m%d'))
+        os.makedirs(preview_dir, exist_ok=True)
+        preview_path = os.path.join(preview_dir, preview_filename)
         
-        os.makedirs('uploads', exist_ok=True)
-        doc.save(output_path)
+        doc.save(preview_path)
+        logger.info(f"预览文档已保存: {preview_path}")
         
-        logger.info(f"基于模板生成推文: {output_path}")
-        return output_path
+        if return_text_preview:
+            return preview_path, text_preview_data
+        else:
+            return preview_path
         
     except Exception as e:
-        logger.error(f"基于模板生成推文失败: {str(e)}")
-        raise Exception(f"基于模板生成推文失败: {str(e)}")
+        logger.error(f"生成推文预览失败: {str(e)}")
+        raise Exception(f"生成推文预览失败: {str(e)}")

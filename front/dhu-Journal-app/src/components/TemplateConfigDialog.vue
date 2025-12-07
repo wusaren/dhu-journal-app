@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     v-model="dialogVisible"
-    title="模板配置"
+    :title="dialogTitle"
     width="1000px"
     @close="handleClose"
   >
@@ -60,66 +60,380 @@
         </div>
       </div>
 
-      <!-- 步骤1：选择字段（仅推文） -->
-      <div v-if="step === 1 && templateType === 'tuiwen'" class="field-selection-section">
+      <!-- 推文模板配置（合并步骤1和2） -->
+      <div v-if="step === 1 && templateType === 'tuiwen'" class="tuiwen-config-section">
+        <el-row :gutter="20">
+          <!-- 左侧：配置区 -->
+          <el-col :span="13">
+            <el-card>
+              <template #header>
+                <div class="tuiwen-card-header">
+                  <div class="tuiwen-card-header__row">
+                    <span class="tuiwen-card-title">推文配置</span>
+                    <div class="tuiwen-upload-actions">
+                      <el-upload
+                        :auto-upload="false"
+                        :on-change="handleTuiwenTemplateUpload"
+                        :show-file-list="false"
+                        accept=".docx,.doc"
+                      >
+                        <el-button size="small" type="primary">
+                          <el-icon style="margin-right: 5px;"><UploadFilled /></el-icon>
+                          上传 Word 模板
+                        </el-button>
+                      </el-upload>
+                      <el-upload
+                        :auto-upload="false"
+                        :on-change="handleTuiwenPaperUpload"
+                        :show-file-list="false"
+                        accept=".pdf"
+                      >
+                        <el-button size="small" type="primary">
+                          <el-icon style="margin-right: 5px;"><UploadFilled /></el-icon>
+                          上传论文 (PDF)
+                        </el-button>
+                      </el-upload>
+                      <el-button size="small" @click="showAddTuiwenFieldDialog = true">
+                        + 添加字段
+                      </el-button>
+                      <el-button 
+                        v-if="tuiwenTemplateFile && tuiwenPaperFile" 
+                        size="small" 
+                        type="success" 
+                        @click="uploadTuiwenTemplateAndPaper"
+                        :loading="tuiwenTemplateUploading"
+                      >
+                        开始识别
+                      </el-button>
+                    </div>
+                  </div>
+                  <div 
+                    v-if="tuiwenTemplateFile || tuiwenPaperFile" 
+                    class="tuiwen-upload-status"
+                  >
+                    <span v-if="tuiwenTemplateFile">✓ 模板已选择: {{ tuiwenTemplateFile.name }}</span>
+                    <span v-if="tuiwenPaperFile">✓ 论文已选择: {{ tuiwenPaperFile.name }}</span>
+                  </div>
+                </div>
+              </template>
+              
+              <!-- 使用折叠面板 -->
+              <el-collapse v-model="activeTuiwenFields">
+                <el-collapse-item 
+                  v-for="(field, index) in tuiwenFields"
+                  :key="index"
+                  :name="index"
+                >
+                  <template #title>
+                    <div 
+                      style="display: flex; align-items: center; width: 100%;"
+                      :draggable="true"
+                      @dragstart="handleTuiwenDragStart(index, $event)"
+                      @dragover.prevent="handleTuiwenDragOver($event)"
+                      @drop="handleTuiwenDrop(index, $event)"
+                    >
+                      <span style="margin-right: 10px; color: #909399; cursor: move;">☰</span>
+                      <span style="margin-right: 10px; color: #409eff; font-weight: bold;">{{ index + 1 }}</span>
+                      <span style="flex: 1;">{{ field.label }}</span>
+                      <el-button 
+                        size="small" 
+                        text 
+                        type="danger" 
+                        @click.stop="removeTuiwenField(index)"
+                        style="margin-right: 10px;"
+                      >
+                        删除
+                      </el-button>
+                    </div>
+                  </template>
+                  
+                  <div v-if="field.type === 'image'" class="field-config-image">
+                    <div class="image-inline">
+                      <div class="image-inline-info">
+                        <span class="image-inline-label">{{ field.label }}</span>
+                        <span class="image-inline-location">
+                          位置：{{ field.location || '未知' }}
+                        </span>
+                        <el-tag
+                          v-if="field.image_config?.detected_type"
+                          size="small"
+                          type="info"
+                        >
+                          自动识别为 {{ field.image_config?.detected_type === 'first_image' ? '作者说' : '配图' }}
+                        </el-tag>
+                      </div>
+                      <div class="image-inline-action">
+                        <template v-if="field.image_config?.selected_type">
+                          <el-tag
+                            :type="field.image_config.selected_type === 'first_image' ? 'info' : 'success'"
+                            size="small"
+                          >
+                            {{ field.image_config.selected_type === 'first_image' ? '作者说链接/OSID' : '论文配图' }}
+                          </el-tag>
+                          <el-button
+                            text
+                            type="primary"
+                            size="small"
+                            @click="resetImageFieldSelection(field)"
+                          >
+                            重新选择
+                          </el-button>
+                        </template>
+                        <template v-else>
+                          <el-select
+                        :model-value="field.image_config?.selected_type"
+                            placeholder="请选择图片类型"
+                            size="small"
+                            style="width: 200px;"
+                        @update:modelValue="value => updateImageSelectedType(field, value as 'first_image' | 'second_image')"
+                          >
+                            <el-option label="作者说链接/OSID" value="first_image" />
+                            <el-option label="论文配图" value="second_image" />
+                          </el-select>
+                          <div class="image-field-warning">未识别类型，请选择</div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="field-config-simple">
+                    <p class="field-config-simple__label">{{ field.label }}</p>
+                    <p class="field-config-simple__key">系统字段：{{ field.key }}</p>
+                    <p class="field-config-simple__desc">
+                      已继承模板中的字体与排版，生成预览时将按照原样渲染。
+                    </p>
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
+              
+              <div v-if="tuiwenFields.length === 0" style="text-align: center; padding: 40px; color: #909399;">
+                <p>还没有添加字段</p>
+                <p style="font-size: 12px; margin-top: 10px;">
+                  可以上传 Word 模板自动识别，或手动添加字段
+                </p>
+              </div>
+
+            </el-card>
+          </el-col>
+          
+          <!-- 右侧：预览区 -->
+          <el-col :span="11">
+            <el-card>
+              <template #header>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>实时预览</span>
+                  <el-button 
+                    size="small" 
+                    @click="handleGeneratePreview"
+                    :loading="tuiwenPreviewLoading"
+                  >
+                    <el-icon style="margin-right: 5px;"><View /></el-icon>
+                    刷新预览
+                  </el-button>
+                </div>
+              </template>
+
+              <el-alert
+                v-if="hasUnknownImageSelection"
+                type="warning"
+                :closable="false"
+                show-icon
+                style="margin-bottom: 12px;"
+                description="存在未识别的图片类型，预览会使用默认样式。请在左侧为每张图片选择“作者说”或“配图”。"
+              />
+              
+              <div class="preview-area">
+                <div v-if="tuiwenPreviewText.length > 0 || tuiwenPreviewUrl" class="preview-content">
+                  <!-- 文本+图片预览 -->
+                  <div v-if="previewDisplayItems.length > 0" class="text-preview-container">
+                    <div
+                      v-for="(item, index) in previewDisplayItems"
+                      :key="index"
+                      class="preview-line"
+                    >
+                      <template v-if="item.type === 'text' && item.data">
+                        <span
+                          v-if="item.data.prefix"
+                          class="preview-prefix"
+                          :style="getPreviewStyle(item.data.prefix_style)"
+                        >
+                          {{ item.data.prefix }}
+                        </span>
+                        <span
+                          class="preview-content-text"
+                          :class="{ 'citation-style': item.data.is_citation }"
+                          :style="getPreviewStyle(item.data.content_style)"
+                        >
+                          {{ item.data.content }}
+                        </span>
+                      </template>
+                      <template v-else-if="item.type === 'image'">
+                        <span
+                          class="preview-content-text"
+                          :style="getPreviewStyle(item.field?.format || defaultPreviewStyle)"
+                        >
+                          【{{
+                            getImageLabelByType(
+                              item.field?.image_config?.selected_type ||
+                                item.field?.image_config?.detected_type
+                            )
+                          }}】
+                        </span>
+                        <span v-if="!item.field?.image_config?.selected_type" class="preview-image-warning">
+                          （请在左侧选择图片类型）
+                        </span>
+                      </template>
+                    </div>
+                  </div>
+                  
+                  <!-- 下载按钮 -->
+                  <div style="text-align: center; padding: 15px; border-top: 1px solid #e4e7ed; margin-top: 15px;">
+                    <el-button 
+                      type="primary" 
+                      @click="downloadPreview"
+                      v-if="tuiwenPreviewUrl"
+                    >
+                      <el-icon style="margin-right: 5px;"><Download /></el-icon>
+                      下载完整文档
+                    </el-button>
+                  </div>
+                </div>
+                <el-empty v-else description="点击刷新生成预览" />
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+      </div>
+
+      <!-- 步骤2：推文字段确认（已废弃，保留兼容） -->
+      <div v-if="step === 2 && templateType === 'tuiwen'" class="tuiwen-confirm-section" style="display: none;">
         <div class="section-header">
-          <h3>选择推文字段</h3>
-          <span class="hint-text">选择要在推文中显示的字段，可以调整顺序</span>
+          <h3>配置推文字段格式</h3>
+          <span class="hint-text">为每个字段设置前缀和格式，可以生成预览查看效果</span>
         </div>
 
-        <div class="fields-list">
+        <!-- 字段配置列表 -->
+        <div class="fields-config-list">
           <div
             v-for="(field, index) in tuiwenFields"
             :key="index"
-            class="field-item"
-            :draggable="true"
-            @dragstart="handleTuiwenDragStart(index, $event)"
-            @dragover.prevent="handleTuiwenDragOver($event)"
-            @drop="handleTuiwenDrop(index, $event)"
+            class="field-config-item"
           >
-            <div class="field-info">
+            <div class="field-header">
               <span class="field-number">{{ index + 1 }}</span>
               <span class="field-label">{{ field.label }}</span>
-              <span class="drag-indicator">☰</span>
             </div>
             
-            <div class="field-actions">
-              <el-button
-                size="small"
-                type="danger"
-                text
-                @click="removeTuiwenField(index)"
-                style="margin-left: 10px;"
-              >
-                删除
-              </el-button>
+            <div class="field-config-content">
+              <!-- 前缀设置 -->
+              <div class="config-row">
+                <label class="config-label">前缀：</label>
+                <el-input
+                  v-model="field.prefix"
+                  placeholder="例如：1. "
+                  style="width: 200px;"
+                  clearable
+                />
+                <span class="config-hint">在字段内容前添加的前缀文字</span>
+              </div>
+              
+              <!-- 前缀格式 -->
+              <div class="config-row">
+                <label class="config-label">前缀格式：</label>
+                <el-select 
+                  v-model="field.prefix_format.font_name" 
+                  placeholder="字体" 
+                  style="width: 140px;"
+                  clearable
+                >
+                  <el-option label="Arial" value="Arial" />
+                  <el-option label="Times New Roman" value="Times New Roman" />
+                  <el-option label="宋体" value="宋体" />
+                  <el-option label="黑体" value="黑体" />
+                  <el-option label="微软雅黑" value="微软雅黑" />
+                </el-select>
+                <el-input-number
+                  v-model="field.prefix_format.font_size"
+                  :min="8"
+                  :max="72"
+                  placeholder="大小"
+                  style="width: 100px; margin-left: 10px;"
+                />
+                <el-color-picker
+                  v-model="field.prefix_format.font_color"
+                  style="margin-left: 10px;"
+                />
+              </div>
+              
+              <!-- 字段内容格式 -->
+              <div class="config-row">
+                <label class="config-label">内容格式：</label>
+                <el-select 
+                  v-model="field.format.font_name" 
+                  placeholder="字体" 
+                  style="width: 140px;"
+                  clearable
+                >
+                  <el-option label="Arial" value="Arial" />
+                  <el-option label="Times New Roman" value="Times New Roman" />
+                  <el-option label="宋体" value="宋体" />
+                  <el-option label="黑体" value="黑体" />
+                  <el-option label="微软雅黑" value="微软雅黑" />
+                </el-select>
+                <el-input-number
+                  v-model="field.format.font_size"
+                  :min="8"
+                  :max="72"
+                  placeholder="大小"
+                  style="width: 100px; margin-left: 10px;"
+                />
+                <el-color-picker
+                  v-model="field.format.font_color"
+                  style="margin-left: 10px;"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="add-field-section">
-          <el-button type="primary" @click="showAddTuiwenFieldDialog = true">
-            添加字段
-          </el-button>
-        </div>
-      </div>
-
-
-      <!-- 步骤2：推文字段确认（仅推文） -->
-      <div v-if="step === 2 && templateType === 'tuiwen'" class="tuiwen-confirm-section">
-        <div class="section-header">
-          <h3>确认推文字段配置</h3>
-          <span class="hint-text">请确认以下字段配置，点击"保存配置"完成设置</span>
-        </div>
-
-        <div class="fields-preview">
-          <div
-            v-for="(field, index) in tuiwenFields"
-            :key="index"
-            class="field-preview-item"
-          >
-            <span class="field-order">{{ index + 1 }}</span>
-            <span class="field-name">{{ field.label }}</span>
+        <!-- 预览区域 -->
+        <div class="preview-section" style="margin-top: 30px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+            <el-button 
+              type="primary" 
+              @click="handleGeneratePreview"
+              :loading="tuiwenPreviewLoading"
+            >
+              <el-icon style="margin-right: 5px;"><View /></el-icon>
+              生成预览
+            </el-button>
+            <span class="hint-text">使用默认论文数据生成预览文档</span>
+          </div>
+          
+          <div v-if="tuiwenPreviewUrl" class="preview-container">
+            <div class="preview-header">
+              <span>预览效果</span>
+              <el-button 
+                size="small" 
+                text 
+                @click="tuiwenPreviewUrl = ''"
+              >
+                关闭预览
+              </el-button>
+            </div>
+            <div class="preview-content">
+              <div style="text-align: center; padding: 20px;">
+                <el-button 
+                  type="primary" 
+                  @click="downloadPreview"
+                >
+                  <el-icon style="margin-right: 5px;"><Download /></el-icon>
+                  下载预览文档
+                </el-button>
+                <p style="margin-top: 15px; color: #909399; font-size: 14px;">
+                  预览文档已生成，点击下载查看完整效果
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -297,13 +611,13 @@
           上传并识别
         </el-button>
         <el-button
-          class="next-btn"
+          class="save-btn"
           v-if="step === 1 && templateType === 'tuiwen'"
           type="primary"
           :disabled="tuiwenFields.length === 0"
-          @click="step = 2"
+          @click="handleSave"
         >
-          下一步
+          保存配置
         </el-button>
         <el-button
           class="save-btn"
@@ -328,9 +642,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { UploadFilled, Loading } from '@element-plus/icons-vue'
+import { UploadFilled, Loading, View, Download } from '@element-plus/icons-vue'
 import { formatService, type UserTemplateConfig, type UserTuiwenTemplateConfig } from '@/api/formatService'
 
 const props = defineProps<{
@@ -345,6 +659,13 @@ const emit = defineEmits<{
 const dialogVisible = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
+})
+
+const dialogTitle = computed(() => {
+  if (templateType.value === 'tuiwen' && step.value >= 1) {
+    return '推文配置'
+  }
+  return '模板配置'
 })
 
 const step = ref(0) // 0: 选择类型, 1: 上传/选择字段, 2: 配置映射/确认
@@ -369,20 +690,44 @@ const hasTemplate = ref(false)
 const dragIndex = ref<number | null>(null)
 
 // 推文字段相关
-const tuiwenFields = ref<Array<{ key: string; label: string; order: number }>>([])
-const tuiwenFieldDefinitions = ref([
-  { key: 'chinese_title', label: '中文标题' },
-  { key: 'chinese_authors', label: '中文作者' },
-  { key: 'title', label: '标题' },
-  { key: 'authors', label: '作者' },
-  { key: 'doi', label: 'DOI' },
-  { key: 'citation', label: '引用信息' },
-  { key: 'page_start', label: '起始页码' },
-  { key: 'page_end', label: '结束页码' },
-])
+const tuiwenFields = ref<Array<{ 
+  key: string; 
+  label: string; 
+  order: number;
+  type?: string;
+  location?: string;
+  detected_type?: string | null;
+  image_config?: {
+    template_field: string;
+    location?: string;
+    context?: string;
+    detected_type?: string | null;
+    selected_type: 'first_image' | 'second_image' | null;
+  };
+  prefix?: string;
+  format?: { font_name: string; font_size: number; font_color: string };
+  prefix_format?: { font_name: string; font_size: number; font_color: string };
+}>>([])
+const availableTuiwenFields = ref<Array<{ key: string; label: string }>>([])
 const showAddTuiwenFieldDialog = ref(false)
 const newTuiwenFieldKey = ref<string>('')
 const tuiwenDragIndex = ref<number | null>(null)
+const tuiwenTemplateFilePath = ref<string>('')
+const tuiwenPaperFilePath = ref<string>('')
+const tuiwenPaperCachePath = ref<string>('')
+const tuiwenTemplateFile = ref<File | null>(null)
+const tuiwenPaperFile = ref<File | null>(null)
+const tuiwenPreviewUrl = ref<string>('')
+const tuiwenPreviewText = ref<Array<{
+  prefix: string
+  prefix_style: { font_name: string; font_size: number; font_color: string }
+  content: string
+  content_style: { font_name: string; font_size: number; font_color: string; font_style?: string }
+  is_citation?: boolean
+}>>([])
+const tuiwenPreviewLoading = ref(false)
+const activeTuiwenFields = ref<number[]>([]) // 折叠面板的激活项
+const tuiwenTemplateUploading = ref(false)
 
 // 过滤已使用的系统字段（统计表）
 const filteredAvailableFields = computed(() => {
@@ -393,8 +738,59 @@ const filteredAvailableFields = computed(() => {
 // 过滤已使用的推文字段
 const filteredAvailableTuiwenFields = computed(() => {
   const usedKeys = new Set(tuiwenFields.value.map(f => f.key))
-  return tuiwenFieldDefinitions.value.filter(field => !usedKeys.has(field.key))
+  return availableTuiwenFields.value.filter(field => !usedKeys.has(field.key))
 })
+
+const defaultPreviewStyle = {
+  font_name: '',
+  font_size: 12,
+  font_color: '#303133'
+}
+
+const getImageLabelByType = (
+  type: 'first_image' | 'second_image' | null | undefined
+) => {
+  if (type === 'first_image') return '作者说链接/OSID'
+  if (type === 'second_image') return '论文配图'
+  return '图片（未识别）'
+}
+
+const getFieldKeyForConfig = (field: any) => {
+  if (field?.type === 'image') {
+    const cfg = field.image_config
+    if (cfg?.selected_type) return cfg.selected_type
+    if (cfg?.detected_type) return cfg.detected_type
+    if (field.detected_type) return field.detected_type
+  }
+  return field.key
+}
+
+const hasUnknownImageSelection = computed(() =>
+  tuiwenFields.value.some(
+    field => field.type === 'image' && !field.image_config?.selected_type
+  )
+)
+
+const previewDisplayItems = computed(() => {
+  const textQueue = [...tuiwenPreviewText.value]
+  const items: Array<{ type: 'text' | 'image'; data?: any; field?: any }> = []
+
+  const sortedFields = [...tuiwenFields.value].sort(
+    (a, b) => (a.order ?? 999) - (b.order ?? 999)
+  )
+
+  sortedFields.forEach(field => {
+    if (field.type === 'image') {
+      items.push({ type: 'image', field })
+    } else if (textQueue.length > 0) {
+      items.push({ type: 'text', data: textQueue.shift() })
+    }
+  })
+
+  textQueue.forEach(item => items.push({ type: 'text', data: item }))
+  return items
+})
+
 
 // 获取某个表头可选的系统字段（排除已使用的，但包含当前已选的）
 const getAvailableFieldsForHeader = (header: any) => {
@@ -423,9 +819,28 @@ const loadSystemFields = async () => {
   }
 }
 
+// 加载可用推文字段列表
+const loadAvailableTuiwenFields = async () => {
+  try {
+    const defaultRes = await formatService.getDefaultTuiwenFields()
+    if (defaultRes && defaultRes.success && defaultRes.fields) {
+      availableTuiwenFields.value = defaultRes.fields.map((field: any) => ({
+        key: field.field,
+        label: field.label
+      }))
+    }
+  } catch (error) {
+    console.error('加载可用推文字段失败:', error)
+  }
+}
+
 // 选择模板类型后
 const handleTypeSelected = async () => {
   if (templateType.value) {
+    // 如果是推文模板，先加载可用字段列表
+    if (templateType.value === 'tuiwen') {
+      await loadAvailableTuiwenFields()
+    }
     // 先检查是否有已保存的配置，如果有则跳转到配置页面，否则进入上传/选择字段步骤
     await loadSavedConfig()
   }
@@ -435,6 +850,7 @@ const handleTypeSelected = async () => {
 const handleFileChange = (file: any) => {
   selectedFile.value = file.raw
 }
+
 
 // 上传并识别（仅统计表）
 const handleUpload = async () => {
@@ -494,6 +910,77 @@ const handleUpload = async () => {
   } finally {
     uploading.value = false
   }
+}
+
+const populateImageFields = (imageFields: Array<any> = []) => {
+  const extraMap = new Map<string, any>()
+  if (Array.isArray(imageFields)) {
+    imageFields.forEach((field: any) => {
+      const key = field.location || field.template_field || field.field_name
+      if (key) {
+        extraMap.set(key, field)
+      }
+    })
+  }
+
+  tuiwenFields.value = tuiwenFields.value.map(field => {
+    if (field.type !== 'image') {
+      return field
+    }
+
+    const extra = extraMap.get(field.location || field.label || field.key) || {}
+    const detected = field.detected_type ?? extra.detected_type ?? extra.image_type ?? null
+    const selected =
+      field.image_config?.selected_type ??
+      extra.selected_type ??
+      detected ??
+      null
+
+    const updatedField = {
+      ...field,
+      label: getImageLabelByType(selected || detected),
+      image_config: {
+        template_field: extra.template_field || field.label || '图片',
+        location: field.location,
+        context: extra.context,
+        detected_type: detected,
+        selected_type: selected
+      }
+    }
+
+    return updatedField
+  })
+}
+
+const buildImageFieldsPayload = () => {
+  return tuiwenFields.value
+    .filter(field => field.type === 'image')
+    .map(field => ({
+      template_field: field.image_config?.template_field || field.label || '图片',
+      selected_type: field.image_config?.selected_type || 'first_image',
+      location: field.location
+    }))
+}
+
+const ensureImageConfig = (field: any) => {
+  if (!field.image_config) {
+    field.image_config = {
+      template_field: field.label || '图片',
+      location: field.location,
+      context: '',
+      detected_type: field.detected_type || null,
+      selected_type: null
+    }
+  }
+  return field.image_config
+}
+
+const updateImageSelectedType = (field: any, value: 'first_image' | 'second_image' | null) => {
+  if (!field || field.type !== 'image') return
+  const config = ensureImageConfig(field)
+  config.selected_type = value
+  field.label = getImageLabelByType(value || config.detected_type)
+  handleImageTypeChange(field)
 }
 
 // 表头映射变化
@@ -631,16 +1118,23 @@ const handleAddTuiwenField = () => {
     return
   }
 
-  const field = tuiwenFieldDefinitions.value.find(f => f.key === newTuiwenFieldKey.value)
+  const field = availableTuiwenFields.value.find(f => f.key === newTuiwenFieldKey.value)
   if (field) {
     tuiwenFields.value.push({
       key: field.key,
       label: field.label,
-      order: tuiwenFields.value.length + 1
+      order: tuiwenFields.value.length + 1,
+      prefix: '',
+      format: { font_name: '', font_size: 12, font_color: '#000000' },
+      prefix_format: { font_name: '', font_size: 12, font_color: '#000000' }
     })
     updateTuiwenOrders()
     newTuiwenFieldKey.value = ''
     showAddTuiwenFieldDialog.value = false
+    // 自动刷新预览
+    nextTick(() => {
+      debouncedGeneratePreview()
+    })
   }
 }
 
@@ -648,6 +1142,10 @@ const handleAddTuiwenField = () => {
 const removeTuiwenField = (index: number) => {
   tuiwenFields.value.splice(index, 1)
   updateTuiwenOrders()
+  // 自动刷新预览
+  nextTick(() => {
+    debouncedGeneratePreview()
+  })
 }
 
 // 更新推文字段order
@@ -655,6 +1153,217 @@ const updateTuiwenOrders = () => {
   tuiwenFields.value.forEach((f, i) => {
     f.order = i + 1
   })
+}
+
+// 处理上传 Word 模板
+const handleTuiwenTemplateUpload = async (file: any) => {
+  if (!file.raw) {
+    return
+  }
+  
+  // 保存模板文件
+  tuiwenTemplateFile.value = file.raw
+  ElMessage.success('模板文件已选择，请继续上传论文文件（PDF格式）')
+}
+
+// 处理上传论文文件
+const handleTuiwenPaperUpload = async (file: any) => {
+  if (!file.raw) {
+    return
+  }
+  
+  // 保存论文文件
+  tuiwenPaperFile.value = file.raw
+  ElMessage.success('论文文件已选择')
+  
+  // 如果模板文件也已选择，提示可以开始识别
+  if (tuiwenTemplateFile.value) {
+    ElMessage.info('模板和论文都已选择，请点击"开始识别"按钮')
+  }
+}
+
+const handleImageTypeChange = () => {
+  if (step.value === 1 && templateType.value === 'tuiwen') {
+    debouncedGeneratePreview()
+  }
+}
+
+const resetImageFieldSelection = (field: any) => {
+  if (field?.type === 'image') {
+    const config = ensureImageConfig(field)
+    config.selected_type = null
+    handleImageTypeChange()
+  }
+}
+
+// 上传模板和论文文件
+const uploadTuiwenTemplateAndPaper = async () => {
+  if (!tuiwenTemplateFile.value || !tuiwenPaperFile.value) {
+    ElMessage.error('请同时上传模板文件和论文文件')
+    return
+  }
+  
+  try {
+    tuiwenTemplateUploading.value = true
+    ElMessage.info('正在上传并识别模板...')
+    
+    const res = await formatService.uploadTuiwenTemplate(tuiwenTemplateFile.value, tuiwenPaperFile.value)
+    
+    if (res.success && res.fields) {
+      // 将识别结果转换为前端格式（简化版，不包含格式编辑）
+      tuiwenFields.value = res.fields.map((field: any, index: number) => ({
+        key: field.field,
+        label: field.label,
+        order: index + 1,
+        type: field.type,
+        location: field.location,
+        detected_type: field.detected_type || null,
+        prefix: field.prefix || '',
+        format: field.format || { font_name: '', font_size: 12, font_color: '#000000' },
+        prefix_format: field.prefix_format || { font_name: '', font_size: 12, font_color: '#000000' }
+      }))
+      populateImageFields(res.image_fields || [])
+      
+      // 保存模板文件路径和论文文件路径
+      if (res.template_file_path) {
+        tuiwenTemplateFilePath.value = res.template_file_path
+      }
+      if (res.paper_file_path) {
+        tuiwenPaperFilePath.value = res.paper_file_path
+      }
+      if (res.paper_cache_path) {
+        tuiwenPaperCachePath.value = res.paper_cache_path
+      }
+      // 展开所有字段
+      activeTuiwenFields.value = tuiwenFields.value.map((_, index) => index)
+      
+      // 自动保存配置（包含论文路径），以便预览时可以使用
+      if (tuiwenTemplateFilePath.value && tuiwenPaperFilePath.value) {
+        try {
+          const userTuiwenConfig: UserTuiwenTemplateConfig = {
+            template_file_path: tuiwenTemplateFilePath.value,
+            paper_file_path: tuiwenPaperFilePath.value,
+            paper_cache_path: tuiwenPaperCachePath.value,
+            fields: tuiwenFields.value.map(field => {
+              const fieldKey = getFieldKeyForConfig(field)
+              return {
+                field: fieldKey,
+                label: field.label,
+                required: false,
+                order: field.order,
+                type: field.type,
+                location: field.location,
+                detected_type: field.detected_type || field.image_config?.detected_type || null,
+                prefix: field.prefix || '',
+                format: field.format || { font_name: '', font_size: 12, font_color: '#000000' },
+                prefix_format:
+                  field.prefix_format || { font_name: '', font_size: 12, font_color: '#000000' }
+              }
+            }),
+            image_fields: buildImageFieldsPayload()
+          }
+          await formatService.saveUserTuiwenTemplate(userTuiwenConfig)
+          console.log('已自动保存模板配置（包含论文路径）')
+        } catch (error) {
+          console.warn('自动保存配置失败，但不影响使用:', error)
+        }
+      }
+      
+      ElMessage.success(`成功识别 ${res.fields.length} 个字段`)
+      
+      // 自动生成预览
+      await handleGeneratePreview()
+    } else {
+      ElMessage.error(res.message || '模板识别失败，请尝试手动配置')
+    }
+  } catch (error: any) {
+    console.error('上传模板失败:', error)
+    ElMessage.error(error.message || '上传模板失败')
+  } finally {
+    tuiwenTemplateUploading.value = false
+  }
+}
+
+// 生成推文预览（带防抖）
+let previewTimer: ReturnType<typeof setTimeout> | null = null
+const debouncedGeneratePreview = () => {
+  if (previewTimer) {
+    clearTimeout(previewTimer)
+  }
+  previewTimer = setTimeout(() => {
+    handleGeneratePreview()
+  }, 500) // 500ms 防抖
+}
+
+// 生成推文预览
+const handleGeneratePreview = async () => {
+  if (tuiwenFields.value.length === 0) {
+    // 如果没有字段，清空预览
+    tuiwenPreviewText.value = []
+    tuiwenPreviewUrl.value = ''
+    return
+  }
+
+  try {
+    tuiwenPreviewLoading.value = true
+    
+    // 准备字段配置（使用识别出的格式）
+    const fieldsConfig = tuiwenFields.value.map(field => {
+      const fieldKey = getFieldKeyForConfig(field)
+      return {
+        field: fieldKey,
+        label: field.label,
+        order: field.order,
+        prefix: field.prefix || '',
+        format: field.format || { font_name: '', font_size: 12, font_color: '#000000' },
+        prefix_format: field.prefix_format || {
+          font_name: '',
+          font_size: 12,
+          font_color: '#000000'
+        }
+      }
+    })
+
+    const res = await formatService.generateTuiwenPreview(fieldsConfig)
+    
+    if (res.success) {
+      if (res.preview_download_url) {
+        tuiwenPreviewUrl.value = res.preview_download_url
+      }
+      if (res.preview_text) {
+        tuiwenPreviewText.value = res.preview_text
+      }
+    } else {
+      console.error('预览生成失败:', res.message)
+    }
+  } catch (error: any) {
+    console.error('生成预览失败:', error)
+  } finally {
+    tuiwenPreviewLoading.value = false
+  }
+}
+
+// 下载预览文档
+const downloadPreview = () => {
+  if (tuiwenPreviewUrl.value) {
+    // 创建临时链接下载
+    const link = document.createElement('a')
+    link.href = tuiwenPreviewUrl.value
+    link.download = '推文预览.docx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+}
+
+// 获取预览样式
+const getPreviewStyle = (style: { font_name: string; font_size: number; font_color: string; font_style?: string }) => {
+  return {
+    fontFamily: style.font_name || 'inherit',
+    fontSize: `${style.font_size || 12}px`,
+    color: style.font_color || '#000000',
+    fontStyle: style.font_style || 'normal'
+  }
 }
 
 // 推文字段拖拽相关
@@ -683,6 +1392,10 @@ const handleTuiwenDrop = (dropIndex: number, event: DragEvent) => {
   tuiwenFields.value.splice(dropIndex, 0, draggedItem)
   updateTuiwenOrders()
   tuiwenDragIndex.value = null
+  // 自动刷新预览
+  nextTick(() => {
+    debouncedGeneratePreview()
+  })
 }
 
 // 保存配置
@@ -717,12 +1430,26 @@ const handleSave = async () => {
     } else {
       // 推文模板：保存字段配置（用户级别）
       const userTuiwenConfig: UserTuiwenTemplateConfig = {
-        fields: tuiwenFields.value.map(field => ({
-          field: field.key,
-          label: field.label,
-          required: false,
-          order: field.order
-        }))
+        template_file_path: tuiwenTemplateFilePath.value || undefined,
+        paper_file_path: tuiwenPaperFilePath.value || undefined,
+        paper_cache_path: tuiwenPaperCachePath.value || undefined,
+        fields: tuiwenFields.value.map(field => {
+          const fieldKey = getFieldKeyForConfig(field)
+          return {
+            field: fieldKey,
+            label: field.label,
+            required: false,
+            order: field.order,
+            type: field.type,
+            location: field.location,
+            detected_type: field.detected_type || field.image_config?.detected_type || null,
+            prefix: field.prefix || '',
+            format: field.format || { font_name: '', font_size: 12, font_color: '#000000' },
+            prefix_format:
+              field.prefix_format || { font_name: '', font_size: 12, font_color: '#000000' }
+          }
+        }),
+        image_fields: buildImageFieldsPayload()
       }
       
       const res = await formatService.saveUserTuiwenTemplate(userTuiwenConfig)
@@ -755,15 +1482,18 @@ const handleDeleteTemplate = async () => {
       type: 'warning'
     })
 
-    // 对于推文模板，我们使用一个空的配置来"删除"它
+    // 对于推文模板，使用删除接口
     if (templateType.value === 'tuiwen') {
-      const emptyConfig: UserTuiwenTemplateConfig = {
-        fields: []
-      }
-      const res = await formatService.saveUserTuiwenTemplate(emptyConfig)
+      const res = await formatService.deleteUserTuiwenTemplate()
       if (res.success) {
-        ElMessage.success('推文模板配置已清空')
+        ElMessage.success('推文模板配置删除成功')
         hasTemplate.value = false
+        tuiwenFields.value = []
+        tuiwenTemplateFilePath.value = ''
+        tuiwenPaperFilePath.value = ''
+        tuiwenPaperCachePath.value = ''
+        tuiwenTemplateFile.value = null
+        tuiwenPaperFile.value = null
         handleClose()
       } else {
         ElMessage.error(res.message || '删除失败')
@@ -831,18 +1561,68 @@ const loadSavedConfig = async () => {
       const res = await formatService.getUserTuiwenTemplate()
       console.log('加载推文模板配置结果:', res)
       if (res && res.success && res.has_template && res.fields) {
+        // 有用户配置，加载用户配置
         tuiwenFields.value = (res.fields || []).map((field: any) => ({
           key: field.field,
           label: field.label,
-          order: field.order || 1
+          order: field.order || 1,
+          type: field.type,
+          location: field.location,
+          detected_type: field.detected_type || null,
+          prefix: field.prefix || '',
+          format: field.format || { font_name: '', font_size: 12, font_color: '#000000' },
+          prefix_format: field.prefix_format || { font_name: '', font_size: 12, font_color: '#000000' }
         }))
         updateTuiwenOrders()
         hasTemplate.value = true
-        // 有模板配置，直接跳转到配置确认页面
-        step.value = 2
-      } else {
-        // 没有模板配置，进入选择字段步骤
+        tuiwenTemplateFilePath.value = res.template_file_path || ''
+        tuiwenPaperFilePath.value = res.paper_file_path || ''
+        tuiwenPaperCachePath.value = res.paper_cache_path || ''
+        populateImageFields(res.image_fields || [])
+        // 有模板配置，直接跳转到配置页面（合并后的单页）
         step.value = 1
+        // 展开所有字段以便编辑
+        activeTuiwenFields.value = tuiwenFields.value.map((_, index) => index)
+        // 自动生成预览
+        nextTick(() => {
+          handleGeneratePreview()
+        })
+      } else {
+        // 没有用户配置，加载默认配置
+        // 注意：availableTuiwenFields 已经在 handleTypeSelected 中加载了
+        try {
+          const defaultRes = await formatService.getDefaultTuiwenFields()
+          if (defaultRes && defaultRes.success && defaultRes.fields) {
+            // 如果可用字段列表还没有加载，则加载它
+            if (availableTuiwenFields.value.length === 0) {
+              availableTuiwenFields.value = defaultRes.fields.map((field: any) => ({
+                key: field.field,
+                label: field.label
+              }))
+            }
+            // 初始化字段列表为默认配置
+            tuiwenFields.value = defaultRes.fields.map((field: any) => ({
+              key: field.field,
+              label: field.label,
+              order: field.order || 1,
+              prefix: '',
+              format: { font_name: '', font_size: 12, font_color: '#000000' },
+              prefix_format: { font_name: '', font_size: 12, font_color: '#000000' }
+            }))
+            updateTuiwenOrders()
+            // 进入字段配置步骤
+            step.value = 1
+            // 自动生成预览
+            nextTick(() => {
+              handleGeneratePreview()
+            })
+          } else {
+            step.value = 1
+          }
+        } catch (error) {
+          console.warn('加载默认配置失败:', error)
+          step.value = 1
+        }
       }
     }
   } catch (error) {
@@ -861,6 +1641,13 @@ const handleClose = () => {
   headers.value = []
   tuiwenFields.value = []
   templateFilePath.value = ''
+  tuiwenTemplateFilePath.value = ''
+  availableTuiwenFields.value = []
+  tuiwenPreviewUrl.value = ''
+  tuiwenPreviewText.value = []
+  tuiwenPreviewLoading.value = false
+  activeTuiwenFields.value = []
+  tuiwenTemplateUploading.value = false
   dialogVisible.value = false
 }
 
@@ -871,6 +1658,13 @@ watch(() => props.modelValue, (newVal: boolean) => {
     // 不自动加载配置，让用户先选择模板类型
   }
 })
+
+// 监听推文字段变化，自动刷新预览
+watch(() => tuiwenFields.value, () => {
+  if (step.value === 1 && templateType.value === 'tuiwen' && tuiwenFields.value.length > 0) {
+    debouncedGeneratePreview()
+  }
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -926,6 +1720,45 @@ watch(() => props.modelValue, (newVal: boolean) => {
   margin: 0;
 }
 
+.tuiwen-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tuiwen-card-header__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tuiwen-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.tuiwen-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tuiwen-upload-actions .el-upload {
+  display: inline-flex;
+}
+
+.tuiwen-upload-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 12px;
+  color: #909399;
+}
+
 /* 推文预览区域 */
 .tuiwen-preview-section {
   padding: 20px;
@@ -953,6 +1786,227 @@ watch(() => props.modelValue, (newVal: boolean) => {
 /* 推文确认区域 */
 .tuiwen-confirm-section {
   padding: 20px;
+}
+
+/* 字段配置列表 */
+.fields-config-list {
+  margin-top: 20px;
+}
+
+.field-config-item {
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #fafafa;
+}
+
+.field-config-simple {
+  padding: 12px 14px;
+  background-color: #f7f9fc;
+  border: 1px dashed #dcdfe6;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-config-simple__label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.field-config-simple__key {
+  margin: 0;
+  font-size: 13px;
+  color: #606266;
+}
+
+.field-config-simple__desc {
+  margin: 0;
+  font-size: 12px;
+  color: #909399;
+}
+
+.field-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.field-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: #409eff;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.field-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.field-config-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-label {
+  min-width: 80px;
+  font-size: 14px;
+  color: #606266;
+  text-align: right;
+}
+
+.config-hint {
+  font-size: 12px;
+  color: #909399;
+  margin-left: 10px;
+}
+
+/* 预览区域 */
+.preview-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
+}
+
+.preview-container {
+  margin-top: 15px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #e4e7ed;
+  font-weight: 500;
+  color: #303133;
+}
+
+.preview-content {
+  padding: 15px;
+  background-color: #fff;
+}
+
+.preview-area {
+  min-height: 460px;
+  max-height: 700px;
+  overflow-y: auto;
+}
+
+.text-preview-container {
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  min-height: 360px;
+}
+
+.preview-line {
+  margin-bottom: 15px;
+  line-height: 1.8;
+  word-wrap: break-word;
+}
+
+.preview-prefix {
+  display: inline;
+  margin-right: 5px;
+}
+
+.preview-content-text {
+  display: inline;
+}
+
+.preview-content-text.citation-style {
+  font-style: italic;
+}
+
+.field-config-image {
+  padding: 12px 14px;
+  background-color: #f7f9fc;
+  border: 1px dashed #dcdfe6;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-inline-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #303133;
+}
+
+.image-inline-label {
+  font-weight: 600;
+}
+
+.image-inline-location {
+  font-size: 12px;
+  color: #909399;
+}
+
+.image-inline-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.image-field-warning {
+  font-size: 12px;
+  color: #e6a23c;
+}
+
+.preview-image-warning {
+  color: #e6a23c;
+  margin-left: 6px;
+  font-size: 12px;
+}
+
+.image-field-info .detected-type {
+  font-size: 12px;
+  color: #67c23a;
+}
+
+.image-field-info .context-text {
+  font-size: 12px;
+  color: #909399;
 }
 
 .fields-preview {
@@ -1051,6 +2105,19 @@ watch(() => props.modelValue, (newVal: boolean) => {
 .header-item[draggable="true"]:active {
   opacity: 0.7;
   transform: scale(1.02);
+}
+
+/* 推文字段拖拽样式 */
+.el-collapse-item__header[draggable="true"] {
+  cursor: move;
+}
+
+.el-collapse-item__header[draggable="true"]:hover {
+  background-color: #f5f7fa;
+}
+
+.el-collapse-item__header[draggable="true"]:active {
+  opacity: 0.7;
 }
 
 .header-info {
