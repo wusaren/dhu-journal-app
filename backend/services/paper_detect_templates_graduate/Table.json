@@ -1,0 +1,102 @@
+{
+  "table_rule": "研究生论文表格格式：表序及表名置于表的上方，表名用五号宋体加粗居中",
+  "table_detection_rules": {
+    "caption_pattern": "^\\s*表\\s*(\\d+)\\s+(.+)$",
+    "caption_format": {
+      "prefix": "表",
+      "numbering_required": true,
+      "title_case": true,
+      "bold": true,
+      "alignment": "center",
+      "position": "above_table"
+    },
+    "table_style": {
+      "type": "three_line",
+      "description": "三线表：仅有顶线、底线和表头底线",
+      "border_width": {
+        "top_line": 1.5,
+        "bottom_line": 1.5,
+        "header_line": 0.75,
+        "unit": "pt"
+      }
+    },
+    "content_alignment": {
+      "header_row": "center",
+      "content_long": "left",
+      "content_short": "center",
+      "description": "表头行居中对齐，内容行根据长度判断（较长左对齐，较短居中对齐）"
+    }
+  },
+  "format_rules": {
+    "caption": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 0
+    },
+    "table_content": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号"
+    },
+    "caption_numbering_check": true,
+    "caption_sequential_check": true,
+    "table_style_check": true,
+    "border_width_check": true,
+    "border_width_tolerance": 0.1,
+    "alignment_check": true,
+    "alignment_length_threshold": 20
+  },
+  "messages": {
+    "table_detection_ok": "表格格式检查通过",
+    "table_detection_error": "表格格式检查发现问题",
+    "caption_format_ok": "表名格式正确（五号宋体加粗居中）",
+    "caption_format_error": "表名格式不正确，应为五号宋体加粗居中",
+    "caption_missing": "未找到表名",
+    "caption_pattern_error": "表名格式应为：表X 表名（表序及表名置于表的上方）",
+    "caption_bold_error": "表名应加粗",
+    "caption_alignment_error": "表名应居中对齐",
+    "caption_font_size_error": "表名字体大小应为五号(10.5pt)",
+    "caption_font_name_error": "表名字体应为宋体（中文）和Times New Roman（英文）",
+    "caption_title_case_error": "表名首字母应大写",
+    "caption_numbering_error": "表编号不连续，发现编号：{numbers}",
+    "table_style_ok": "表格为三线表格式",
+    "table_style_error": "表格应为三线表格式（仅顶线、底线和表头底线）",
+    "border_width_ok": "表格边框粗细正确（顶线和底线1.5磅，表头线0.75磅）",
+    "border_width_error": "表格边框粗细不正确",
+    "top_border_width_error": "顶线宽度应为1.5磅，实际为{actual}磅",
+    "bottom_border_width_error": "底线宽度应为1.5磅，实际为{actual}磅",
+    "header_border_width_error": "表头底线宽度应为0.75磅，实际为{actual}磅",
+    "table_not_found": "未在标题下方找到表格",
+    "table_content_alignment_ok": "表格内容对齐方式正确",
+    "table_content_alignment_error": "表格内容对齐方式不正确（表头行居中对齐，内容行根据长度判断）",
+    "table_content_font_ok": "表格内容字体格式正确（五号宋体，英文字母及数字使用Times New Roman）",
+    "table_content_font_error": "表格内容字体格式应与正文一致（小四号宋体，英文字母及数字使用Times New Roman）",
+    "summary_overall": "表格格式检查结果: {ok}",
+    "table_count": "检测到 {count} 个表格"
+  },
+  "notes": [
+    "研究生论文表格检查重点：1) 表序及表名置于表的上方 2) 表名五号宋体加粗居中 3) 表编号连续性 4) 三线表格式（顶线和底线1.5磅，表头线0.75磅）",
+    "表编号从1开始，连续递增（表1，表2，表3...）",
+    "表格内容字体：小四号宋体，英文字母及数字使用Times New Roman"
+  ],
+  "generated_from": "东华大学研究生学位论文格式统一要求（2022年修订）"
+}
+

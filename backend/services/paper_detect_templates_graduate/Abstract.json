@@ -1,0 +1,114 @@
+{
+  "abstract_rule": "研究生论文中文摘要格式：题目三号黑体居中，摘要二字三号黑体居中字间空一格，摘要内容小四号宋体1.25倍行距每段开头空二格，关键词四号黑体顶格，关键词内容四号宋体用中文半角分号分隔",
+  "structure_rules": {
+    "header_pattern": "^\\s*摘要\\s*$",
+    "allow_paragraph_breaks": true,
+    "min_content_length": 300,
+    "max_content_length": 600,
+    "keywords_count_min": 3,
+    "keywords_count_max": 5,
+    "keywords_separator": "；"
+  },
+  "format_rules": {
+    "abstract": {
+      "font_size_pt": 12,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.25,
+      "space_before": 0,
+      "space_after": 12,
+      "alignment": "justify",
+      "first_line_indent": 24,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "title": {
+      "font_size_pt": 16,
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 12
+    },
+    "abstract_label": {
+      "font_size_pt": 16,
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 12,
+      "label_spacing": true
+    },
+    "keywords_label": {
+      "font_size_pt": 14,
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "left",
+      "space_before": 0,
+      "space_after": 0
+    },
+    "keywords_content": {
+      "font_size_pt": 14,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "left",
+      "separator": "；"
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "11": "11号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_header_ok": "摘要标题格式正确",
+    "structure_header_error": "摘要标题格式错误，应为'摘要'二字，三号黑体居中，字间空一格",
+    "structure_length_ok": "摘要长度适中（300-600字）",
+    "structure_length_short": "摘要内容过短（少于{min}字），建议300-600字",
+    "structure_length_long": "摘要内容过长（超过{max}字），建议300-600字",
+    "format_abstract_issue_header": "摘要格式问题：",
+    "format_abstract_ok": "摘要格式检查通过（小四号宋体，1.25倍行距，每段开头空二格）",
+    "format_alignment_ok": "摘要段落对齐正确（两端对齐）",
+    "format_indent_ok": "摘要缩进正确（每段开头空二格）",
+    "summary_overall": "摘要检查结果: {ok}"
+  },
+  "notes": [
+    "研究生论文中文摘要检查重点：1) 题目三号黑体居中 2) 摘要二字三号黑体居中字间空一格 3) 摘要内容小四号宋体1.25倍行距 4) 每段开头空二格 5) 关键词四号黑体顶格 6) 关键词内容四号宋体用中文半角分号分隔",
+    "摘要字数要求：300-600字",
+    "关键词数量：3-5个"
+  ],
+  "generated_from": "东华大学研究生学位论文格式统一要求（2022年修订）"
+}
+

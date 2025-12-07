@@ -1,0 +1,72 @@
+{
+  "figure_rule": "研究生论文图片格式：图序及图名置于图的下方，图名用五号宋体加粗居中",
+  "figure_detection_rules": {
+    "caption_pattern": "^\\s*图\\s*(\\d+)\\s+(.+)$",
+    "caption_format": {
+      "prefix": "图",
+      "numbering_required": true,
+      "alignment": "center",
+      "position": "below_picture"
+    },
+    "picture_style": {
+      "alignment": "center",
+      "description": "图片应居中对齐"
+    },
+    "position_relationship": {
+      "caption_position": "below_picture",
+      "max_distance": 2,
+      "description": "标题在图片下方，间隔不超过2个段落"
+    }
+  },
+  "format_rules": {
+    "caption": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号"
+    },
+    "caption_numbering_check": true,
+    "caption_sequential_check": true,
+    "picture_alignment_check": true,
+    "position_relationship_check": true,
+    "numbering_start": 1
+  },
+  "messages": {
+    "figure_detection_ok": "图片格式检查通过",
+    "figure_detection_error": "图片格式检查发现问题",
+    "caption_format_ok": "图名格式正确（五号宋体加粗居中）",
+    "caption_format_error": "图名格式不正确，应为五号宋体加粗居中",
+    "caption_missing": "未找到图名",
+    "caption_pattern_error": "图名格式应为：图X 图名（图序及图名置于图的下方）",
+    "caption_alignment_error": "图名应居中对齐",
+    "caption_font_size_error": "图名字体大小应为五号(10.5pt)",
+    "caption_font_name_error": "图名字体应为宋体（中文）和Times New Roman（英文）",
+    "caption_numbering_error": "图编号不连续，发现编号：{numbers}",
+    "caption_numbering_start_error": "图编号应从{start}开始，实际从{actual}开始",
+    "picture_not_found": "未在标题上方找到图片对象",
+    "picture_alignment_error": "图片应居中对齐",
+    "summary_overall": "图片格式检查结果: {ok}",
+    "figure_count": "检测到 {count} 个图片"
+  },
+  "notes": [
+    "研究生论文图片检查重点：1) 图序及图名置于图的下方 2) 图名五号宋体加粗居中 3) 图编号连续性",
+    "图编号从1开始，连续递增（图1，图2，图3...）"
+  ],
+  "generated_from": "东华大学研究生学位论文格式统一要求（2022年修订）"
+}
+

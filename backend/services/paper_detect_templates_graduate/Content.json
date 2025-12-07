@@ -1,0 +1,124 @@
+{
+  "content_rule": "研究生论文正文格式：正文小四号宋体1.5倍行距，英文字母及阿拉伯数字使用Times New Roman字体。章标题三号黑体居中，节标题四号黑体顶格，小节标题小四号黑体顶格",
+  "structure_rules": {
+    "level1_pattern": "^\\s*第[一二三四五六七八九十]+章\\s+(.+)$|^\\s*第\\d+章\\s+(.+)$",
+    "level2_pattern": "^\\s*(\\d+\\.\\d+)\\s+(.+)$",
+    "level3_pattern": "^\\s*(\\d+\\.\\d+\\.\\d+)\\s+(.+)$",
+    "numbering_start": 1,
+    "max_level1_count": 10,
+    "max_level2_count": 5,
+    "max_level3_count": 3
+  },
+  "title_case_rules": {
+    "level1_style": "title_case",
+    "level2_style": "sentence_case",
+    "level3_style": "sentence_case",
+    "level1_major_words": ["Materials", "Methods", "Results", "Discussion", "Conclusion", "Analysis", "Experimental", "Theoretical"],
+    "minor_words": ["and", "or", "of", "in", "on", "at", "to", "for", "with", "by", "from", "the", "a", "an"]
+  },
+  "format_rules": {
+    "level1_title": {
+      "font_size_pt": 16,
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 24,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "level2_title": {
+      "font_size_pt": 14,
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 12,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "level3_title": {
+      "font_size_pt": 12,
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "content_text": {
+      "font_size_pt": 12,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.5,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "justify",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_hierarchy_ok": "标题层级结构正确",
+    "structure_hierarchy_error": "标题层级结构有问题",
+    "structure_numbering_ok": "标题编号连续性正确",
+    "structure_numbering_error": "标题编号不连续或格式错误",
+    "format_level1_ok": "章标题格式正确（三号黑体居中）",
+    "format_level1_error": "章标题格式问题，应为三号黑体居中",
+    "format_level2_ok": "节标题格式正确（四号黑体顶格）",
+    "format_level2_error": "节标题格式问题，应为四号黑体顶格",
+    "format_level3_ok": "小节标题格式正确（小四号黑体顶格）",
+    "format_level3_error": "小节标题格式问题，应为小四号黑体顶格",
+    "format_content_ok": "正文内容格式正确（小四号宋体，1.5倍行距，英文字母及数字使用Times New Roman）",
+    "format_content_error": "正文内容格式问题，应为小四号宋体，1.5倍行距",
+    "summary_overall": "正文格式检查结果: {ok}"
+  },
+  "notes": [
+    "研究生论文正文检查重点：1) 正文小四号宋体1.5倍行距 2) 英文字母及阿拉伯数字使用Times New Roman字体 3) 章标题三号黑体居中 4) 节标题四号黑体顶格 5) 小节标题小四号黑体顶格",
+    "标题编号应连续，不应跳跃或重复"
+  ],
+  "generated_from": "东华大学研究生学位论文格式统一要求（2022年修订）"
+}
+
