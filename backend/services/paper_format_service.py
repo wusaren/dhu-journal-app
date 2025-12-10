@@ -12,9 +12,30 @@ import sys
 
 from services.paper_format_detector import PaperFormatDetector
 from services.document_annotator import generate_annotated_document
+from services.paper_detect.Classification_detect import detect_classification
 
 logger = logging.getLogger(__name__)
 
+DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
+
+# 模块中文名称映射
+MODULE_NAMES_CN = {
+    'Title': '英文标题、作者与单位',
+    'Abstract': '英文摘要',
+    'Keywords': '英文关键词',
+    'Content': '正文',
+    'Formula': '公式',
+    'Figure': '图',
+    'Table': '表格',
+    'Chinese_section': '中文部分',
+    'Classification': '摘要分类号',
+    # 中文部分内部项目
+    'chinese_title_format': '中文标题',
+    'chinese_author_format': '中文作者',
+    'chinese_affiliation_format': '中文单位',
+    'chinese_abstract_format': '中文摘要',
+    'chinese_keywords_format': '中文关键词',
+}
 
 class PaperFormatService:
     """
@@ -141,6 +162,7 @@ class PaperFormatService:
         }
     
     def check_all(self, docx_path: str, enable_figure_api: bool = False,
+                  enable_classification_api: bool = False,
                   modules: Optional[List[str]] = None, 
                   reports_dir = None, annotate_dir = None,
                   skip_checks: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
@@ -150,6 +172,7 @@ class PaperFormatService:
         参数：
         docx_path: 待检测的文档路径
         enable_figure_api: 是否启用Figure模块的API内容检测
+        enable_classification_api: 是否启用摘要分类号API检测
         modules: 检测配置列表，指定启动哪些检测模块
         skip_checks: 跳过检测项字典，格式：{"Title": ["bold", "font_size"], "Abstract": ["font_size"]}
         
@@ -186,6 +209,25 @@ class PaperFormatService:
                 status_code=404)
 
         logger.info('格式检测成功！')
+
+        # 在所有常规检测完成后，独立执行分类号检测
+        if enable_classification_api:
+            print("\n【摘要分类号 检测】")
+            try:
+                all_reports = detect_classification(all_reports)
+                classification_report = all_reports.get('Classification', {})
+                if 'error' in classification_report:
+                    print(f"  ✗ 检测失败: {classification_report['error']}")
+                else:
+                    print(f"  ✓ API 提取分类号: {classification_report.get('code', 'N/A')}")
+                    print(f"    原文中的分类号: {classification_report.get('original_clc', '未找到')}")
+                    match_status = classification_report.get('match_status', '未知')
+                    status_icon = '✓' if match_status == '一致' else '✗' if match_status == '不一致' else '?'
+                    print(f"    对比结果: {status_icon} {match_status}")
+            except Exception as e:
+                print(f"  ✗ 检测失败: {e}")
+                all_reports['Classification'] = {'error': f'分类号检测失败: {e}'}
+        
         # 对所有的检测报告进行处理（计算通过率）
         result = self.process_report(all_reports)
         logger.info('检测报告处理成功！')
@@ -262,9 +304,7 @@ class PaperFormatService:
         total_ok = 0
         total_checks = 0
 
-        detection_order = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
-        
-        for module_name in detection_order:
+        for module_name in DETECTION_ORDER:
             if module_name not in all_reports:
                 continue
             
@@ -312,14 +352,16 @@ class PaperFormatService:
         lines.append("")
         
         # 各模块详细报告
-        for module_name in detection_order:
+        for module_name in DETECTION_ORDER:
             if module_name not in all_reports:
                 continue
             
             report = all_reports[module_name]
             
             lines.append("-" * 80)
-            lines.append(f"【{module_name} 检测报告】")
+            # 使用中文名称
+            module_cn_name = MODULE_NAMES_CN.get(module_name, module_name)
+            lines.append(f"【{module_cn_name} 检测报告】")
             lines.append("-" * 80)
             
             # 如果检测出错
@@ -377,6 +419,22 @@ class PaperFormatService:
                             for msg in messages:
                                 lines.append(f"      • {msg}")
             
+            # Chinese_section模块特殊处理
+            elif module_name == 'Chinese_section':
+                for section_key, section_value in report.items():
+                    if section_key == 'summary' or not isinstance(section_value, dict) or 'ok' not in section_value:
+                        continue
+                    
+                    section_title = MODULE_NAMES_CN.get(section_key, section_key)
+                    ok_status = "✓ 通过" if section_value.get('ok') else "✗ 失败"
+                    lines.append(f"\n  [{section_title}] {ok_status}")
+                    
+                    messages = section_value.get('messages', [])
+                    if messages and not section_value.get('ok'):
+                        for msg in messages:
+                            lines.append(f"    • {msg}")
+        
+
             # Figure模块需要特殊处理（类似Table模块）
             elif module_name == 'Figure':
                 # 处理图片编号检查
@@ -418,6 +476,16 @@ class PaperFormatService:
                         if messages and not picture_check.get('ok', False):
                             for msg in messages:
                                 lines.append(f"      • {msg}")
+
+                    # 内容检测
+                    content_check = fig_report.get('content_check', {})
+                    if isinstance(content_check, dict) and 'ok' in content_check:
+                        ok_status = "✓" if content_check.get('ok', False) else "✗"
+                        lines.append(f"    内容规范: {ok_status}")
+                        messages = content_check.get('messages', [])
+                        if messages and not content_check.get('ok', False):
+                            for msg in messages:
+                                lines.append(f"      • {msg}")
             
             else:
                 # 其他模块的常规处理
@@ -427,7 +495,8 @@ class PaperFormatService:
                     
                     if isinstance(section_value, dict) and 'ok' in section_value:
                         # 检测项标题
-                        section_title = section_key.replace('_', ' ').title()
+                        # 优先从中文映射获取，否则进行转换
+                        section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
                         ok_status = "✓ 通过" if section_value.get('ok', False) else "✗ 失败"
                         lines.append(f"\n  [{section_title}] {ok_status}")
                         
@@ -448,6 +517,37 @@ class PaperFormatService:
                     lines.append(f"    {summary_item}")
             
             lines.append("")
+        
+        # 单独处理分类号报告
+        if 'Classification' in all_reports:
+            report = all_reports['Classification']
+            lines.append("-" * 80)
+            lines.append(f"【{MODULE_NAMES_CN['Classification']} 检测报告】")
+            lines.append("-" * 80)
+            if 'error' in report:
+                lines.append(f"  ✗ 检测失败: {report['error']}")
+            else:
+                lines.append(f"  ✓ 检测完成")
+                lines.append(f"    API 提取分类号: {report.get('code', 'N/A')} (原始: {report.get('raw_code', 'N/A')})")
+                lines.append(f"    原文中的分类号: {report.get('original_clc', '未找到')}")
+                
+                match_status = report.get('match_status', '未知')
+                if match_status == '一致':
+                    status_icon = '✓'
+                elif match_status == '不一致':
+                    status_icon = '✗'
+                else:
+                    status_icon = '?'
+                lines.append(f"    对比结果: {status_icon} {match_status}")
+                lines.append("\n  【分类理由】")
+                # 格式化理由，每行80个字符
+                reason_text = report.get('reason', '无').replace('\n', ' ')
+                import textwrap
+                wrapped_text = textwrap.fill(reason_text, width=70)
+                for line in wrapped_text.split('\n'):
+                    lines.append(f"    {line}")
+            lines.append("")
+    
         
         # 报告尾部
         lines.append("=" * 80)
@@ -541,8 +641,7 @@ class PaperFormatService:
             lines.append("")
             
             # 各模块详细报告
-            detection_order = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
-            for module_name in detection_order:
+            for module_name in DETECTION_ORDER:
                 if module_name not in results:
                     continue
                 

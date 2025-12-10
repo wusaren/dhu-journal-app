@@ -14,7 +14,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 # 检测模块执行顺序
-DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
+DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
 
 
 def create_document_copy(original_path: str, output_dir: str) -> Optional[str]:
@@ -399,77 +399,104 @@ def parse_issues_from_reports(all_reports):
                             'locate_data': locate_data
                         })
                     elif 'format' in section_key.lower():
-                        # format问题需要按消息内容分组
-                        # 将消息按类型分组：标题、作者、单位
-                        title_msgs = []
-                        author_msgs = []
-                        affiliation_msgs = []
-                        current_group = None  # 跟踪当前消息组
+                        # Title模块的格式消息优先使用结构化字段
+                        structured_title_msgs = section_value.get('title_messages', [])
+                        structured_author_msgs = section_value.get('author_messages', [])
+                        structured_affiliation_msgs = section_value.get('affiliation_messages', [])
                         
-                        for msg in messages:
-                            # 跳过独立批注标记的消息
-                            if msg.startswith('__COMMENT_PARA_'):
-                                affiliation_msgs.append(msg)
-                                continue
+                        use_structured = any(structured_title_msgs) or any(structured_author_msgs) or any(structured_affiliation_msgs)
+                        
+                        if use_structured:
+                            if structured_title_msgs and any('问题' in msg or '错误' in msg for msg in structured_title_msgs):
+                                issues.append({
+                                    'module': module_name,
+                                    'section': section_key + '_title',
+                                    'messages': structured_title_msgs,
+                                    'locate_method': 'index',
+                                    'locate_data': 0
+                                })
+                            
+                            if structured_author_msgs and any('问题' in msg or '错误' in msg for msg in structured_author_msgs):
+                                issues.append({
+                                    'module': module_name,
+                                    'section': section_key + '_authors',
+                                    'messages': structured_author_msgs,
+                                    'locate_method': 'index',
+                                    'locate_data': 1
+                                })
+                            
+                            affiliation_msgs = structured_affiliation_msgs
+                        else:
+                            # format问题需要按消息内容分组（兼容旧格式）
+                            title_msgs = []
+                            author_msgs = []
+                            affiliation_msgs = []
+                            current_group = None  # 跟踪当前消息组
+                            
+                            for msg in messages:
+                                # 跳过独立批注标记的消息
+                                if msg.startswith('__COMMENT_PARA_'):
+                                    affiliation_msgs.append(msg)
+                                    continue
+                                    
+                                msg_lower = msg.lower()
+                                msg_stripped = msg.strip()
                                 
-                            msg_lower = msg.lower()
-                            msg_stripped = msg.strip()
-                            
-                            # 判断是否是标题行（非子项）
-                            is_header = not msg_stripped.startswith('- ')
-                            
-                            if is_header:
-                                # 这是一个标题行，确定它属于哪个组
-                                if '标题格式' in msg or 'title' in msg_lower:
-                                    current_group = 'title'
-                                    title_msgs.append(msg)
-                                elif '作者格式' in msg or 'author' in msg_lower:
-                                    current_group = 'author'
-                                    author_msgs.append(msg)
-                                elif '单位格式' in msg or '单位段落' in msg or 'affiliation' in msg_lower:
-                                    current_group = 'affiliation'
-                                    affiliation_msgs.append(msg)
+                                # 判断是否是标题行（非子项）
+                                is_header = not msg_stripped.startswith('- ')
+                                
+                                if is_header:
+                                    # 这是一个标题行，确定它属于哪个组
+                                    if '标题格式' in msg or 'title' in msg_lower:
+                                        current_group = 'title'
+                                        title_msgs.append(msg)
+                                    elif '作者格式' in msg or 'author' in msg_lower:
+                                        current_group = 'author'
+                                        author_msgs.append(msg)
+                                    elif '单位格式' in msg or '单位段落' in msg or 'affiliation' in msg_lower:
+                                        current_group = 'affiliation'
+                                        affiliation_msgs.append(msg)
+                                    else:
+                                        # 默认归类到标题
+                                        current_group = 'title'
+                                        title_msgs.append(msg)
                                 else:
-                                    # 默认归类到标题
-                                    current_group = 'title'
-                                    title_msgs.append(msg)
-                            else:
-                                # 这是子项，归入当前组
-                                if current_group == 'title':
-                                    title_msgs.append(msg)
-                                elif current_group == 'author':
-                                    author_msgs.append(msg)
-                                elif current_group == 'affiliation':
-                                    affiliation_msgs.append(msg)
-                                else:
-                                    # 如果没有当前组，默认归类到标题
-                                    title_msgs.append(msg)
+                                    # 这是子项，归入当前组
+                                    if current_group == 'title':
+                                        title_msgs.append(msg)
+                                    elif current_group == 'author':
+                                        author_msgs.append(msg)
+                                    elif current_group == 'affiliation':
+                                        affiliation_msgs.append(msg)
+                                    else:
+                                        # 如果没有当前组，默认归类到标题
+                                        title_msgs.append(msg)
+                            
+                            # 为每组消息创建独立的issue（只添加包含问题的组）
+                            # 判断是否有实际问题：检查消息中是否包含"问题"或"错误"关键字
+                            if title_msgs and any('问题' in msg or '错误' in msg for msg in title_msgs):
+                                issues.append({
+                                    'module': module_name,
+                                    'section': section_key + '_title',
+                                    'messages': title_msgs,
+                                    'locate_method': 'index',
+                                    'locate_data': 0
+                                })
+                            
+                            if author_msgs and any('问题' in msg or '错误' in msg for msg in author_msgs):
+                                issues.append({
+                                    'module': module_name,
+                                    'section': section_key + '_authors',
+                                    'messages': author_msgs,
+                                    'locate_method': 'index',
+                                    'locate_data': 1
+                                })
                         
-                        # 为每组消息创建独立的issue（只添加包含问题的组）
-                        # 判断是否有实际问题：检查消息中是否包含"问题"或"错误"关键字
-                        if title_msgs and any('问题' in msg or '错误' in msg for msg in title_msgs):
-                            issues.append({
-                                'module': module_name,
-                                'section': section_key + '_title',
-                                'messages': title_msgs,
-                                'locate_method': 'index',
-                                'locate_data': 0
-                            })
-                        
-                        if author_msgs and any('问题' in msg or '错误' in msg for msg in author_msgs):
-                            issues.append({
-                                'module': module_name,
-                                'section': section_key + '_authors',
-                                'messages': author_msgs,
-                                'locate_method': 'index',
-                                'locate_data': 1
-                            })
-                        
-                        if affiliation_msgs:
+                        if structured_affiliation_msgs or not use_structured:
                             # 分组单位消息：按段落和问题类型
                             # 1. 提取独立批注标记的消息 (__COMMENT_PARA_X__)
                             # 2. 其他消息按段落分组
-                            comment_issues = {}  # {para_idx: {issue_type: [messages]}}
+                            comment_issues = {}  # {para_idx: [messages]}
                             affiliation_by_para = {}
                             general_affiliation_msgs = []
                             current_para_idx = None
@@ -892,6 +919,59 @@ def parse_issues_from_reports(all_reports):
                         'locate_data': para_idx
                     })
     
+        elif module_name == 'Chinese_section':
+            # 为中文部分的每个子项添加精确定位
+            for section_key, section_value in report.items():
+                if section_key in ['summary', 'affiliations_detail'] or not isinstance(section_value, dict) or section_value.get('ok', True):
+                    continue
+
+                messages = section_value.get('messages', [])
+                if not messages:
+                    continue
+
+                locate_method = 'keyword'
+                locate_data = ''
+
+                if section_key == 'chinese_title_format':
+                    # 从报告的 'details' 中获取标题文本用于定位
+                    title_text = report.get('details', {}).get('title_text', '')
+                    locate_data = title_text[:30] if title_text else '用于高效电催化析氢反应'
+                elif section_key == 'chinese_author_format':
+                    locate_data = '刘   影'
+                elif section_key == 'chinese_affiliation_format':
+                    locate_data = '东华大学'
+                elif section_key == 'chinese_abstract_format':
+                    locate_data = '摘   要'
+                elif section_key == 'chinese_keywords_format':
+                    locate_data = '关键词'
+
+                if locate_data:
+                    issues.append({
+                        'module': module_name,
+                        'section': section_key,
+                        'messages': messages,
+                        'locate_method': locate_method,
+                        'locate_data': locate_data
+                    })
+
+    # 单独处理分类号不一致的批注
+    if 'Classification' in all_reports:
+        class_report = all_reports['Classification']
+        if class_report.get('match_status') == '不一致':
+            messages = [
+                f"API建议分类号与原文不一致。",
+                f"原文分类号: {class_report.get('original_clc', 'N/A')}",
+                f"API建议分类号: {class_report.get('code', 'N/A')} (原始: {class_report.get('raw_code', 'N/A')})",
+                "请根据API提供的分类理由进行核对。"
+            ]
+            issues.append({
+                'module': 'Classification',
+                'section': 'mismatch',
+                'messages': messages,
+                'locate_method': 'keyword',
+                'locate_data': 'CLC number'
+            })
+
     return issues
 
 

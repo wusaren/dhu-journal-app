@@ -18,6 +18,7 @@
 import os
 import sys
 import io
+import json
 import base64
 import tempfile
 from pathlib import Path
@@ -25,8 +26,6 @@ from typing import Dict, List, Optional, Tuple
 from docx import Document
 from docx.oxml import parse_xml
 from PIL import Image
-import logging
-logger = logging.getLogger(__name__)
 
 try:
     import requests
@@ -50,32 +49,29 @@ class FigureContentDetector:
             save_images: 是否永久保存提取的图片（可选，未提供时从配置文件读取）
             image_dir: 保存图片的目录（可选，未提供时从配置文件读取）
         """
-        # 尝试从配置文件加载
+        # 从配置文件加载
         try:
-            # config = get_config()
-            # config.load()
-            # self.api_key = api_key or config.api_key
-            # self.api_base = api_base or config.api_base
-            # self.model = model or config.model
-            # self.save_images = save_images if save_images is not None else config.save_images
-            # self.image_dir = Path(image_dir or config.image_dir)
-
-            self.api_key = api_key or os.getenv('SILICONFLOW_API_KEY')
-            self.api_base = api_base or os.getenv('SILICONFLOW_API_BASE')
-            self.model = model or os.getenv('SILICONFLOW_MODEL')
-            self.save_images = save_images or os.getenv('SAVE_EXTRACTED_IMAGES')
-            self.image_dir = Path(image_dir or os.getenv('EXTRACTED_IMAGES_DIR'))
-        except Exception:
-            logger.error("图片内容检测器初始化失败！")
-        # except ImportError:
-        #     # 如果无法导入配置加载器，使用默认值
-        #     self.api_key = api_key
-        #     self.api_base = api_base or "https://api.siliconflow.cn/v1"
-        #     self.model = model or "Qwen/Qwen3-VL-32B-Instruct"
-        #     self.save_images = save_images if save_images is not None else False
-        #     self.image_dir = Path(image_dir or "extracted_figures")
-
-        logger.info("图片内容检测器初始化成功！")
+            from .config_api import (
+                SILICONFLOW_API_KEY,
+                SILICONFLOW_API_BASE,
+                SILICONFLOW_MODEL,
+                SAVE_EXTRACTED_IMAGES,
+                EXTRACTED_IMAGES_DIR
+            )
+        except ImportError:
+            # 如果无法导入配置，使用默认值
+            SILICONFLOW_API_KEY = None
+            SILICONFLOW_API_BASE = "https://api.siliconflow.cn/v1"
+            SILICONFLOW_MODEL = "Qwen/Qwen3-VL-235B-A22B-Instruct"
+            SAVE_EXTRACTED_IMAGES = True
+            EXTRACTED_IMAGES_DIR = "uploads/format_check/extracted_figures"
+        
+        self.api_key = api_key or SILICONFLOW_API_KEY
+        self.api_base = api_base or SILICONFLOW_API_BASE
+        self.model = model or SILICONFLOW_MODEL
+        self.save_images = save_images if save_images is not None else SAVE_EXTRACTED_IMAGES
+        self.image_dir = Path(image_dir or EXTRACTED_IMAGES_DIR)
+        
         # 验证API密钥
         if not self.api_key:
             raise ValueError(
@@ -88,89 +84,47 @@ class FigureContentDetector:
         if self.save_images and not self.image_dir.exists():
             self.image_dir.mkdir(parents=True, exist_ok=True)
         
-        # 检测规则提示词（分为多个独立问题）
-        self.detection_prompts = {
-            'is_chart': """**严格要求：只输出JSON，不要任何解释文字**
-
-判断图片是否为带坐标轴的图表？
-
-输出格式（二选一）：
-```json
-{"is_chart": true, "chart_type": "折线图"}
-```
-```json
-{"is_chart": false, "chart_type": "照片"}
-```
-
-禁止输出任何JSON之外的文字！""",
-
-            'tick_direction': """**只输出JSON，不要任何其他文字**
-
-刻度线是否指向图内？（要求：必须指向图内）
-
-格式：
-```json
-{"ok": true, "description": "指向图内"}
-```
-或
-```json
-{"ok": false, "description": "指向图外"}
-```""",
-
-            'unit_format': """**只输出JSON**
-
-物理量/单位格式是否正确？
-要求：用"/"分隔，物理量斜体，单位正体
-
-```json
-{"ok": true, "issues": []}
-```
-或
-```json
-{"ok": false, "issues": ["E未斜体", "V应正体"]}
-```
-
-只列问题，不解释！""",
-
-            'unit_brackets': """**只输出JSON**
-
-组合单位是否加括号？
-要求：组合单位加括号(H/m)，℃不加，角度(°)加
-
-```json
-{"ok": true, "issues": []}
-```
-或
-```json
-{"ok": false, "issues": ["V/m应为(V/m)"]}
-```""",
-
-            'decimal_consistency': """**只输出JSON**
-
-纵横轴小数位数是否一致？
-规则：纵轴0.1,0.2(1位) → 横轴必须1.0,2.0(1位)，不能1,2(整数)
-
-```json
-{"ok": true, "y_decimals": "1位", "x_decimals": "1位"}
-```
-或
-```json
-{"ok": false, "y_decimals": "1位", "x_decimals": "0位", "description": "不一致"}
-```""",
-
-            'axis_title_consistency': """**只输出JSON**
-
-纵横坐标标题用文字还是符号？是否统一？
-要求：都用文字或都用符号
-✓ Temperature/Time  ✓ T/t  ✗ Temperature/t
-
-```json
-{"ok": true, "y_type": "符号", "x_type": "符号"}
-```
-或
-```json
-{"ok": false, "y_type": "文字", "x_type": "符号", "description": "不统一"}
-```"""
+        # 从 JSON 文件加载检测规则提示词
+        self.detection_prompts = self._load_prompts()
+    
+    def _load_prompts(self) -> Dict[str, str]:
+        """
+        从 prompts.json 文件加载检测规则提示词
+        
+        返回:
+            包含所有提示词的字典
+        """
+        try:
+            # 从 paper_detect 目录加载 prompts.json
+            prompts_path = Path(__file__).parent / "prompts.json"
+            
+            if not prompts_path.exists():
+                print(f"警告: 提示词文件不存在: {prompts_path}")
+                return self._get_default_prompts()
+            
+            with open(prompts_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            return data.get('figure_content_detection', self._get_default_prompts())
+        
+        except Exception as e:
+            print(f"警告: 加载提示词文件失败: {e}")
+            return self._get_default_prompts()
+    
+    def _get_default_prompts(self) -> Dict[str, str]:
+        """
+        返回默认提示词（当 JSON 文件不可用时使用）
+        
+        返回:
+            包含默认提示词的字典
+        """
+        return {
+            'is_chart': "**严格要求：只输出JSON，不要任何解释文字**\n\n判断图片是否为带坐标轴的图表？\n\n输出格式（二选一）：\n```json\n{\"is_chart\": true, \"chart_type\": \"折线图\"}\n```\n```json\n{\"is_chart\": false, \"chart_type\": \"照片\"}\n```\n\n禁止输出任何JSON之外的文字！",
+            'tick_direction': "**只输出JSON，不要任何其他文字**\n\n刻度线是否指向图内？（要求：必须指向图内）\n\n格式：\n```json\n{\"ok\": true, \"description\": \"指向图内\"}\n```\n或\n```json\n{\"ok\": false, \"description\": \"指向图外\"}\n```",
+            'unit_format': "**只输出JSON**\n\n物理量/单位格式是否正确？\n要求：用\"/\"分隔，物理量斜体，单位正体\n\n```json\n{\"ok\": true, \"issues\": []}\n```\n或\n```json\n{\"ok\": false, \"issues\": [\"E未斜体\", \"V应正体\"]}\n```\n\n只列问题，不解释！",
+            'unit_brackets': "**只输出JSON**\n\n组合单位是否加括号？\n要求：组合单位加括号(H/m)，℃不加，角度(°)加\n\n```json\n{\"ok\": true, \"issues\": []}\n```\n或\n```json\n{\"ok\": false, \"issues\": [\"V/m应为(V/m)\"]}\n```",
+            'decimal_consistency': "**只输出JSON**\n\n纵横轴小数位数是否一致？\n规则：纵轴0.1,0.2(1位) → 横轴必须1.0,2.0(1位)，不能1,2(整数)\n\n```json\n{\"ok\": true, \"y_decimals\": \"1位\", \"x_decimals\": \"1位\"}\n```\n或\n```json\n{\"ok\": false, \"y_decimals\": \"1位\", \"x_decimals\": \"0位\", \"description\": \"不一致\"}\n```",
+            'axis_title_consistency': "**只输出JSON，不要任何其他文字**\n\n检查纵横坐标轴标题的风格是否统一：要么都使用**物理量符号**（如 T, t），要么都使用**物理量全称**（如 Temperature, Time）。\n\n**正确示例 (风格统一)**:\n- 纵轴: `Temperature / K`, 横轴: `Time / s` (都是全称)\n- 纵轴: `T / K`, 横轴: `t / s` (都是符号)\n\n**错误示例 (风格不统一)**:\n- 纵轴: `Temperature / K` (全称), 横轴: `t / s` (符号)\n\n**错误示例 (无效标题)**:\n- `variable_name` 或 `x-axis` (无效占位符)\n\n请按以下JSON格式输出，并判断风格：\n```json\n{\n  \"ok\": true,\n  \"y_style\": \"全称\",\n  \"x_style\": \"全称\"\n}\n```\n或\n```json\n{\n  \"ok\": false,\n  \"y_style\": \"全称\",\n  \"x_style\": \"符号\",\n  \"issue\": \"风格不统一：纵轴使用全称，横轴使用符号\"\n}\n```\n或\n```json\n{\n  \"ok\": false,\n  \"issue\": \"横轴标题'variable_name'是无效占位符\"\n}\n```"
         }
     
     def extract_and_save_image(self, paragraph, doc_path: str, figure_number: int = None) -> Optional[str]:
@@ -501,11 +455,14 @@ class FigureContentDetector:
                 result['ok'] = False
                 
                 # 根据不同的结果格式提取问题描述
-                if 'issues' in parsed_result:
+                if 'issues' in parsed_result and parsed_result['issues']:
                     for issue in parsed_result['issues']:
                         result['messages'].append(f"❌ [{check_name}] {issue}")
-                elif 'description' in parsed_result:
+                elif 'description' in parsed_result and parsed_result['description']:
                     result['messages'].append(f"❌ [{check_name}] {parsed_result['description']}")
+                elif 'issue' in parsed_result and parsed_result['issue']:
+                    # 新增：处理 axis_title_consistency 返回的 'issue' 字段
+                    result['messages'].append(f"❌ [{check_name}] {parsed_result['issue']}")
         
         result['details']['check_results'] = check_results
         

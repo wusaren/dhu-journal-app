@@ -96,17 +96,20 @@ export const paperFormatService = {
      * @param modules 指定检测的模块列表（可选）
      * @param fileId 文件数据库ID（可选）
      * @param skipChecks 跳过的检测项字典（可选），格式：{"Title": ["bold", "font_size"], "Abstract": ["font_size"]}
+     * @param enableClassificationApi 是否启用摘要分类号API检测
      */
     async checkAll(
         tempFilePath: string,
         enableFigureApi: boolean = false,
         modules?: string[],
         fileId?: number,
-        skipChecks?: Record<string, string[]>
+        skipChecks?: Record<string, string[]>,
+        enableClassificationApi: boolean = false
     ): Promise<ApiResponse<CheckAllResult>> {
         const data: any = {
             temp_file_path: tempFilePath,
-            enableFigureApi: enableFigureApi
+            enableFigureApi: enableFigureApi,
+            enableClassificationApi: enableClassificationApi
         }
 
         if (modules && modules.length > 0) {

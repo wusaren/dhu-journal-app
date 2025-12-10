@@ -1,0 +1,60 @@
+{
+  "description": "中文部分格式检测模板",
+  "format_rules": {
+    "title": {
+      "font_size_pt": 16,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": true,
+      "italic": false,
+      "alignment": "center",
+      "space_before": 1,
+      "space_after": 1
+    },
+    "author": {
+      "font_size_pt": 12,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "center"
+    },
+    "affiliation": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "center"
+    },
+    "abstract": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "justify",
+      "first_line_indent": 0
+    },
+    "keywords": {
+      "font_size_pt": 10.5,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "alignment": "justify",
+      "first_line_indent": 0
+    }
+  },
+  "check_rules": {
+    "keywords_rules": {
+      "check_separator": true,
+      "separator": "；",
+      "count_min": 3,
+      "count_max": 5
+    },
+    "affiliation_rules": {
+      "check_single_affiliation": true
+    }
+  }
+}

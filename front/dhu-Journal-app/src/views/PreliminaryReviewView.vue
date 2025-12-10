@@ -745,7 +745,7 @@
                 <span class="module-description">{{ module.description }}</span>
               </el-checkbox>
               <el-button
-                v-if="selectedModules.includes(module.value)"
+                v-if="selectedModules.includes(module.value) && !modulesWithoutSkipChecks.includes(module.value)"
                 size="small"
                 text
                 type="primary"
@@ -774,6 +774,20 @@
             <span class="module-description">*需要调用API，检测时间较长</span>
           </el-checkbox>
         </div>
+        
+        <!-- 摘要分类号检测选项 -->
+        <!-- <div v-if="selectedModules.includes('Abstract')" class="figure-api-option">
+          <el-alert 
+            title="摘要分类号检测选项（使用大模型）" 
+            type="warning" 
+            :closable="false"
+            style="margin-bottom: 10px;padding: 0"
+          />
+          <el-checkbox v-model="enableClassificationApi" style="padding-bottom: 10px;">
+            <span class="module-label">启用分类号智能检测</span>
+            <span class="module-description">*需要调用API，自动识别并验证中图分类号</span>
+          </el-checkbox>
+        </div> -->
       </div>
       
       <template #footer>
@@ -902,6 +916,7 @@ const reportText = ref('')
 const selectedModules = ref<string[]>([])
 const selectAllModules = ref(false)
 const enableFigureApi = ref(false)
+const enableClassificationApi = ref(false)
 
 // 跳过检测项相关状态
 const showSkipChecksDialog = ref(false)
@@ -926,8 +941,12 @@ const availableModules = [
   { value: 'Content', label: '正文格式检测', description: '检测正文格式' },
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
-  { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' }
+  { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' },
+  { value: 'Chinese_section', label: '中文部分检测', description: '检测中文标题、作者、单位、摘要和关键词格式' }
 ]
+
+// 不支持跳过项功能的模块列表
+const modulesWithoutSkipChecks = ['Chinese_section']
 
 // 可跳过的检测项列表
 const availableSkipChecks = [
@@ -1247,6 +1266,7 @@ const showModuleSelector = () => {
   selectedModules.value = []
   selectAllModules.value = false
   enableFigureApi.value = false
+  enableClassificationApi.value = false
   
   // 显示选择对话框
   showModuleSelectorDialog.value = true
@@ -1266,6 +1286,11 @@ const handleModuleChange = (value: string[]) => {
   // 如果取消了图片检测，也取消图片内容检测
   if (!value.includes('Figure')) {
     enableFigureApi.value = false
+  }
+  
+  // 如果取消了摘要检测，也取消分类号API检测
+  if (!value.includes('Abstract')) {
+    enableClassificationApi.value = false
   }
   
   // 清理已取消模块的跳过检测项配置
@@ -1336,7 +1361,8 @@ const startFormatCheck = async () => {
       enableFigureApi.value,
       selectedModules.value,
       currentPaper.value.fileId,
-      skipChecks.value
+      skipChecks.value,
+      enableClassificationApi.value
     )
     
     clearInterval(progressInterval)

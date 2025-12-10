@@ -1242,6 +1242,7 @@ def check_format_all():
         
         # 获取参数
         enable_figure_api = data.get('enableFigureApi', False)
+        enable_classification_api = data.get('enableClassificationApi', False)
         modules = data.get('modules')  # 可选，逗号分隔的模块名称
         skip_checks = data.get('skip_checks', {})  # 获取跳过检测项字典
         
@@ -1257,6 +1258,7 @@ def check_format_all():
         result = paper_format_service.check_all(
             temp_file_path,
             enable_figure_api=enable_figure_api,
+            enable_classification_api=enable_classification_api,
             modules=modules_list,
             reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
             annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],

@@ -103,7 +103,7 @@
     },
     "affiliation_detection": {
       "numbered_pattern": "^\\s*\\d+[\\.、\\s:-]",
-      "institution_keywords": ["College", "University", "Institute", "School", "Department", "学院", "大学", "研究院"],
+      "institution_keywords": ["College", "University", "Institute", "School", "Department", "Laboratory", "Center", "Centre", "Academy", "Ministry", "Association", "Research", "Engineering", "Science", "Technology", "学院", "大学", "研究院", "研究所", "实验室", "中心", "部门", "协会"],
       "keyword_flags": "I"
     },
     "paragraph_detection": {

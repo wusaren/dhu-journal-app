@@ -1045,16 +1045,34 @@ def check_content_text_format(doc, titles, tpl):
     paragraphs_with_issues = []
     
     # 检查所有正文段落的格式
+    allowed_styles = format_rules.get('allowed_styles', ['正文', 'Normal'])
+    allowed_styles_lower = [s.lower() for s in allowed_styles] if allowed_styles else []
+
     for i, paragraph in enumerate(content_paragraphs):
         if not paragraph.runs:
+            continue
+        
+        paragraph_preview = paragraph.text[:40] + "..." if len(paragraph.text) > 40 else paragraph.text
+        paragraph_issues = []
+        style_name = paragraph.style.name if paragraph.style and paragraph.style.name else '未设置'
+        style_name_lower = style_name.lower() if style_name else ''
+
+        # 首先：检查段落样式是否为正文
+        if allowed_styles_lower and style_name_lower not in allowed_styles_lower:
+            expected_style = allowed_styles[0]
+            paragraph_issues.append(f"正文段落应使用'{expected_style}'样式，当前为'{style_name}'")
+            paragraphs_with_issues.append({
+                'index': i + 1,
+                'preview': paragraph_preview,
+                'issues': paragraph_issues
+            })
+            issues.extend([f"正文段落 {i+1} {issue}" for issue in paragraph_issues])
             continue
         
         # 检查第一个run的格式
         main_run = paragraph.runs[0]
         actual_size_pt, actual_font_name, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
-        
-        paragraph_preview = paragraph.text[:40] + "..." if len(paragraph.text) > 40 else paragraph.text
-        paragraph_issues = []
+        first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
         
         # 字体大小检查
         if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
@@ -1108,7 +1126,6 @@ def check_content_text_format(doc, titles, tpl):
         # 首行缩进检查
         if not should_skip_check('indent') and 'first_line_indent' in format_rules:
             expected_first_indent = float(format_rules['first_line_indent'])
-            first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
             if abs(first_line_indent - expected_first_indent) > 2.0:  # 2pt容差
                 paragraph_issues.append(f"首行缩进应为{expected_first_indent}pt（约2字符），实际为{first_line_indent:.1f}pt")
         

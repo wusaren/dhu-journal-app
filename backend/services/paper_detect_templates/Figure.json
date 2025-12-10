@@ -1,7 +1,7 @@
 {
   "figure_rule": "图片标题格式为：Fig. 编号 标题文字（Fig.后必须有空格），居中，五号字体；图片居中对齐，标题位于图片下方",
   "figure_detection_rules": {
-    "caption_pattern": "^\\s*Fig\\.\\s+(\\d+)\\s+(.+)$",
+    "caption_pattern": "^\\s*Fig\\.?\\s*(\\d+)[.:\\s]*(.*)$",
     "caption_format": {
       "prefix": "Fig.",
       "numbering_required": true,

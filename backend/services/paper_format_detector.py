@@ -49,6 +49,7 @@ class PaperFormatDetector:
             from services.paper_detect import Figure_detect
             from services.paper_detect import Formula_detect
             from services.paper_detect import Table_detect
+            from services.paper_detect import Chinese_section_detect
             
             # 保存模块引用
             self.modules = {
@@ -58,7 +59,8 @@ class PaperFormatDetector:
                 'Content': Content_detect,
                 'Figure': Figure_detect,
                 'Formula': Formula_detect,
-                'Table': Table_detect
+                'Table': Table_detect,
+                'Chinese_section': Chinese_section_detect
             }
             
             logger.info("所有检测模块已加载")
@@ -276,6 +278,31 @@ class PaperFormatDetector:
                 'summary': [f'表格检测失败: {e}']
             }
     
+    def detect_chinese_section(self, docx_path: str) -> Dict[str, Any]:
+        """
+        检测中文部分格式（中文标题、作者、单位、摘要和关键词）
+        
+        Args:
+            docx_path: Word文档路径
+        
+        Returns:
+            检测结果字典
+        """
+        try:
+            template_path = str(self.templates_dir / 'Chinese_section.json')
+            Chinese_section_detect = self.modules['Chinese_section']
+            
+            result = Chinese_section_detect.check_chinese_section_with_template(docx_path, template_path)
+            return result
+            
+        except Exception as e:
+            logger.error(f"中文部分检测失败: {e}", exc_info=True)
+            return {
+                'error': True,
+                'error_message': str(e),
+                'summary': [f'中文部分检测失败: {e}']
+            }
+    
     def detect_all(self, docx_path: str, modules: List[str] = None,
                    enable_figure_api: bool = False,
                    skip_checks: Dict[str, List[str]] = None) -> Dict[str, Any]:
@@ -321,6 +348,9 @@ class PaperFormatDetector:
                     result = self.detect_formula(docx_path, module_skip_checks)
                 elif module_name == 'Table':
                     result = self.detect_table(docx_path, module_skip_checks)
+                elif module_name == 'Chinese_section':
+                    # 中文部分检测不支持跳过项
+                    result = self.detect_chinese_section(docx_path)
                 else:
                     logger.warning(f"未知模块: {module_name}")
                     continue

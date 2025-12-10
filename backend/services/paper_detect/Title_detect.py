@@ -657,7 +657,26 @@ def check_format_section(doc_path, tpl):
     """
     检查格式相关的所有内容，并处理单位段落的特殊间距要求。
     """
-    report = {'ok': True, 'messages': []}
+    report = {
+        'ok': True,
+        'messages': [],
+        'title_messages': [],
+        'author_messages': [],
+        'affiliation_messages': [],
+        'other_messages': []
+    }
+
+    def add_format_message(category, message):
+        """同时写入总消息和分类消息"""
+        report['messages'].append(message)
+        if category == 'title':
+            report['title_messages'].append(message)
+        elif category == 'author':
+            report['author_messages'].append(message)
+        elif category == 'affiliation':
+            report['affiliation_messages'].append(message)
+        else:
+            report['other_messages'].append(message)
 
     doc = Document(doc_path)
     nonempty_paragraphs = [p for p in doc.paragraphs if p.text and p.text.strip()]
@@ -680,8 +699,9 @@ def check_format_section(doc_path, tpl):
             if title_format_issues:
                 report['ok'] = False
                 header = tpl.get('messages', {}).get('format_title_issue_header', "标题格式问题：")
-                report['messages'].append(header)
-                report['messages'].extend([f"  - {i}" for i in title_format_issues])
+                add_format_message('title', header)
+                for i in title_format_issues:
+                    add_format_message('title', f"  - {i}")
         
         # --- 作者格式检查 ---
         if len(nonempty_paragraphs) > 1:
@@ -700,18 +720,19 @@ def check_format_section(doc_path, tpl):
                 if author_format_issues:
                     report['ok'] = False
                     header = tpl.get('messages', {}).get('format_authors_issue_header', "作者格式问题：")
-                    report['messages'].append(header)
-                    report['messages'].extend([f"  - {i}" for i in author_format_issues])
+                    add_format_message('author', header)
+                    for i in author_format_issues:
+                        add_format_message('author', f"  - {i}")
                 else:
                     actual_size_pt, actual_font_name, actual_bold, actual_italic, _ = detect_font_for_run(
                         author_paragraph.runs[0] if author_paragraph.runs else None, 
                         paragraph=author_paragraph
                     )
-                    report['messages'].append(f"作者格式检查通过")
-                    report['messages'].append(f"  - 字体大小: {get_font_size(actual_size_pt, tpl)} 符合要求")
-                    report['messages'].append(f"  - 字体名称: {actual_font_name} 符合要求")
-                    report['messages'].append(f"  - 加粗设置: {'是' if actual_bold else '否'} 符合要求")
-                    report['messages'].append(f"  - 斜体设置: {'是' if actual_italic else '否'} 符合要求（正体）")
+                    add_format_message('author', f"作者格式检查通过")
+                    add_format_message('author', f"  - 字体大小: {get_font_size(actual_size_pt, tpl)} 符合要求")
+                    add_format_message('author', f"  - 字体名称: {actual_font_name} 符合要求")
+                    add_format_message('author', f"  - 加粗设置: {'是' if actual_bold else '否'} 符合要求")
+                    add_format_message('author', f"  - 斜体设置: {'是' if actual_italic else '否'} 符合要求（正体）")
 
         # --- 单位格式检查 (特殊逻辑) ---
         aff_detection_rules = tpl.get('check_rules', {}).get('affiliation_detection', {})
@@ -809,25 +830,26 @@ def check_format_section(doc_path, tpl):
                         actual_idx = affiliation_para_indices[i] if i < len(affiliation_para_indices) else 0
                         header_tpl = tpl.get('messages', {}).get('format_affiliation_issue_header', "单位格式问题（第{index}段）：")
                         header = header_tpl.format(index=actual_idx + 1)
-                        report['messages'].append(header)
-                        report['messages'].extend([f"  - {it}" for it in affiliation_format_issues])
+                        add_format_message('affiliation', header)
+                        for it in affiliation_format_issues:
+                            add_format_message('affiliation', f"  - {it}")
         
         # 报告单位编号格式错误
         if affiliation_numbering_errors:
             report['ok'] = False
             error_count = len(affiliation_numbering_errors)
-            report['messages'].append(f"\n单位编号格式错误（共 {error_count} 处）：")
-            report['messages'].append("单位编号应使用数字+点号的格式（如 '1. College'），而非数字+空格（如 '1 College'）")
+            add_format_message('affiliation', f"\n单位编号格式错误（共 {error_count} 处）：")
+            add_format_message('affiliation', "单位编号应使用数字+点号的格式（如 '1. College'），而非数字+空格（如 '1 College'）")
             for error in affiliation_numbering_errors[:5]:  # 最多显示5个
                 short_text = error['text'][:50] + '...' if len(error['text']) > 50 else error['text']
                 # 为批注系统标记段落索引
-                report['messages'].append(f"  - 段落 {error['index']}: '{short_text}'")
-                report['messages'].append(f"    建议修改为: '{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
+                add_format_message('affiliation', f"  - 段落 {error['index']}: '{short_text}'")
+                add_format_message('affiliation', f"    建议修改为: '{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
                 # 添加单独的批注消息（用于单独批注）
-                report['messages'].append(f"__COMMENT_PARA_{error['index']}__单位编号格式错误：应使用'{error['number']}.'开头，而非'{error['number']} '")
-                report['messages'].append(f"__COMMENT_PARA_{error['index']}__建议修改为：'{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
+                add_format_message('affiliation', f"__COMMENT_PARA_{error['index']}__单位编号格式错误：应使用'{error['number']}.'开头，而非'{error['number']} '")
+                add_format_message('affiliation', f"__COMMENT_PARA_{error['index']}__建议修改为：'{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
             if error_count > 5:
-                report['messages'].append(f"  ... 还有 {error_count - 5} 处类似错误")
+                add_format_message('affiliation', f"  ... 还有 {error_count - 5} 处类似错误")
 
     print("=== 格式检查完成 ===")
     return report
