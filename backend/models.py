@@ -233,6 +233,7 @@ class Term(db.Model):
     # CSV原始字段
     term = db.Column(db.String(500), nullable=False)  # 术语
     category = db.Column(db.String(200))  # 类别
+    # 动物 生物学 化学 常见二元词组 常用词汇 计算机 地球 工程学 食品 普通科学与工具 医学与健康 纳米技术 物理学 社会科学 太空与天文学
     sentence = db.Column(db.Text)  # 句子
     label = db.Column(db.Integer)  # 标签
     definition = db.Column(db.Text)  # 定义

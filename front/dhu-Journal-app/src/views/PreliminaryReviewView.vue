@@ -616,25 +616,59 @@
               <el-tab-pane label="相似术语" name="similar_pairs">
                 <div v-if="termDetectResult.data?.similar_pairs?.length > 0">
                   <el-alert 
-                    title="以下术语相似，可能存在混用情况，请检查使用规范性" 
+                    title="以下术语在语义或词汇层面相似，可能存在混用情况，请检查使用规范性" 
                     type="error" 
                     :closable="false"
                     style="margin-bottom: 15px;"
                   />
                   <el-table :data="termDetectResult.data.similar_pairs" border stripe>
-                    <el-table-column prop="term1" label="术语1" width="200" />
-                    <el-table-column prop="term2" label="术语2" width="200" />
-                    <el-table-column prop="distance" label="编辑距离" width="100" align="center" />
-                    <el-table-column prop="severity" label="相似程度" width="120" align="center">
+                    <el-table-column prop="term1" label="术语1" min-width="150" />
+                    <el-table-column prop="term2" label="术语2" min-width="150" />
+                    <el-table-column prop="final_score" label="综合相似度" width="110" align="center">
                       <template #default="scope">
-                        <el-tag :type="scope.row.severity === 'high' ? 'danger' : 'warning'">
-                          {{ scope.row.severity === 'high' ? '高' : '中' }}
+                        <el-progress 
+                          :percentage="Math.round((scope.row.final_score || 0) * 100)" 
+                          :color="scope.row.final_score >= 0.9 ? '#F56C6C' : scope.row.final_score >= 0.8 ? '#E6A23C' : '#67C23A'"
+                          :stroke-width="10"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="semantic_score" label="语义相似度" width="100" align="center">
+                      <template #default="scope">
+                        <span v-if="scope.row.semantic_score !== null">
+                          {{ (scope.row.semantic_score * 100).toFixed(1) }}%
+                        </span>
+                        <span v-else style="color: #909399;">N/A</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="lexical_score" label="词汇相似度" width="100" align="center">
+                      <template #default="scope">
+                        {{ (scope.row.lexical_score * 100).toFixed(1) }}%
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="severity" label="相似等级" width="90" align="center">
+                      <template #default="scope">
+                        <el-tag 
+                          :type="scope.row.severity === 'high' ? 'danger' : scope.row.severity === 'medium' ? 'warning' : 'success'"
+                          size="small"
+                        >
+                          {{ scope.row.severity === 'high' ? '高' : scope.row.severity === 'medium' ? '中' : '低' }}
                         </el-tag>
                       </template>
                     </el-table-column>
-                    <el-table-column label="说明" min-width="200">
-                      <template #default>
-                        这两个术语可能被混用，建议统一使用其中一个
+                    <el-table-column label="建议" min-width="180">
+                      <template #default="scope">
+                        <span v-if="scope.row.semantic_score !== null && scope.row.semantic_score >= 0.85">
+                          <el-icon style="color: #F56C6C;"><WarningFilled /></el-icon>
+                          语义高度相似，建议检查是否为同一概念的不同表达
+                        </span>
+                        <span v-else-if="scope.row.lexical_score >= 0.8">
+                          <el-icon style="color: #E6A23C;"><Warning /></el-icon>
+                          词形相近，可能存在拼写变体或混用
+                        </span>
+                        <span v-else>
+                          建议统一使用其中一个术语
+                        </span>
                       </template>
                     </el-table-column>
                   </el-table>
@@ -761,6 +795,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Warning, WarningFilled } from '@element-plus/icons-vue'
 import { paperFormatService } from '@/api/paperFormatService'
 import type { ApiResponse, CheckAllResult } from '@/api/paperFormatService'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'

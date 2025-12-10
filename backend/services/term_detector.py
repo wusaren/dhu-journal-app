@@ -20,12 +20,22 @@ import re
 import json
 import math
 import os
+import numpy as np
 from typing import List, Dict, Tuple, Set, Any
 from collections import Counter, defaultdict
 from docx import Document
 import logging
 
 logger = logging.getLogger(__name__)
+
+# 延迟导入 sklearn（避免启动时加载过慢）
+_sklearn_available = False
+try:
+    from sklearn.neighbors import NearestNeighbors
+    from sklearn.metrics.pairwise import cosine_similarity
+    _sklearn_available = True
+except ImportError:
+    logger.warning("sklearn not available, semantic similarity will be limited")
 
 # 延迟导入深度学习相关库（避免启动时加载过慢）
 _transformers_available = False
@@ -93,6 +103,12 @@ class TermDetector:
     # 术语核心词性（必须包含）
     CORE_POS = {'NOUN', 'PROPN'}
     
+    # 语义相似度配置参数
+    SEMANTIC_SIM_THRESHOLD = 0.70  # 语义相似度阈值
+    FINAL_SIM_THRESHOLD = 0.70     # 最终融合相似度阈值
+    SEMANTIC_WEIGHT = 0.7          # 语义相似度权重（α）
+    MAX_NEIGHBORS = 10             # 每个术语的最大近邻数
+    
     def __init__(self):
         """初始化术语检测器"""
         
@@ -102,6 +118,9 @@ class TermDetector:
         self.nlp = _nlp_english  # SciBERT使用的spacy模型
         self.id2label = None
         self._model_loaded = False
+        
+        # 术语向量缓存
+        self._term_embeddings_cache = {}
     
     def extract_keywords_from_doc(self, doc: Document) -> List[str]:
         """
@@ -399,16 +418,8 @@ class TermDetector:
             
             # 使用词形还原
             lemma = token.lemma_.lower()
-            
-            # 特殊处理：保留某些形式
-            # 例如 "learning" 在 "machine learning" 中应该保留
-            if token.pos_ == 'VERB' and token.tag_ == 'VBG':
-                # 动名词形式，如果是术语的一部分，可能需要保留
-                # 但我们还是用lemma来做聚合
-                lemmatized_words.append(lemma)
-            else:
-                lemmatized_words.append(lemma)
-        
+            lemmatized_words.append(lemma)
+
         return ' '.join(lemmatized_words)
     
     def aggregate_term_variants(self, ngrams: Dict[str, int]) -> Tuple[Dict[str, int], Dict[str, str]]:
@@ -460,6 +471,59 @@ class TermDetector:
         logger.info(f"聚合前: {len(ngrams)} 个术语，聚合后: {len(aggregated_ngrams)} 个术语")
         
         return aggregated_ngrams, normalized_to_representative
+    
+    def aggregate_candidate_terms(self, terms: List[str]) -> Tuple[List[str], Dict[str, List[str]]]:
+        """
+        聚合候选术语列表（使用词形还原去重变体）
+        
+        将词形变体（单复数、动名词等）聚合到同一个代表术语下，返回去重后的术语列表
+        
+        例如：
+        - ["sound absorbing material", "sound absorbing materials", "neural network", "neural networks"]
+          -> (["sound absorbing material", "neural network"], 
+              {"sound absorb material": ["sound absorbing material", "sound absorbing materials"],
+               "neural network": ["neural network", "neural networks"]})
+        
+        Args:
+            terms: 原始术语列表
+            
+        Returns:
+            (去重后的术语列表, {标准形式: [原始形式列表]})
+        """
+        if not terms:
+            return [], {}
+        
+        logger.info(f"开始聚合候选术语列表，共 {len(terms)} 个术语...")
+        
+        # 构建映射：标准形式 -> [原始形式列表]
+        normalized_to_originals = defaultdict(list)
+        
+        for term in terms:
+            normalized = self.normalize_term(term)
+            normalized_to_originals[normalized].append(term)
+        
+        # 为每个标准形式选择代表（优先选择较短的、更常见的表达）
+        aggregated_terms = []
+        variants_map = {}
+        
+        for normalized, variants in normalized_to_originals.items():
+            # 去重
+            unique_variants = list(set(variants))
+            
+            # 按长度排序，选择最短的作为代表（通常是单数形式）
+            unique_variants.sort(key=lambda x: (len(x), x))
+            representative = unique_variants[0]
+            
+            aggregated_terms.append(representative)
+            
+            # 记录有多个变体的情况
+            if len(unique_variants) > 1:
+                variants_map[normalized] = unique_variants
+                logger.info(f"聚合候选术语变体: {unique_variants} -> {representative}")
+        
+        logger.info(f"候选术语聚合完成: {len(terms)} -> {len(aggregated_terms)} 个")
+        
+        return aggregated_terms, variants_map
     
     def extract_ngrams(self, text: str, min_n: int = 2, max_n: int = 5) -> Dict[str, int]:
         """
@@ -830,32 +894,186 @@ class TermDetector:
         
         return previous_row[-1]
     
-    def find_similar_terms(self, terms: List[str], threshold: int = 2) -> List[Tuple[str, str, int]]:
+    def compute_lexical_similarity(self, term1: str, term2: str) -> float:
         """
-        查找相似的术语对（可能是误用或不规范使用）
+        计算词汇层面的相似度（基于编辑距离）
+        
+        将编辑距离转换为0-1的相似度分数
+        
+        Args:
+            term1: 术语1
+            term2: 术语2
+            
+        Returns:
+            词汇相似度 (0-1)
+        """
+        distance = self.levenshtein_distance(term1.lower(), term2.lower())
+        max_len = max(len(term1), len(term2))
+        if max_len == 0:
+            return 1.0
+        # 相似度 = 1 - (编辑距离 / 最大长度)
+        return max(0, 1 - distance / max_len)
+    
+    def find_similar_terms(self, terms: List[str], threshold: int = 2) -> List[Dict[str, Any]]:
+        """
+        查找相似的术语对（融合语义相似度和编辑距离）
+        
+        使用SciBERT模型计算术语的语义相似度，并与编辑距离相似度加权融合，
+        以发现"字面不同但语义相近"的术语对
         
         Args:
             terms: 术语列表
-            threshold: 编辑距离阈值
+            threshold: 编辑距离阈值（用于传统方法的兜底）
             
         Returns:
-            [(术语1, 术语2, 编辑距离), ...] 列表
+            [{'term1': str, 'term2': str, 'semantic_score': float, 
+              'lexical_score': float, 'final_score': float, 'distance': int,
+              'severity': str}, ...] 列表
         """
-        similar_pairs = []
+        if not terms or len(terms) < 2:
+            return []
         
-        for i in range(len(terms)):
-            for j in range(i + 1, len(terms)):
-                term1 = terms[i]
-                term2 = terms[j]
+        logger.info(f"开始查找相似术语，共 {len(terms)} 个候选术语...")
+        
+        similar_pairs = []
+        seen_pairs = set()  # 用于去重
+        
+        # 尝试使用语义相似度方法
+        use_semantic = _sklearn_available and _transformers_available and self._model_loaded
+        
+        if use_semantic:
+            logger.info("使用语义相似度 + 编辑距离融合方法")
+            
+            try:
+                # 1. 对所有术语进行向量化
+                term_embeddings = self.encode_terms(terms)
                 
-                # 长度差异太大，跳过
-                if abs(len(term1) - len(term2)) > threshold * 2:
-                    continue
-                
-                distance = self.levenshtein_distance(term1.lower(), term2.lower())
-                
-                if 0 < distance <= threshold:
-                    similar_pairs.append((term1, term2, distance))
+                if term_embeddings.size > 0 and len(term_embeddings) == len(terms):
+                    # 2. 使用最近邻搜索找到每个术语的相似候选
+                    n_neighbors = min(self.MAX_NEIGHBORS + 1, len(terms))  # +1 因为会包含自己
+                    
+                    # 归一化向量（用于余弦相似度）
+                    norms = np.linalg.norm(term_embeddings, axis=1, keepdims=True)
+                    norms[norms == 0] = 1  # 避免除零
+                    normalized_embeddings = term_embeddings / norms
+                    
+                    # 使用余弦相似度进行近邻搜索
+                    nn_model = NearestNeighbors(
+                        n_neighbors=n_neighbors,
+                        metric='cosine',
+                        algorithm='brute'  # 对于小规模数据，brute更快
+                    )
+                    nn_model.fit(normalized_embeddings)
+                    
+                    # 查找近邻
+                    distances, indices = nn_model.kneighbors(normalized_embeddings)
+                    
+                    # 3. 处理近邻结果
+                    for i in range(len(terms)):
+                        term1 = terms[i]
+                        
+                        for j_idx in range(1, len(indices[i])):  # 跳过自己（索引0）
+                            j = indices[i][j_idx]
+                            term2 = terms[j]
+                            
+                            # 去重：确保每对只处理一次
+                            pair_key = tuple(sorted([term1.lower(), term2.lower()]))
+                            if pair_key in seen_pairs:
+                                continue
+                            seen_pairs.add(pair_key)
+                            
+                            # 计算语义相似度（cosine距离转相似度）
+                            semantic_score = 1 - distances[i][j_idx]
+                            
+                            # 过滤：语义相似度低于阈值的跳过
+                            if semantic_score < self.SEMANTIC_SIM_THRESHOLD:
+                                continue
+                            
+                            # 计算词汇相似度
+                            lexical_score = self.compute_lexical_similarity(term1, term2)
+                            
+                            # 计算编辑距离（用于显示）
+                            edit_distance = self.levenshtein_distance(term1.lower(), term2.lower())
+                            
+                            # 加权融合
+                            final_score = (self.SEMANTIC_WEIGHT * semantic_score + 
+                                         (1 - self.SEMANTIC_WEIGHT) * lexical_score)
+                            
+                            # 过滤：最终相似度低于阈值的跳过
+                            if final_score < self.FINAL_SIM_THRESHOLD:
+                                continue
+                            
+                            # 确定严重程度
+                            if final_score >= 0.9:
+                                severity = 'high'
+                            elif final_score >= 0.8:
+                                severity = 'medium'
+                            else:
+                                severity = 'low'
+                            
+                            similar_pairs.append({
+                                'term1': term1,
+                                'term2': term2,
+                                'semantic_score': round(float(semantic_score), 3),
+                                'lexical_score': round(float(lexical_score), 3),
+                                'final_score': round(float(final_score), 3),
+                                'distance': edit_distance,
+                                'severity': severity
+                            })
+                    
+                    # 按最终相似度排序
+                    similar_pairs.sort(key=lambda x: x['final_score'], reverse=True)
+                    
+                    logger.info(f"语义相似度方法找到 {len(similar_pairs)} 对相似术语")
+                    
+                else:
+                    logger.warning("术语向量化失败，回退到编辑距离方法")
+                    use_semantic = False
+                    
+            except Exception as e:
+                logger.error(f"语义相似度计算失败: {e}", exc_info=True)
+                use_semantic = False
+        
+        # 如果语义方法不可用或失败，使用传统编辑距离方法
+        if not use_semantic:
+            logger.info("使用传统编辑距离方法")
+            
+            for i in range(len(terms)):
+                for j in range(i + 1, len(terms)):
+                    term1 = terms[i]
+                    term2 = terms[j]
+                    
+                    # 长度差异太大，跳过
+                    if abs(len(term1) - len(term2)) > threshold * 2:
+                        continue
+                    
+                    distance = self.levenshtein_distance(term1.lower(), term2.lower())
+                    
+                    if 0 < distance <= threshold:
+                        lexical_score = self.compute_lexical_similarity(term1, term2)
+                        
+                        # 确定严重程度
+                        if distance == 1:
+                            severity = 'high'
+                        elif distance == 2:
+                            severity = 'medium'
+                        else:
+                            severity = 'low'
+                        
+                        similar_pairs.append({
+                            'term1': term1,
+                            'term2': term2,
+                            'semantic_score': None,  # 语义方法不可用
+                            'lexical_score': round(lexical_score, 3),
+                            'final_score': round(lexical_score, 3),  # 仅使用词汇相似度
+                            'distance': distance,
+                            'severity': severity
+                        })
+            
+            # 按编辑距离排序
+            similar_pairs.sort(key=lambda x: x['distance'])
+            
+            logger.info(f"编辑距离方法找到 {len(similar_pairs)} 对相似术语")
         
         return similar_pairs
     
@@ -896,6 +1114,67 @@ class TermDetector:
         except Exception as e:
             logger.error(f"Failed to load SciBERT model: {e}", exc_info=True)
             return False
+    
+    def encode_terms(self, terms: List[str]) -> np.ndarray:
+        """
+        使用SciBERT模型对术语列表进行向量化编码
+        
+        利用SciBERT的[CLS]token输出作为术语的语义向量表示
+        
+        Args:
+            terms: 术语列表
+            
+        Returns:
+            np.ndarray: 形状为 (len(terms), hidden_size) 的向量矩阵
+        """
+        if not terms:
+            return np.array([])
+        
+        # 确保模型已加载
+        if not self._model_loaded:
+            if not self.load_scibert_model():
+                logger.warning("SciBERT模型不可用，无法进行术语向量化")
+                return np.array([])
+        
+        logger.info(f"开始对 {len(terms)} 个术语进行向量化编码...")
+        
+        embeddings = []
+        batch_size = 32  # 批量处理
+        
+        for i in range(0, len(terms), batch_size):
+            batch_terms = terms[i:i+batch_size]
+            
+            try:
+                # 使用tokenizer编码
+                inputs = self.tokenizer(
+                    batch_terms,
+                    padding=True,
+                    truncation=True,
+                    max_length=64,  # 术语通常较短
+                    return_tensors="pt"
+                )
+                
+                # 获取模型输出（使用最后一层hidden states）
+                with torch.no_grad():
+                    outputs = self.model.base_model(**inputs)
+                    # 使用[CLS]token的输出作为术语的向量表示
+                    # outputs.last_hidden_state: (batch_size, seq_len, hidden_size)
+                    cls_embeddings = outputs.last_hidden_state[:, 0, :].numpy()
+                    embeddings.append(cls_embeddings)
+                    
+            except Exception as e:
+                logger.error(f"术语向量化失败: {e}")
+                # 如果失败，填充零向量
+                hidden_size = self.model.config.hidden_size
+                zero_embeddings = np.zeros((len(batch_terms), hidden_size))
+                embeddings.append(zero_embeddings)
+        
+        if embeddings:
+            all_embeddings = np.vstack(embeddings)
+            logger.info(f"术语向量化完成，向量维度: {all_embeddings.shape}")
+            return all_embeddings
+        
+        return np.array([])
     
     def predict_scibert_labels(self, sentence: str) -> List[Tuple[str, str]]:
         """
@@ -1091,16 +1370,27 @@ class TermDetector:
                 logger.warning(f"SciBERT检测失败: {e}")
                 print("SciBERT检测失败，跳过此步骤")
 
-            # 6. 合并所有候选术语
-            all_candidate_terms = set()
-            all_candidate_terms.update(keywords)
-            all_candidate_terms.update(quoted_terms)
-            all_candidate_terms.update([t['term'] for t in multi_word_terms])
-            all_candidate_terms.update([t['term'] for t in scibert_terms])
+            # 6. 合并所有候选术语（带词形还原聚合）
+            all_candidate_terms_raw = []
+            all_candidate_terms_raw.extend(keywords)
+            all_candidate_terms_raw.extend(quoted_terms)
+            all_candidate_terms_raw.extend([t['term'] for t in multi_word_terms])
+            all_candidate_terms_raw.extend([t['term'] for t in scibert_terms])
             
-            candidate_terms = list(all_candidate_terms)
-            logger.info(f"✓ 合并后共 {len(candidate_terms)} 个候选术语")            
-            print("候选术语：",candidate_terms)
+            # 先简单去重
+            all_candidate_terms_raw = list(set(all_candidate_terms_raw))
+            logger.info(f"合并前共 {len(all_candidate_terms_raw)} 个候选术语（简单去重）")
+            
+            # 使用词形还原进一步聚合（处理 materials/material, networks/network 等变体）
+            candidate_terms, term_variants_map = self.aggregate_candidate_terms(all_candidate_terms_raw)
+            logger.info(f"✓ 词形还原聚合后共 {len(candidate_terms)} 个候选术语")
+            print("候选术语：", candidate_terms)
+            
+            # 记录被聚合的变体信息（用于调试）
+            if term_variants_map:
+                print(f"术语变体映射: {len(term_variants_map)} 组")
+                for normalized, variants in list(term_variants_map.items())[:5]:
+                    print(f"  {normalized}: {variants}")
 
             # 7. 检测新术语
             new_terms = []
@@ -1119,10 +1409,10 @@ class TermDetector:
             logger.info(f"✓ 检测到 {len(new_terms)} 个疑似新术语")
             print("疑似新术语：",new_terms)
             
-            # 8. 检测相似术语（可能的混用）
-            similar_pairs = self.find_similar_terms(candidate_terms, threshold=3)
-            logger.info(f"✓ 检测到 {len(similar_pairs)} 对相似术语")
-            print("相似术语：",similar_pairs)
+            # 8. 检测相似术语（可能的混用）- 使用语义+编辑距离融合方法
+            similar_pairs_raw = self.find_similar_terms(candidate_terms, threshold=3)
+            logger.info(f"✓ 检测到 {len(similar_pairs_raw)} 对相似术语")
+            print("相似术语：", similar_pairs_raw)
 
             # 9. 组装结果
             result = {
@@ -1135,15 +1425,7 @@ class TermDetector:
                     'scibert_terms': scibert_terms,  # SciBERT检测的科学术语
                     'all_candidate_terms': sorted(list(candidate_terms)),
                     'new_terms': new_terms,
-                    'similar_pairs': [
-                        {
-                            'term1': t1,
-                            'term2': t2,
-                            'distance': dist,
-                            'severity': 'high' if dist <= 2 else 'medium'
-                        }
-                        for t1, t2, dist in similar_pairs[:20]  # 只返回前20对
-                    ]
+                    'similar_pairs': similar_pairs_raw[:20]  # 只返回前20对，已经是正确格式
                 },
                 'message': '术语检测完成'
             }
