@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 const apiClient = axios.create({
   // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 100000,
+  timeout: 300000,  // 默认超时时间增加到 5 分钟（格式检测可能较慢）
   headers: {
     'Content-Type': 'application/json'
   },
@@ -41,6 +41,12 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('API请求错误:', error)
+
+    // 处理超时错误
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      ElMessage.error('请求超时，检测任务仍在后台运行，请稍后刷新查看结果')
+      throw new Error('请求超时')
+    }
 
     // 处理网络错误
     if (error.code === 'ERR_NETWORK') {

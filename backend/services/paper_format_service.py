@@ -563,6 +563,9 @@ class PaperFormatService:
             # 标准化所有结果
             all_results = {}
             for module_name, report in all_reports.items():
+                # Classification暂时跳过，其不是字典结构，不能使用_normalize_report函数处理
+                if module_name == 'Classification':
+                    continue
                 all_results[module_name] = self._normalize_report(report, module_name)
             
             # 计算统计信息

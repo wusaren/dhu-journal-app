@@ -775,10 +775,10 @@
           </el-checkbox>
         </div>
         
-        <!-- 摘要分类号检测选项 -->
-        <!-- <div v-if="selectedModules.includes('Abstract')" class="figure-api-option">
+        <!-- 摘要分类号检测选项（需同时选择摘要和关键词检测才显示） -->
+        <div v-if="selectedModules.includes('Abstract') && selectedModules.includes('Keywords')" class="figure-api-option">
           <el-alert 
-            title="摘要分类号检测选项（使用大模型）" 
+            title="分类号检测选项（使用大模型）" 
             type="warning" 
             :closable="false"
             style="margin-bottom: 10px;padding: 0"
@@ -787,7 +787,7 @@
             <span class="module-label">启用分类号智能检测</span>
             <span class="module-description">*需要调用API，自动识别并验证中图分类号</span>
           </el-checkbox>
-        </div> -->
+        </div>
       </div>
       
       <template #footer>
@@ -1288,8 +1288,8 @@ const handleModuleChange = (value: string[]) => {
     enableFigureApi.value = false
   }
   
-  // 如果取消了摘要检测，也取消分类号API检测
-  if (!value.includes('Abstract')) {
+  // 如果取消了摘要或关键词检测，也取消分类号API检测
+  if (!value.includes('Abstract') || !value.includes('Keywords')) {
     enableClassificationApi.value = false
   }
   
