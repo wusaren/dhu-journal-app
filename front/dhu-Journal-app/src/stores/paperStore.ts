@@ -185,7 +185,11 @@ export const usePaperStore = defineStore('paper', () => {
             loadingMessage.close()
 
             // 调试信息
-            console.log('响应数据:', response)
+            console.log('=== 完整响应数据 ===', JSON.stringify(response, null, 2))
+            const responseAny = response as any
+            console.log('response类型:', typeof response)
+            console.log('response.data存在?', 'data' in responseAny)
+            console.log('response.data:', responseAny.data)
             console.log('duplicate:', response.duplicate)
             console.log('requires_confirmation:', response.requires_confirmation)
 
@@ -219,26 +223,41 @@ export const usePaperStore = defineStore('paper', () => {
             } else if (response.error) {
                 ElMessage.error(response.message || '文件上传失败')
             } else {
-                // 检查解析状态
-                const parsingStatus = response.parsing_status
-                const parsingSuccess = response.parsing_success
-
-                // 根据解析状态显示不同的成功消息
-                if (parsingStatus === 'completed') {
-                    if (parsingSuccess) {
+                // 根据控制台输出，response的结构是：{success: true, data: {...}}
+                // axios拦截器返回response.data，所以response就是后端HTTP响应的data部分
+                // 但是后端返回的HTTP响应体是 {success: true, data: {...}}
+                // 所以前端收到的response就是 {success: true, data: {...}}
+                // 需要访问response.data来获取实际数据
+                const responseAny = response as any
+                
+                // 获取实际数据：优先从response.data获取，如果没有则使用response本身
+                let actualData = responseAny.data
+                if (!actualData && responseAny.success) {
+                    // 如果response.data不存在，但response有success属性，说明数据结构可能不同
+                    // 尝试直接使用response（可能axios拦截器已经处理过了）
+                    actualData = responseAny
+                } else if (!actualData) {
+                    // 如果都没有，直接使用response
+                    actualData = responseAny
+                }
+                
+                // 检查并显示期刊创建提示
+                if (actualData && actualData.journalCreated && actualData.journalInfo) {
+                    const title = actualData.journalInfo.title
+                    const issue = actualData.journalInfo.issue
+                    ElMessage.success(`系统已自动创建新期刊：${title} - ${issue}`)
+                } else if (actualData && actualData.message) {
+                    // 显示后端返回的消息
+                    ElMessage.success(actualData.message)
+                } else {
+                    // 默认成功消息
+                    const parsingStatus = actualData?.parsing_status
+                    const parsingSuccess = actualData?.parsing_success
+                    if (parsingStatus === 'completed' && parsingSuccess) {
                         ElMessage.success('论文上传成功！解析完成，已提取论文信息')
                     } else {
-                        ElMessage.warning('论文上传成功！但未能解析出论文信息，请检查PDF文件格式')
+                        ElMessage.success('论文上传成功！')
                     }
-                } else {
-                    ElMessage.success(response.message || '论文添加成功！系统已自动解析论文信息')
-                }
-
-                // 检查是否创建了新期刊
-                if (response.journalCreated && response.journalInfo) {
-                    const journalTitle = response.journalInfo.title
-                    const journalIssue = response.journalInfo.issue
-                    ElMessage.success(`已为您在期刊管理页面创建期刊 ${journalTitle}（${journalIssue}）`)
                 }
             }
 

@@ -1072,8 +1072,8 @@ def _generate_tuiwen_content_legacy(papers, journal):
                 # 获取图片URL
                 first_image_url = getattr(paper, 'first_image_url', '') or ''
                 second_image_url = getattr(paper, 'second_image_url', '') or ''
-                # 生成Citation
-                citation = generate_citation(paper)
+                # 使用数据库中的citation字段
+                citation = getattr(paper, 'citation', '') or ''
             
             # 添加中文标题（如果有）
             if chinese_title:
@@ -1290,6 +1290,11 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 doi = paper.doi or ''
                 page_start = paper.page_start
                 page_end = paper.page_end
+                # 使用数据库中的citation字段
+                citation = getattr(paper, 'citation', '') or ''
+                # 获取图片URL
+                first_image_url = getattr(paper, 'first_image_url', '') or ''
+                second_image_url = getattr(paper, 'second_image_url', '') or ''
             else:
                 title = paper.get('title', '')
                 authors = paper.get('authors', '')
@@ -1298,15 +1303,9 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 doi = paper.get('doi', '')
                 page_start = paper.get('page_start')
                 page_end = paper.get('page_end')
-            
-            # 生成Citation
-            citation = generate_citation(paper)
-            
-            # 获取图片URL
-            if hasattr(paper, 'first_image_url'):
-                first_image_url = getattr(paper, 'first_image_url', '') or ''
-                second_image_url = getattr(paper, 'second_image_url', '') or ''
-            else:
+                # 使用数据库中的citation字段
+                citation = paper.get('citation', '') or ''
+                # 获取图片URL
                 first_image_url = paper.get('first_image_url', '') or ''
                 second_image_url = paper.get('second_image_url', '') or ''
             
@@ -1519,13 +1518,9 @@ def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: 
             'second_image': source_data.get('second_image_url', '') or '',
         }
         
-        # 如果citation为空，尝试生成
-        if not field_values['citation']:
-            try:
-                field_values['citation'] = generate_citation(source_data)
-            except Exception as e:
-                logger.warning(f"生成citation失败: {str(e)}")
-                field_values['citation'] = ''
+        # 使用数据库中的citation字段（如果为空则为空字符串）
+        if not field_values.get('citation'):
+            field_values['citation'] = ''
         
         # 按order排序字段
         sorted_fields = sorted(fields_config, key=lambda x: x.get('order', 999))

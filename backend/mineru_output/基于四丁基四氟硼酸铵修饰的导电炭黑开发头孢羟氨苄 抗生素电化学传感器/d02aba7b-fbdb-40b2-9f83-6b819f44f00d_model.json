@@ -1,0 +1,2332 @@
+[
+    [
+        {
+            "type": "page_number",
+            "bbox": [
+                0.027,
+                0.031,
+                0.062,
+                0.045
+            ],
+            "angle": 0,
+            "content": "348"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.235,
+                0.031,
+                0.761,
+                0.047
+            ],
+            "angle": 0,
+            "content": "Journal of Donghua University (Eng. Ed.) Vol. 42, No. 4 (2025)"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.015,
+                0.067,
+                0.341,
+                0.084
+            ],
+            "angle": 0,
+            "content": "DOI: 10.19884/j.1672-5220.202406006"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.015,
+                0.116,
+                0.984,
+                0.165
+            ],
+            "angle": 0,
+            "content": "Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on Conductive Carbon Black Decorated with Tetrabutylammonium Tetrafluoroborate"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.185,
+                0.327,
+                0.202
+            ],
+            "angle": 0,
+            "content": "ZHU Zongxian\\(^{1}\\), ZHANG Xuan\\(^{1,2*}\\)"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.203,
+                0.982,
+                0.235
+            ],
+            "angle": 0,
+            "content": "1. Key Laboratory of Science and Technology of Eco-Textiles, Ministry of Education, College of Chemistry and Chemical Engineering, Donghua University, Shanghai 201620, China"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.236,
+                0.821,
+                0.252
+            ],
+            "angle": 0,
+            "content": "2. National Innovation Center of Advanced Dyeing & Finishing Technology, Tai'an 271000, China"
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.013,
+                0.203,
+                0.982,
+                0.252
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.267,
+                0.48,
+                0.539
+            ],
+            "angle": 0,
+            "content": "Abstract: The development of analytical methods for antibiotic detection has become crucial for public health. In this research, a novel and simple electrochemical sensor for sensitive detection of cefadroxil (CFL) antibiotic was developed. The glassy carbon electrode (GCE) was coated with cheap conductive carbon black VXC-72R that was decorated with tetrabutylammonium tetrafluoroborate \\(\\left(\\mathrm{TBABF}_{4}\\right)\\), to construct the electrochemical sensor \\(\\mathrm{TBABF}_{4} / \\mathrm{VXC}-72\\mathrm{R} / \\mathrm{GCE}\\). It was found that CFL exhibited a reduction peak at approximately \\(0.22\\mathrm{~V}\\) on \\(\\mathrm{TBABF}_{4} / \\mathrm{VXC}-72\\mathrm{R} / \\mathrm{GCE}\\). \\(\\mathrm{TBABF}_{4} / \\mathrm{VXC}-72\\mathrm{R} / \\mathrm{GCE}\\) showed a linear response to CFL in a concentration range of \\(0.3-10.0\\mu\\mathrm{mol/L}\\), with a detection limit of \\(0.2\\mu\\mathrm{mol/L}\\) (a signal-to-noise ratio of 3). \\(\\mathrm{TBABF}_{4} / \\mathrm{VXC}-72\\mathrm{R} / \\mathrm{GCE}\\) showed good reproducibility, high storage stability and anti-interference performance. Analytical applications for CFL detection in real lake water, pharmaceutical tablet and fetal bovine serum samples were achieved."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.54,
+                0.478,
+                0.584
+            ],
+            "angle": 0,
+            "content": "Keywords: electrochemical sensor; conductive carbon black; tetrabutylammonium tetrafluoroborate (TBABF\\(_4\\)); cefadroxil (CFL) antibiotic"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.015,
+                0.585,
+                0.177,
+                0.599
+            ],
+            "angle": 0,
+            "content": "CLC number: O652"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.331,
+                0.585,
+                0.478,
+                0.599
+            ],
+            "angle": 0,
+            "content": "Document code: A"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.016,
+                0.6,
+                0.324,
+                0.614
+            ],
+            "angle": 0,
+            "content": "Article ID: 1672-5220(2025)04-0348-10"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.21,
+                0.629,
+                0.373,
+                0.66
+            ],
+            "angle": 0,
+            "content": "Open Science Identity (OSID)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.391,
+                0.617,
+                0.474,
+                0.676
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.014,
+                0.686,
+                0.192,
+                0.706
+            ],
+            "angle": 0,
+            "content": "0 Introduction"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.724,
+                0.48,
+                0.862
+            ],
+            "angle": 0,
+            "content": "The wide use of antibiotics has opened a window to defeat infectious diseases, but subsequent environmental pollution and bacterial resistance problems have become more and more serious[1-2]. Cefadroxil (CFL), a broad-spectrum \\(\\beta\\)-lactam-like antibiotic, has been mostly used for the clinical treatment of bacterial infections[3]. In this regard, it is highly essential to develop sensitive, rapid and simple detection methods for CFL antibiotic."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.014,
+                0.864,
+                0.48,
+                0.899
+            ],
+            "angle": 0,
+            "content": "Many analytical methods, such as spectrophotometry[4], chromatography[5] and capillary"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.267,
+                0.984,
+                0.452
+            ],
+            "angle": 0,
+            "content": "electrophoresis[6] have been reported to detect CFL. However, these traditional methods often require expensive instruments and complicated sample pretreatment. Electrochemical sensors have been widely studied and applied in environmental protection, biomedicine and food safety due to their advantages of simplicity, low cost, high sensitivity and rapidity[7-8]. Several electrochemical sensors have been reported for CFL detection based on various electrodes[9-10]. These sensors have shown potential applications for CFL detection in real pharmaceutical tablet and serum samples."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.455,
+                0.984,
+                0.672
+            ],
+            "angle": 0,
+            "content": "As one of the typical carbon nanomaterials, conductive carbon black has been widely used as a versatile electrode material in the fabrication of electrochemical sensors, due to its characteristics of low price, excellent conductivity and large specific surface area[11-13]. To decrease the aggregation tendency of carbon black and enhance the stability on the electrode surface, chitosan is usually used to efficiently disperse and immobilize carbon black without noticeable effect on electron transfer[14]. In addition, electrolytes such as ionic liquids have been reported to be promising additives that could substantially improve the sensitivity of electrochemical sensors[14-17]."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.675,
+                0.984,
+                0.897
+            ],
+            "angle": 0,
+            "content": "In this research, three electrolytes, 1-butyl-3-methylimidazole tetrafluoroborate (BMIMBF\\(_4\\)), tetrabutylammonium tetrafluoroborate (TBABF\\(_4\\)) and tetrabutylammonium bromide (TBABr), were employed to decorate the conductive carbon black VXC-72R, and further immobilized by chitosan on the glassy carbon electrode (GCE) surface to fabricate novel electrochemical sensors for CFL. Interestingly, TBABF\\(_4\\)/VXC-72R/GCE showed the highest sensitivity, reflecting that the optimized interfacial affinity of electrolytes might play a substantial role in sensing performance. TBABF\\(_4\\)/VXC-72R/GCE was also successfully used to determine CFL in lake"
+        },
+        {
+            "type": "page_footnote",
+            "bbox": [
+                0.045,
+                0.914,
+                0.226,
+                0.928
+            ],
+            "angle": 0,
+            "content": "Received date: 2024-06-17"
+        },
+        {
+            "type": "page_footnote",
+            "bbox": [
+                0.045,
+                0.929,
+                0.978,
+                0.955
+            ],
+            "angle": 0,
+            "content": "Foundation item: Research Foundation from National Innovation Center of Advanced Dyeing & Finishing Technology, China (No.2022GCJJ10)  \n* Correspondence should be addressed to ZHANG Xuan, email: xzhang@du.edu.cn"
+        },
+        {
+            "type": "page_footnote",
+            "bbox": [
+                0.045,
+                0.956,
+                0.982,
+                0.983
+            ],
+            "angle": 0,
+            "content": "Citation: ZHU Z X, ZHANG X. Development of electrochemical sensor for cefadroxil antibiotic based on conductive carbon black decorated with tetrabutylammonium tetrafluoroborate[J]. Journal of Donghua University (English Edition), 2025, 42(4): 348-357."
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.045,
+                0.914,
+                0.982,
+                0.983
+            ],
+            "angle": 0,
+            "content": null
+        }
+    ],
+    [
+        {
+            "type": "header",
+            "bbox": [
+                0.116,
+                0.012,
+                0.88,
+                0.027
+            ],
+            "angle": 0,
+            "content": "Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on Conductive Carbon"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.26,
+                0.031,
+                0.738,
+                0.047
+            ],
+            "angle": 0,
+            "content": "Black Decorated with Tetrabutylammonium Tetrafluoroborate"
+        },
+        {
+            "type": "page_number",
+            "bbox": [
+                0.937,
+                0.031,
+                0.972,
+                0.045
+            ],
+            "angle": 0,
+            "content": "349"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.068,
+                0.479,
+                0.101
+            ],
+            "angle": 0,
+            "content": "water, pharmaceutical tablet and fetal bovine serum samples."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.015,
+                0.116,
+                0.317,
+                0.135
+            ],
+            "angle": 0,
+            "content": "1 Materials and Methods"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.015,
+                0.153,
+                0.267,
+                0.168
+            ],
+            "angle": 0,
+            "content": "1.1 Reagents and materials"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.169,
+                0.48,
+                0.365
+            ],
+            "angle": 0,
+            "content": "VXC-72R was supplied by Cabot Corporation, USA. \\(\\mathrm{TBABF}_4\\), TBABr, potassium ferricyanide \\((\\mathrm{K}_3[\\mathrm{Fe}(\\mathrm{CN})_6])\\), chitosan and absolute ethanol were purchased from Sinopharm Chemical Reagent Corporation, China. \\(\\mathrm{BMIMBF}_4\\) was purchased from Accela ChemBio Co., Ltd., China. Glacial acetic acid, nitric acid and potassium chloride were purchased from Shanghai Macklin Biochemical Co., Ltd., China, Aladdin Reagent Co., Ltd., China and Shanghai Titan Scientific Co., Ltd., China, respectively. CFL was purchased from Rhawn Chemical Reagent Corporation, China. All chemicals are of analytical grade unless otherwise specified."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.015,
+                0.367,
+                0.17,
+                0.38
+            ],
+            "angle": 0,
+            "content": "1.2 Instruments"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.383,
+                0.481,
+                0.593
+            ],
+            "angle": 0,
+            "content": "All electrochemical data were recorded on the electrochemical workstation ( CHI-760E, Chenhua, Shanghai, China), and three electrode systems consisting of GCE (a diameter of \\(3\\mathrm{mm}\\)), saturated calomel electrode (SCE) and platinum wire electrode were employed. The hydrophilicity of electrode materials was characterized by a contact angle analyzer (KRUSS DSA 255, Germany). The scanning electron microscopy (SEM) images were obtained with a scanning electron microscope ( Hitachi Regulus 8230, Japan) and were used to characterize the surface morphology of the materials. Fourier transform infrared ( FTIR ) spectra were obtained with an FTIR spectrometer ( NEXUS-670,"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.068,
+                0.985,
+                0.166
+            ],
+            "angle": 0,
+            "content": "Thermo Nicolet, USA). The dispersion of catalyst materials and pH measurement of phosphorate buffer solution (PBS) were performed on an ultrasonic cleaner (KQ3200, Kunshan Ultrasonic Instruments, Jiangsu, China) and a pH meter (FE28-Standard, METTLER TOLEDO Shanghai, China), respectively."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.516,
+                0.17,
+                0.903,
+                0.185
+            ],
+            "angle": 0,
+            "content": "1.3 Construction of electrochemical sensors"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.189,
+                0.984,
+                0.356
+            ],
+            "angle": 0,
+            "content": "Firstly, VXC-72R and \\(\\mathrm{TBABF}_4\\) were added to a chitosan solution (CS) (mass fraction of \\(0.1\\%\\) and prepared in acetic acid solution) at VXC-72R: \\(\\mathrm{TBABF}_4\\) mass ratios of 1:1, 1:2, 1:3 and 1:4, with the final mass concentration of VXC-72R fixed at \\(2\\mathrm{mg/mL}\\). In order to make them evenly dispersed, the mixed materials were sonicated for \\(30\\mathrm{min}\\) to obtain \\(\\mathrm{TBABF}_4/\\mathrm{VXC}-72\\mathrm{R}\\) dispersion. Other electrode materials such as \\(\\mathrm{BMIMBF}_4/\\) VXC-72R, TBABr/VXC-72R and VXC-72R were prepared according to similar procedures."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.357,
+                0.984,
+                0.589
+            ],
+            "angle": 0,
+            "content": "Then the surface of the bare GCE was pre-treated as described in Refs. [18-19]. In brief, it was polished to a mirror surface with \\(0.05\\mu \\mathrm{m}\\) alumina powder and thoroughly rinsed with deionized water. The electrodes were then sequentially sonicated in nitric acid solution (nitric acid and deionized water mixed at a volume ratio of 1:1), absolute ethanol and deionized water. \\(\\mathrm{TBABF_4 / VXC - 72R / GCE}\\) was fabricated by dropping \\(9\\mu \\mathrm{L}\\) of the above \\(\\mathrm{TBABF_4 / VXC - 72R}\\) dispersion on the cleaned GCE and drying at \\(50~^\\circ \\mathrm{C}\\). \\(\\mathrm{BMIMBF_4 / VXC - }\\) 72R/GCE, TBABr/VXC-72R/GCE and VXC-72R/GCE were fabricated following the same procedure. The fabrication of \\(\\mathrm{TBABF_4 / VXC - 72R / GCE}\\) and application for CFL detection are shown in Scheme 1."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.216,
+                0.598,
+                0.785,
+                0.821
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.217,
+                0.826,
+                0.78,
+                0.841
+            ],
+            "angle": 0,
+            "content": "Scheme 1 Fabrication of \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - }72\\mathrm{R} / \\mathrm{GCE}\\) and application for CFL detection"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.014,
+                0.855,
+                0.305,
+                0.869
+            ],
+            "angle": 0,
+            "content": "1.4 Electrochemical test of CFL"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.87,
+                0.481,
+                0.987
+            ],
+            "angle": 0,
+            "content": "The electrochemical reduction of CFL was studied by differential pulsed voltammetry (DPV) on GCE, VX-72R/GCE, TBABF\\(_4\\)/VXC-72R/GCE, TBABr/VXC-72R/GCE and BMIMBF\\(_4\\)/VXC-72R/GCE in PBS solution \\((0.1 \\, \\text{mol/L}, \\, \\text{pH} = 4)\\), respectively. The conductivity of different electrodes was assessed by electrochemical impedance spectroscopy (EIS) in"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.854,
+                0.984,
+                0.938
+            ],
+            "angle": 0,
+            "content": "0.1 mol/L KCl solution containing 5 mmol/L \\(\\mathrm{K}_3[\\mathrm{Fe}(\\mathrm{CN})_6]\\) with a scanning voltage of \\(0.22\\mathrm{V}\\) and a frequency range of \\(0.01 - 100000\\mathrm{Hz}\\). The redox behaviors of CFL on \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - }72\\mathrm{R} / \\mathrm{GCE}\\) were characterized by cyclic voltammetry (CV)."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.516,
+                0.939,
+                0.767,
+                0.955
+            ],
+            "angle": 0,
+            "content": "1.5 Real sample processing"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.955,
+                0.982,
+                0.988
+            ],
+            "angle": 0,
+            "content": "The CFL tablets were purchased from local pharmacies. Five commercial CFL tablets (CSPC Ouyi,"
+        }
+    ],
+    [
+        {
+            "type": "page_number",
+            "bbox": [
+                0.027,
+                0.031,
+                0.064,
+                0.045
+            ],
+            "angle": 0,
+            "content": "350"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.379,
+                0.031,
+                0.621,
+                0.047
+            ],
+            "angle": 0,
+            "content": "ZHU Zongxian, ZHANG Xuan"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.068,
+                0.48,
+                0.196
+            ],
+            "angle": 0,
+            "content": "Hebei, China) were ground into powder, and \\(46.3\\mathrm{mg}\\) was taken and dissolved in deionized water \\((20~\\mathrm{mL})\\) under ultrasonication for \\(30\\mathrm{min}\\). The supernatant was filtered, and the precipitate was washed three times with deionized water. The obtained solution was collected and diluted in a \\(100~\\mathrm{mL}\\) volumetric flask as a stock solution. The sample stock solution was stored at \\(4^{\\circ}\\mathrm{C}\\) in a refrigerator and further diluted 1000-fold for testing."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.198,
+                0.481,
+                0.311
+            ],
+            "angle": 0,
+            "content": "The lake water sample was obtained from Jingyue Lake (Songjiang Campus, Donghua University, Shanghai, China). It was filtered three times to remove insoluble impurities. The sample stock solution was stored at \\(4^{\\circ}\\mathrm{C}\\). It was diluted 20-fold with \\(0.1\\mathrm{mol/L}\\) PBS for testing. The fetal bovine serum sample was purchased from Corning Life Sciences (Shanghai,"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.516,
+                0.068,
+                0.984,
+                0.101
+            ],
+            "angle": 0,
+            "content": "China) and directly diluted 25-fold with \\(0.1\\mathrm{mol} / \\mathrm{L}\\) PBS for testing."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.515,
+                0.114,
+                0.826,
+                0.133
+            ],
+            "angle": 0,
+            "content": "2 Results and Discussion"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.515,
+                0.153,
+                0.868,
+                0.168
+            ],
+            "angle": 0,
+            "content": "2.1 Electrode material characterization"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.171,
+                0.984,
+                0.306
+            ],
+            "angle": 0,
+            "content": "SEM images of VXC-72R, \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R}\\), TBABr/VXC-72R and BMIMBF\\(_4\\)VXC-72R are shown in Fig.1. It can be seen that VXC-72R particles disperse well on the electrode surface due to the presence of chitosan (Fig.1(a)). Interestingly, more continuous and denser film morphologies are observed with the electrolytes \\(\\mathrm{TBABF}_4\\), TBABr and \\(\\mathrm{BMIMBF}_4\\) decoration of VXC-72R (Figs. 1(b)–1(d))."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.162,
+                0.333,
+                0.499,
+                0.496
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.321,
+                0.497,
+                0.34,
+                0.507
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.502,
+                0.333,
+                0.837,
+                0.496
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.665,
+                0.497,
+                0.684,
+                0.507
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.162,
+                0.511,
+                0.498,
+                0.675
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.321,
+                0.676,
+                0.34,
+                0.686
+            ],
+            "angle": 0,
+            "content": "(c)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.503,
+                0.511,
+                0.838,
+                0.674
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.666,
+                0.675,
+                0.684,
+                0.686
+            ],
+            "angle": 0,
+            "content": "(d)"
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.126,
+                0.693,
+                0.871,
+                0.709
+            ],
+            "angle": 0,
+            "content": "Fig.1 SEM images: (a) VXC-72R; (b) TBABF\\(_4\\) /VXC-72R; (c) TBABr /VXC-72R; (d) BMIMBF\\(_4\\) /VXC-72R"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.73,
+                0.481,
+                0.911
+            ],
+            "angle": 0,
+            "content": "FTIR spectra of VXC-72R, \\(\\mathrm{TBABF_4 / VXC - 72R}\\) TBABr/VXC-72R and \\(\\mathrm{BMIMBF}_4 / \\mathrm{VXC - 72R}\\) are shown in Fig. 2. Compared to bare VXC-72R, all decorated materials show characteristic peaks of electrolytes, respectively. \\(\\mathrm{TBABF_4 / VXC - 72R}\\) exhibits the typical absorption peaks at 1049 and \\(1152~\\mathrm{cm}^{-1}\\), corresponding to the stretching vibrations of B-F and C-N, respectively[20]. The absorption peaks at 2877 and \\(2960~\\mathrm{cm}^{-1}\\) could be assigned to the C-H stretching vibrations of methyl and methylene, while the bands at 1284, 1381 and"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.73,
+                0.985,
+                0.913
+            ],
+            "angle": 0,
+            "content": "\\(1486~\\mathrm{cm}^{-1}\\) correspond to ammonium ion of tetrabutylammonium (TBA) groups[16]. Similarly, TBABr/VXC-72R also shows characteristic peaks from TBA groups. In addition, \\(\\mathrm{BMIMBF}_4 / \\mathrm{VXC - 72R}\\) shows the characteristic peaks: \\(C = N\\) \\((1567~\\mathrm{cm}^{-1})\\) , C-N stretching vibration \\((1165~\\mathrm{cm}^{-1})\\) , and C-H stretching vibration of 1-butyl-3-methylimidazolium cation (3 111 and \\(3167~\\mathrm{cm}^{-1})^{[20]}\\) . The occurrence of these characteristic peaks proves that \\(\\mathrm{TBABF_4}\\) , TBABr, and \\(\\mathrm{BMIMBF}_4\\) have been successfully decorated on VXC-72R, respectively."
+        }
+    ],
+    [
+        {
+            "type": "header",
+            "bbox": [
+                0.116,
+                0.012,
+                0.88,
+                0.047
+            ],
+            "angle": 0,
+            "content": "Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on Conductive Carbon Black Decorated with Tetrabutylammonium Tetrafluoroborate"
+        },
+        {
+            "type": "page_number",
+            "bbox": [
+                0.937,
+                0.031,
+                0.969,
+                0.044
+            ],
+            "angle": 0,
+            "content": "351"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.046,
+                0.069,
+                0.475,
+                0.323
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.011,
+                0.324,
+                0.483,
+                0.354
+            ],
+            "angle": 0,
+            "content": "Fig.2 FTIR spectra of VXC-72R, \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R}\\) TBABr/VXC- 72R and BMIMBF \\(^4 /\\) VXC-72R"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.068,
+                0.984,
+                0.351
+            ],
+            "angle": 0,
+            "content": "Water contact angles on different electrode surfaces were measured to evaluate the hydrophilicity of the electrode materials. The results are shown in Fig. 3. It can be seen that the average contact angle on the bare GCE is \\(84.5^{\\circ}\\) and decreases on the decorated electrodes by following the order of VXC-72R/GCE \\((79.2^{\\circ})\\), TBABF\\(_4\\)/VXC-72R/GCE \\((68.2^{\\circ})\\), TBABr/VXC-72R/GCE \\((65.3^{\\circ})\\) and BMIMBF\\(_4\\)/VXC-72R/GCE \\((64.6^{\\circ})\\). The hydrophilicity of the GCE surface is substantially enhanced with the introduction of electrolytes. Notably, the surface of TBABF\\(_4\\)/VXC-72R/GCE shows the largest contact angle among electrolyte-decorated electrodes, implying a more hydrophobic nature of TBABF\\(_4\\) than those of TBABr and BMIMBF\\(_4\\). This may be rationalized by considering the fact that \\(\\mathrm{TBA}^{+}\\)and \\(\\mathrm{BF}_4^{-}\\)are more hydrophobic than \\(\\mathrm{BMIM}^{+}\\)and \\(\\mathrm{Br}^{-[21]}\\)."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.316,
+                0.366,
+                0.489,
+                0.431
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.395,
+                0.432,
+                0.412,
+                0.442
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.535,
+                0.368,
+                0.71,
+                0.429
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.617,
+                0.431,
+                0.636,
+                0.442
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.22,
+                0.457,
+                0.387,
+                0.522
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.294,
+                0.523,
+                0.312,
+                0.532
+            ],
+            "angle": 0,
+            "content": "(c)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.418,
+                0.458,
+                0.582,
+                0.522
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.491,
+                0.523,
+                0.509,
+                0.532
+            ],
+            "angle": 0,
+            "content": "(d)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.609,
+                0.457,
+                0.78,
+                0.522
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.688,
+                0.523,
+                0.706,
+                0.532
+            ],
+            "angle": 0,
+            "content": "(e)"
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.067,
+                0.537,
+                0.928,
+                0.568
+            ],
+            "angle": 0,
+            "content": "Fig.3 Water contact angles on different electrode surfaces: (a) GCE; (b) VXC-72R/GCE; (c) TBABF\\(_4\\)/VXC-72R/GCE; (d) TBABr/VXC-72R/GCE; (e) BMIMBF\\(_4\\)/VXC-72R/GCE"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.013,
+                0.583,
+                0.479,
+                0.613
+            ],
+            "angle": 0,
+            "content": "2.2 Electrochemical characterization of different electrodes"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.615,
+                0.48,
+                0.716
+            ],
+            "angle": 0,
+            "content": "The EIS plots and CV curves of GCE, VXC-72R/ GCE, TBABF\\(_4\\)/VXC-72R/GCE, TBABr/VXC-72R/ GCE and BMIMBF\\(_4\\)/VXC-72R/GCE are shown in Fig. 4. As shown in Fig. 4(a), the EIS plots are obtained in \\(0.1 \\, \\text{mol/L}\\) KCl solution containing \\(5.0 \\, \\text{mmol/L}\\) \\(\\mathrm{K}_3[\\mathrm{Fe}(\\mathrm{CN})_6]\\). From the enlarged plots between"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.514,
+                0.583,
+                0.984,
+                0.716
+            ],
+            "angle": 0,
+            "content": "0-1 000 \\(\\Omega\\) (inset in Fig. 4(a)), the bare GCE shows the largest diameter of the semicircle in the high-frequency region, indicating the greater charge transfer resistance \\(R_{\\mathrm{ct}}\\). However, \\(R_{\\mathrm{ct}}\\) is greatly reduced when GCE is decorated with VXC-72R, TBABF\\(_4\\)/VXC-72R, BMIMBF\\(_4\\)/VXC-72R or TBABr/VXC-72R, indicating the excellent electronic conductivity of these electrode materials."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.102,
+                0.728,
+                0.48,
+                0.929
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.304,
+                0.931,
+                0.323,
+                0.942
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.525,
+                0.728,
+                0.897,
+                0.929
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.725,
+                0.93,
+                0.744,
+                0.942
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image_footnote",
+            "bbox": [
+                0.208,
+                0.949,
+                0.783,
+                0.963
+            ],
+            "angle": 0,
+            "content": "\\(Z^{\\prime}\\) real part of impedance; \\(Z''\\) imaginary part of impedance; \\(E\\) potential; \\(I\\) current."
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.19,
+                0.964,
+                0.807,
+                0.978
+            ],
+            "angle": 0,
+            "content": "Fig. 4 Electrochemical characterization of different electrodes: (a) EIS plots; (b) CV curves"
+        }
+    ],
+    [
+        {
+            "type": "page_number",
+            "bbox": [
+                0.027,
+                0.03,
+                0.064,
+                0.045
+            ],
+            "angle": 0,
+            "content": "352"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.379,
+                0.031,
+                0.621,
+                0.047
+            ],
+            "angle": 0,
+            "content": "ZHU Zongxian, ZHANG Xuan"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.068,
+                0.48,
+                0.33
+            ],
+            "angle": 0,
+            "content": "Figure 4 (b) shows the CV curves of the \\(\\mathrm{K}_3[\\mathrm{Fe}(\\mathrm{CN})_6]\\) probe in \\(0.1\\mathrm{mol / L}\\) PBS solution \\((\\mathrm{pH} = 7)\\) on different electrodes. Compared to the bare GCE, the redox current on VXC-72R/GCE is significantly enhanced, revealing the high conductivity of carbon black. Notably, the current is further enhanced with the addition of TBABF<sub>4</sub>, TBABr and BMIMBF<sub>4</sub>, respectively, which may result from the improved dispersion of VXC-72R as observed in Fig. 1, as well as the high conductivity of electrolytes. The electrochemically active surface areas (ECSAs) are estimated according to the Randles-Sevcik equation, and the values are 0.07, 0.41, 0.73, 0.62 and \\(0.57~\\mathrm{cm}^2\\) for GCE, VXC-72R/GCE, TBABF<sub>4</sub>/VXC-72R/GCE, TBABr/VXC-72R/GCE and BMIMBF<sub>4</sub>/VXC-72R/GCE, respectively."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.014,
+                0.331,
+                0.349,
+                0.344
+            ],
+            "angle": 0,
+            "content": "2.3 Electrochemical behavior of CFL"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.346,
+                0.481,
+                0.641
+            ],
+            "angle": 0,
+            "content": "Figure 5 shows the CV curve of CFL \\((50.0\\mu \\mathrm{mol} / \\mathrm{L})\\) on \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - }72\\mathrm{R} / \\mathrm{GCE}\\) in \\(0.1\\mathrm{mol} / \\mathrm{L}\\) PBS \\((\\mathrm{pH} = 4)\\). It displays one anodic peak 1a and two cathodic peaks \\(2c^{\\prime}\\) and \\(2c\\) at the first scan, respectively. At the second scan, two new anodic peaks 2a and \\(2a^{\\prime}\\) appear, where a well-defined reversible redox pair \\(2c / 2a\\) is produced with potential difference \\(\\Delta E = 40~\\mathrm{mV}\\) and \\(I_{\\mathrm{pa}} / I_{\\mathrm{pc}} = 0.87\\). \\(I_{\\mathrm{pa}}\\) and \\(I_{\\mathrm{pc}}\\) are the oxidation peak current and the reduction peak current, respectively. Peak 1a is assigned to the oxidation of the phenol moiety in CFL, forming a phenoxy radical. This radical subsequently undergoes chemical hydrolysis to generate a catechol moiety, which then participates in a reversible redox reaction, corresponding to peaks \\(2\\mathrm{a} / 2\\mathrm{c}^{[22 - 23]}\\). In addition, peaks \\(2\\mathrm{a}^{\\prime}\\) and \\(2c^{\\prime}\\) could be attributed to resorcinol and dimeric species produced from the chemical steps of radicals[23-24]. In this work, the reversible peaks \\(2\\mathrm{a} / 2\\mathrm{c}\\) were then selected for the quantitative detection of CFL."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.065,
+                0.657,
+                0.434,
+                0.872
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.066,
+                0.877,
+                0.424,
+                0.893
+            ],
+            "angle": 0,
+            "content": "Fig.5 CV curve of CFL in \\(0.1\\mathrm{mol / L}\\) PBS \\((\\mathrm{pH} = 4)\\)"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.904,
+                0.481,
+                0.988
+            ],
+            "angle": 0,
+            "content": "Then in the presence of \\(50.0~\\mu \\mathrm{mol / L}\\) CFL in \\(0.1\\mathrm{mol / L}\\) PBS \\((\\mathrm{pH} = 4)\\), DPV measurements were performed on GCE, VXC-72R/GCE, \\(\\mathrm{TBABF_4 / VXC - }\\) 72R/GCE, TBABr/VXC-72R/GCE and BMIMBF/ VXC-72R/GCE, respectively (Fig. 6). As shown in"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.068,
+                0.986,
+                0.25
+            ],
+            "angle": 0,
+            "content": "Fig. 6 (a), the current around \\(0.22\\mathrm{V}\\) significantly increases after decoration with VXC-72R. As can be seen in Fig. 6 (b), the peak current \\(I_{\\mathrm{p}}\\) increases to approximately 1.9, 1.5 and 1.4 times upon introduction of \\(\\mathrm{TBABF}_4\\), TBABr and BMIMBF, respectively. This reveals that the decoration of VXC-72R with electrolytes substantially enhances the sensitivity of the electrochemical sensor. The greatest enhancement of \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R / GCE}\\) could be attributed to its larger electrochemically active area (Fig. 4(b)), as well as optimized interfacial affinity toward CFL sensing."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.581,
+                0.261,
+                0.917,
+                0.468
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.581,
+                0.468,
+                0.922,
+                0.75
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.551,
+                0.755,
+                0.948,
+                0.801
+            ],
+            "angle": 0,
+            "content": "Fig.6 DPV measurements of CFL on different electrodes: (a) current vs. potential; (b) peak current at the potential of \\(0.22\\mathrm{V}\\)"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.515,
+                0.817,
+                0.887,
+                0.833
+            ],
+            "angle": 0,
+            "content": "2.3.1 Optimization of detection condition"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.836,
+                0.983,
+                0.987
+            ],
+            "angle": 0,
+            "content": "In order to obtain high sensitivity, the experimental conditions for CFL (50.0 \\(\\mu\\)mol/L) detection were optimized by the DPV method. Figure 7(a) shows the effect of different mass ratios of TBABF\\(_4\\) to VXC-72R (\\(m_{\\mathrm{TBABF}_4}: m_{\\mathrm{VXC-72R}}\\)) on the detection of CFL. When the mass ratio ranges from 1:1 to 2:1, the peak current increases; further increasing the mass ratio, the peak current remains almost constant (Fig. 7(b)). Thus, the mass ratio of TBABF\\(_4\\) to VXC-72R is selected to be"
+        }
+    ],
+    [
+        {
+            "type": "header",
+            "bbox": [
+                0.116,
+                0.012,
+                0.88,
+                0.028
+            ],
+            "angle": 0,
+            "content": "Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on Conductive Carbon"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.26,
+                0.031,
+                0.737,
+                0.047
+            ],
+            "angle": 0,
+            "content": "Black Decorated with Tetrabutylammonium Tetrafluoroborate"
+        },
+        {
+            "type": "page_number",
+            "bbox": [
+                0.937,
+                0.031,
+                0.971,
+                0.045
+            ],
+            "angle": 0,
+            "content": "353"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.012,
+                0.067,
+                0.482,
+                0.266
+            ],
+            "angle": 0,
+            "content": "2:1. DPV measurements of CFL on \\(\\mathrm{TBABF}_4 / \\mathrm{VXC}-72\\mathrm{R} / \\mathrm{GCE}\\) at different pH values are shown in Fig. 7(c). It can be seen that as the pH value increases, the peak potential continues to shift negatively, indicating that the protons participate in the electrochemical reaction process. At the same time, the peak current reaches the maximum value at \\(\\mathrm{pH} = 4\\) (Fig. 7(d)) and thus 4 is selected as the optimal pH value for the following experiments. Figure 7(e) shows the effects of different accumulation times on the detection of CFL by \\(\\mathrm{TBABF}_4 / \\mathrm{VXC}-72\\mathrm{R} / \\mathrm{GCE}\\). The peak current remains almost constant when the accumulation time increases from 0 to"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.067,
+                0.985,
+                0.268
+            ],
+            "angle": 0,
+            "content": "2 min, and decreases significantly after 2 min (Fig. 7(f)). Therefore, 1 min is selected as the optimal accumulation time. The DPV curves of different volumes of \\(\\mathrm{TBABF}_4/\\) VXC-72R ( \\(2\\mathrm{mg / mL}\\) ) decorated GCE for the determination of CFL are exhibited in Fig. 7(g). As the volume of \\(\\mathrm{TBABF}_4/\\) VXC-72R increases, the peak current increases and reaches a maximum at a volume of \\(9\\mu \\mathrm{L}\\) (Fig. 7(h)). As the volume of \\(\\mathrm{TBABF}_4/\\) VXC-72R continues to increase, the peak current decreases, which may be due to excess \\(\\mathrm{TBABF}_4/\\) VXC-72R hindering electron transfer. Therefore, the optimal \\(\\mathrm{TBABF}_4/\\) VXC-72R volume for the detection of CFL is \\(9\\mu \\mathrm{L}\\)."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.134,
+                0.292,
+                0.473,
+                0.488
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.31,
+                0.492,
+                0.331,
+                0.502
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.518,
+                0.291,
+                0.86,
+                0.487
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.704,
+                0.491,
+                0.725,
+                0.503
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.131,
+                0.504,
+                0.47,
+                0.686
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.31,
+                0.689,
+                0.331,
+                0.701
+            ],
+            "angle": 0,
+            "content": "(c)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.522,
+                0.504,
+                0.857,
+                0.688
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.705,
+                0.689,
+                0.725,
+                0.701
+            ],
+            "angle": 0,
+            "content": "(d)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.134,
+                0.706,
+                0.474,
+                0.897
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.31,
+                0.899,
+                0.331,
+                0.911
+            ],
+            "angle": 0,
+            "content": "(e)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.524,
+                0.709,
+                0.862,
+                0.898
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.707,
+                0.899,
+                0.724,
+                0.91
+            ],
+            "angle": 0,
+            "content": "(f)"
+        }
+    ],
+    [
+        {
+            "type": "page_number",
+            "bbox": [
+                0.028,
+                0.031,
+                0.061,
+                0.044
+            ],
+            "angle": 0,
+            "content": "354"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.379,
+                0.031,
+                0.619,
+                0.047
+            ],
+            "angle": 0,
+            "content": "ZHU Zongxian, ZHANG Xuan"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.141,
+                0.066,
+                0.478,
+                0.254
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.315,
+                0.256,
+                0.333,
+                0.267
+            ],
+            "angle": 0,
+            "content": "(g)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.522,
+                0.067,
+                0.861,
+                0.255
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.701,
+                0.256,
+                0.721,
+                0.266
+            ],
+            "angle": 0,
+            "content": "(h)"
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.049,
+                0.268,
+                0.945,
+                0.3
+            ],
+            "angle": 0,
+            "content": "Fig. 7 DPV measurements of CFL on \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R / GCE}\\) and corresponding peak currents under different conditions: (a)-(b) mass ratio of \\(\\mathrm{TBABF}_4\\) to VXC-72R; (c)-(d) pH value; (e)-(f) accumulation time; (g)-(h) volume of \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R}\\)"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.013,
+                0.311,
+                0.28,
+                0.327
+            ],
+            "angle": 0,
+            "content": "2.3.2 Effect of scanning rate"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.012,
+                0.327,
+                0.48,
+                0.457
+            ],
+            "angle": 0,
+            "content": "The CV curves of CFL (50.0 \\(\\mu\\)mol/L) on TBABF\\(_4\\)/VXC-72R/GCE at various scanning rates (20–200 mV/s) are shown in Fig. 8(a). The intensity of the redox peak current increases with the increasing scanning rate, accompanied by the positive and negative shifts of the oxidation and reduction peak potentials, respectively. Moreover, the peak currents of CFL have good linear relationships with the scanning rates (Fig. 8(b)), and"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.31,
+                0.984,
+                0.442
+            ],
+            "angle": 0,
+            "content": "the linear equations are \\( I_{\\mathrm{pa}} = 0.5364\\nu + 3.1348 \\) (\\( R_{\\mathrm{pa}}^2 = 0.9990 \\)) and \\( I_{\\mathrm{pc}} = -0.5364\\nu - 4.4887 \\) (\\( R_{\\mathrm{pc}}^2 = 0.9990 \\)), where \\( \\nu \\) is the scanning rate, and \\( R_{\\mathrm{pa}}^2 \\) and \\( R_{\\mathrm{pc}}^2 \\) are their respective coefficients of determination. This indicates that the secondary electrochemical reaction of the catechol moiety in CFL derivatives on TBABF\\(_4\\)/VXC-72R/GCE is an adsorption-controlled process[25]."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.195,
+                0.462,
+                0.486,
+                0.624
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.332,
+                0.625,
+                0.349,
+                0.635
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.512,
+                0.462,
+                0.807,
+                0.625
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.685,
+                0.625,
+                0.699,
+                0.634
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.153,
+                0.635,
+                0.841,
+                0.665
+            ],
+            "angle": 0,
+            "content": "Fig. 8 CV measurements of CFL on \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - }72\\mathrm{R} / \\mathrm{GCE}\\) at various scanning rates: (a) CV curves; (b) relationship between peak current and scanning rate"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.013,
+                0.675,
+                0.345,
+                0.69
+            ],
+            "angle": 0,
+            "content": "2.4 Linear range and detection limit"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.012,
+                0.691,
+                0.479,
+                0.791
+            ],
+            "angle": 0,
+            "content": "Under optimal experimental conditions, CFL is electrochemically titrated by using the DPV, and the peak current increases with the increasing CFL concentration (Fig. 9). In a range of \\(0.3 - 10.0 \\mu \\mathrm{mol} / \\mathrm{L}\\), the peak current \\(I_{\\mathrm{p}}\\) and CFL concentration \\(C\\) show a proportional linear relationship (Fig. 9(b)). The linear equation is"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.197,
+                0.793,
+                0.482,
+                0.948
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.34,
+                0.949,
+                0.357,
+                0.959
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.675,
+                0.984,
+                0.788
+            ],
+            "angle": 0,
+            "content": "\\(I_{\\mathrm{p}} = -1.1399C + 0.2505\\) (\\(R_{\\mathrm{p}}^{2} = 0.9986\\)), where \\(R_{\\mathrm{p}}^{2}\\) is the coefficient of determination. The detection limit is estimated to be \\(0.2 \\mu \\mathrm{mol/L}\\). It is worth noting that the sensing performance of the present TBABF\\(_4\\)/VXC-72R/GCE is comparable or even better than that of electrochemical sensors for CFL previously reported[9-10, 23, 26]."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.522,
+                0.793,
+                0.804,
+                0.948
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.653,
+                0.949,
+                0.696,
+                0.959
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.117,
+                0.958,
+                0.878,
+                0.989
+            ],
+            "angle": 0,
+            "content": "Fig. 9 DPV measurements of CFL at various concentrations on \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - }72\\mathrm{R} / \\mathrm{GCE}\\) : (a) current vs. potential; (b) relationship between peak current and CFL concentration"
+        }
+    ],
+    [
+        {
+            "type": "header",
+            "bbox": [
+                0.116,
+                0.012,
+                0.88,
+                0.028
+            ],
+            "angle": 0,
+            "content": "Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on Conductive Carbon"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.262,
+                0.031,
+                0.736,
+                0.047
+            ],
+            "angle": 0,
+            "content": "Black Decorated with Tetrabutylammonium Tetrafluoroborate"
+        },
+        {
+            "type": "page_number",
+            "bbox": [
+                0.937,
+                0.031,
+                0.971,
+                0.045
+            ],
+            "angle": 0,
+            "content": "355"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.013,
+                0.067,
+                0.48,
+                0.099
+            ],
+            "angle": 0,
+            "content": "2.5 Reproducibility, stability and anti-interference ability"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.012,
+                0.1,
+                0.479,
+                0.2
+            ],
+            "angle": 0,
+            "content": "Five \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R / GCE}\\) were prepared and used to detect \\(50.0~\\mu \\mathrm{mol} / \\mathrm{L}\\) CFL. As shown in Fig.10(a), five electrodes exhibit basically the same electrochemical response signal with a relative standard deviation of \\(3.3\\%\\) , indicating that \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R / }\\) GCE holds good reproducibility."
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.053,
+                0.2,
+                0.479,
+                0.217
+            ],
+            "angle": 0,
+            "content": "In order to evaluate the stability of \\(\\mathrm{TBABF}_4 / \\mathrm{VXC}-\\)"
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.162,
+                0.227,
+                0.476,
+                0.402
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.326,
+                0.404,
+                0.344,
+                0.415
+            ],
+            "angle": 0,
+            "content": "(a)"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.067,
+                0.984,
+                0.215
+            ],
+            "angle": 0,
+            "content": "72R/GCE, it was continuously used to determine \\(50.0\\mu \\mathrm{mol} / \\mathrm{L}\\) CFL for one week. After each measurement, the electrode was soaked in absolute ethanol for \\(1\\mathrm{min}\\), thoroughly rinsed with deionized water, dried and stored in a refrigerator at \\(4^{\\circ}\\mathrm{C}\\). As shown in Fig. 10(b), the peak current remains a little change during measurement with a relative standard deviation of \\(2.6\\%\\). This demonstrates that \\(\\mathrm{TBBF}_4/\\) VXC-72R/GCE has excellent stability."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.526,
+                0.223,
+                0.84,
+                0.401
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.699,
+                0.403,
+                0.719,
+                0.415
+            ],
+            "angle": 0,
+            "content": "(b)"
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.07,
+                0.421,
+                0.925,
+                0.454
+            ],
+            "angle": 0,
+            "content": "Fig. 10 Reproducibility and stability: (a) DPV curves of CFL on five TBABF\\(_4\\)/VXC-72R/GCEs; (b) peak currents of CFL on the same TBABF\\(_4\\)/VXC-72R/GCE at different storage time"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.012,
+                0.467,
+                0.481,
+                0.681
+            ],
+            "angle": 0,
+            "content": "Anti-interference ability of \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R / GCE}\\) was investigated by measuring DPV of CFL \\((50.0\\mu \\mathrm{mol} / \\mathrm{L})\\) in absence and presence of \\(500~\\mu \\mathrm{mol} / \\mathrm{L}\\) NaCl, KCl, \\(\\mathrm{CaCl}_2\\) glucose (Glc), sucrose and tryptophan (Trp), \\(100~\\mu \\mathrm{mol} / \\mathrm{L}\\) dopamine DA), uric acid UA), ascorbic acid AA) and acetaminophen APAP),and \\(20\\mathrm{mg / mL}\\) soluble starch St), respectively. \\(I_0\\) and \\(I_{1}\\) represent the peak current values in the absence and presence of the aforementioned interfering substances, respectively Fig.11). There is no significant change of the peak current in the presence of the above potential interfering substances, indicating that the present electrochemical sensor owns excellent anti-interference ability."
+        },
+        {
+            "type": "image",
+            "bbox": [
+                0.065,
+                0.697,
+                0.434,
+                0.926
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "image_caption",
+            "bbox": [
+                0.043,
+                0.934,
+                0.452,
+                0.966
+            ],
+            "angle": 0,
+            "content": "Fig. 11 \\(I_{1} / I_{0}\\) of CFL on \\(\\mathrm{TBABF_4 / VXC - 72R / GCE}\\) in the presence of various potential interfering substances"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.516,
+                0.468,
+                0.747,
+                0.483
+            ],
+            "angle": 0,
+            "content": "2.6 Real sample analysis"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.515,
+                0.484,
+                0.984,
+                0.715
+            ],
+            "angle": 0,
+            "content": "The CFL levels in real lake water, pharmaceutical tablet and fetal bovine serum samples were determined with \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R / GCE}\\), respectively. At the same time, the standard addition method was used to test the recovery rate. The determination results are listed in Table 1. It can be seen that the recovery rates range from \\(93.0\\%\\) to \\(103.8\\%\\) with a relative standard deviation (RSD) of \\(1.1\\% -4.2\\%\\). Notably, the content of CFL is calculated to be \\(239.9\\mathrm{mg}\\) per tablet, which is very close to the value of \\(250.0\\mathrm{mg}\\) per tablet as claimed by the manufacturer. These indicate that the developed electrochemical sensor has promising application potential for the practical detection of antibiotics in pharmaceutical and environmental samples."
+        },
+        {
+            "type": "table_caption",
+            "bbox": [
+                0.573,
+                0.727,
+                0.928,
+                0.742
+            ],
+            "angle": 0,
+            "content": "Table 1 Determination of CFL in real samples"
+        },
+        {
+            "type": "table",
+            "bbox": [
+                0.518,
+                0.743,
+                0.983,
+                0.972
+            ],
+            "angle": 0,
+            "content": "<table><tr><td rowspan=\"2\">Sample</td><td colspan=\"2\">Concentration of CFL /(μmol/L)</td><td rowspan=\"2\">RSD/%</td><td rowspan=\"2\">Recovery rate/%</td></tr><tr><td>Added</td><td>Found</td></tr><tr><td rowspan=\"3\">Lake water</td><td>1.00</td><td>1.02±0.10</td><td>4.2</td><td>102.0</td></tr><tr><td>2.00</td><td>2.07±0.04</td><td>1.8</td><td>103.5</td></tr><tr><td>3.00</td><td>3.06±0.06</td><td>2.1</td><td>102.0</td></tr><tr><td rowspan=\"3\">Tablet</td><td>1.00</td><td>1.90±0.04</td><td>2.4</td><td>96.9</td></tr><tr><td>2.00</td><td>3.02±0.05</td><td>1.4</td><td>102.0</td></tr><tr><td>3.00</td><td>4.11±0.09</td><td>2.2</td><td>103.8</td></tr><tr><td rowspan=\"3\">Fetal bovine serum</td><td>1.00</td><td>0.93±0.01</td><td>1.1</td><td>93.0</td></tr><tr><td>2.00</td><td>1.88±0.04</td><td>2.2</td><td>94.0</td></tr><tr><td>3.00</td><td>2.87±0.03</td><td>1.2</td><td>95.7</td></tr></table>"
+        }
+    ],
+    [
+        {
+            "type": "page_number",
+            "bbox": [
+                0.027,
+                0.031,
+                0.062,
+                0.045
+            ],
+            "angle": 0,
+            "content": "356"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.379,
+                0.031,
+                0.62,
+                0.047
+            ],
+            "angle": 0,
+            "content": "ZHU Zongxian, ZHANG Xuan"
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.014,
+                0.081,
+                0.196,
+                0.101
+            ],
+            "angle": 0,
+            "content": "3 Conclusions"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.013,
+                0.116,
+                0.482,
+                0.384
+            ],
+            "angle": 0,
+            "content": "\\(\\mathrm{TBABF}_4\\) was employed to decorate conductive carbon black VX-72R and coated on GCE for the construction of a novel electrochemical sensor \\((\\mathrm{TBABF}_4/\\) VX-72R/GCE) for detection of CFL. \\(\\mathrm{TBABF}_4 / \\mathrm{VXC}-\\) 72R/GCE showed a linear response to CFL in a concentration range of \\(0.3 - 10.0~\\mu \\mathrm{mol} / \\mathrm{L}\\), with a detection limit of \\(0.2\\mu \\mathrm{mol} / \\mathrm{L}\\). The improved performance could be ascribed to the optimized interfacial affinity of \\(\\mathrm{TBABF}_4\\) that might facilitate the enrichment of antibiotics on the electrode surface. Sensitive detection of CFL in real lake water, pharmaceutical tablet and fetal bovine serum samples was achieved with a satisfactory recovery rate. This will contribute to the development of more sensitive electrochemical sensors for detection of antibiotics based on cheap carbon black decorated with promising electrolytes."
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.016,
+                0.397,
+                0.149,
+                0.416
+            ],
+            "angle": 0,
+            "content": "References"
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.43,
+                0.48,
+                0.545
+            ],
+            "angle": 0,
+            "content": "[1] PEREZ-BOU L, GONZALEZ-MARTINEZ A, GONZALEZ-LOPEZ J, et al. Promising bioprocesses for the efficient removal of antibiotics and antibiotic-resistance genes from urban and hospital wastewaters: potentialities of aerobic granular systems [J]. Environmental Pollution, 2024, 342: 123115."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.546,
+                0.482,
+                0.609
+            ],
+            "angle": 0,
+            "content": "[2] JIA W L, SONG C, HE L Y, et al. Antibiotics in soil and water: occurrence, fate, and risk[J]. Current Opinion in Environmental Science & Health, 2023, 32: 100437."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.61,
+                0.48,
+                0.675
+            ],
+            "angle": 0,
+            "content": "[3] DE MARCO B A, SALGADO H R N. Characteristics, properties and analytical methods of cefadroxil: a review[J]. Critical Reviews in Analytical Chemistry, 2017, 47(2): 93-98."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.675,
+                0.48,
+                0.788
+            ],
+            "angle": 0,
+            "content": "[4] ELBALKINY H T, YEHIA A M, RIAD S M, et al. Derivative constant wavelength synchronous fluorescence spectrometry for the simultaneous detection of cefadrine and cefadroxil in water samples [J]. Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy, 2020, 229: 117903."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.789,
+                0.48,
+                0.871
+            ],
+            "angle": 0,
+            "content": "[5] TUTSL, RASSCHAERT G, HEYNDRICKX M, et al. Detection of antibiotic residues in groundwater with a validated multiresidue UHPLC-MS/MS quantification method [J]. Chemosphere, 2024, 352: 141455."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.872,
+                0.48,
+                0.938
+            ],
+            "angle": 0,
+            "content": "[6] REMÍNEK R, FORET F. Capillary electrophoretic methods for quality control analyses of pharmaceuticals: a review [J]. Electrophoresis, 2021, 42(1/2): 19-37."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.939,
+                0.48,
+                0.987
+            ],
+            "angle": 0,
+            "content": "[7] MADURAIVEERAN G, SASIDHARAN M, GANESAN V. Electrochemical sensor and biosensor platforms based on advanced"
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.017,
+                0.43,
+                0.482,
+                0.987
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.58,
+                0.068,
+                0.982,
+                0.115
+            ],
+            "angle": 0,
+            "content": "nanomaterials for biological and biomedical applications [J]. Biosensors & Bioelectronics, 2018, 103: 113-129."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.116,
+                0.982,
+                0.18
+            ],
+            "angle": 0,
+            "content": "[8] DAVID M, FLORESCU M. Ultrasensitive electrochemical (bio) sensors for therapeutic drug monitoring [J]. Current Opinion in Electrochemistry, 2024, 46: 101501."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.18,
+                0.982,
+                0.26
+            ],
+            "angle": 0,
+            "content": "[9] SANZ C G, SERRANO S H P, BRETTC M A. Electroanalysis of cefadroxil antibiotic at carbon nanotube/gold nanoparticle modified glassy carbon electrodes[J].ChemElectroChem，2020，7(9)：2151-2158."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.261,
+                0.982,
+                0.405
+            ],
+            "angle": 0,
+            "content": "[10] KASSA A, BENOR A, TIGINEH G T, et al. Characterization and application of a synthesized novel poly (chlorobis (1, 10-phenanthroline) resorcinolcobalt (II) chloride)-modified glassy carbon electrode for selective voltammetric determination of cefadroxil in pharmaceutical formulations, human urine, and blood serum samples [J]. ACS Omega, 2023, 8 (17): 15181-15192."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.406,
+                0.982,
+                0.487
+            ],
+            "angle": 0,
+            "content": "[11] HU J M, ZHANG X. Highly sensitive electrochemical detection of nitrite based on cationic surfactant modification of conductive carbon black [J]. Journal of Donghua University (English Edition), 2023, 40(5): 467-474."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.488,
+                0.982,
+                0.599
+            ],
+            "angle": 0,
+            "content": "[12] FERREIRA L M C, SILVA P S, AUGUSTO K K L, et al. Using nanostructured carbon black-based electrochemical (bio) sensors for pharmaceutical and biomedical analyses: a comprehensive review [J]. Journal of Pharmaceutical and Biomedical Analysis, 2022, 221: 115032."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.6,
+                0.982,
+                0.681
+            ],
+            "angle": 0,
+            "content": "[13] LIANG J M, SONG Y X, ZHAO Y N, et al. A sensitive electrochemical sensor for chiral detection of tryptophan enantiomers by using carbon black and \\(\\beta\\)-cyclodextrin [J]. Mikrochimica Acta, 2023, 190(11): 433."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.681,
+                0.982,
+                0.776
+            ],
+            "angle": 0,
+            "content": "[14] ALMEIDA S T, WONG A, FATIBELLO-FILHO O. Electrochemical sensor based on ionic liquid and carbon black for voltammetric determination of Allura red colorant at nanomolar levels in soft drink powders[J]. Talanta, 2020, 209: 120588."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.778,
+                0.982,
+                0.857
+            ],
+            "angle": 0,
+            "content": "[15] CETINKAYA A, KAYA S I, YENCE M, et al. Ionic liquid-based materials for electrochemical sensor applications in environmental samples[J]. Trends in Environmental Analytical Chemistry, 2023, 37: e00188."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.858,
+                0.982,
+                0.938
+            ],
+            "angle": 0,
+            "content": "[16] GORDUK O. Sensitive electrochemical determination of NADH using an electrode fabricated by intercalation of tetrabutylammonium ions into graphite electrode[J]. Electroanalysis, 2021, 33(5): 1378-1388."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.52,
+                0.939,
+                0.982,
+                0.987
+            ],
+            "angle": 0,
+            "content": "[17] BUTMEE P, TUMCHARERN G, SAEJUENG P, et al. A direct and sensitive electrochemical sensing platform based on ionic liquid"
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.52,
+                0.068,
+                0.982,
+                0.987
+            ],
+            "angle": 0,
+            "content": null
+        }
+    ],
+    [
+        {
+            "type": "header",
+            "bbox": [
+                0.116,
+                0.011,
+                0.88,
+                0.025
+            ],
+            "angle": 0,
+            "content": "Development of Electrochemical Sensor for Cefadroxil Antibiotic Based on Conductive Carbon"
+        },
+        {
+            "type": "header",
+            "bbox": [
+                0.26,
+                0.031,
+                0.736,
+                0.047
+            ],
+            "angle": 0,
+            "content": "Black Decorated with Tetrabutylammonium Tetrafluoroborate"
+        },
+        {
+            "type": "page_number",
+            "bbox": [
+                0.937,
+                0.031,
+                0.97,
+                0.044
+            ],
+            "angle": 0,
+            "content": "357"
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.078,
+                0.068,
+                0.482,
+                0.13
+            ],
+            "angle": 0,
+            "content": "functionalized graphene nanoplatelets for the detection of bisphenol A [J]. Journal of Electroanalytical Chemistry, 2019, 833: 370-379."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.018,
+                0.132,
+                0.482,
+                0.229
+            ],
+            "angle": 0,
+            "content": "[18] ZHANG X, ZHANG Y C, MA L X. One-pot facile fabrication of graphene-zinc oxide composite and its enhanced sensitivity for simultaneous electrochemical detection of ascorbic acid, dopamine and uric acid [J]. Sensors and Actuators B: Chemical, 2016, 227: 488-496."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.23,
+                0.48,
+                0.308
+            ],
+            "angle": 0,
+            "content": "[19] ZHANG X, WANG K P, ZHANG L N, et al. Phosphorus-doped graphene-based electrochemical sensor for sensitive detection of acetaminophen [J]. Analytica Chimica Acta, 2018, 1036: 26-32."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.31,
+                0.48,
+                0.39
+            ],
+            "angle": 0,
+            "content": "[20] YAMADA T, MIZUNO M. Infrared and terahertz spectroscopic investigation of imidazolium, pyridinium, and tetraalkyl-ammonium tetrafluoroborate ionic liquids [J]. ACS Omega, 2022, 7(34): 29804-29812."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.017,
+                0.391,
+                0.48,
+                0.456
+            ],
+            "angle": 0,
+            "content": "[21] XIAO F, ZHAO F Q, LI J W, et al. Sensitive voltammetric determination of chloramphenicol by using single-wall carbon nanotube-gold nanoparticle-ionic liquid composite film modified"
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.017,
+                0.068,
+                0.482,
+                0.456
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.58,
+                0.067,
+                0.982,
+                0.099
+            ],
+            "angle": 0,
+            "content": "glassy carbon electrodes [J]. Analytica Chimica Acta, 2007, 596(1): 79-85."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.521,
+                0.1,
+                0.983,
+                0.179
+            ],
+            "angle": 0,
+            "content": "[22] ENACHE T A, OLIVEIRA-BRETT A M. Phenol and para-substituted phenols electrochemical oxidation pathways [J]. Journal of Electroanalytical Chemistry, 2011, 655 (1): 9-16."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.521,
+                0.181,
+                0.982,
+                0.261
+            ],
+            "angle": 0,
+            "content": "[23] SANZ C G, SERRANO S H P, BRETTC M A. Electrochemical characterization of cefadroxil \\(\\beta\\)-lactam antibiotic and Cu (II) complex formation [J]. Journal of Electroanalytical Chemistry, 2019, 844: 124-131."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.521,
+                0.262,
+                0.982,
+                0.325
+            ],
+            "angle": 0,
+            "content": "[24] YANG X Y, KIRsCH J, FERGUS J, et al. Modeling analysis of electrode fouling during electrolysis of phenolic compounds [J]. Electrochimica Acta, 2013, 94: 259-268."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.521,
+                0.327,
+                0.982,
+                0.374
+            ],
+            "angle": 0,
+            "content": "[25] BARD A J, FAULKNER L R. Electrochemical methods: fundamentals and applications [M]. New York: John Wiley & Sons, 2001."
+        },
+        {
+            "type": "ref_text",
+            "bbox": [
+                0.521,
+                0.375,
+                0.982,
+                0.456
+            ],
+            "angle": 0,
+            "content": "[26] ATIF S, BAIG J A, AFRIDI H I, et al. Novel nontoxic electrochemical method for the detection of cefadroxil in pharmaceutical formulations and biological samples [J]. Microchemical Journal, 2020, 154: 104574."
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.521,
+                0.067,
+                0.983,
+                0.456
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "title",
+            "bbox": [
+                0.016,
+                0.5,
+                0.985,
+                0.57
+            ],
+            "angle": 0,
+            "content": "基于四丁基四氟硼酸铵修饰的导电炭黑开发头孢羟氨苄抗生素电化学传感器"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.016,
+                0.606,
+                0.232,
+                0.628
+            ],
+            "angle": 0,
+            "content": "朱宗贤1，张 焰1,2\\*"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.014,
+                0.632,
+                0.654,
+                0.65
+            ],
+            "angle": 0,
+            "content": "1. 东华大学 生态纺织教育部重点实验室，化学与化工学院，上海201620"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.014,
+                0.655,
+                0.456,
+                0.672
+            ],
+            "angle": 0,
+            "content": "2. 国家先进印染技术创新中心，山东泰安271000"
+        },
+        {
+            "type": "list",
+            "bbox": [
+                0.014,
+                0.632,
+                0.654,
+                0.672
+            ],
+            "angle": 0,
+            "content": null
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.012,
+                0.7,
+                0.985,
+                0.862
+            ],
+            "angle": 0,
+            "content": "摘要：抗生素的检测对公共健康而言非常重要。该研究开发了一种新颖简单的可灵敏检测头孢羟氨苄（cefadroxil，CFL）抗生素的电化学传感器。通过将四丁基四氟硼酸铵（tetrabutylammonium tetrafluoroborate，\\(\\mathrm{TBABF}_4\\)）修饰的导电炭黑（商品名VXC-72R）涂覆在玻碳电极（glassy carbon electrode，GCE）上，构筑了电化学传感器 \\(\\mathrm{TBABF}_4 / \\mathrm{VXC - 72R} / \\mathrm{GCE}\\) 。研究发现CFL在该传感器上于 \\(0.22\\mathrm{V}\\) 处有一个还原峰。该传感器在 \\(0.3\\sim 10.0~\\mu \\mathrm{mol} / \\mathrm{L}\\) 浓度范围内对CFL显示出良好的线性响应特性，检测限为 \\(0.2\\mu \\mathrm{mol} / \\mathrm{L}\\) （信噪比为3）。该传感器表现出良好的重现性、储备稳定性和抗干扰能力，并被成功应用于湖水、药剂和胎牛血清样品中CFL的检测。"
+        },
+        {
+            "type": "text",
+            "bbox": [
+                0.014,
+                0.866,
+                0.701,
+                0.885
+            ],
+            "angle": 0,
+            "content": "关键词：电化学传感器；导电炭黑；四丁基四氟硼酸铵；头孢羟氨苄抗生素"
+        }
+    ]
+]

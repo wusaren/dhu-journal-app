@@ -2,8 +2,12 @@
 论文服务
 从 app.py 中提取论文相关业务逻辑，保持完全兼容
 """
-from models import Paper, Journal, db
+from models import Paper, Journal, FileUpload, db
+from config.config import current_config
 import logging
+import os
+import re
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -170,6 +174,44 @@ class PaperService:
             
             # 获取期刊ID，用于后续更新paper_count
             journal_id = paper.journal_id
+            
+            # 删除MinerU结果文件夹（如果存在）
+            # 通过file_path找到对应的FileUpload，然后删除对应的结果文件夹
+            if paper.file_path:
+                try:
+                    # 查找对应的FileUpload记录
+                    file_upload = FileUpload.query.filter_by(upload_path=paper.file_path).first()
+                    if file_upload:
+                        # data_id现在使用文件名（不含扩展名）
+                        import re
+                        original_filename = file_upload.original_filename
+                        # 获取文件名（不含扩展名）
+                        file_basename = os.path.splitext(original_filename)[0]
+                        # 清理文件名：移除或替换不合法字符
+                        safe_folder_name = re.sub(r'[<>:"/\\|?*]', '_', file_basename)
+                        safe_folder_name = safe_folder_name.strip('. ')
+                        # MinerU输出目录
+                        mineru_output_dir = current_config.MINERU_OUTPUT_DIR
+                        # 结果文件夹路径（可能带时间戳后缀）
+                        base_folder = os.path.join(mineru_output_dir, safe_folder_name)
+                        
+                        # 查找匹配的文件夹（可能带时间戳后缀）
+                        if os.path.exists(base_folder):
+                            # 精确匹配
+                            shutil.rmtree(base_folder)
+                            logger.info(f"已删除MinerU结果文件夹: {base_folder}")
+                        else:
+                            # 查找以该名称开头的文件夹（处理时间戳后缀的情况）
+                            if os.path.exists(mineru_output_dir):
+                                for item in os.listdir(mineru_output_dir):
+                                    item_path = os.path.join(mineru_output_dir, item)
+                                    if os.path.isdir(item_path) and item.startswith(safe_folder_name + '_'):
+                                        shutil.rmtree(item_path)
+                                        logger.info(f"已删除MinerU结果文件夹（带时间戳）: {item_path}")
+                                        break
+                            logger.info(f"MinerU结果文件夹不存在，跳过删除: {base_folder}")
+                except Exception as e:
+                    logger.warning(f"删除MinerU结果文件夹失败: {str(e)}")
             
             # 删除论文
             db.session.delete(paper)

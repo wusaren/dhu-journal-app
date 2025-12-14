@@ -149,6 +149,7 @@ class Paper(db.Model):
     doi = db.Column(db.String(200))
     abstract = db.Column(db.Text)
     keywords = db.Column(db.Text)
+    citation = db.Column(db.Text)  # 引用信息
     file_path = db.Column(db.String(500))
     
     # 中文标题和作者字段

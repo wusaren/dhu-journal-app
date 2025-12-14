@@ -40,6 +40,13 @@ class Config:
     
     # 本地图片存储配置
     IMAGE_STORAGE_PATH = os.getenv('IMAGE_STORAGE_PATH', 'images')
+    
+    # MinerU API配置
+    MINERU_TOKEN = os.getenv('MINERU_TOKEN', '')  # MinerU API Token
+    MINERU_BASE_URL = os.getenv('MINERU_BASE_URL', 'https://mineru.net/api/v4')
+    MINERU_OUTPUT_DIR = os.getenv('MINERU_OUTPUT_DIR', 'mineru_output')  # 结果输出目录
+    MINERU_ENABLED = os.getenv('MINERU_ENABLED', 'False').lower() == 'true'  # 是否启用MinerU
+    USE_MINERU = os.getenv('USE_MINERU', 'False').lower() == 'true'  # 是否在文件上传时使用MinerU
 
 
 class DevelopmentConfig(Config):

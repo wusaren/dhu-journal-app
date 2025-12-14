@@ -1,1277 +1,674 @@
+"""
+PDF解析服务 - 基于MinerU JSON文件
+完全重写，使用MinerU生成的_model.json文件进行解析
+"""
 import os
 import re
+import json
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-# 完全照搬你的参考代码的提取函数
-def extract_issue_info(text: str) -> Optional[str]:
-    """提取期刊期号信息 - 完全照搬参考代码"""
-    m = re.search(r"Vol\.\s*(\d+)\s+No\.\s*(\d+)\s+(\d{4})", text, re.I)
-    if not m: 
-        return None
-    vol, no, year = m.groups()
-    return f"{year}, {vol}({no})"
 
-def extract_start_page(text: str) -> Optional[int]:
-    """提取起始页码 - 改进版本，处理奇偶页不同位置"""
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    
-    # 分别处理奇偶页的页码位置
-    even_page_patterns = [
-        r'^\s*(\d{1,4})\b',  # 行首的1-4位数字（偶数页）
-    ]
-    
-    odd_page_patterns = [
-        r'\b(\d{1,4})\s*$',  # 行尾的1-4位数字（奇数页）
-    ]
-    
-    candidates = []
-    
-    # 搜索偶数页位置（行首）
-    for line in lines[:10]:
-        for pattern in even_page_patterns:
-            matches = re.findall(pattern, line)
-            for match in matches:
-                num = int(match)
-                if 1 <= num <= 9999:
-                    candidates.append(num)
-    
-    # 搜索奇数页位置（行尾）
-    for line in lines[:10]:
-        for pattern in odd_page_patterns:
-            matches = re.findall(pattern, line)
-            for match in matches:
-                num = int(match)
-                if 1 <= num <= 9999:
-                    candidates.append(num)
-    
-    if not candidates:
-        return None
-    
-    # 选择策略：优先选择合理的页码范围
-    reasonable_candidates = [c for c in candidates if 100 <= c <= 999]
-    
-    if reasonable_candidates:
-        # 返回最小的合理页码（通常是起始页）
-        return min(reasonable_candidates)
-    else:
-        # 如果没有合理范围内的页码，返回最小的候选页码
-        return min(candidates)
-
-def extract_end_page(text: str, start_page: int = None, total_pages: int = None) -> Optional[int]:
-    """提取结束页码 - 简化版本，直接使用数学计算"""
-    # 如果有起始页和总页数，直接计算
-    if start_page and total_pages:
-        return start_page + total_pages - 1
-    
-    # 如果没有起始页或总页数，返回None
-    return None
-
-def extract_doi(text: str) -> Optional[str]:
-    """提取DOI - 完全照搬参考代码"""
-    m = re.search(r"\bDOI\b\s*[:：]?\s*([0-9]+\.[0-9]+/[^\s]+)", text, re.I)
-    return m.group(1) if m else None
-
-def extract_font_sizes_from_pdf_page(pdf_page) -> List[Dict[str, Any]]:
+def load_model_json(json_path: str) -> List[List[Dict[str, Any]]]:
     """
-    从PDF页面提取文本及其字号信息
-    返回格式: [{"text": "文本内容", "fontsize": 字号, "line_number": 行号, "y_coord": y坐标}]
+    加载并解析_model.json文件
+    
+    参数:
+        json_path: _model.json文件路径
+    
+    返回:
+        二维数组，外层是页数组，内层是每页的元素数组
     """
     try:
-        import pdfplumber
-        chars = pdf_page.chars
-        if not chars:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        if not isinstance(data, list):
+            logger.error(f"JSON文件格式错误：期望数组，得到 {type(data)}")
             return []
         
-        # 按y坐标分组，相同y坐标的字符在同一行
-        # 使用阈值方法：如果两个字符的y坐标差值小于阈值，认为是同一行
-        Y_COORD_THRESHOLD = 10.75  # y坐标差值阈值，可以调整这个值来控制同一行的判断
-        # 值越大，越宽松（更多字符会被归为同一行）
-        # 值越小，越严格（只有y坐标非常接近的字符才会被归为同一行）
-        # 建议范围：0.1 - 2.0
-        
-        lines = {}
-        for char in chars:
-            y_original = char['top']
-            # 找到最接近的已存在的y坐标（在阈值范围内）
-            matched_y = None
-            for existing_y in lines.keys():
-                if abs(y_original - existing_y) < Y_COORD_THRESHOLD:
-                    matched_y = existing_y
-                    break
-            
-            # 如果找到匹配的y坐标，归入该行；否则创建新行
-            if matched_y is not None:
-                lines[matched_y].append(char)
-            else:
-                lines[y_original] = [char]
-        
-        # 处理每一行
-        line_data = []
-        for line_num, (y, chars_in_line) in enumerate(sorted(lines.items())):
-            # 按x坐标排序字符
-            chars_in_line.sort(key=lambda c: c['x0'])
-            
-            # 获取该行的主要字号（出现频率最高的字号）
-            font_sizes = [char['size'] for char in chars_in_line if char.get('size')]
-            if not font_sizes:
-                continue
-                
-            # 计算最频繁的字号
-            from collections import Counter
-            size_counter = Counter(font_sizes)
-            most_common_size = size_counter.most_common(1)[0][0]
-            
-            # 合并该行的文本，保持空格分隔
-            line_text = ''
-            for i, char in enumerate(chars_in_line):
-                if i > 0:
-                    # 检查是否需要添加空格
-                    prev_char = chars_in_line[i-1]
-                    if char['x0'] - prev_char['x1'] > 2:  # 如果字符间距大于2，添加空格
-                        line_text += ' '
-                line_text += char['text']
-            
-            line_data.append({
-                "text": line_text.strip(),
-                "fontsize": most_common_size,
-                "line_number": line_num,
-                "y_coord": y  # 添加y坐标
-            })
-            
-            # 输出日志：显示每行的y坐标和文本内容
-            logger.info(f"行{line_num+1} - y坐标: {y}, 字号: {most_common_size:.1f}, 文本: '{line_text.strip()[:80]}'")
-            
-            # 输出字符级别的y坐标信息（仅对前20行或包含DOI的行）
-            if line_num < 20 or "DOI" in line_text or "doi" in line_text.lower():
-                char_y_coords = []
-                for char in chars_in_line[:50]:  # 只显示前50个字符，避免日志过长
-                    char_y_coords.append(f"{char['text']}(y={char['top']:.2f})")
-                if len(chars_in_line) > 50:
-                    char_y_coords.append(f"...(共{len(chars_in_line)}个字符)")
-                logger.info(f"行{line_num+1} 字符y坐标详情: {' '.join(char_y_coords)}")
-        
-        return line_data
+        logger.info(f"成功加载JSON文件，共 {len(data)} 页")
+        return data
+    except FileNotFoundError:
+        logger.error(f"JSON文件不存在: {json_path}")
+        return []
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON文件解析失败: {str(e)}")
+        return []
     except Exception as e:
-        logger.warning(f"提取字号信息失败: {e}")
+        logger.error(f"加载JSON文件失败: {str(e)}")
         return []
 
-def extract_title_authors_with_fontsize(text: str, pdf_page=None) -> tuple[str, str]:
+
+def find_papers_by_doi(pages: List[List[Dict[str, Any]]]) -> List[int]:
     """
-    基于字号检测的标题和作者提取 - 改进版本
-    如果提供了pdf_page，则使用字号信息；否则回退到原来的方法
+    通过DOI识别论文起始页
+    
+    参数:
+        pages: 页数组（从load_model_json返回）
+    
+    返回:
+        包含DOI的页索引列表（0-based）
     """
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    doi_idx = None
-    for i, l in enumerate(lines[:15]):
-        if re.search(r"\bDOI\b", l, re.I):
-            doi_idx = i
-            break
+    doi_page_indices = []
     
-    title = authors = ""
-    if doi_idx is None:
-        return title, authors
+    for page_idx, page_elements in enumerate(pages):
+        # 查找该页中是否有包含"DOI:"的header元素
+        for element in page_elements:
+            if element.get('type') == 'header':
+                content = element.get('content', '')
+                if 'DOI:' in content or 'doi:' in content.lower():
+                    doi_page_indices.append(page_idx)
+                    logger.info(f"发现DOI页: 第 {page_idx + 1} 页，内容: {content[:50]}...")
+                    break
     
-    # 如果提供了PDF页面，使用字号检测
-    if pdf_page:
-        try:
-            line_data = extract_font_sizes_from_pdf_page(pdf_page)
-            if line_data:
-                # 使用字号信息确定标题行数量
-                title_line_count = get_title_line_count_by_fontsize(line_data, doi_idx)
-                if title_line_count > 0:
-                    if title_line_count != 2:
-                        logger.info(f"使用字号检测方法：标题行数={title_line_count}")
-                    else:
-                        logger.info(f"字号检测结果：标题行数=2（与默认值相同）")
-                    # 使用line_data直接提取标题和作者，保证分行一致性
-                    return extract_title_authors_from_line_data(line_data, title_line_count)
-        except Exception as e:
-            logger.warning(f"字号检测失败，回退到原方法: {e}")
-    
-    # 回退到原来的方法（固定2行）
-    logger.info("使用旧方法（固定2行标题）")
-    return extract_title_authors_with_line_count(text, doi_idx, 2)
+    logger.info(f"共发现 {len(doi_page_indices)} 篇论文（DOI页）")
+    return doi_page_indices
 
-def get_title_line_count_by_fontsize(line_data: List[Dict[str, Any]], doi_line_idx: int) -> int:
-    """根据字号信息确定标题行数量"""
-    if not line_data:
-        return 0
-    
-    # 找到DOI行在line_data中的对应位置
-    doi_line_in_data = None
-    for i, line_info in enumerate(line_data):
-        if re.search(r"\bDOI\b", line_info["text"], re.I):
-            doi_line_in_data = i
-            break
-    
-    if doi_line_in_data is None:
-        return 0
-    
-    # 获取DOI行之后的文本行
-    subsequent_lines = line_data[doi_line_in_data + 1:]
-    
-    if not subsequent_lines:
-        return 0
-    
-    # 计算字号统计信息
-    font_sizes = [line["fontsize"] for line in subsequent_lines if line["fontsize"] and line["fontsize"] > 1]
-    if not font_sizes:
-        return 0
-    
-    # 找到最大字号（通常是标题字号）
-    max_font_size = max(font_sizes)
-    
-    # 设置字号阈值：标题字号应该明显大于正文
-    avg_font_size = sum(font_sizes) / len(font_sizes)
-    font_size_threshold = max_font_size * 0.9 if max_font_size > avg_font_size * 1.2 else avg_font_size * 1.1
-    
-    # 找到标题行结束的位置（基于字号判断）
-    title_line_count = 0
-    title_started = False
-    
-    for i, line_info in enumerate(subsequent_lines):
-        text = line_info["text"].strip()
-        fontsize = line_info["fontsize"]
-        
-        # 跳过分隔符行和空行
-        if text in (":", "：", "") or fontsize < 1:
-            continue
-        
-        # 如果字号符合标题要求
-        if fontsize >= font_size_threshold:
-            title_started = True
-            title_line_count += 1
-        else:
-            # 如果已经开始提取标题，遇到小字号行就停止
-            if title_started:
-                break
-    
-    return title_line_count if title_line_count > 0 else 2
 
-def extract_title_authors_from_line_data(line_data: List[Dict[str, Any]], title_line_count: int) -> tuple[str, str]:
+def extract_doi_from_header(header_content: str) -> Optional[str]:
     """
-    使用line_data（基于y坐标分行的结果）提取标题和作者
-    直接使用第一次分行的结果，保证分行一致性
+    从header content中提取DOI
+    
+    参数:
+        header_content: header元素的content字段
+    
+    返回:
+        DOI字符串，如 "10.19884/j.1672-5220.202405007"
     """
-    if not line_data:
-        return "", ""
-    
-    # 找到DOI行在line_data中的对应位置
-    doi_line_in_data = None
-    for i, line_info in enumerate(line_data):
-        if re.search(r"\bDOI\b", line_info["text"], re.I):
-            doi_line_in_data = i
-            break
-    
-    if doi_line_in_data is None:
-        return "", ""
-    
-    # 调试：记录line_data中的行信息
-    logger.info(f"使用line_data提取标题和作者，DOI行索引: {doi_line_in_data}, 标题行数: {title_line_count}")
-    logger.info(f"line_data总行数: {len(line_data)}")
-    for idx, line_info in enumerate(line_data[doi_line_in_data:doi_line_in_data+10] if doi_line_in_data < len(line_data) else []):
-        logger.info(f"line_data行{doi_line_in_data+idx+1}: y坐标={line_info.get('y_coord', 'N/A')}, 文本: '{line_info['text'][:80]}'")
-    
-    # 从DOI行之后提取标题行
-    i = doi_line_in_data + 1
-    title_lines = []
-    while i < len(line_data) and len(title_lines) < title_line_count:
-        line_text = line_data[i]["text"].strip()
-        if line_text in (":", "：", ""): 
-            i += 1
-            continue
-        title_lines.append(line_text)
-        i += 1
-    
-    title = re.sub(r"\s+", " ", " ".join(title_lines)).strip(" :")
-    
-    # 提取作者行（在标题行之后）
-    authors = ""
-    logger.info(f"开始提取作者，当前行索引i={i}，总行数={len(line_data)}")
-    if i < len(line_data):
-        start_idx = max(0, i - 2)
-        end_idx = min(len(line_data), i + 5)
-        logger.info(f"作者行附近的上下文（行{start_idx+1}到行{end_idx}）:")
-        for idx in range(start_idx, end_idx):
-            marker = ">>>" if idx == i else "   "
-            logger.info(f"{marker} 行{idx+1}: y坐标={line_data[idx].get('y_coord', 'N/A')}, 文本: '{line_data[idx]['text'][:80]}'")
-    
-    while i < len(line_data):
-        line_text = line_data[i]["text"].strip()
-        if line_text in (":", "：", ""): 
-            i += 1
-            continue
-        
-        # 优化作者行提取：保护逗号分隔符
-        # 先清理数字和特殊符号
-        authors_raw = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", line_text)
-        
-        # 调试：记录原始提取的文本
-        logger.info(f"原始作者行（第{i+1}行）: '{line_text}'")
-        logger.info(f"清理数字后: '{authors_raw}'")
-        
-        # 统一逗号周围的空格：", " 或 " , " 或 ", " 或 "," 都统一为 ", "
-        authors_raw = re.sub(r'\s*,\s*', ', ', authors_raw)
-        
-        # 处理多个空格：只在没有逗号的情况下才转换，避免破坏已有逗号
-        if "," not in authors_raw:
-            authors_raw = re.sub(r"\s{2,}", ", ", authors_raw)
-        
-        authors = authors_raw.strip()
-        logger.info(f"最终提取的authors_line: '{authors}'")
-        break
-    
-    return title, authors
+    # 提取DOI:后面的内容
+    match = re.search(r'DOI\s*[:：]\s*([0-9]+\.[0-9]+/[^\s]+)', header_content, re.I)
+    if match:
+        return match.group(1).strip()
+    return None
 
-def extract_title_authors_with_line_count(text: str, doi_idx: int, title_line_count: int) -> tuple[str, str]:
-    """使用指定标题行数量提取标题和作者 - 完全使用原方法逻辑"""
-    # 调试：记录splitlines()后的原始行（去除空行前的状态）
-    raw_lines = text.splitlines()
-    logger.info(f"splitlines()后的原始行数: {len(raw_lines)}")
-    for idx, line in enumerate(raw_lines[doi_idx:doi_idx+10] if doi_idx < len(raw_lines) else []):
-        logger.info(f"原始行{doi_idx+idx+1}: '{line}'")
-    
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    
-    # 调试：记录去除空行后的行
-    logger.info(f"去除空行后的行数: {len(lines)}")
-    for idx, line in enumerate(lines[doi_idx:doi_idx+10] if doi_idx < len(lines) else []):
-        logger.info(f"处理后的行{doi_idx+idx+1}: '{line}'")
-    
-    # 完全使用原来的逻辑，只是把2改为title_line_count
-    i = doi_idx + 1
-    title_lines = []
-    while i < len(lines) and len(title_lines) < title_line_count:
-        if lines[i] in (":", "："): 
-            i += 1
-            continue
-        title_lines.append(lines[i])
-        i += 1
-    title = re.sub(r"\s+", " ", " ".join(title_lines)).strip(" :")
-    
-    # 完全使用原来的作者提取逻辑
-    authors = ""
-    # 调试：记录作者行附近的上下文（前后各2行）
-    logger.info(f"开始提取作者，当前行索引i={i}，总行数={len(lines)}")
-    if i < len(lines):
-        start_idx = max(0, i - 2)
-        end_idx = min(len(lines), i + 5)
-        logger.info(f"作者行附近的上下文（行{start_idx+1}到行{end_idx}）:")
-        for idx in range(start_idx, end_idx):
-            marker = ">>>" if idx == i else "   "
-            logger.info(f"{marker} 行{idx+1}: '{lines[idx]}'")
-    
-    while i < len(lines):
-        if lines[i] in (":", "："): 
-            i += 1
-            continue
-        # 优化作者行提取：保护逗号分隔符
-        # 先清理数字和特殊符号
-        authors_raw = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", lines[i])
-        
-        # 调试：记录原始提取的文本
-        logger.info(f"原始作者行（第{i+1}行）: '{lines[i]}'")
-        logger.info(f"清理数字后: '{authors_raw}'")
-        
-        # 统一逗号周围的空格：", " 或 " , " 或 ", " 或 "," 都统一为 ", "
-        authors_raw = re.sub(r'\s*,\s*', ', ', authors_raw)
-        
-        # 处理多个空格：只在没有逗号的情况下才转换，避免破坏已有逗号
-        # （PDF原文应该有逗号，如果没有可能是提取时丢失）
-        if "," not in authors_raw:
-            authors_raw = re.sub(r"\s{2,}", ", ", authors_raw)
-        
-        authors = authors_raw.strip()
-        logger.info(f"最终提取的authors_line: '{authors}'")
-        break
-    
-    return title, authors
-
-
-def extract_title_authors(text: str) -> tuple[str, str]:
-    """提取标题和作者 - 保持向后兼容的接口"""
-    return extract_title_authors_with_fontsize(text, None)
-
-def normalize_authors_for_display(authors_line: str) -> str:
-    """
-    鲁棒作者规范化 - 改进版本
-    修复两两配对逻辑：如果逗号分隔的部分已经是完整格式（包含空格），直接使用
-    """
-    # 调试：记录输入的authors_line
-    logger.info(f"normalize_authors_for_display 输入: '{authors_line}'")
-    
-    if "," in authors_line:
-        # 统一逗号格式：中文逗号、分号等统一为英文逗号
-        authors_line = authors_line.replace('，', ',').replace(';', ',')
-        # 统一逗号周围的空格
-        authors_line = re.sub(r'\s*,\s*', ', ', authors_line)
-        
-        # 按逗号分割
-        parts = [p.strip() for p in re.split(r",\s*", authors_line) if p.strip()]
-        
-        # 检查每个部分：如果已经包含空格（即已经是完整的"姓 名"格式），直接使用
-        # 如果只有一个词，可能是姓或名的一部分，但根据用户确认PDF用逗号分隔，
-        # 这种情况应该很少，如果出现则保留原样
-        normalized_parts = []
-        for part in parts:
-            # 清理数字和特殊符号
-            cleaned_part = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", part).strip()
-            if cleaned_part:
-                normalized_parts.append(cleaned_part)
-        
-        result = ", ".join(normalized_parts)
-        logger.info(f"normalize_authors_for_display 输出（有逗号）: '{result}'")
-        return result
-    
-    # 如果没有逗号，记录警告（PDF原文应该有逗号，可能是提取时丢失）
-    logger.warning(f"作者行没有逗号分隔符（可能PDF提取时丢失）: '{authors_line}'")
-    # 简单处理：按空格分割后两两配对（保持向后兼容）
-    tokens = [t for t in re.split(r"\s+", authors_line.strip()) if t]
-    pairs = [" ".join(tokens[i:i+2]) for i in range(0, len(tokens), 2)]
-    result = ", ".join(pairs)
-    logger.info(f"normalize_authors_for_display 输出（无逗号，配对）: '{result}'")
-    return result
-
-def first_author_from_authors(authors_line: str) -> str:
-    """提取第一作者 - 完全照搬参考代码"""
-    disp = normalize_authors_for_display(authors_line)
-    return disp.split(",")[0].strip() if disp else ""
-
-def extract_corresponding(text: str, authors_display: Optional[str] = None) -> str:
-    """提取通讯作者 - 完全照搬参考代码"""
-    m = re.search(r"Correspondence\s+should\s+be\s+addressed\s+to\s+([^,;，；\n]+)", text, re.I)
-    name = m.group(1).strip() if m else ""
-    if not name: 
-        return ""
-    if authors_display:
-        def norm(s: str) -> str: 
-            return re.sub(r"\s+", "", s).lower()
-        for a in [x.strip() for x in authors_display.split(",") if x.strip()]:
-            if norm(name) in norm(a) or norm(a) in norm(name):
-                return a
-    return name
 
 def doi_to_manuscript_id(doi: Optional[str]) -> Optional[str]:
-    """DOI转稿件号 - 完全照搬参考代码"""
-    if not doi: 
+    """
+    DOI转稿件号
+    
+    参数:
+        doi: DOI字符串
+    
+    返回:
+        稿件号，如 "E2024-05007"
+    """
+    if not doi:
         return None
-    m = re.search(r"\.(\d{9})$", doi)
-    if not m: 
+    match = re.search(r'\.(\d{9})$', doi)
+    if not match:
         return None
-    tail = m.group(1)  # YYYYMMNNN
+    tail = match.group(1)  # YYYYMMNNN
     return f"E{tail[:4]}-{tail[4:]}"
 
-def contains_chinese(text: str) -> bool:
-    """检查文本是否包含中文字符"""
-    return bool(re.search(r'[\u4e00-\u9fff]', text))
 
-def extract_chinese_title_authors_from_page(pdf_page, page_start: int, page_end: int) -> tuple[str, str]:
+def extract_corresponding_from_footnotes(pages: List[List[Dict[str, Any]]], 
+                                        start_page_idx: int, 
+                                        end_page_idx: int) -> str:
     """
-    从指定页面提取中文标题和作者
-    使用基于y坐标的分行结果（与英文提取保持一致）
-    """
-    try:
-        # 使用基于y坐标的分行方法（与英文提取保持一致）
-        line_data = extract_font_sizes_from_pdf_page(pdf_page)
-        if not line_data:
-            return "", ""
-        
-        # 找到包含中文的行（使用line_data，而不是text.split('\n')）
-        chinese_line_data = []
-        for line_info in line_data:
-            text = line_info["text"].strip()
-            if text and contains_chinese(text):
-                chinese_line_data.append(line_info)
-        
-        if not chinese_line_data:
-            return "", ""
-        
-        logger.info(f"中文提取：使用line_data分行，找到 {len(chinese_line_data)} 行包含中文的内容")
-        
-        # 提取标题和作者
-        chinese_title = ""
-        chinese_authors = ""
-        
-        # 使用字号判断来确定标题有几行
-        title_line_count = 1  # 默认1行
-        try:
-            if chinese_line_data:
-                # 计算字号统计信息
-                font_sizes = [line["fontsize"] for line in chinese_line_data if line["fontsize"] > 1]
-                if font_sizes:
-                    max_font_size = max(font_sizes)
-                    avg_font_size = sum(font_sizes) / len(font_sizes)
-                    font_size_threshold = max_font_size * 0.9 if max_font_size > avg_font_size * 1.2 else avg_font_size * 1.1
-                    
-                    # 计算标题行数
-                    title_line_count = 0
-                    for line_info in chinese_line_data:
-                        text = line_info["text"].strip()
-                        fontsize = line_info["fontsize"]
-                        if text and fontsize >= font_size_threshold:
-                            title_line_count += 1
-                        else:
-                            break
-                    if title_line_count == 0:
-                        title_line_count = 1
-        except Exception as e:
-            logger.warning(f"中文标题行数判断失败: {e}")
-            title_line_count = 1
-        
-        logger.info(f"中文提取：判断标题行数为 {title_line_count}")
-        
-        # 根据字号判断的结果，合并相应行数的标题（使用line_data中的文本）
-        title_lines = []
-        for i, line_info in enumerate(chinese_line_data):
-            if i < title_line_count:
-                title_lines.append(line_info["text"].strip())
-            else:
-                # 查找包含逗号的中文行作为作者
-                line_text = line_info["text"].strip()
-                if (',' in line_text or '，' in line_text) and not chinese_authors:
-                    chinese_authors = line_text
-                    break
-        
-        # 合并标题行
-        if title_lines:
-            chinese_title = "".join(title_lines)
-        
-        # 如果还是没有作者，尝试合并多行标题
-        if not chinese_authors and len(chinese_line_data) > 1:
-            # 合并前几行作为标题，最后一行作为作者
-            title_lines = []
-            for i, line_info in enumerate(chinese_line_data):
-                if i < len(chinese_line_data) - 1:
-                    title_lines.append(line_info["text"].strip())
-                else:
-                    chinese_authors = line_info["text"].strip()
-                    break
-            if title_lines:
-                chinese_title = "".join(title_lines)
-        
-        # 清理和格式化结果
-        chinese_title = re.sub(r"\s+", " ", chinese_title).strip()
-        
-        if chinese_authors:
-            # 步骤1：统一逗号格式（先做这个，保护逗号）
-            chinese_authors = chinese_authors.replace('，', ',')
-            chinese_authors = chinese_authors.replace(';', ',')
-            
-            # 步骤2：统一逗号周围的空格
-            chinese_authors = re.sub(r'\s*,\s*', ', ', chinese_authors)
-            
-            # 步骤3：清理数字和特殊符号
-            chinese_authors = re.sub(r"[∗*¹²³⁴⁵⁶⁷⁸⁹⁰0-9]", "", chinese_authors)
-            
-            # 步骤4：处理两字人名中间的空格（如"张 煊" -> "张煊"）
-            chinese_authors = re.sub(r'([\u4e00-\u9fff])\s+([\u4e00-\u9fff])', r'\1\2', chinese_authors)
-            
-            # 步骤5：按逗号分割并清理每个部分
-            author_parts = [part.strip() for part in chinese_authors.split(',') if part.strip()]
-            
-            # 步骤6：清理每个部分的多余空格（但保留正常的格式）
-            cleaned_parts = []
-            for part in author_parts:
-                # 清理多余空格，但保留正常的作者名格式
-                cleaned = re.sub(r'\s+', ' ', part).strip()
-                if cleaned:
-                    cleaned_parts.append(cleaned)
-            
-            # 步骤7：重新用英文逗号连接
-            chinese_authors = ', '.join(cleaned_parts)
-        
-        return chinese_title, chinese_authors
-        
-    except Exception as e:
-        logger.warning(f"提取中文标题和作者失败: {e}")
-        return "", ""
-
-def find_paper_last_page(pdf, page_start: int, page_end: int) -> Optional[Any]:
-    """
-    根据页码范围找到论文的最后一页
-    page_start, page_end: 期刊实际页码
-    """
-    try:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            actual_page_num = extract_start_page(text)
-            if actual_page_num == page_end:
-                return page
-        return None
-    except Exception as e:
-        logger.warning(f"查找论文最后一页失败: {e}")
-        return None
-
-
-def extract_citation(text: str) -> Optional[str]:
-    """
-    提取Citation:后的在当前页的所有文本
-    Citation:位于整页的最下面，需要提取Citation:后同一行的内容和当前页Citation行下面的所有内容
+    从page_footnote或footer中提取通讯作者
+    
     参数:
-        text: PDF页面的文本内容
+        pages: 页数组
+        start_page_idx: 起始页索引
+        end_page_idx: 结束页索引
+    
     返回:
-        Citation文本内容，如果没有找到则返回None
+        通讯作者名称
     """
-    try:
-        lines = text.split('\n')
-        citation_lines = []
-        found_citation = False
+    # 支持的元素类型：page_footnote 和 footer
+    supported_types = ['page_footnote', 'footer']
+    
+    for page_idx in range(start_page_idx, min(end_page_idx + 1, len(pages))):
+        page_elements = pages[page_idx]
+        for element in page_elements:
+            element_type = element.get('type')
+            # 检查是否是支持的类型
+            if element_type in supported_types:
+                content = element.get('content', '')
+                if 'Correspondence should be addressed to' in content:
+                    # 提取"Correspondence should be addressed to"后面的内容
+                    match = re.search(
+                        r'Correspondence\s+should\s+be\s+addressed\s+to\s+([^,;，；\n]+)',
+                        content,
+                        re.I
+                    )
+                    if match:
+                        return match.group(1).strip()
+    return ""
+
+
+def extract_citations_from_footnotes(pages: List[List[Dict[str, Any]]], 
+                                     start_page_idx: int, 
+                                     end_page_idx: int) -> str:
+    """
+    提取Citations：查找以"Citation:"开头的page_footnote或footer元素，
+    将该元素以及后续的所有page_footnote/footer元素（直到遇见别的元素类型）提取并拼接
+    
+    参数:
+        pages: 页数组
+        start_page_idx: 起始页索引
+        end_page_idx: 结束页索引
+    
+    返回:
+        拼接后的citations字符串
+    """
+    citations = []
+    found_citation_start = False
+    # 支持的元素类型：page_footnote 和 footer
+    supported_types = ['page_footnote', 'footer']
+    
+    for page_idx in range(start_page_idx, min(end_page_idx + 1, len(pages))):
+        page_elements = pages[page_idx]
         
-        # 从最后一行开始向前搜索，因为Citation在页面底部
-        for i in range(len(lines) - 1, -1, -1):
-            line = lines[i].strip()
+        for i, element in enumerate(page_elements):
+            element_type = element.get('type')
+            content = element.get('content', '')
             
-            # 查找包含Citation的行
-            if re.search(r'Citation\s*[:：]', line, re.IGNORECASE):
-                found_citation = True
+            # 查找以"Citation:"开头的page_footnote或footer
+            if element_type in supported_types and content.strip().startswith('Citation:'):
+                found_citation_start = True
+                # 提取"Citation:"后的内容
+                citation_text = re.sub(r'^Citation\s*[:：]\s*', '', content, flags=re.I).strip()
+                if citation_text:
+                    citations.append(citation_text)
                 
-                # 提取Citation:后的内容（同一行）
-                citation_part = re.sub(r'Citation\s*[:：]\s*', '', line, flags=re.IGNORECASE)
-                if citation_part:
-                    citation_lines.insert(0, citation_part)  # 插入到列表开头
-                
-                # 继续向前收集Citation行上面的内容（页面底部向上）
-                for j in range(i + 1, len(lines)):
-                    next_line = lines[j].strip()
-                    if next_line:  # 只收集非空行
-                        citation_lines.append(next_line)
+                # 继续提取后续的page_footnote或footer元素
+                for j in range(i + 1, len(page_elements)):
+                    next_element = page_elements[j]
+                    next_element_type = next_element.get('type')
+                    if next_element_type in supported_types:
+                        next_content = next_element.get('content', '').strip()
+                        if next_content:
+                            citations.append(next_content)
                     else:
-                        # 遇到空行停止收集（可能是页面边界）
+                        # 遇到其他类型元素，停止提取
                         break
+                break
+            elif found_citation_start and element_type not in supported_types:
+                # 如果已经开始提取citations，遇到非支持类型元素就停止
+                break
+    
+    return ' '.join(citations) if citations else ""
+
+
+def extract_images_from_json(pages: List[List[Dict[str, Any]]], 
+                             start_page_idx: int, 
+                             end_page_idx: int) -> List[Dict[str, Any]]:
+    """
+    从JSON中提取图片信息
+    
+    参数:
+        pages: 页数组
+        start_page_idx: 起始页索引
+        end_page_idx: 结束页索引
+    
+    返回:
+        图片元素列表
+    """
+    images = []
+    for page_idx in range(start_page_idx, min(end_page_idx + 1, len(pages))):
+        page_elements = pages[page_idx]
+        for element in page_elements:
+            if element.get('type') == 'image':
+                images.append(element)
+    return images
+
+
+def extract_paper_info_from_json(pages: List[List[Dict[str, Any]]], 
+                                 start_page_idx: int, 
+                                 end_page_idx: int) -> Dict[str, Any]:
+    """
+    从指定页码范围提取论文信息
+    
+    参数:
+        pages: 页数组
+        start_page_idx: 起始页索引（0-based）
+        end_page_idx: 结束页索引（0-based）
+    
+    返回:
+        论文信息字典
+    """
+    if start_page_idx >= len(pages) or end_page_idx >= len(pages):
+        logger.error(f"页码范围超出范围: {start_page_idx}-{end_page_idx}, 总页数: {len(pages)}")
+        return {}
+    
+    first_page = pages[start_page_idx]
+    last_page = pages[end_page_idx]
+    
+    # 初始化结果
+    result = {
+        'title': '',
+        'authors': '',
+        'first_author': '',
+        'corresponding': '',
+        'doi': '',
+        'manuscript_id': '',
+        'issue': '',
+        'page_start': None,
+        'page_end': None,
+        'chinese_title': '',
+        'chinese_authors': '',
+        'abstract': '',
+        'keywords': '',
+        'citation': '',
+        'is_dhu': False
+    }
+    
+    # 1. 提取期刊期号：第一页第一个header的content
+    # 格式应为：2025, 42(3) 这种格式
+    # 支持格式：
+    # - 标准格式：2025, 42(3)
+    # - 英文格式：Journal of Donghua University (Eng. Ed.) Vol. 42, No. 3 (2025)
+    for element in first_page:
+        if element.get('type') == 'header':
+            issue_raw = element.get('content', '').strip()
+            # 确保格式为：年份, 卷号(期号)
+            # 如果已经是正确格式，直接使用；否则尝试格式化
+            if re.match(r'^\d{4},\s*\d+\(\d+\)', issue_raw):
+                result['issue'] = issue_raw
+            else:
+                # 尝试匹配英文格式：Vol. 42, No. 3 (2025) 或类似格式
+                # 匹配模式：Vol. 卷号, No. 期号 (年份) 或 Vol. 卷号 No. 期号 (年份)
+                english_match = re.search(r'Vol\.\s*(\d+)[,\s]+No\.\s*(\d+)\s*\((\d{4})\)', issue_raw, re.I)
+                if english_match:
+                    volume, number, year = english_match.groups()
+                    result['issue'] = f"{year}, {volume}({number})"
+                    logger.info(f"从英文格式提取期刊期号: {issue_raw} -> {result['issue']}")
+                else:
+                    # 尝试提取年份、卷号、期号并格式化（中文格式）
+                    # 匹配格式如：2025, 42(3) 或 2025,42(3) 或 2025 42(3) 等
+                    match = re.search(r'(\d{4})[,\s]+(\d+)[\(（](\d+)[\)）]', issue_raw)
+                    if match:
+                        year, volume, number = match.groups()
+                        result['issue'] = f"{year}, {volume}({number})"
+                    else:
+                        # 如果无法匹配，使用原始内容
+                        result['issue'] = issue_raw
+            logger.info(f"提取期刊期号: {result['issue']}")
+            break
+    
+    # 2. 提取起始页码：第一页第一个page_number的content
+    for element in first_page:
+        if element.get('type') == 'page_number':
+            page_num_str = element.get('content', '').strip()
+            try:
+                result['page_start'] = int(page_num_str)
+                logger.info(f"提取起始页码: {result['page_start']}")
+            except ValueError:
+                logger.warning(f"无法解析起始页码: {page_num_str}")
+            break
+    
+    # 3. 提取结束页码：最后一页最后一个page_number的content
+    page_numbers = [e for e in last_page if e.get('type') == 'page_number']
+    if page_numbers:
+        last_page_num_str = page_numbers[-1].get('content', '').strip()
+        try:
+            result['page_end'] = int(last_page_num_str)
+            logger.info(f"提取结束页码: {result['page_end']}")
+        except ValueError:
+            logger.warning(f"无法解析结束页码: {last_page_num_str}")
+            # 如果没有，使用起始页+页数计算
+            if result['page_start']:
+                result['page_end'] = result['page_start'] + (end_page_idx - start_page_idx)
+    else:
+        # 如果没有找到，使用起始页+页数计算
+        if result['page_start']:
+            result['page_end'] = result['page_start'] + (end_page_idx - start_page_idx)
+    
+    # 4. 提取DOI：第一页第二个header的content（包含"DOI:"的）
+    header_count = 0
+    for element in first_page:
+        if element.get('type') == 'header':
+            header_count += 1
+            if header_count == 2:  # 第二个header
+                content = element.get('content', '')
+                if 'DOI:' in content or 'doi:' in content.lower():
+                    result['doi'] = extract_doi_from_header(content)
+                    logger.info(f"提取DOI: {result['doi']}")
+                    if result['doi']:
+                        result['manuscript_id'] = doi_to_manuscript_id(result['doi'])
+                    break
+    
+    # 5. 提取标题：第一页第一个title的content
+    for element in first_page:
+        if element.get('type') == 'title':
+            result['title'] = element.get('content', '').strip()
+            logger.info(f"提取标题: {result['title'][:50]}...")
+            break
+    
+    # 6. 提取作者：第一页第一个title之后第一个text的content
+    found_title = False
+    for element in first_page:
+        if element.get('type') == 'title':
+            found_title = True
+            continue
+        if found_title and element.get('type') == 'text':
+            authors_raw = element.get('content', '').strip()
+            logger.info(f"提取作者: {authors_raw[:50]}...")
+            # 清理和格式化英文作者
+            # 要求：删除除了*以外的所有特殊字符，还要删除数字
+            # 保留：字母、空格、逗号、*号
+            if authors_raw:
+                # 统一逗号格式
+                authors_clean = authors_raw.replace(';', ',')
+                # 统一逗号周围的空格
+                authors_clean = re.sub(r'\s*,\s*', ', ', authors_clean)
+                # 删除数字和除了*以外的所有特殊字符
+                # 保留：字母（a-zA-Z）、空格、逗号、*号
+                authors_clean = re.sub(r'[^a-zA-Z\s,*]', '', authors_clean)
+                # 清理多余空格
+                authors_clean = re.sub(r'\s+', ' ', authors_clean).strip()
+                result['authors'] = authors_clean
                 
-                break  # 找到第一个Citation行就停止搜索
-        
-        if citation_lines:
-            citation_text = ' '.join(citation_lines).strip()
-            citation_text = re.sub(r'\s+', ' ', citation_text)  # 清理多余空格
-            
-            # 如果提取的文本太短，可能是匹配不完整
-            if len(citation_text) < 10:
-                logger.info("提取的Citation文本太短，可能不完整")
-                return None
-            
-            logger.info(f"成功提取Citation文本，长度: {len(citation_text)}")
-            return citation_text
-        
-        logger.info("未找到Citation信息")
-        return None
-        
-    except Exception as e:
-        logger.error(f"提取Citation时出错: {str(e)}")
-        return None
+                # 提取第一作者
+                if result['authors']:
+                    # 按逗号分割
+                    if ',' in result['authors']:
+                        result['first_author'] = result['authors'].split(',')[0].strip()
+                    else:
+                        # 如果没有逗号，取前两个词作为第一作者
+                        parts = result['authors'].split()
+                        if len(parts) >= 2:
+                            result['first_author'] = ' '.join(parts[:2])
+                        else:
+                            result['first_author'] = result['authors']
+            break
+    
+    # 7. 提取通讯作者：遍历所有页的page_footnote
+    result['corresponding'] = extract_corresponding_from_footnotes(pages, start_page_idx, end_page_idx)
+    if result['corresponding']:
+        logger.info(f"提取通讯作者: {result['corresponding']}")
+    
+    # 8. 提取摘要：第一页中content以"Abstract:"或"Abstract："开头的text元素
+    for element in first_page:
+        if element.get('type') == 'text':
+            content = element.get('content', '')
+            if content.strip().startswith('Abstract:') or content.strip().startswith('Abstract：'):
+                # 提取冒号后的内容
+                abstract_text = re.sub(r'^Abstract\s*[:：]\s*', '', content, flags=re.I).strip()
+                result['abstract'] = abstract_text
+                logger.info(f"提取摘要: {result['abstract'][:50]}...")
+                break
+    
+    # 9. 提取关键词：第一页中content以"Keywords:"或"Keywords："开头的text元素
+    for element in first_page:
+        if element.get('type') == 'text':
+            content = element.get('content', '')
+            if content.strip().startswith('Keywords:') or content.strip().startswith('Keywords：'):
+                # 提取冒号后的内容
+                keywords_text = re.sub(r'^Keywords\s*[:：]\s*', '', content, flags=re.I).strip()
+                result['keywords'] = keywords_text
+                logger.info(f"提取关键词: {result['keywords']}")
+                break
+    
+    # 10. 提取Citations：查找以"Citation:"开头的page_footnote
+    result['citation'] = extract_citations_from_footnotes(pages, start_page_idx, end_page_idx)
+    if result['citation']:
+        logger.info(f"提取Citations: {result['citation'][:50]}...")
+    
+    # 11. 提取中文标题：最后一页第一个title的content
+    for element in last_page:
+        if element.get('type') == 'title':
+            result['chinese_title'] = element.get('content', '').strip()
+            logger.info(f"提取中文标题: {result['chinese_title'][:50]}...")
+            break
+    
+    # 12. 提取中文作者：最后一页第一个title之后第一个text的content
+    found_chinese_title = False
+    for element in last_page:
+        if element.get('type') == 'title':
+            found_chinese_title = True
+            continue
+        if found_chinese_title and element.get('type') == 'text':
+            chinese_authors_raw = element.get('content', '').strip()
+            # 清理和格式化中文作者
+            # 要求：删除除了*以外的所有特殊字符，还要删除数字
+            # 保留：中文字符、字母、逗号、空格、*号
+            if chinese_authors_raw:
+                # 统一逗号格式
+                chinese_authors = chinese_authors_raw.replace('，', ',').replace(';', ',')
+                # 统一逗号周围的空格
+                chinese_authors = re.sub(r'\s*,\s*', ', ', chinese_authors)
+                # 删除数字和除了*以外的所有特殊字符
+                # 保留：中文字符（\u4e00-\u9fff）、字母（a-zA-Z）、空格、逗号、*号
+                chinese_authors = re.sub(r'[^\u4e00-\u9fffa-zA-Z\s,*]', '', chinese_authors)
+                # 处理两字人名中间的空格
+                chinese_authors = re.sub(r'([\u4e00-\u9fff])\s+([\u4e00-\u9fff])', r'\1\2', chinese_authors)
+                # 清理多余空格
+                chinese_authors = re.sub(r'\s+', ' ', chinese_authors).strip()
+                result['chinese_authors'] = chinese_authors
+                logger.info(f"提取中文作者: {result['chinese_authors']}")
+            break
+    
+    # 13. 判断是否东华大学
+    full_text = ' '.join([e.get('content', '') for page in pages[start_page_idx:end_page_idx+1] 
+                         for e in page if e.get('content')])
+    result['is_dhu'] = 'donghua university' in full_text.lower() or '东华大学' in full_text
+    
+    return result
+
 
 def extract_images_from_paper(pdf_path: str, paper_page_range: tuple, output_dir: str, start_page_offset: int = 0) -> Dict[str, Optional[str]]:
     """
-    从论文页面范围提取第一张和第二张图片
-    paper_page_range: (start_page, end_page) 期刊页码范围
-    start_page_offset: 期刊起始页码与PDF第一页的偏移量
-    返回: 包含两张图片路径的字典 {'first_image': 路径, 'second_image': 路径}
+    从论文页面范围提取第一张和第二张图片（保留原有逻辑，从PDF提取）
+    
+    参数:
+        pdf_path: PDF文件路径
+        paper_page_range: (start_page, end_page) 期刊页码范围
+        output_dir: 输出目录
+        start_page_offset: 期刊起始页码与PDF第一页的偏移量
+    
+    返回:
+        包含两张图片路径的字典 {'first_image': 路径, 'second_image': 路径}
     """
     try:
-        # 尝试导入PyMuPDF
-        try:
-            import fitz  # PyMuPDF
-        except ImportError:
-            logger.error("PyMuPDF未安装，请运行: pip install PyMuPDF")
-            return {'first_image': None, 'second_image': None}
+        import fitz  # PyMuPDF
+    except ImportError:
+        logger.error("PyMuPDF未安装，请运行: pip install PyMuPDF")
+        return {'first_image': None, 'second_image': None}
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    doc = fitz.open(pdf_path)
+    image_paths = {'first_image': None, 'second_image': None}
+    extracted_count = 0
+    
+    journal_start_page = paper_page_range[0]
+    journal_end_page = paper_page_range[1]
+    pdf_start_index = journal_start_page - start_page_offset - 1
+    pdf_end_index = journal_end_page - start_page_offset - 1
+    
+    for pdf_page_index in range(pdf_start_index, pdf_end_index + 1):
+        if pdf_page_index < 0 or pdf_page_index >= len(doc):
+            continue
         
-        # 确保输出目录存在
-        os.makedirs(output_dir, exist_ok=True)
+        page = doc[pdf_page_index]
+        image_list = page.get_images()
+        journal_page_num = pdf_page_index + start_page_offset + 1
         
-        doc = fitz.open(pdf_path)
-        image_paths = {'first_image': None, 'second_image': None}
-        extracted_count = 0
+        if image_list and extracted_count < 2:
+            for img_index, img in enumerate(image_list[:2]):
+                if extracted_count >= 2:
+                    break
+                
+                try:
+                    xref = img[0]
+                    pix = fitz.Pixmap(doc, xref)
+                    
+                    if pix.n - pix.alpha == 4:  # CMYK
+                        pix_rgb = fitz.Pixmap(fitz.csRGB, pix)
+                        filename = f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image_QRcode.png" if extracted_count == 0 else f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image.png"
+                        output_path = os.path.join(output_dir, filename)
+                        pix_rgb.save(output_path)
+                        if extracted_count == 0:
+                            image_paths['first_image'] = output_path
+                        else:
+                            image_paths['second_image'] = output_path
+                        pix_rgb = None
+                        extracted_count += 1
+                    elif pix.n - pix.alpha < 4:
+                        filename = f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image_QRcode.png" if extracted_count == 0 else f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image.png"
+                        output_path = os.path.join(output_dir, filename)
+                        pix.save(output_path)
+                        if extracted_count == 0:
+                            image_paths['first_image'] = output_path
+                        else:
+                            image_paths['second_image'] = output_path
+                        extracted_count += 1
+                    
+                    pix = None
+                except Exception as e:
+                    logger.error(f"提取图片失败: {str(e)}")
+                    continue
         
-        logger.info(f"开始提取图片，期刊页码范围: {paper_page_range}, PDF总页数: {len(doc)}, 偏移量: {start_page_offset}")
+        if extracted_count >= 2:
+            break
+    
+    doc.close()
+    return image_paths
+
+
+def parse_pdf_from_mineru_json(model_json_path: str, pdf_path: str, journal_id: int, output_dir: str) -> List[Dict[str, Any]]:
+    """
+    基于MinerU JSON文件解析PDF
+    
+    参数:
+        model_json_path: _model.json文件路径
+        pdf_path: PDF文件路径（用于提取图片）
+        journal_id: 期刊ID
+        output_dir: 输出目录
+    
+    返回:
+        论文记录列表
+    """
+    try:
+        # 1. 加载JSON文件
+        pages = load_model_json(model_json_path)
+        if not pages:
+            logger.error("无法加载JSON文件或文件为空")
+            return []
         
-        # 计算期刊页码与PDF页面索引的映射
-        journal_start_page = paper_page_range[0]
-        journal_end_page = paper_page_range[1]
+        # 2. 查找所有包含DOI的页（识别论文起始页）
+        doi_page_indices = find_papers_by_doi(pages)
+        if not doi_page_indices:
+            logger.warning("未找到包含DOI的页，无法识别论文")
+            return []
         
-        # 计算PDF页面索引范围
-        pdf_start_index = journal_start_page - start_page_offset - 1  # 期刊页码315对应PDF索引0
-        pdf_end_index = journal_end_page - start_page_offset - 1
+        records = []
         
-        logger.info(f"期刊页码 {journal_start_page}-{journal_end_page} 映射到PDF索引 {pdf_start_index}-{pdf_end_index}")
-        
-        # 遍历论文的所有页面（PDF索引范围）
-        for pdf_page_index in range(pdf_start_index, pdf_end_index + 1):
+        # 3. 为每篇论文确定页码范围并提取信息
+        for i, start_page_idx in enumerate(doi_page_indices):
             try:
-                if pdf_page_index < 0 or pdf_page_index >= len(doc):
-                    logger.warning(f"PDF索引 {pdf_page_index} 超出PDF范围 (0-{len(doc)-1})")
+                # 确定结束页索引
+                if i < len(doi_page_indices) - 1:
+                    # 不是最后一篇论文：结束页 = 下一篇论文起始页 - 1
+                    end_page_idx = doi_page_indices[i + 1] - 1
+                else:
+                    # 最后一篇论文：结束页 = 最后一页
+                    end_page_idx = len(pages) - 1
+                
+                logger.info(f"处理第 {i+1} 篇论文，页码范围: 第 {start_page_idx + 1} 页到第 {end_page_idx + 1} 页")
+                
+                # 4. 提取论文信息
+                paper_info = extract_paper_info_from_json(pages, start_page_idx, end_page_idx)
+                
+                if not paper_info.get('page_start') or not paper_info.get('page_end'):
+                    logger.warning(f"论文 {i+1} 缺少页码范围，跳过")
                     continue
                 
-                page = doc[pdf_page_index]
-                image_list = page.get_images()
+                # 5. 提取图片
+                paper_page_range = (paper_info['page_start'], paper_info['page_end'])
+                image_paths = extract_images_from_paper(
+                    pdf_path, 
+                    paper_page_range, 
+                    output_dir, 
+                    paper_info['page_start'] - 1
+                )
                 
-                # 计算对应的期刊页码
-                journal_page_num = pdf_page_index + start_page_offset + 1
+                # 6. 保存图片到本地
+                local_storage_path = "images"
+                os.makedirs(local_storage_path, exist_ok=True)
                 
-                logger.info(f"检查PDF第 {pdf_page_index + 1} 页 (期刊第 {journal_page_num} 页): 找到 {len(image_list)} 张图片")
+                first_local_path = None
+                if image_paths['first_image'] and os.path.exists(image_paths['first_image']):
+                    file_extension = Path(image_paths['first_image']).suffix.lower()
+                    issue_clean = paper_info.get('issue', '').replace(',', '_').replace('(', '_').replace(')', '')
+                    first_local_filename = f"papers_{issue_clean}_pages_{paper_info['page_start']}-{paper_info['page_end']}_image_QRcode{file_extension}"
+                    first_local_path = os.path.join(local_storage_path, first_local_filename)
+                    import shutil
+                    shutil.copy2(image_paths['first_image'], first_local_path)
+                    if not os.path.exists(first_local_path):
+                        first_local_path = None
                 
-                if image_list:
-                    # 提取图片，最多提取两张
-                    for img_index, img in enumerate(image_list[:2]):  # 只处理前两张图片
-                        if extracted_count >= 2:
-                            break  # 已经提取了两张图片
-                            
-                        try:
-                            xref = img[0]
-                            logger.info(f"提取图片 {img_index + 1}: xref={xref}, 图片元数据: {img}")
-                            
-                            pix = fitz.Pixmap(doc, xref)
-                            
-                            # 处理CMYK格式图片 - 转换为RGB
-                            if pix.n - pix.alpha == 4:  # CMYK格式
-                                logger.info(f"检测到CMYK格式图片，转换为RGB")
-                                # 创建RGB Pixmap
-                                pix_rgb = fitz.Pixmap(fitz.csRGB, pix)
-                                
-                                # 生成有意义的文件名
-                                if extracted_count == 0:
-                                    # 第一张图片：添加QRcode后缀
-                                    filename = f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image_QRcode.png"
-                                else:
-                                    # 第二张图片：不加后缀
-                                    filename = f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image.png"
-                                
-                                output_path = os.path.join(output_dir, filename)
-                                pix_rgb.save(output_path)
-                                
-                                if extracted_count == 0:
-                                    image_paths['first_image'] = output_path
-                                    logger.info(f"✅ 成功提取第一张图片(QRcode): {output_path}, 尺寸: {pix_rgb.width}x{pix_rgb.height}")
-                                else:
-                                    image_paths['second_image'] = output_path
-                                    logger.info(f"✅ 成功提取第二张图片: {output_path}, 尺寸: {pix_rgb.width}x{pix_rgb.height}")
-                                
-                                pix_rgb = None  # 释放内存
-                                extracted_count += 1
-                                
-                            elif pix.n - pix.alpha < 4:  # 如果不是CMYK
-                                # 生成有意义的文件名
-                                if extracted_count == 0:
-                                    # 第一张图片：添加QRcode后缀
-                                    filename = f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image_QRcode.png"
-                                else:
-                                    # 第二张图片：不加后缀
-                                    filename = f"paper_{journal_start_page}-{journal_end_page}_page_{journal_page_num}_image.png"
-                                
-                                output_path = os.path.join(output_dir, filename)
-                                pix.save(output_path)
-                                
-                                if extracted_count == 0:
-                                    image_paths['first_image'] = output_path
-                                    logger.info(f"✅ 成功提取第一张图片(QRcode): {output_path}, 尺寸: {pix.width}x{pix.height}")
-                                else:
-                                    image_paths['second_image'] = output_path
-                                    logger.info(f"✅ 成功提取第二张图片: {output_path}, 尺寸: {pix.width}x{pix.height}")
-                                
-                                extracted_count += 1
-                            else:
-                                logger.warning(f"图片格式不支持: n={pix.n}, alpha={pix.alpha}")
-                            
-                            pix = None  # 释放内存
-                            
-                        except Exception as img_error:
-                            logger.error(f"提取图片 {img_index + 1} 时出错: {str(img_error)}")
-                            continue
-                    
-                    if extracted_count >= 2:
-                        break  # 已经提取了两张图片，停止搜索
-                else:
-                    logger.info(f"PDF第 {pdf_page_index + 1} 页 (期刊第 {journal_page_num} 页) 未找到图片")
-            
-            except Exception as page_error:
-                logger.error(f"处理PDF第 {pdf_page_index + 1} 页时出错: {str(page_error)}")
+                second_local_path = None
+                if image_paths['second_image'] and os.path.exists(image_paths['second_image']):
+                    file_extension = Path(image_paths['second_image']).suffix.lower()
+                    issue_clean = paper_info.get('issue', '').replace(',', '_').replace('(', '_').replace(')', '')
+                    second_local_filename = f"papers_{issue_clean}_pages_{paper_info['page_start']}-{paper_info['page_end']}_image{file_extension}"
+                    second_local_path = os.path.join(local_storage_path, second_local_filename)
+                    import shutil
+                    shutil.copy2(image_paths['second_image'], second_local_path)
+                    if not os.path.exists(second_local_path):
+                        second_local_path = None
+                
+                # 7. 构建论文记录
+                record = {
+                    "file_name": os.path.basename(pdf_path),
+                    "pdf_pages": paper_info['page_end'] - paper_info['page_start'] + 1 if paper_info.get('page_end') and paper_info.get('page_start') else None,
+                    "start_page": paper_info['page_start'],
+                    "title": paper_info['title'],
+                    "authors": paper_info['authors'],
+                    "first_author": paper_info['first_author'],
+                    "corresponding": paper_info['corresponding'],
+                    "doi": paper_info['doi'],
+                    "manuscript_id": paper_info['manuscript_id'],
+                    "issue": paper_info['issue'],
+                    "citation": paper_info['citation'],
+                    "is_dhu": paper_info['is_dhu'],
+                    "page_start": paper_info['page_start'],
+                    "page_end": paper_info['page_end'],
+                    "chinese_title": paper_info['chinese_title'],
+                    "chinese_authors": paper_info['chinese_authors'],
+                    "abstract": paper_info['abstract'],
+                    "keywords": paper_info['keywords'],
+                    "first_local_path": first_local_path,
+                    "second_local_path": second_local_path,
+                }
+                
+                records.append(record)
+                logger.info(f"提取论文 {i+1}: {paper_info['title'][:50]}...")
+                
+            except Exception as e:
+                logger.error(f"处理第 {i+1} 篇论文时出错: {str(e)}")
                 import traceback
                 logger.error(f"详细错误: {traceback.format_exc()}")
                 continue
         
-        doc.close()
-        
-        if extracted_count == 0:
-            logger.warning(f"在页码范围 {paper_page_range} 内未找到任何图片")
-        else:
-            logger.info(f"成功提取 {extracted_count} 张图片")
-        
-        return image_paths
-        
-    except Exception as e:
-        logger.error(f"图片提取失败: {str(e)}")
-        import traceback
-        logger.error(f"详细错误: {traceback.format_exc()}")
-        return {'first_image': None, 'second_image': None}
-
-def batch_extract_images_for_journal(journal_papers: List[Dict], pdf_path: str, output_dir: str, journal_issue: str = None) -> List[Dict]:
-    """
-    批量处理期刊中的所有论文，为每篇论文提取第一张和第二张图片
-    journal_papers: 论文列表，每个论文包含page_start和page_end
-    pdf_path: PDF文件路径
-    output_dir: 图片输出目录
-    journal_issue: 期刊期号，用于MinIO对象命名
-    返回: 更新后的论文列表，包含两张图片路径字段
-    """
-    logger.info(f"开始批量提取图片，共 {len(journal_papers)} 篇论文")
-    
-    # 计算页码偏移量：期刊起始页码 - 1
-    if journal_papers:
-        first_paper_start = journal_papers[0].get('page_start')
-        if first_paper_start:
-            start_page_offset = first_paper_start - 1
-            logger.info(f"计算页码偏移量: 期刊起始页码 {first_paper_start} -> 偏移量 {start_page_offset}")
-        else:
-            start_page_offset = 0
-            logger.warning("无法获取期刊起始页码，使用默认偏移量 0")
-    else:
-        start_page_offset = 0
-        logger.warning("没有论文数据，使用默认偏移量 0")
-    
-    for i, paper in enumerate(journal_papers):
-        try:
-            # 获取论文的页码范围
-            page_start = paper.get('page_start')
-            page_end = paper.get('page_end')
-            
-            if not page_start or not page_end:
-                logger.warning(f"论文 {i+1} 缺少页码范围，跳过图片提取")
-                continue
-            
-            paper_page_range = (page_start, page_end)
-            logger.info(f"处理第 {i+1} 篇论文: 页码范围 {paper_page_range}")
-            
-            # 提取第一张和第二张图片，使用正确的偏移量
-            image_paths = extract_images_from_paper(pdf_path, paper_page_range, output_dir, start_page_offset)
-            
-            # 更新论文信息
-            paper['first_image_path'] = image_paths['first_image']
-            paper['second_image_path'] = image_paths['second_image']
-            paper['has_first_image'] = image_paths['first_image'] is not None
-            paper['has_second_image'] = image_paths['second_image'] is not None
-            
-            if image_paths['first_image']:
-                logger.info(f"论文 {i+1} 成功提取第一张图片(QRcode): {image_paths['first_image']}")
-            else:
-                logger.info(f"论文 {i+1} 未找到第一张图片")
-                
-            if image_paths['second_image']:
-                logger.info(f"论文 {i+1} 成功提取第二张图片: {image_paths['second_image']}")
-            else:
-                logger.info(f"论文 {i+1} 未找到第二张图片")
-                
-        except Exception as paper_error:
-            logger.error(f"处理论文 {i+1} 时出错: {str(paper_error)}")
-            paper['first_image_path'] = None
-            paper['second_image_path'] = None
-            paper['has_first_image'] = False
-            paper['has_second_image'] = False
-    
-    logger.info("批量图片提取完成")
-    return journal_papers
-
-def save_images_locally(journal_papers: List[Dict], journal_issue: str, local_storage_path: str) -> List[Dict]:
-    """
-    将提取的两张图片保存到本地存储
-    journal_papers: 论文列表，包含first_image_path和second_image_path字段
-    journal_issue: 期刊期号
-    local_storage_path: 本地存储路径
-    返回: 更新后的论文列表，包含两张图片的本地路径字段
-    """
-    try:
-        logger.info(f"开始保存两张图片到本地存储，期刊期号: {journal_issue}")
-        
-        # 确保本地存储目录存在
-        os.makedirs(local_storage_path, exist_ok=True)
-        
-        for i, paper in enumerate(journal_papers):
-            try:
-                # 获取两张图片的路径
-                first_image_path = paper.get('first_image_path')
-                second_image_path = paper.get('second_image_path')
-                
-                # 获取论文的页码范围
-                page_start = paper.get('page_start')
-                page_end = paper.get('page_end')
-                
-                if not page_start or not page_end:
-                    logger.warning(f"论文 {i+1} 缺少页码范围，跳过保存")
-                    continue
-                
-                # 清理期刊期号中的特殊字符，使其适合作为文件名
-                clean_journal_issue = journal_issue.replace(',', '_').replace('(', '_').replace(')', '')
-                
-                # 保存第一张图片（QRcode）
-                if first_image_path and os.path.exists(first_image_path):
-                    # 生成第一张图片的文件名：期刊号+页码范围+QRcode
-                    file_extension = Path(first_image_path).suffix.lower()
-                    first_local_filename = f"papers_{clean_journal_issue}_pages_{page_start}-{page_end}_image_QRcode{file_extension}"
-                    first_local_path = os.path.join(local_storage_path, first_local_filename)
-                    
-                    logger.info(f"处理论文 {i+1} 第一张图片(QRcode): 期刊期号={journal_issue}, 页码范围={page_start}-{page_end}, 本地路径={first_local_path}")
-                    
-                    # 复制图片到本地存储
-                    import shutil
-                    shutil.copy2(first_image_path, first_local_path)
-                    
-                    if os.path.exists(first_local_path):
-                        logger.info(f"论文 {i+1} 第一张图片(QRcode) 本地保存成功: {first_local_path}")
-                        # 使用相对路径存储到数据库
-                        paper['first_local_path'] = first_local_path
-                        paper['first_local_save_success'] = True
-                    else:
-                        logger.error(f"论文 {i+1} 第一张图片(QRcode) 保存到本地失败")
-                        paper['first_local_path'] = None
-                        paper['first_local_save_success'] = False
-                else:
-                    logger.warning(f"论文 {i+1} 第一张图片不存在或路径无效: {first_image_path}")
-                    paper['first_local_path'] = None
-                    paper['first_local_save_success'] = False
-                
-                # 保存第二张图片
-                if second_image_path and os.path.exists(second_image_path):
-                    # 生成第二张图片的文件名：期刊号+页码范围
-                    file_extension = Path(second_image_path).suffix.lower()
-                    second_local_filename = f"papers_{clean_journal_issue}_pages_{page_start}-{page_end}_image{file_extension}"
-                    second_local_path = os.path.join(local_storage_path, second_local_filename)
-                    
-                    logger.info(f"处理论文 {i+1} 第二张图片: 期刊期号={journal_issue}, 页码范围={page_start}-{page_end}, 本地路径={second_local_path}")
-                    
-                    # 复制图片到本地存储
-                    import shutil
-                    shutil.copy2(second_image_path, second_local_path)
-                    
-                    if os.path.exists(second_local_path):
-                        logger.info(f"论文 {i+1} 第二张图片 本地保存成功: {second_local_path}")
-                        # 使用相对路径存储到数据库
-                        paper['second_local_path'] = second_local_path
-                        paper['second_local_save_success'] = True
-                    else:
-                        logger.error(f"论文 {i+1} 第二张图片 保存到本地失败")
-                        paper['second_local_path'] = None
-                        paper['second_local_save_success'] = False
-                else:
-                    logger.warning(f"论文 {i+1} 第二张图片不存在或路径无效: {second_image_path}")
-                    paper['second_local_path'] = None
-                    paper['second_local_save_success'] = False
-                    
-            except Exception as save_error:
-                logger.error(f"论文 {i+1} 保存过程出错: {str(save_error)}")
-                paper['first_local_path'] = None
-                paper['second_local_path'] = None
-                paper['first_local_save_success'] = False
-                paper['second_local_save_success'] = False
-        
-        logger.info("两张图片的本地保存完成")
-        return journal_papers
-        
-    except Exception as e:
-        logger.error(f"本地保存失败: {str(e)}")
-        return journal_papers
-
-def update_paper_local_images_in_db(journal_papers: List[Dict]) -> int:
-    """
-    将两张图片的本地路径批量更新到数据库
-    journal_papers: 论文列表，包含first_local_path和second_local_path字段
-    返回: 成功更新的论文数量
-    """
-    try:
-        # 添加父目录到Python路径，以便导入models
-        import sys
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(current_dir)
-        sys.path.append(parent_dir)
-        
-        from models import Paper, db
-        
-        logger.info("开始批量更新数据库中的两张图片本地路径")
-        
-        updated_count = 0
-        
-        for i, paper in enumerate(journal_papers):
-            try:
-                first_local_path = paper.get('first_local_path')
-                second_local_path = paper.get('second_local_path')
-                page_start = paper.get('page_start')
-                page_end = paper.get('page_end')
-                
-                # 只有有页码范围的论文才更新数据库
-                if not page_start or not page_end:
-                    continue
-                
-                # 查找对应的论文记录
-                paper_record = Paper.query.filter_by(
-                    page_start=page_start,
-                    page_end=page_end
-                ).first()
-                
-                if paper_record:
-                    # 更新第一张图片路径（QRcode）
-                    if first_local_path:
-                        paper_record.first_image_url = first_local_path
-                        logger.info(f"论文 {i+1} 第一张图片(QRcode) 本地路径更新准备: {first_local_path}")
-                    
-                    # 更新第二张图片路径
-                    if second_local_path:
-                        paper_record.second_image_url = second_local_path
-                        logger.info(f"论文 {i+1} 第二张图片 本地路径更新准备: {second_local_path}")
-                    
-                    updated_count += 1
-                else:
-                    logger.warning(f"论文 {i+1} 在数据库中未找到对应记录，页码范围: {page_start}-{page_end}")
-                    
-            except Exception as update_error:
-                logger.error(f"论文 {i+1} 数据库更新准备失败: {str(update_error)}")
-        
-        # 批量提交数据库更新
-        if updated_count > 0:
-            db.session.commit()
-            logger.info(f"✅ 成功批量更新 {updated_count} 篇论文的两张图片本地路径到数据库")
-        else:
-            logger.info("没有需要更新的论文记录")
-        
-        return updated_count
-        
-    except Exception as e:
-        logger.error(f"数据库批量更新失败: {str(e)}")
-        db.session.rollback()
-        return 0
-
-def process_journal_with_local_images(pdf_path: str, journal_id: int, journal_issue: str, output_dir: str, local_storage_path: str) -> List[Dict]:
-    """
-    完整的期刊处理流程：解析PDF、提取图片、保存到本地、更新数据库
-    pdf_path: PDF文件路径
-    journal_id: 期刊ID
-    journal_issue: 期刊期号
-    output_dir: 临时图片输出目录
-    local_storage_path: 本地存储路径
-    返回: 处理后的论文列表
-    """
-    logger.info(f"开始完整期刊处理流程: {pdf_path}")
-    
-    # 1. 解析PDF获取论文信息（使用集成解析函数）
-    papers = parse_pdf_to_papers(pdf_path, journal_id, output_dir)
-    if not papers:
-        logger.error("PDF解析失败，无法继续处理")
-        return []
-    
-    logger.info(f"成功解析出 {len(papers)} 篇论文")
-    
-    # 2. 批量提取图片（如果需要额外的图片处理）
-    papers_with_images = batch_extract_images_for_journal(papers, pdf_path, output_dir, journal_issue)
-    
-    # 3. 保存图片到本地存储
-    papers_with_local_paths = save_images_locally(papers_with_images, journal_issue, local_storage_path)
-    
-    # 4. 批量更新数据库（在最后统一更新）
-    updated_count = update_paper_local_images_in_db(papers_with_local_paths)
-    
-    # 统计结果
-    first_images_extracted = sum(1 for p in papers_with_local_paths if p.get('has_first_image', False))
-    second_images_extracted = sum(1 for p in papers_with_local_paths if p.get('has_second_image', False))
-    first_images_saved = sum(1 for p in papers_with_local_paths if p.get('first_local_save_success', False))
-    second_images_saved = sum(1 for p in papers_with_local_paths if p.get('second_local_save_success', False))
-    
-    logger.info(f"处理完成: 提取第一张图片 {first_images_extracted}/{len(papers_with_local_paths)}，第二张图片 {second_images_extracted}/{len(papers_with_local_paths)}，保存成功 {first_images_saved}/{first_images_extracted} + {second_images_saved}/{second_images_extracted}，数据库更新 {updated_count}/{len(papers_with_local_paths)}")
-    
-    return papers_with_local_paths
-def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List[Dict[str, Any]]:
-    """
-    解析PDF文件并提取图片，构建完整的论文记录（包含图片URL）
-    基于论文边界识别策略：
-    - 每篇论文起始页都有DOI
-    - 论文结尾另起一页再接下一篇论文
-    - 论文结束页 = 下一篇论文起始页 - 1
-    - 最后一篇论文结束页 = 最后一页的实际页码
-    """
-    try:
-        # 尝试导入pdfplumber
-        try:
-            import pdfplumber
-        except ImportError:
-            logger.error("pdfplumber未安装，请运行: pip install pdfplumber")
-            return []
-        
-        records: List[Dict[str, Any]] = []
-        
-        with pdfplumber.open(pdf_path) as pdf:
-            n_pages = len(pdf.pages)
-            logger.info(f"PDF总页数: {n_pages}")
-            
-            # 第一步：收集所有包含DOI的页面及其实际页码
-            doi_pages_info = []  # 存储(页面索引, 实际页码)
-            for pi in range(n_pages):
-                try:
-                    text = pdf.pages[pi].extract_text() or ""
-                    if "DOI" in text:
-                        actual_page_num = extract_start_page(text)
-                        if actual_page_num:
-                            doi_pages_info.append((pi, actual_page_num))
-                            logger.info(f"发现DOI页: PDF第 {pi+1} 页，期刊页码 {actual_page_num}")
-                        else:
-                            logger.warning(f"发现DOI页但无法提取页码: PDF第 {pi+1} 页")
-                except Exception as e:
-                    logger.warning(f"读取第 {pi+1} 页时出错: {e}")
-                    continue
-            
-            logger.info(f"共发现 {len(doi_pages_info)} 篇论文")
-            
-            # 第二步：为每篇论文提取信息、提取图片并计算正确的结束页码
-            for i, (page_index, actual_start_page) in enumerate(doi_pages_info):
-                try:
-                    # 获取当前论文的起始页文本
-                    text = pdf.pages[page_index].extract_text() or ""
-                    
-                    # 调试：记录PDF提取的原始文本（DOI附近的内容）
-                    lines_raw = text.splitlines()
-                    doi_line_raw = None
-                    doi_line_idx = None
-                    for idx, line in enumerate(lines_raw[:20]):  # 只看前20行
-                        if "DOI" in line or "doi" in line.lower():
-                            doi_line_raw = line
-                            doi_line_idx = idx
-                            logger.info(f"PDF提取的DOI行（第{idx+1}行）: '{line}'")
-                            # 记录DOI行及其后5行
-                            for j in range(max(0, idx), min(len(lines_raw), idx + 6)):
-                                logger.info(f"PDF提取的原始行{j+1}: '{lines_raw[j]}'")
-                            break
-                    
-                    logger.info(f"处理第 {i+1} 篇论文，期刊起始页码: {actual_start_page}")
-                    
-                    # 提取各种信息
-                    doi = extract_doi(text)
-                    # 使用新的字号检测方法提取标题和作者
-                    title, authors_line = extract_title_authors_with_fontsize(text, pdf.pages[page_index])
-                    authors_display = normalize_authors_for_display(authors_line) if authors_line else ""
-                    first_author = first_author_from_authors(authors_line) if authors_line else ""
-                    issue = extract_issue_info(text)
-                    corresponding = extract_corresponding(text, authors_display)
-                    citation = extract_citation(text)
-                    is_dhu = "donghua university" in text.lower() or "东华大学" in text
-                    
-                    # 计算正确的结束页码（使用期刊实际页码）
-                    if i < len(doi_pages_info) - 1:
-                        # 不是最后一篇论文：结束页 = 下一篇论文起始页 - 1
-                        next_start_page = doi_pages_info[i + 1][1]
-                        page_end = next_start_page - 1
-                    else:
-                        # 最后一篇论文：结束页 = 最后一页的实际页码
-                        try:
-                            last_page_text = pdf.pages[-1].extract_text() or ""
-                            last_page_num = extract_start_page(last_page_text)
-                            page_end = last_page_num if last_page_num else None
-                        except:
-                            page_end = None
-                    
-                    logger.info(f"期刊页码范围: {actual_start_page} -> {page_end}")
-                    
-                    # 提取中文标题和作者（从论文的最后一页）
-                    chinese_title = ""
-                    chinese_authors = ""
-                    if page_end:
-                        try:
-                            last_page = find_paper_last_page(pdf, actual_start_page, page_end)
-                            if last_page:
-                                chinese_title, chinese_authors = extract_chinese_title_authors_from_page(
-                                    last_page, actual_start_page, page_end
-                                )
-                                logger.info(f"中文标题: '{chinese_title[:50]}...'")
-                                logger.info(f"中文作者: '{chinese_authors[:50]}...'")
-                        except Exception as chinese_error:
-                            logger.warning(f"提取中文标题和作者失败: {chinese_error}")
-                    
-                    # 构建论文记录
-                    # 提取图片
-                    paper_page_range = (actual_start_page, page_end)
-                    image_paths = extract_images_from_paper(pdf_path, paper_page_range, output_dir, actual_start_page - 1)
-                    
-                    # 将图片保存到本地存储
-                    # 创建本地存储目录
-                    local_storage_path = "images"
-                    os.makedirs(local_storage_path, exist_ok=True)
-                    
-                    # 保存第一张图片（QRcode）
-                    first_local_path = None
-                    if image_paths['first_image'] and os.path.exists(image_paths['first_image']):
-                        # 生成第一张图片的文件名：期刊号+页码范围+QRcode
-                        file_extension = Path(image_paths['first_image']).suffix.lower()
-                        first_local_filename = f"papers_{issue.replace(',', '_').replace('(', '_').replace(')', '')}_pages_{actual_start_page}-{page_end}_image_QRcode{file_extension}"
-                        first_local_path = os.path.join(local_storage_path, first_local_filename)
-                        
-                        # 复制图片到本地存储
-                        import shutil
-                        shutil.copy2(image_paths['first_image'], first_local_path)
-                        
-                        if os.path.exists(first_local_path):
-                            logger.info(f"论文 {i+1} 第一张图片(QRcode) 本地保存成功: {first_local_path}")
-                        else:
-                            logger.error(f"论文 {i+1} 第一张图片(QRcode) 保存到本地失败")
-                            first_local_path = None
-                    
-                    # 保存第二张图片
-                    second_local_path = None
-                    if image_paths['second_image'] and os.path.exists(image_paths['second_image']):
-                        # 生成第二张图片的文件名：期刊号+页码范围
-                        file_extension = Path(image_paths['second_image']).suffix.lower()
-                        second_local_filename = f"papers_{issue.replace(',', '_').replace('(', '_').replace(')', '')}_pages_{actual_start_page}-{page_end}_image{file_extension}"
-                        second_local_path = os.path.join(local_storage_path, second_local_filename)
-                        
-                        # 复制图片到本地存储
-                        import shutil
-                        shutil.copy2(image_paths['second_image'], second_local_path)
-                        
-                        if os.path.exists(second_local_path):
-                            logger.info(f"论文 {i+1} 第二张图片 本地保存成功: {second_local_path}")
-                        else:
-                            logger.error(f"论文 {i+1} 第二张图片 保存到本地失败")
-                            second_local_path = None
-                    record = {
-                        "file_name": os.path.basename(pdf_path),
-                        "pdf_pages": page_end - actual_start_page + 1 if page_end and actual_start_page else None,
-                        "start_page": actual_start_page,
-                        "title": title,
-                        "authors": authors_display,
-                        "first_author": first_author,
-                        "corresponding": corresponding,
-                        "doi": doi,
-                        "manuscript_id": doi_to_manuscript_id(doi),
-                        "issue": issue,
-                        "citation": citation,  # 新增Citation信息
-                        "is_dhu": is_dhu,
-                        "page_start": actual_start_page,
-                        "page_end": page_end,
-                        "chinese_title": chinese_title,
-                        "chinese_authors": chinese_authors,
-                        "abstract": "解析出的摘要信息...",  # 简化处理
-                        "keywords": "解析出的关键词...",  # 简化处理
-                        
-                        # MinIO图片URL信息
-                        "first_local_path": first_local_path,
-                        "second_local_path": second_local_path,
-                        
-                    }
-                    
-                    
-                    
-                    records.append(record)
-                    logger.info(f"提取论文 {i+1}: {title[:50]}...")
-                    
-                except Exception as page_error:
-                    logger.error(f"处理第 {i+1} 篇论文时出错: {str(page_error)}")
-                    continue
-        
         if not records:
-            logger.warning("未从PDF中提取到论文信息")
+            logger.warning("未从JSON中提取到论文信息")
             return []
         
-        logger.info(f"成功解析出 {len(records)} 篇论文，按顺序排列")
+        logger.info(f"成功解析出 {len(records)} 篇论文")
         return records
         
     except Exception as e:
-        logger.error(f"PDF解析失败: {str(e)}")
+        logger.error(f"JSON解析失败: {str(e)}")
         import traceback
         logger.error(f"详细错误: {traceback.format_exc()}")
         return []
+
+
+# 保持向后兼容的接口（但内部使用新的JSON解析）
+def parse_pdf_to_papers(pdf_path: str, journal_id: int, output_dir: str) -> List[Dict[str, Any]]:
+    """
+    解析PDF文件（兼容接口）
+    
+    注意：此函数现在需要model_json_path参数，但为了兼容性保留此接口
+    实际应该调用parse_pdf_from_mineru_json
+    """
+    logger.warning("parse_pdf_to_papers已废弃，请使用parse_pdf_from_mineru_json")
+    return []
