@@ -124,7 +124,7 @@ export const paperFormatService = {
             data.skip_checks = skipChecks
         }
 
-        return await apiClient.post('/paper-format/check-all', data)
+        return await apiClient.post('/chinese-paper-format/check-all', data)
     },
 
     /**

@@ -1,0 +1,74 @@
+{
+  "keywords_rule": "关键词：3-5个关键词；按外延由大到小排列；关键词之间用中文分号隔开；四号宋体。摘要内容与关键词之间空一行。",
+  "structure_rules": {
+    "header_pattern": "^\\s*关键词\\s*[:：]?\\s*(.+)$",
+    "separator": "；",
+    "min_keywords_count": 3,
+    "max_keywords_count": 5,
+    "min_content_length": 5,
+    "max_content_length": 200,
+    "blank_lines_before": 1
+  },
+  "format_rules": {
+    "keywords": {
+      "font_size_pt": 14,
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "justify",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_header_ok": "关键词标题格式正确",
+    "structure_header_error": "未找到关键词标题，或标题格式不正确",
+    "structure_separator_ok": "关键词分隔符正确（使用中文分号）",
+    "structure_separator_error": "关键词分隔符错误，应使用中文分号（；）分隔，而不是英文分号、逗号或其他符号",
+    "structure_count_ok": "关键词数量适中（{count}个关键词）",
+    "structure_count_few": "关键词数量过少（{count}个），应为3-5个关键词",
+    "structure_count_many": "关键词数量过多（{count}个），应为3-5个关键词",
+    "structure_blank_before_ok": "摘要与关键词之间空行正确",
+    "structure_blank_before_error": "摘要与关键词之间应空一行",
+    "format_keywords_issue_header": "关键词格式问题：",
+    "format_keywords_ok": "关键词格式检查通过",
+    "summary_overall": "关键词检查结果: {ok}"
+  },
+  "notes": [
+    "关键词检查重点：1) 关键词：冒号格式 2) 3-5个关键词 3) 中文分号（；）分隔 4) 四号宋体（14pt） 5) 摘要与关键词之间空一行",
+    "关键词应按外延由大到小排列"
+  ],
+  "generated_from": "用户提供的中文关键词格式要求"
+}
+

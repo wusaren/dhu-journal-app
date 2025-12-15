@@ -6,7 +6,9 @@
 import os
 import shutil
 import re
+import json
 import logging
+from pathlib import Path
 from docx import Document
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -15,6 +17,42 @@ logger = logging.getLogger(__name__)
 
 # 检测模块执行顺序
 DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
+
+# 批注关键词配置（支持外部 JSON 覆盖，未找到时使用默认值）
+def load_annotation_keyword_config():
+    default_cfg = {
+        "abstract": {
+            "title_keywords": ["Abstract:"],
+            "title_regex": r"^\s*Abstract\s*$",  # 备用匹配（独立一行）
+            "content_follow_title": True  # Abstract 独立一行时，正文取其后首个非空段落
+        },
+        "keywords": {
+            "title_keywords": ["Keywords:"],
+            "title_regex": r"^\s*Keywords\s*$",
+            "content_follow_title": True
+        }
+    }
+    candidates = [
+        Path(__file__).parent / "annotation_keywords.json",
+        Path(__file__).parent / "paper_detect_templates" / "annotation_keywords.json",
+        Path(__file__).parent.parent / "services" / "paper_detect_templates" / "annotation_keywords.json",
+    ]
+    for path in candidates:
+        try:
+            if path.exists():
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    # 浅合并：只覆盖同级键
+                    for k, v in data.items():
+                        if isinstance(v, dict) and isinstance(default_cfg.get(k), dict):
+                            default_cfg[k].update(v)
+                        else:
+                            default_cfg[k] = v
+        except Exception as e:
+            logger.warning(f"读取批注关键词配置失败: {path}: {e}")
+    return default_cfg
+
+ANNOTATION_KEYWORDS = load_annotation_keyword_config()
 
 
 def create_document_copy(original_path: str, output_dir: str) -> Optional[str]:
@@ -65,6 +103,15 @@ def find_paragraph_by_keyword(doc, keyword, case_sensitive=False):
         if search_key in text:
             return paragraph
     
+    return None
+
+
+def find_paragraph_by_regex(doc, pattern, flags=0):
+    """通过正则表达式查找段落"""
+    regex = re.compile(pattern, flags)
+    for paragraph in doc.paragraphs:
+        if paragraph.text and regex.search(paragraph.text):
+            return paragraph
     return None
 
 
@@ -1007,53 +1054,72 @@ def add_all_comments(doc_path, copy_path, issues_list):
             if locate_method == 'keyword' and locate_data:
                 paragraph = find_paragraph_by_keyword(doc, locate_data)
             elif locate_method == 'abstract_title':
-                # 定位到Abstract标题段落（用于structure批注）
-                # 先尝试正确格式
-                paragraph = find_paragraph_by_keyword(doc, 'Abstract:')
-                if not paragraph:
-                    # 尝试错误格式（Abstract单独成行）
-                    for para in doc.paragraphs:
-                        if para.text and re.match(r'^\s*Abstract\s*$', para.text.strip(), re.IGNORECASE):
-                            paragraph = para  # 定位到标题段落本身
-                            break
+                cfg = ANNOTATION_KEYWORDS.get("abstract", {})
+                for kw in cfg.get("title_keywords", []):
+                    paragraph = find_paragraph_by_keyword(doc, kw)
+                    if paragraph:
+                        break
+                if not paragraph and cfg.get("title_regex"):
+                    paragraph = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
             elif locate_method == 'abstract_content':
-                # 定位到Abstract内容段落（用于paragraphs和format批注）
-                # 先尝试正确格式
-                paragraph = find_paragraph_by_keyword(doc, 'Abstract:')
-                if not paragraph:
-                    # 尝试错误格式（Abstract单独成行，定位到下一个内容段落）
+                cfg = ANNOTATION_KEYWORDS.get("abstract", {})
+                # 先通过标题关键词/正则定位标题
+                title_para = None
+                for kw in cfg.get("title_keywords", []):
+                    title_para = find_paragraph_by_keyword(doc, kw)
+                    if title_para:
+                        break
+                if not title_para and cfg.get("title_regex"):
+                    title_para = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
+                # 若找到标题且需要取标题后的正文
+                if title_para and cfg.get("content_follow_title", True):
                     for i, para in enumerate(doc.paragraphs):
-                        if para.text and re.match(r'^\s*Abstract\s*$', para.text.strip(), re.IGNORECASE):
-                            # 找到Abstract单独一行，定位到下一个非空段落（实际内容）
-                            for j in range(i+1, min(i+3, len(doc.paragraphs))):
+                        if para is title_para:
+                            for j in range(i + 1, min(i + 3, len(doc.paragraphs))):
                                 if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
                                     paragraph = doc.paragraphs[j]
                                     break
                             break
+                # 若标题未找到，直接按关键词再次尝试正文匹配
+                if not paragraph:
+                    for kw in cfg.get("title_keywords", []):
+                        paragraph = find_paragraph_by_keyword(doc, kw)
+                        if paragraph:
+                            break
+                    if not paragraph and cfg.get("title_regex"):
+                        paragraph = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
             elif locate_method == 'keywords_title':
-                # 定位到Keywords标题段落（用于structure批注）
-                # 先尝试正确格式
-                paragraph = find_paragraph_by_keyword(doc, 'Keywords:')
-                if not paragraph:
-                    # 尝试错误格式（Keywords单独成行）
-                    for para in doc.paragraphs:
-                        if para.text and re.match(r'^\s*Keywords\s*$', para.text.strip(), re.IGNORECASE):
-                            paragraph = para  # 定位到标题段落本身
-                            break
+                cfg = ANNOTATION_KEYWORDS.get("keywords", {})
+                for kw in cfg.get("title_keywords", []):
+                    paragraph = find_paragraph_by_keyword(doc, kw)
+                    if paragraph:
+                        break
+                if not paragraph and cfg.get("title_regex"):
+                    paragraph = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
             elif locate_method == 'keywords_content':
-                # 灵活定位Keywords：优先找Keywords:，找不到就找Keywords（单独一行）
-                # 先尝试正确格式
-                paragraph = find_paragraph_by_keyword(doc, 'Keywords:')
-                if not paragraph:
-                    # 尝试错误格式（Keywords单独成行）
+                cfg = ANNOTATION_KEYWORDS.get("keywords", {})
+                title_para = None
+                for kw in cfg.get("title_keywords", []):
+                    title_para = find_paragraph_by_keyword(doc, kw)
+                    if title_para:
+                        break
+                if not title_para and cfg.get("title_regex"):
+                    title_para = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
+                if title_para and cfg.get("content_follow_title", True):
                     for i, para in enumerate(doc.paragraphs):
-                        if para.text and re.match(r'^\s*Keywords\s*$', para.text.strip(), re.IGNORECASE):
-                            # 找到Keywords单独一行，定位到下一个非空段落（实际内容）
-                            for j in range(i+1, min(i+3, len(doc.paragraphs))):
+                        if para is title_para:
+                            for j in range(i + 1, min(i + 3, len(doc.paragraphs))):
                                 if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
                                     paragraph = doc.paragraphs[j]
                                     break
                             break
+                if not paragraph:
+                    for kw in cfg.get("title_keywords", []):
+                        paragraph = find_paragraph_by_keyword(doc, kw)
+                        if paragraph:
+                            break
+                    if not paragraph and cfg.get("title_regex"):
+                        paragraph = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
             elif locate_method == 'index':
                 # 判断是否需要跳过空行
                 # 单位段落和Content标题格式批注都不应该跳过空行（使用实际索引）

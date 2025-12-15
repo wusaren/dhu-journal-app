@@ -12,7 +12,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-class PaperFormatDetector:
+class ChinesePaperFormatDetector:
     """
     论文格式检测器核心类
     整合了Title、Abstract、Keywords、Content、Figure、Formula、Table等检测模块
@@ -25,7 +25,7 @@ class PaperFormatDetector:
             templates_dir: 模板文件目录，默认为 paper_detect_templates
         """
         if templates_dir is None:
-            self.templates_dir = 'paper_detect_templates'
+            self.templates_dir = 'Chinese_paper_detect_templates'
         else:
             self.templates_dir = Path(templates_dir)
 
@@ -44,7 +44,8 @@ class PaperFormatDetector:
             # 导入检测模块
             from services.paper_detect import Title_detect
             from services.Chinese_paper_detect import Abstract_detect
-            from services.paper_detect import Keywords_detect
+            from services.Chinese_paper_detect import English_Abstract_detect
+            from services.Chinese_paper_detect import Keywords_detect_unified as Keywords_detect
             from services.paper_detect import Content_detect
             from services.paper_detect import Figure_detect
             from services.paper_detect import Formula_detect
@@ -55,6 +56,7 @@ class PaperFormatDetector:
             self.modules = {
                 'Title': Title_detect,
                 'Abstract': Abstract_detect,
+                'English_Abstract': English_Abstract_detect,
                 'Keywords': Keywords_detect,
                 'Content': Content_detect,
                 'Figure': Figure_detect,
@@ -140,10 +142,9 @@ class PaperFormatDetector:
                 'error_message': str(e),
                 'summary': [f'摘要检测失败: {e}']
             }
-    
-    def detect_keywords(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
+    def detect_english_abstract(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
-        检测关键词格式
+        检测摘要格式
         
         Args:
             docx_path: Word文档路径
@@ -153,10 +154,50 @@ class PaperFormatDetector:
             检测结果字典
         """
         try:
-            template_path = str(self.templates_dir / 'Keywords.json')
+            template_path = str(self.templates_dir / 'English_Abstract.json')
+            English_Abstract_detect = self.modules['English_Abstract']
+            
+            return English_Abstract_detect.check_english_abstract_with_template(docx_path, template_path, skip_checks)
+            
+        except Exception as e:
+            logger.error(f"摘要检测失败: {e}", exc_info=True)
+            return {
+                'error': True,
+                'error_message': str(e),
+                'summary': [f'摘要检测失败: {e}']
+            }    
+    def detect_keywords(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
+        """
+        检测关键词格式（双语检测：同时检测中文和英文关键词）
+        
+        Args:
+            docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
+        
+        Returns:
+            检测结果字典，包含 'chinese'、'english' 和 'summary' 字段
+        """
+        try:
+            chinese_template_path = str(self.templates_dir / 'Keywords.json')
+            english_template_path = str(self.templates_dir / 'English_Keywords.json')
             Keywords_detect = self.modules['Keywords']
             
-            result = Keywords_detect.check_keywords_with_template(docx_path, template_path, skip_checks)
+            # 执行双语关键词检测
+            result = Keywords_detect.check_bilingual_keywords(
+                docx_path, 
+                chinese_template=chinese_template_path,
+                english_template=english_template_path,
+                skip_checks=skip_checks
+            )
+            
+            # 确保返回结果包含必要的字段
+            if 'chinese' not in result:
+                result['chinese'] = {'error': True, 'error_message': '中文关键词检测未执行'}
+            if 'english' not in result:
+                result['english'] = {'error': True, 'error_message': '英文关键词检测未执行'}
+            if 'summary' not in result:
+                result['summary'] = []
+            
             return result
             
         except Exception as e:
@@ -164,6 +205,8 @@ class PaperFormatDetector:
             return {
                 'error': True,
                 'error_message': str(e),
+                'chinese': {'error': True, 'error_message': str(e)},
+                'english': {'error': True, 'error_message': str(e)},
                 'summary': [f'关键词检测失败: {e}']
             }
     
@@ -319,7 +362,7 @@ class PaperFormatDetector:
             包含所有模块检测结果的字典
         """
         if modules is None:
-            modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
+            modules = ['Title', 'Abstract','English_Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
         
         if skip_checks is None:
             skip_checks = {}
@@ -337,6 +380,8 @@ class PaperFormatDetector:
                     result = self.detect_title(docx_path, module_skip_checks)
                 elif module_name == 'Abstract':
                     result = self.detect_abstract(docx_path, module_skip_checks)
+                elif module_name == 'English_Abstract':
+                    result = self.detect_english_abstract(docx_path, module_skip_checks)
                 elif module_name == 'Keywords':
                     result = self.detect_keywords(docx_path, module_skip_checks)
                 elif module_name == 'Content':

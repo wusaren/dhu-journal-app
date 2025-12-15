@@ -848,6 +848,7 @@ const isLoadingTermHistory = ref(false)  // 是否正在加载历史术语检测
 const availableModules = [
   { value: 'Title', label: '标题格式检测', description: '检测标题、作者、单位格式' },
   { value: 'Abstract', label: '摘要格式检测', description: '检测摘要结构和格式' },
+  { value: 'English_Abstract', label: '英文摘要格式检测', description: '检测英文摘要结构和格式' },
   { value: 'Keywords', label: '关键词格式检测', description: '检测关键词格式' },
   { value: 'Content', label: '正文格式检测', description: '检测正文格式' },
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },

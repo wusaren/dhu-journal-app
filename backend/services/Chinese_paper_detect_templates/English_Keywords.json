@@ -1,0 +1,72 @@
+{
+  "keywords_rule": "KEY WORDS: 3-5个关键词，关键词之间用英文逗号分隔，Times New Roman 小四（12pt）",
+  "structure_rules": {
+    "header_pattern": "^\\s*KEY\\s+WORDS\\s*[:：]?\\s*(.+)$",
+    "separator": ",",
+    "min_keywords_count": 3,
+    "max_keywords_count": 5,
+    "min_content_length": 5,
+    "max_content_length": 200,
+    "blank_lines_before": 2
+  },
+  "format_rules": {
+    "keywords": {
+      "font_size_pt": 12,
+      "english_font": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "justify",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_header_ok": "KEY WORDS 标题格式正确",
+    "structure_header_error": "未找到 KEY WORDS 标题，或标题格式不正确",
+    "structure_separator_ok": "关键词分隔符正确（使用英文逗号）",
+    "structure_separator_error": "关键词分隔符错误，应使用英文逗号（,）分隔，而不是分号、中文逗号或其他符号",
+    "structure_count_ok": "关键词数量适中（{count}个关键词）",
+    "structure_count_few": "关键词数量过少（{count}个），应为3-5个关键词",
+    "structure_count_many": "关键词数量过多（{count}个），应为3-5个关键词",
+    "structure_blank_before_ok": "摘要与关键词之间空行正确",
+    "structure_blank_before_error": "摘要与关键词之间应空两行",
+    "format_keywords_issue_header": "关键词格式问题：",
+    "format_keywords_ok": "关键词格式检查通过",
+    "summary_overall": "关键词检查结果: {ok}"
+  },
+  "notes": [
+    "关键词检查重点：1) KEY WORDS: 冒号格式 2) 3-5个关键词 3) 英文逗号（,）分隔 4) Times New Roman 小四（12pt） 5) 摘要与关键词之间空一行"
+  ],
+  "generated_from": "用户提供的英文关键词格式要求"
+}
+
