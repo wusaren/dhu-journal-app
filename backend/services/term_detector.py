@@ -880,13 +880,9 @@ class TermDetector:
         else:
             text = self.get_all_text(doc)
             logger.info(f"使用原始文档文本，字符数: {len(text)}")
-        
-        print("text：",text)
 
         # 2. 提取N-gram（2-5词）
         ngrams = self.extract_ngrams(text, min_n=2, max_n=5)
-
-        print("sound absorbing materials个数：",ngrams.get("sound absorbing materials",0))
         
         if not ngrams:
             logger.warning("未提取到任何N-gram短语")
@@ -1346,8 +1342,15 @@ class TermDetector:
                 logger.info("Using cached Sentence Transformers model")
                 return True
             
+            # 模型路径（相对于当前文件）
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            model_path = os.path.join(current_dir, 'all-MiniLM-L6-v2')
+            if not os.path.exists(model_path):
+                logger.error(f"Model not found at: {model_path}")
+                return False
+
             # 加载模型
-            self.sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
+            self.sentence_model = SentenceTransformer(model_path)
             _sentence_model = self.sentence_model  # 缓存到全局变量
             
             self._sentence_model_loaded = True
@@ -1523,7 +1526,6 @@ class TermDetector:
         
         # 保存原始术语字典（用于后续包含关系变体查找）
         raw_scibert_terms = dict(term_counter)
-        print("sound absorbing materials个数：",raw_scibert_terms.get("sound absorbing materials",0))
         
         # 收集词形还原变体
         lemma_variants = {}

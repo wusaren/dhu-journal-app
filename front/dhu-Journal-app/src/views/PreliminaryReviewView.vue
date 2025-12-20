@@ -1386,7 +1386,7 @@ const startTermDetection = async () => {
     // 模拟进度更新
     const progressInterval = setInterval(() => {
       if (termDetectProgress.value < 90) {
-        termDetectProgress.value += 10
+        termDetectProgress.value += 5
       }
     }, 500)
     

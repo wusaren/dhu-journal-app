@@ -5,3 +5,4 @@ __pycache__/
 .vscode/
 .idea/
 node_modules/
+backend/uploads/format_check/
