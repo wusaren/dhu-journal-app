@@ -510,13 +510,6 @@
                         <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
                       </template>
                     </el-table-column>
-                    <!-- <el-table-column prop="confidence" label="置信度" width="100" align="center">
-                      <template #default="scope">
-                        <el-tag :type="scope.row.confidence === 'high' ? 'success' : 'warning'">
-                          {{ scope.row.confidence === 'high' ? '高' : '中' }}
-                        </el-tag>
-                      </template>
-                    </el-table-column> -->
                   </el-table>
                 </div>
                 <el-empty v-else description="未检测到科学术语" />
@@ -566,61 +559,15 @@
                 <el-empty v-else description="未检测到术语" />
               </el-tab-pane>
 
-               <!-- Tab 5: 疑似新术语 -->
-               <el-tab-pane label="疑似新术语" name="new_terms">
-                <div v-if="termDetectResult.data?.new_terms?.length > 0">
-                  <!-- <el-alert 
-                    title="以下术语可能是作者新提出的，请确认" 
-                    type="warning" 
-                    :closable="false"
-                    style="margin-bottom: 15px;"
-                  /> -->
-                  <div v-for="(newTerm, index) in termDetectResult.data.new_terms" :key="index" class="new-term-item">
-                    <div class="new-term-header">
-                      <span class="term-text">{{ newTerm.term }}</span>
-                      <span class="term-trigger">触发词：{{ newTerm.trigger }}</span>
-                      <el-button-group>
-                        <el-button 
-                          size="small" 
-                          type="success"
-                          :disabled="newTerm.confirmed === true"
-                          @click="confirmNewTerm(newTerm, true)"
-                        >
-                          ✓ 确认
-                        </el-button>
-                        <el-button 
-                          size="small" 
-                          type="danger"
-                          :disabled="newTerm.confirmed === false"
-                          @click="confirmNewTerm(newTerm, false)"
-                        >
-                          ✗ 非新术语
-                        </el-button>
-                      </el-button-group>
-                    </div>
-                    <div class="term-contexts">
-                      <el-collapse>
-                        <el-collapse-item title="查看上下文">
-                          <div v-for="(context, ctxIdx) in newTerm.contexts" :key="ctxIdx" class="context-text">
-                            {{ context }}
-                          </div>
-                        </el-collapse-item>
-                      </el-collapse>
-                    </div>
-                  </div>
-                </div>
-                <el-empty v-else description="未检测到疑似新术语" />
-              </el-tab-pane>
-
               <!-- Tab 6: 相似术语（规范性问题） -->
               <el-tab-pane label="相似术语" name="similar_pairs">
                 <div v-if="termDetectResult.data?.similar_pairs?.length > 0">
-                  <el-alert 
+                  <!-- <el-alert 
                     title="以下术语在语义或词汇层面相似，可能存在混用情况，请检查使用规范性" 
                     type="error" 
                     :closable="false"
                     style="margin-bottom: 15px;"
-                  />
+                  /> -->
                   <el-table :data="termDetectResult.data.similar_pairs" border stripe>
                     <el-table-column prop="term1" label="术语1" min-width="150" />
                     <el-table-column prop="term2" label="术语2" min-width="150" />
@@ -656,47 +603,10 @@
                         </el-tag>
                       </template>
                     </el-table-column>
-                    <el-table-column label="建议" min-width="180">
-                      <template #default="scope">
-                        <span v-if="scope.row.semantic_score !== null && scope.row.semantic_score >= 0.85">
-                          <el-icon style="color: #F56C6C;"><WarningFilled /></el-icon>
-                          语义高度相似，建议检查是否为同一概念的不同表达
-                        </span>
-                        <span v-else-if="scope.row.lexical_score >= 0.8">
-                          <el-icon style="color: #E6A23C;"><Warning /></el-icon>
-                          词形相近，可能存在拼写变体或混用
-                        </span>
-                        <span v-else>
-                          建议统一使用其中一个术语
-                        </span>
-                      </template>
-                    </el-table-column>
                   </el-table>
                 </div>
                 <el-empty v-else description="未检测到相似术语问题" />
               </el-tab-pane>
-
-              <!-- Tab 6: 引号术语 -->
-              <!-- <el-tab-pane label="引号术语" name="quoted_terms">
-                <div v-if="termDetectResult.data?.quoted_terms?.length > 0">
-                  <el-alert 
-                    title="从引号中提取的术语（通常是作者强调的重要概念）" 
-                    type="info" 
-                    :closable="false"
-                    style="margin-bottom: 15px;"
-                  />
-                  <el-tag 
-                    v-for="term in termDetectResult.data.quoted_terms" 
-                    :key="term" 
-                    size="large"
-                    effect="dark"
-                    style="margin: 8px;"
-                  >
-                    "{{ term }}"
-                  </el-tag>
-                </div>
-                <el-empty v-else description="未检测到引号术语" />
-              </el-tab-pane> -->
             </el-tabs>
 
             <!-- 操作按钮 -->

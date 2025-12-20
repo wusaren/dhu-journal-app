@@ -28,19 +28,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 延迟导入 sklearn（避免启动时加载过慢）
-_sklearn_available = False
-try:
-    from sklearn.neighbors import NearestNeighbors
-    from sklearn.metrics.pairwise import cosine_similarity
-    _sklearn_available = True
-except ImportError:
-    logger.warning("sklearn not available, semantic similarity will be limited")
-
 # 延迟导入深度学习相关库（避免启动时加载过慢）
 _transformers_available = False
 _spacy_available = False
+_sentence_transformers_available = False
 _nlp_english = None  # SpaCy英文模型
+_sentence_model = None  # Sentence Transformers模型
 
 try:
     from transformers import AutoTokenizer, AutoModelForTokenClassification
@@ -48,6 +41,14 @@ try:
     _transformers_available = True
 except ImportError:
     logger.warning("transformers or torch not available, SciBERT detection will be disabled")
+
+# 导入 Sentence Transformers（用于术语相似度计算）
+try:
+    from sentence_transformers import SentenceTransformer, util as st_util
+    _sentence_transformers_available = True
+    logger.info("sentence_transformers available")
+except ImportError:
+    logger.warning("sentence_transformers not available")
 
 try:
     import spacy
@@ -107,17 +108,20 @@ class TermDetector:
     SEMANTIC_SIM_THRESHOLD = 0.70  # 语义相似度阈值
     FINAL_SIM_THRESHOLD = 0.70     # 最终融合相似度阈值
     SEMANTIC_WEIGHT = 0.7          # 语义相似度权重（α）
-    MAX_NEIGHBORS = 10             # 每个术语的最大近邻数
     
     def __init__(self):
         """初始化术语检测器"""
         
-        # SciBERT模型相关
+        # SciBERT模型相关（用于NER术语识别）
         self.model = None
         self.tokenizer = None
         self.nlp = _nlp_english  # SciBERT使用的spacy模型
         self.id2label = None
         self._model_loaded = False
+        
+        # Sentence Transformers模型（用于术语相似度计算）
+        self.sentence_model = None
+        self._sentence_model_loaded = False
         
         # 术语向量缓存
         self._term_embeddings_cache = {}
@@ -192,11 +196,13 @@ class TermDetector:
         
         去除以下部分：
         - 参考文献（References, Bibliography）
-        - 图题（Figure 1:, Fig. 1:）
-        - 表题（Table 1:, Tab. 1:）
         - 目录（Table of Contents, Contents）
         - 致谢（Acknowledgements, Acknowledgments）
         - 附录（Appendix, Appendices）
+        
+        去除图题号和表题号（但保留图题和表题的描述内容）：
+        - 去除 "Figure 1"、"Fig. 1"、"Table 1"、"Tab. 1" 等编号
+        - 保留图题和表题的描述文字
         
         Args:
             doc: python-docx Document对象
@@ -231,19 +237,6 @@ class TermDetector:
             r'^financial\s+support\s*$',
         ]
         
-        # 定义图题和表题的模式（单独段落跳过）
-        figure_table_patterns = [
-            # 图题
-            r'^fig(?:ure)?\.?\s*\d+',
-            r'^figure\s+\d+',
-            # 表题
-            r'^tab(?:le)?\.?\s*\d+',
-            r'^table\s+\d+',
-            # 图表说明
-            r'^note\s*[:：]',
-            r'^source\s*[:：]',
-        ]
-        
         # 定义恢复正文的标志（结束跳过的标志）
         resume_patterns = [
             r'^abstract\s*$',
@@ -257,7 +250,6 @@ class TermDetector:
         
         # 编译正则表达式
         skip_patterns_compiled = [re.compile(p, re.IGNORECASE) for p in skip_section_patterns]
-        figure_table_compiled = [re.compile(p, re.IGNORECASE) for p in figure_table_patterns]
         resume_compiled = [re.compile(p, re.IGNORECASE) for p in resume_patterns]
         
         # 处理段落
@@ -269,8 +261,8 @@ class TermDetector:
             'total_paragraphs': 0,
             'kept_paragraphs': 0,
             'skipped_references': 0,
-            'skipped_figures': 0,
-            'skipped_tables': 0,
+            'removed_figure_numbers': 0,
+            'removed_table_numbers': 0,
             'skipped_others': 0
         }
         
@@ -280,22 +272,6 @@ class TermDetector:
             
             # 跳过空段落
             if not text:
-                continue
-            
-            # 检查是否是图题或表题（单独段落跳过）
-            is_figure_table = False
-            for pattern in figure_table_compiled:
-                if pattern.match(text):
-                    is_figure_table = True
-                    if 'fig' in text.lower():
-                        stats['skipped_figures'] += 1
-                        logger.info(f"跳过图题: {text}...")
-                    else:
-                        stats['skipped_tables'] += 1
-                        logger.info(f"跳过表题: {text}...")
-                    break
-            
-            if is_figure_table:
                 continue
             
             # 检查是否进入跳过章节
@@ -332,17 +308,23 @@ class TermDetector:
                 logger.info(f"跳过页眉页脚: {text}...")
                 continue
             
-            # 保留段落
-            filtered_paragraphs.append(text)
-            stats['kept_paragraphs'] += 1
+            # 去除图题号和表题号（但保留图题和表题的描述内容）
+            cleaned_text, removed_figures, removed_tables = self._remove_figure_table_numbers(text)
+            stats['removed_figure_numbers'] += removed_figures
+            stats['removed_table_numbers'] += removed_tables
+            
+            # 保留段落（使用清理后的文本）
+            if cleaned_text.strip():  # 确保清理后的文本不为空
+                filtered_paragraphs.append(cleaned_text)
+                stats['kept_paragraphs'] += 1
         
         # 统计日志
         logger.info(f"预处理完成:")
         logger.info(f"  - 总段落数: {stats['total_paragraphs']}")
         logger.info(f"  - 保留段落: {stats['kept_paragraphs']}")
         logger.info(f"  - 跳过参考文献: {stats['skipped_references']}")
-        logger.info(f"  - 跳过图题: {stats['skipped_figures']}")
-        logger.info(f"  - 跳过表题: {stats['skipped_tables']}")
+        logger.info(f"  - 去除图题编号: {stats['removed_figure_numbers']}")
+        logger.info(f"  - 去除表题编号: {stats['removed_table_numbers']}")
         logger.info(f"  - 跳过其他: {stats['skipped_others']}")
         
         # 合并段落
@@ -351,6 +333,60 @@ class TermDetector:
         logger.info(f"预处理后文本长度: {len(processed_text)} 字符")
         
         return processed_text
+    
+    def _remove_figure_table_numbers(self, text: str) -> Tuple[str, int, int]:
+        """
+        去除段落中的图题号和表题号，但保留图题和表题的描述内容
+        
+        例如：
+        - "Figure 1: This is a caption" -> "This is a caption"
+        - "Fig. 2. The results" -> "The results"
+        - "Table 3: Summary of data" -> "Summary of data"
+        - "Tab. 1. Overview" -> "Overview"
+        
+        Args:
+            text: 输入段落文本
+            
+        Returns:
+            (清理后的文本, 去除的图题编号数量, 去除的表题编号数量)
+        """
+        removed_figures = 0
+        removed_tables = 0
+        
+        # 定义图题编号的模式（包括常见的分隔符）
+        figure_patterns = [
+            r'^fig(?:ure)?\.?\s*\d+[a-z]?\s*[:：\.\-–—]\s*',  # Figure 1:, Fig. 1., Figure 1-
+            r'\bfig(?:ure)?\.?\s*\d+[a-z]?\s*[:：\.\-–—]\s*',  # 段落中的 Figure 1:
+        ]
+        
+        # 定义表题编号的模式
+        table_patterns = [
+            r'^tab(?:le)?\.?\s*\d+[a-z]?\s*[:：\.\-–—]\s*',  # Table 1:, Tab. 1., Table 1-
+            r'\btab(?:le)?\.?\s*\d+[a-z]?\s*[:：\.\-–—]\s*',  # 段落中的 Table 1:
+        ]
+        
+        cleaned_text = text
+        
+        # 去除图题编号
+        for pattern in figure_patterns:
+            match = re.search(pattern, cleaned_text, re.IGNORECASE)
+            if match:
+                cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE)
+                removed_figures += 1
+                logger.info(f"去除图题编号: {match.group()} from '{text[:50]}...'")
+        
+        # 去除表题编号
+        for pattern in table_patterns:
+            match = re.search(pattern, cleaned_text, re.IGNORECASE)
+            if match:
+                cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE)
+                removed_tables += 1
+                logger.info(f"去除表题编号: {match.group()} from '{text[:50]}...'")
+        
+        # 清理可能的多余空格
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        
+        return cleaned_text, removed_figures, removed_tables
     
     def _is_header_footer(self, text: str) -> bool:
         """
@@ -472,58 +508,97 @@ class TermDetector:
         
         return aggregated_ngrams, normalized_to_representative
     
-    def aggregate_candidate_terms(self, terms: List[str]) -> Tuple[List[str], Dict[str, List[str]]]:
+    def filter_contained_terms(self, term_freqs: Dict[str, int]) -> Dict[str, int]:
         """
-        聚合候选术语列表（使用词形还原去重变体）
+        过滤包含关系的术语，保留出现次数最多的术语
         
-        将词形变体（单复数、动名词等）聚合到同一个代表术语下，返回去重后的术语列表
+        规则：
+        1. 如果两个术语存在包含关系（一个是另一个的连续子序列），
+           则只保留出现次数更多的那个
+        2. 如果出现次数相同，保留较短的术语
         
         例如：
-        - ["sound absorbing material", "sound absorbing materials", "neural network", "neural networks"]
-          -> (["sound absorbing material", "neural network"], 
-              {"sound absorb material": ["sound absorbing material", "sound absorbing materials"],
-               "neural network": ["neural network", "neural networks"]})
+        - "neural network" (10次) vs "deep neural network" (5次) -> 保留 "neural network"
+        - "absorption" (3次) vs "sound absorption" (8次) -> 保留 "sound absorption"
         
         Args:
-            terms: 原始术语列表
+            term_freqs: {术语: 频次} 字典
             
         Returns:
-            (去重后的术语列表, {标准形式: [原始形式列表]})
+            过滤后的 {术语: 频次} 字典
         """
-        if not terms:
-            return [], {}
+        if not term_freqs:
+            return {}
         
-        logger.info(f"开始聚合候选术语列表，共 {len(terms)} 个术语...")
+        logger.info(f"开始过滤包含关系的术语，共 {len(term_freqs)} 个术语...")
         
-        # 构建映射：标准形式 -> [原始形式列表]
-        normalized_to_originals = defaultdict(list)
+        # 标记要删除的术语
+        terms_to_remove = set()
         
-        for term in terms:
-            normalized = self.normalize_term(term)
-            normalized_to_originals[normalized].append(term)
+        # 获取所有术语列表
+        all_terms = list(term_freqs.keys())
         
-        # 为每个标准形式选择代表（优先选择较短的、更常见的表达）
-        aggregated_terms = []
-        variants_map = {}
+        # 检查每一对术语
+        for i in range(len(all_terms)):
+            for j in range(i + 1, len(all_terms)):
+                term1 = all_terms[i]
+                term2 = all_terms[j]
+                
+                # 跳过已标记删除的术语
+                if term1 in terms_to_remove or term2 in terms_to_remove:
+                    continue
+                
+                term1_lower = term1.lower()
+                term2_lower = term2.lower()
+                
+                # 检查是否存在包含关系（检查是否为连续子序列）
+                words1 = term1_lower.split()
+                words2 = term2_lower.split()
+                
+                # 检查term2是否是term1的连续子序列
+                is_term1_contains_term2 = False
+                if term1_lower != term2_lower and len(words2) < len(words1):
+                    for k in range(len(words1) - len(words2) + 1):
+                        if words1[k:k+len(words2)] == words2:
+                            is_term1_contains_term2 = True
+                            break
+                
+                # 检查term1是否是term2的连续子序列
+                is_term2_contains_term1 = False
+                if term1_lower != term2_lower and len(words1) < len(words2):
+                    for k in range(len(words2) - len(words1) + 1):
+                        if words2[k:k+len(words1)] == words1:
+                            is_term2_contains_term1 = True
+                            break
+                
+                if is_term1_contains_term2 or is_term2_contains_term1:
+                    # 存在包含关系，比较出现次数
+                    count1 = term_freqs[term1]
+                    count2 = term_freqs[term2]
+                    
+                    if count1 > count2:
+                        # 保留term1，删除term2
+                        terms_to_remove.add(term2)
+                        logger.info(f"包含关系过滤: 保留 '{term1}' (频次:{count1}), 删除 '{term2}' (频次:{count2})")
+                    elif count2 > count1:
+                        # 保留term2，删除term1
+                        terms_to_remove.add(term1)
+                        logger.info(f"包含关系过滤: 保留 '{term2}' (频次:{count2}), 删除 '{term1}' (频次:{count1})")
+                    else:
+                        # 出现次数相同，保留较短的
+                        if len(term1) < len(term2):
+                            terms_to_remove.add(term2)
+                            logger.info(f"包含关系过滤: 频次相同({count1}), 保留较短的 '{term1}', 删除 '{term2}'")
+                        else:
+                            terms_to_remove.add(term1)
+                            logger.info(f"包含关系过滤: 频次相同({count2}), 保留较短的 '{term2}', 删除 '{term1}'")
         
-        for normalized, variants in normalized_to_originals.items():
-            # 去重
-            unique_variants = list(set(variants))
-            
-            # 按长度排序，选择最短的作为代表（通常是单数形式）
-            unique_variants.sort(key=lambda x: (len(x), x))
-            representative = unique_variants[0]
-            
-            aggregated_terms.append(representative)
-            
-            # 记录有多个变体的情况
-            if len(unique_variants) > 1:
-                variants_map[normalized] = unique_variants
-                logger.info(f"聚合候选术语变体: {unique_variants} -> {representative}")
+        # 过滤术语
+        filtered_term_freqs = {term: freq for term, freq in term_freqs.items() if term not in terms_to_remove}
         
-        logger.info(f"候选术语聚合完成: {len(terms)} -> {len(aggregated_terms)} 个")
+        logger.info(f"✓ 包含关系过滤完成: {len(term_freqs)} -> {len(filtered_term_freqs)} 个术语 (删除{len(terms_to_remove)}个)")
         
-        return aggregated_terms, variants_map
+        return filtered_term_freqs
     
     def extract_ngrams(self, text: str, min_n: int = 2, max_n: int = 5) -> Dict[str, int]:
         """
@@ -816,54 +891,6 @@ class TermDetector:
         
         return results
     
-    def get_term_contexts(self, doc: Document, term: str, 
-                         context_window: int = 50) -> List[str]:
-        """
-        获取术语在文档中所有出现位置的上下文
-        
-        Args:
-            doc: python-docx Document对象
-            term: 要查找的术语
-            context_window: 上下文窗口大小（字符数）
-            
-        Returns:
-            上下文列表
-        """
-        contexts = []
-        
-        # 将术语中的空格替换为灵活匹配（可能中间有标点）
-        pattern_str = re.escape(term).replace(r'\ ', r'[\s\u3000]{0,2}')
-        pattern = re.compile(pattern_str, re.IGNORECASE)
-        
-        for para in doc.paragraphs:
-            text = para.text
-            
-            for match in pattern.finditer(text):
-                start = max(0, match.start() - context_window)
-                end = min(len(text), match.end() + context_window)
-                context = text[start:end]
-                contexts.append(context)
-        
-        return contexts
-    
-    def is_new_term(self, term: str, contexts: List[str]) -> Tuple[bool, str]:
-        """
-        判断术语是否为新提出的术语
-        
-        Args:
-            term: 术语
-            contexts: 该术语的上下文列表
-            
-        Returns:
-            (是否为新术语, 触发词或证据)
-        """
-        for context in contexts:
-            # 检查是否包含定义性触发词
-            for trigger in self.NEW_TERM_TRIGGERS:
-                if trigger in context:
-                    return True, trigger
-        
-        return False, ""
     
     def levenshtein_distance(self, s1: str, s2: str) -> int:
         """
@@ -906,13 +933,14 @@ class TermDetector:
             
         Returns:
             词汇相似度 (0-1)
+            编辑距离
         """
         distance = self.levenshtein_distance(term1.lower(), term2.lower())
         max_len = max(len(term1), len(term2))
         if max_len == 0:
             return 1.0
         # 相似度 = 1 - (编辑距离 / 最大长度)
-        return max(0, 1 - distance / max_len)
+        return max(0, 1 - distance / max_len), distance
     
     def find_similar_terms(self, terms: List[str], threshold: int = 2) -> List[Dict[str, Any]]:
         """
@@ -938,62 +966,38 @@ class TermDetector:
         similar_pairs = []
         seen_pairs = set()  # 用于去重
         
-        # 尝试使用语义相似度方法
-        use_semantic = _sklearn_available and _transformers_available and self._model_loaded
+        # 使用 Sentence Transformers 进行语义相似度计算
+        use_semantic = _sentence_transformers_available
         
         if use_semantic:
-            logger.info("使用语义相似度 + 编辑距离融合方法")
+            logger.info("使用 Sentence Transformers (all-MiniLM-L6-v2) 进行语义相似度 + 编辑距离融合")
             
             try:
                 # 1. 对所有术语进行向量化
                 term_embeddings = self.encode_terms(terms)
                 
                 if term_embeddings.size > 0 and len(term_embeddings) == len(terms):
-                    # 2. 使用最近邻搜索找到每个术语的相似候选
-                    n_neighbors = min(self.MAX_NEIGHBORS + 1, len(terms))  # +1 因为会包含自己
+                    # 2. 使用 sentence_transformers.util.cos_sim 计算余弦相似度矩阵
+                    # cos_sim 返回形状为 (len(terms), len(terms)) 的相似度矩阵
+                    cosine_scores = st_util.cos_sim(term_embeddings, term_embeddings)
                     
-                    # 归一化向量（用于余弦相似度）
-                    norms = np.linalg.norm(term_embeddings, axis=1, keepdims=True)
-                    norms[norms == 0] = 1  # 避免除零
-                    normalized_embeddings = term_embeddings / norms
+                    logger.info(f"计算完成余弦相似度矩阵，形状: {cosine_scores.shape}")
                     
-                    # 使用余弦相似度进行近邻搜索
-                    nn_model = NearestNeighbors(
-                        n_neighbors=n_neighbors,
-                        metric='cosine',
-                        algorithm='brute'  # 对于小规模数据，brute更快
-                    )
-                    nn_model.fit(normalized_embeddings)
-                    
-                    # 查找近邻
-                    distances, indices = nn_model.kneighbors(normalized_embeddings)
-                    
-                    # 3. 处理近邻结果
+                    # 3. 遍历相似度矩阵，找出相似术语对
                     for i in range(len(terms)):
-                        term1 = terms[i]
-                        
-                        for j_idx in range(1, len(indices[i])):  # 跳过自己（索引0）
-                            j = indices[i][j_idx]
+                        for j in range(i + 1, len(terms)):  # 只处理上三角，避免重复
+                            term1 = terms[i]
                             term2 = terms[j]
                             
-                            # 去重：确保每对只处理一次
-                            pair_key = tuple(sorted([term1.lower(), term2.lower()]))
-                            if pair_key in seen_pairs:
-                                continue
-                            seen_pairs.add(pair_key)
-                            
-                            # 计算语义相似度（cosine距离转相似度）
-                            semantic_score = 1 - distances[i][j_idx]
+                            # 获取语义相似度
+                            semantic_score = float(cosine_scores[i][j])
                             
                             # 过滤：语义相似度低于阈值的跳过
                             if semantic_score < self.SEMANTIC_SIM_THRESHOLD:
                                 continue
                             
-                            # 计算词汇相似度
-                            lexical_score = self.compute_lexical_similarity(term1, term2)
-                            
-                            # 计算编辑距离（用于显示）
-                            edit_distance = self.levenshtein_distance(term1.lower(), term2.lower())
+                            # 计算词汇相似度 & 编辑距离（用于显示）
+                            lexical_score, edit_distance = self.compute_lexical_similarity(term1, term2)
                             
                             # 加权融合
                             final_score = (self.SEMANTIC_WEIGHT * semantic_score + 
@@ -1014,9 +1018,9 @@ class TermDetector:
                             similar_pairs.append({
                                 'term1': term1,
                                 'term2': term2,
-                                'semantic_score': round(float(semantic_score), 3),
-                                'lexical_score': round(float(lexical_score), 3),
-                                'final_score': round(float(final_score), 3),
+                                'semantic_score': round(semantic_score, 3),
+                                'lexical_score': round(lexical_score, 3),
+                                'final_score': round(final_score, 3),
                                 'distance': edit_distance,
                                 'severity': severity
                             })
@@ -1115,66 +1119,91 @@ class TermDetector:
             logger.error(f"Failed to load SciBERT model: {e}", exc_info=True)
             return False
     
+    def load_sentence_model(self) -> bool:
+        """
+        加载 Sentence Transformers 模型（用于术语相似度计算）
+        
+        使用 all-MiniLM-L6-v2 模型，该模型：
+        - 专门为语义相似度任务训练
+        - 输出384维向量
+        - 速度快，效果好
+        
+        Returns:
+            是否加载成功
+        """
+        global _sentence_model
+        
+        if self._sentence_model_loaded:
+            return True
+        
+        if not _sentence_transformers_available:
+            logger.warning("sentence_transformers not available")
+            return False
+        
+        try:
+            logger.info("Loading Sentence Transformers model (all-MiniLM-L6-v2)...")
+            
+            # 优先使用全局缓存的模型
+            if _sentence_model is not None:
+                self.sentence_model = _sentence_model
+                self._sentence_model_loaded = True
+                logger.info("Using cached Sentence Transformers model")
+                return True
+            
+            # 加载模型
+            self.sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
+            _sentence_model = self.sentence_model  # 缓存到全局变量
+            
+            self._sentence_model_loaded = True
+            logger.info("Sentence Transformers model loaded successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to load Sentence Transformers model: {e}", exc_info=True)
+            return False
+    
     def encode_terms(self, terms: List[str]) -> np.ndarray:
         """
-        使用SciBERT模型对术语列表进行向量化编码
+        使用 Sentence Transformers 模型对术语列表进行向量化编码
         
-        利用SciBERT的[CLS]token输出作为术语的语义向量表示
+        使用 all-MiniLM-L6-v2 模型，该模型专门为语义相似度任务训练：
+        - 效果好：专门针对语义相似度优化
+        - 速度快：模型较小（~80MB）
+        - 使用简单：直接输出句子/短语向量
         
         Args:
             terms: 术语列表
             
         Returns:
-            np.ndarray: 形状为 (len(terms), hidden_size) 的向量矩阵
+            np.ndarray: 形状为 (len(terms), 384) 的向量矩阵
         """
         if not terms:
             return np.array([])
         
+        if not _sentence_transformers_available:
+            logger.error("Sentence Transformers 不可用，请安装: pip install sentence-transformers")
+            return np.array([])
+        
         # 确保模型已加载
-        if not self._model_loaded:
-            if not self.load_scibert_model():
-                logger.warning("SciBERT模型不可用，无法进行术语向量化")
+        if not self._sentence_model_loaded:
+            if not self.load_sentence_model():
+                logger.error("Sentence Transformers模型加载失败")
                 return np.array([])
         
-        logger.info(f"开始对 {len(terms)} 个术语进行向量化编码...")
-        
-        embeddings = []
-        batch_size = 32  # 批量处理
-        
-        for i in range(0, len(terms), batch_size):
-            batch_terms = terms[i:i+batch_size]
-            
-            try:
-                # 使用tokenizer编码
-                inputs = self.tokenizer(
-                    batch_terms,
-                    padding=True,
-                    truncation=True,
-                    max_length=64,  # 术语通常较短
-                    return_tensors="pt"
-                )
-                
-                # 获取模型输出（使用最后一层hidden states）
-                with torch.no_grad():
-                    outputs = self.model.base_model(**inputs)
-                    # 使用[CLS]token的输出作为术语的向量表示
-                    # outputs.last_hidden_state: (batch_size, seq_len, hidden_size)
-                    cls_embeddings = outputs.last_hidden_state[:, 0, :].numpy()
-                    embeddings.append(cls_embeddings)
-                    
-            except Exception as e:
-                logger.error(f"术语向量化失败: {e}")
-                # 如果失败，填充零向量
-                hidden_size = self.model.config.hidden_size
-                zero_embeddings = np.zeros((len(batch_terms), hidden_size))
-                embeddings.append(zero_embeddings)
-        
-        if embeddings:
-            all_embeddings = np.vstack(embeddings)
-            logger.info(f"术语向量化完成，向量维度: {all_embeddings.shape}")
-            return all_embeddings
-        
-        return np.array([])
+        # 使用 Sentence Transformers 编码
+        try:
+            logger.info(f"使用 Sentence Transformers 对 {len(terms)} 个术语进行向量化...")
+            embeddings = self.sentence_model.encode(
+                terms,
+                convert_to_numpy=True,
+                show_progress_bar=False,
+                batch_size=32
+            )
+            logger.info(f"术语向量化完成，向量维度: {embeddings.shape}")
+            return embeddings
+        except Exception as e:
+            logger.error(f"Sentence Transformers编码失败: {e}")
+            return np.array([])
     
     def predict_scibert_labels(self, sentence: str) -> List[Tuple[str, str]]:
         """
@@ -1309,15 +1338,14 @@ class TermDetector:
             cvalue_scores = self.calculate_cvalue(aggregated_terms)
             
             # 整理结果（按C-value排序）
-            for term, cvalue in cvalue_scores:  
-                # 返回C-value分数大于10的术语
-                if cvalue >= 10:
-                    freq = aggregated_terms[term]
-                    detected_terms.append({
-                        'term': term,
-                        'frequency': freq,
-                        'cvalue_score': round(cvalue, 2),
-                    })
+            for term, cvalue in cvalue_scores[:15]:  
+                # 返回前15条术语
+                freq = aggregated_terms[term]
+                detected_terms.append({
+                    'term': term,
+                    'frequency': freq,
+                    'cvalue_score': round(cvalue, 2),
+                })
         
         logger.info(f"SciBERT最终检测到 {len(detected_terms)} 个科学术语（已聚合变体并计算C-value）")
         
@@ -1340,7 +1368,8 @@ class TermDetector:
             doc = Document(docx_path)
             
             # ========== 0. 预处理文档 ==========
-            # 去除参考文献、图题、表题、目录、致谢、附录等无关内容
+            # 去除参考文献、目录、致谢、附录等无关内容
+            # 去除图题号和表题号（但保留图题表题的描述内容）
             preprocessed_text = self.preprocess_document(doc)
             logger.info(f"✓ 文档预处理完成，正文字符数: {len(preprocessed_text)}")
             
@@ -1370,46 +1399,74 @@ class TermDetector:
                 logger.warning(f"SciBERT检测失败: {e}")
                 print("SciBERT检测失败，跳过此步骤")
 
-            # 6. 合并所有候选术语（带词形还原聚合）
-            all_candidate_terms_raw = []
-            all_candidate_terms_raw.extend(keywords)
-            all_candidate_terms_raw.extend(quoted_terms)
-            all_candidate_terms_raw.extend([t['term'] for t in multi_word_terms])
-            all_candidate_terms_raw.extend([t['term'] for t in scibert_terms])
+            # 5. 合并 N-gram 和 SciBERT 术语（这两类术语有频次信息）
+            logger.info("=== 步骤1：合并 N-gram 和 SciBERT 术语 ===")
+            term_freqs = {}
             
-            # 先简单去重
-            all_candidate_terms_raw = list(set(all_candidate_terms_raw))
-            logger.info(f"合并前共 {len(all_candidate_terms_raw)} 个候选术语（简单去重）")
+            # 添加多词术语
+            for term_info in multi_word_terms:
+                term = term_info['term']
+                freq = term_info.get('frequency', 1)  # 出现频次
+                term_freqs[term] = term_freqs.get(term, 0) + freq
             
-            # 使用词形还原进一步聚合（处理 materials/material, networks/network 等变体）
-            candidate_terms, term_variants_map = self.aggregate_candidate_terms(all_candidate_terms_raw)
-            logger.info(f"✓ 词形还原聚合后共 {len(candidate_terms)} 个候选术语")
-            print("候选术语：", candidate_terms)
+            # 添加SciBERT术语
+            for term_info in scibert_terms:
+                term = term_info['term']
+                freq = term_info.get('frequency', 1)  # 出现频次
+                term_freqs[term] = term_freqs.get(term, 0) + freq
+            
+            logger.info(f"合并后共 {len(term_freqs)} 个术语（带频次）")
+            print(f"合并的术语: {list(term_freqs.items())}")
+            
+            # 6. 词形还原聚合（处理 materials/material, networks/network 等变体）
+            logger.info("=== 步骤2：词形还原聚合 ===")
+            aggregated_term_freqs, term_variants_map = self.aggregate_term_variants(term_freqs)
+            logger.info(f"✓ 词形还原聚合后共 {len(aggregated_term_freqs)} 个术语")
+            print(f"词形还原后的术语: {list(aggregated_term_freqs.items())}")
             
             # 记录被聚合的变体信息（用于调试）
             if term_variants_map:
                 print(f"术语变体映射: {len(term_variants_map)} 组")
-                for normalized, variants in list(term_variants_map.items())[:5]:
-                    print(f"  {normalized}: {variants}")
+                
+                for normalized, representative in list(term_variants_map.items()):
+                    print(f"  词性还原后：{normalized} -> 原始术语：{representative}")
+            
+            # 7. 过滤包含关系的术语
+            logger.info("=== 步骤3：过滤包含关系的术语 ===")
+            filtered_term_freqs = self.filter_contained_terms(term_freqs=aggregated_term_freqs)
+            logger.info(f"✓ 包含关系过滤后共 {len(filtered_term_freqs)} 个术语")
+            print(f"包含关系过滤后的术语: {list(filtered_term_freqs.items())}")
+            
+            # 8. 与关键词和引号术语进行合并
+            logger.info("=== 步骤4：合并关键词和引号术语 ===")
+            # 将关键词和引号术语添加到术语集合中（如果不存在）
+            for kw in keywords:
+                if kw not in filtered_term_freqs:
+                    # 关键词默认频次设为较高值，确保优先级
+                    filtered_term_freqs[kw] = 100
+                else:
+                    # 如果已存在，增加其频次
+                    filtered_term_freqs[kw] += 50
+                    
+            for qt in quoted_terms:
+                if qt not in filtered_term_freqs:
+                    # 引号术语默认频次设为中等值
+                    filtered_term_freqs[qt] = 50
+                else:
+                    # 如果已存在，增加其频次
+                    filtered_term_freqs[qt] += 25
+            
+            # 获取最终的候选术语列表
+            candidate_terms = list(filtered_term_freqs.keys())
+            logger.info(f"✓ 最终候选术语共 {len(candidate_terms)} 个")
+            print(f"最终候选术语: {candidate_terms}")
 
-            # 7. 检测新术语
+            # 9. 检测新术语
             new_terms = []
-            for term in candidate_terms:
-                contexts = self.get_term_contexts(doc, term, context_window=80)
-                if contexts:  # 确保有上下文
-                    is_new, trigger = self.is_new_term(term, contexts)
-                    if is_new:
-                        new_terms.append({
-                            'term': term,
-                            'trigger': trigger,
-                            'contexts': contexts[:2],  # 只保留前2个上下文(*可能出现问题)
-                            'confirmed': False  # 需要用户确认
-                        })
             
-            logger.info(f"✓ 检测到 {len(new_terms)} 个疑似新术语")
-            print("疑似新术语：",new_terms)
             
-            # 8. 检测相似术语（可能的混用）- 使用语义+编辑距离融合方法
+            # 10. 检测相似术语（可能的混用）- 使用语义+编辑距离融合方法
+            logger.info("=== 步骤5：检测相似术语 ===")
             similar_pairs_raw = self.find_similar_terms(candidate_terms, threshold=3)
             logger.info(f"✓ 检测到 {len(similar_pairs_raw)} 对相似术语")
             print("相似术语：", similar_pairs_raw)
@@ -1420,11 +1477,9 @@ class TermDetector:
                 'data': {
                     'total_terms': len(candidate_terms),
                     'keywords': keywords,
-                    'quoted_terms': quoted_terms,
                     'multi_word_terms': multi_word_terms,  # N-gram + C-value多词术语
                     'scibert_terms': scibert_terms,  # SciBERT检测的科学术语
                     'all_candidate_terms': sorted(list(candidate_terms)),
-                    'new_terms': new_terms,
                     'similar_pairs': similar_pairs_raw[:20]  # 只返回前20对，已经是正确格式
                 },
                 'message': '术语检测完成'
