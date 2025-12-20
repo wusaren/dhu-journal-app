@@ -454,11 +454,8 @@
                 <el-descriptions-item label="检测到术语">
                   <span style="color: #409eff; font-weight: bold;">{{ termDetectResult.data?.total_terms || 0 }}</span>
                 </el-descriptions-item>
-                <el-descriptions-item label="疑似新术语">
-                  <span style="color: #e6a23c; font-weight: bold;">{{ termDetectResult.data?.new_terms?.length || 0 }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="相似术语对">
-                  <span style="color: #f56c6c; font-weight: bold;">{{ termDetectResult.data?.similar_pairs?.length || 0 }}</span>
+                <el-descriptions-item label="术语变体">
+                  <span style="color: #f56c6c; font-weight: bold;">{{ termDetectResult.data?.term_variants?.length || 0 }}</span> 个核心术语
                 </el-descriptions-item>
               </el-descriptions>
             </div>
@@ -559,53 +556,73 @@
                 <el-empty v-else description="未检测到术语" />
               </el-tab-pane>
 
-              <!-- Tab 6: 相似术语（规范性问题） -->
-              <el-tab-pane label="相似术语" name="similar_pairs">
-                <div v-if="termDetectResult.data?.similar_pairs?.length > 0">
-                  <!-- <el-alert 
-                    title="以下术语在语义或词汇层面相似，可能存在混用情况，请检查使用规范性" 
-                    type="error" 
-                    :closable="false"
-                    style="margin-bottom: 15px;"
-                  /> -->
-                  <el-table :data="termDetectResult.data.similar_pairs" border stripe>
-                    <el-table-column prop="term1" label="术语1" min-width="150" />
-                    <el-table-column prop="term2" label="术语2" min-width="150" />
-                    <el-table-column prop="final_score" label="综合相似度" width="110" align="center">
-                      <template #default="scope">
-                        <el-progress 
-                          :percentage="Math.round((scope.row.final_score || 0) * 100)" 
-                          :color="scope.row.final_score >= 0.9 ? '#F56C6C' : scope.row.final_score >= 0.8 ? '#E6A23C' : '#67C23A'"
-                          :stroke-width="10"
-                        />
+              <!-- Tab 6: 术语变体检测（规范性问题） -->
+              <el-tab-pane label="术语变体" name="term_variants">
+                <div v-if="termDetectResult.data?.term_variants?.length > 0">
+                  <!-- 遍历每个核心术语及其变体 -->
+                  <div 
+                    v-for="(item, index) in termDetectResult.data.term_variants" 
+                    :key="index"
+                    style="margin-bottom: 20px;"
+                  >
+                    <el-card shadow="hover">
+                      <template #header>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                          <div>
+                            <span style="font-size: 16px; font-weight: bold;">{{ item.core_term }}</span>
+                          </div>
+                          <el-tag type="info" size="small">{{ item.variants.length }} 个变体</el-tag>
+                        </div>
                       </template>
-                    </el-table-column>
-                    <el-table-column prop="semantic_score" label="语义相似度" width="100" align="center">
-                      <template #default="scope">
-                        <span v-if="scope.row.semantic_score !== null">
-                          {{ (scope.row.semantic_score * 100).toFixed(1) }}%
-                        </span>
-                        <span v-else style="color: #909399;">N/A</span>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="lexical_score" label="词汇相似度" width="100" align="center">
-                      <template #default="scope">
-                        {{ (scope.row.lexical_score * 100).toFixed(1) }}%
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="severity" label="相似等级" width="90" align="center">
-                      <template #default="scope">
-                        <el-tag 
-                          :type="scope.row.severity === 'high' ? 'danger' : scope.row.severity === 'medium' ? 'warning' : 'success'"
-                          size="small"
-                        >
-                          {{ scope.row.severity === 'high' ? '高' : scope.row.severity === 'medium' ? '中' : '低' }}
-                        </el-tag>
-                      </template>
-                    </el-table-column>
-                  </el-table>
+                      
+                      <!-- 变体列表 -->
+                      <el-table :data="item.variants" border stripe size="small">
+                        <el-table-column prop="variant" label="变体" min-width="150">
+                          <template #default="scope">
+                            <el-text type="danger"  style="font-weight: 500;">
+                              {{ scope.row.variant }}
+                            </el-text>
+                          </template>
+                        </el-table-column>
+                        <!-- <el-table-column prop="frequency" label="出现频次" width="100" align="center">
+                          <template #default="scope">
+                            <el-tag type="warning" effect="plain">{{ scope.row.frequency }} 次</el-tag>
+                          </template>
+                        </el-table-column> -->
+                        <!-- <el-table-column prop="variant_type" label="变体类型" width="100" align="center">
+                          <template #default="scope">
+                            <el-tag 
+                              :type="scope.row.variant_type === 'lemma' ? 'primary' : 'success'"
+                              size="small"
+                            >
+                              {{ scope.row.variant_type === 'lemma' ? '词形变体' : '包含关系' }}
+                            </el-tag>
+                          </template>
+                        </el-table-column> -->
+                        <el-table-column prop="similarity_score" label="综合相似度" width="120" align="center">
+                          <template #default="scope">
+                            <el-progress 
+                              :percentage="Math.round((scope.row.similarity_score || 0) * 100)" 
+                              :color="scope.row.similarity_score >= 0.9 ? '#F56C6C' : scope.row.similarity_score >= 0.8 ? '#E6A23C' : '#67C23A'"
+                              :stroke-width="8"
+                            />
+                          </template>
+                        </el-table-column>
+                        <el-table-column prop="semantic_score" label="语义相似度" width="100" align="center">
+                          <template #default="scope">
+                            {{ (scope.row.semantic_score * 100).toFixed(1) }}%
+                          </template>
+                        </el-table-column>
+                        <el-table-column prop="lexical_score" label="词汇相似度" width="100" align="center">
+                          <template #default="scope">
+                            {{ (scope.row.lexical_score * 100).toFixed(1) }}%
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </el-card>
+                  </div>
                 </div>
-                <el-empty v-else description="未检测到相似术语问题" />
+                <el-empty v-else description="未检测到术语变体问题" />
               </el-tab-pane>
             </el-tabs>
 
