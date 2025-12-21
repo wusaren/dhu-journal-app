@@ -13,6 +13,8 @@ import sys
 from services.paper_format_detector import PaperFormatDetector
 from services.Chinese_paper_format_detector import ChinesePaperFormatDetector
 from services.document_annotator import generate_annotated_document
+# 新的中文注释引擎（并行使用，暂不删除旧实现）
+from services.chinese_annotation_engine import annotate_chinese_abstract_and_keywords
 from services.paper_detect.Classification_detect import detect_classification
 
 logger = logging.getLogger(__name__)
@@ -968,20 +970,22 @@ class ChinesePaperFormatService:
         result['data']['report_download_url'] = f'/api/paper-format/download-report/{report_filename}'
         result['data']['report_text'] = report_text
 
-        # 生成带批注文档
-        annotated_path = generate_annotated_document(
-            docx_path,
-            all_reports,
-            annotate_dir
-        )
-        if annotated_path:
-            result['data']['annotated_saved'] = True
-            result['data']['annotated_filename'] = os.path.basename(annotated_path)
-            result['data']['annotated_download_url'] = f'/api/paper-format/download-annotated/{os.path.basename(annotated_path)}'
-            logger.info(f"批注文档已自动生成: {annotated_path}")
-        else:
-            # 不影响检测结果的返回
-            logger.warning("批注文档生成失败")
+        # 生成带批注文档（仅使用新的中文注释引擎）
+        try:
+            annotated_path = annotate_chinese_abstract_and_keywords(
+                docx_path,
+                all_reports,
+                annotate_dir
+            )
+            if annotated_path:
+                result['data']['annotated_saved'] = True
+                result['data']['annotated_filename'] = os.path.basename(annotated_path)
+                result['data']['annotated_download_url'] = f'/api/paper-format/download-annotated/{os.path.basename(annotated_path)}'
+                logger.info(f"批注文档已自动生成 (chinese engine): {annotated_path}")
+            else:
+                logger.warning("中文注释引擎未生成批注文档")
+        except Exception as e:
+            logger.exception(f"中文注释引擎生成批注文档时发生异常: {e}")
 
         return result
         

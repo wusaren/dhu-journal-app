@@ -385,6 +385,13 @@ def check_abstract_structure(doc, tpl):
         return report
     
     report['title_paragraph'] = title_para
+    # save paragraph index for downstream consumers
+    report['title_paragraph_index'] = title_idx
+    # record paragraph index for robust downstream consumption
+    try:
+        report['title_paragraph_index'] = title_idx
+    except Exception:
+        report['title_paragraph_index'] = None
     
     # 检查标题格式（"摘 要"中间应有一个空格）
     title_text = title_para.text.strip()
@@ -432,10 +439,31 @@ def check_abstract_structure(doc, tpl):
         return report
     
     report['content_paragraphs'] = content_paragraphs
-    
+    # also store numeric indices for content paragraphs to make locating deterministic
+    try:
+        indices = []
+        for para in content_paragraphs:
+            for i, p in enumerate(doc.paragraphs):
+                if p is para:
+                    indices.append(i)
+                    break
+        report['content_paragraphs_indices'] = indices
+    except Exception:
+        report['content_paragraphs_indices'] = []
     # 合并所有正文段落的内容
     content_text = ' '.join([para.text.strip() for para in content_paragraphs])
     report['content_text'] = content_text
+    # record content paragraph indexes
+    try:
+        content_indexes = []
+        for p in content_paragraphs:
+            for i, para in enumerate(doc.paragraphs):
+                if para is p:
+                    content_indexes.append(i)
+                    break
+        report['content_paragraph_indexes'] = content_indexes
+    except Exception:
+        report['content_paragraph_indexes'] = []
     
     # 检查内容长度
     content_length = len(content_text)
