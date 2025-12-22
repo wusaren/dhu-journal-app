@@ -1,0 +1,66 @@
+{
+  "title_rule": "摘要上方的论文题目：黑体3号字（包括标题内的英文单词或字母），段前段后0.7厘米，单倍行距，居中对齐",
+  "structure_rules": {
+    "position": "above_abstract",
+    "min_length": 5,
+    "max_length": 200
+  },
+  "format_rules": {
+    "title": {
+      "font_size_pt": 16,
+      "chinese_font": "黑体",
+      "english_font": "黑体",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before_cm": 0.7,
+      "space_after_cm": 0.7,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_position_ok": "标题位置正确（位于摘要上方）",
+    "structure_position_error": "未找到标题，或标题位置不正确（应在摘要上方）",
+    "structure_length_ok": "标题长度适中",
+    "structure_length_short": "标题过短（少于{min}字符）",
+    "structure_length_long": "标题过长（超过{max}字符）",
+    "format_title_issue_header": "标题格式问题：",
+    "format_title_ok": "标题格式检查通过",
+    "summary_overall": "标题检查结果: {ok}"
+  },
+  "notes": [
+    "标题检查重点：1) 黑体3号字（16pt），包括标题内的英文单词或字母 2) 段前段后0.7厘米 3) 单倍行距 4) 居中对齐 5) 位于摘要上方",
+    "标题应简洁明了，准确反映论文内容"
+  ],
+  "generated_from": "用户提供的中文标题格式要求"
+}
+

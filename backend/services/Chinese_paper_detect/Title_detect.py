@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+统一标题检测器
+支持中文标题和英文标题的格式检测
+依据模板自动判断检测类型
+"""
 
 import os
 import sys
@@ -7,7 +12,7 @@ import json
 import re
 from pathlib import Path
 from docx import Document
-from docx.shared import Pt
+from docx.shared import Pt, Cm
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
@@ -38,21 +43,26 @@ def should_skip_check(check_name):
 _skip_checks_config = []
 
 """
-=== 论文格式检测系统 - 中文关键词检测器 ===
+=== 论文格式检测系统 - 统一标题检测器 ===
 
-【中文关键词检测 (Chinese Keywords Detection)】
+【统一标题检测 (Unified Title Detection)】
 
-1. 【结构检测】
-   - "关键词"标题格式
-   - 摘要与关键词之间空一行
-   - 关键词数量（3-5个）
-   - 关键词分隔符（中文分号；）
-   - 按外延由大到小排列
-
-2. 【格式检测】
-   - 字体：宋体（中文），Times New Roman（英文）
-   - 字号：四号（14pt）
-   - 左对齐，无缩进
+支持：
+1. 中文标题检测
+   - 位于摘要上方
+   - 黑体3号字（16pt）
+   - 段前段后0.7厘米
+   - 单倍行距
+   - 居中对齐
+   
+2. 英文标题检测
+   - 位于摘要上方
+   - 三号（16pt）居中
+   - 全大写
+   - 每行左右两边至少留五个字符空格
+   - Times New Roman加粗
+   - 段前段后0.7厘米
+   - 居中对齐
 """
 
 # ---------- 模板加载 ----------
@@ -86,10 +96,36 @@ def load_template(identifier):
         tpl = json.load(f)
     return tpl
 
+def detect_title_language(tpl):
+    """
+    检测标题模板的语言类型
+    返回: 'chinese' 或 'english'
+    """
+    # 方法1: 通过模板文件名判断
+    tpl_path = resolve_template_path(tpl.get('_template_path', ''))
+    if 'English_Title' in tpl_path or 'english_title' in tpl_path.lower():
+        return 'english'
+    if 'Title' in tpl_path and 'English' not in tpl_path:
+        return 'chinese'
+    
+    # 方法2: 通过模板内容判断
+    structure_rules = tpl.get('structure_rules', {})
+    must_uppercase = structure_rules.get('must_uppercase', False)
+    
+    if must_uppercase:
+        return 'english'
+    
+    # 默认返回中文
+    return 'chinese'
+
 # ---------- 字体检测函数（支持中英文字体分别检测）----------
-def detect_font_for_run(run, paragraph=None):
+def detect_font_for_run(run, paragraph=None, detect_chinese_font=True):
     """
     检测run的字体信息，包括中英文字体
+    参数:
+        run: docx run对象
+        paragraph: docx paragraph对象
+        detect_chinese_font: 是否检测中文字体
     返回: (font_size, font_ascii, font_eastasia, is_bold, is_italic, line_spacing)
     """
     font_size = None
@@ -99,7 +135,7 @@ def detect_font_for_run(run, paragraph=None):
     is_italic = False
     
     if not run:
-        return 12.0, "Times New Roman", "宋体", False, False, 1.0
+        return 12.0, "Times New Roman", ("宋体" if detect_chinese_font else None), False, False, 1.0
     
     # 1. 检测字号
     try:
@@ -153,15 +189,17 @@ def detect_font_for_run(run, paragraph=None):
                     elif xml_hansi and font_name_ascii is None:
                         font_name_ascii = xml_hansi
                     
-                    if xml_eastasia:
-                        font_name_eastasia = xml_eastasia
-                    elif xml_hansi and font_name_eastasia is None:
-                        font_name_eastasia = xml_hansi
-    except Exception as e:
-        print(f"  字体检测异常: {e}")
+                    if detect_chinese_font:
+                        if xml_eastasia:
+                            font_name_eastasia = xml_eastasia
+                        elif xml_hansi and font_name_eastasia is None:
+                            font_name_eastasia = xml_hansi
+    except Exception:
+        pass
     
     font_name_ascii = font_name_ascii if font_name_ascii else "Times New Roman"
-    font_name_eastasia = font_name_eastasia if font_name_eastasia else "宋体"
+    if detect_chinese_font:
+        font_name_eastasia = font_name_eastasia if font_name_eastasia else "宋体"
     
     # 3. 检测加粗和斜体
     try:
@@ -288,206 +326,188 @@ def detect_paragraph_indent(paragraph):
     except Exception:
         return 0.0, 0.0, 0.0
 
-# ---------- 关键词检测逻辑 ----------
-def find_abstract_end(doc, abstract_header_pattern=None, keywords_header_pattern=None):
+def cm_to_pt(cm_value):
+    """将厘米转换为磅（pt）"""
+    return float(cm_value) * 28.35
+
+# ---------- 标题检测逻辑 ----------
+def find_abstract_start(doc, language='chinese'):
     """
-    查找摘要结束位置（用于检查空行）
+    查找摘要开始位置
     参数:
         doc: Word文档对象
-        abstract_header_pattern: 摘要标题的正则表达式模式（从模板中读取）
-        keywords_header_pattern: 关键词标题的正则表达式模式（从模板中读取）
+        language: 'chinese' 或 'english'
+    返回: 摘要标题的段落索引，如果未找到返回None
     """
-    # 如果没有提供模式，使用默认值
-    if abstract_header_pattern is None:
-        abstract_header_pattern = r'^\s*摘\s要\s*$'
-    if keywords_header_pattern is None:
-        keywords_header_pattern = r'关键词'
-    
-    # 从keywords_header_pattern中提取用于搜索的模式
-    # 模板中的模式通常是 "^\\s*关键词\\s*[:：]?\\s*(.+)$"
-    # 我们需要提取出 "关键词" 部分用于搜索
-    keywords_search_pattern = keywords_header_pattern
-    # 尝试提取 "关键词" 部分
-    # 去掉开头的锚点和空白匹配
-    keywords_search_pattern = re.sub(r'^\\?\^?\\?s\*', '', keywords_search_pattern)
-    # 去掉末尾的捕获组和锚点
-    keywords_search_pattern = re.sub(r'\\s\*[:：]\?\\s\*\(\.\+\)\\?\$?$', '', keywords_search_pattern)
-    # 如果提取失败或没有包含"关键词"，使用默认值
-    if not keywords_search_pattern or '关键词' not in keywords_search_pattern:
-        keywords_search_pattern = r'关键词'
+    abstract_header_pattern = r'^\s*摘\s要\s*$' if language == 'chinese' else r"^\s*ABSTRACT\s*$"
+    match_flags = re.IGNORECASE if language == 'english' else 0
     
     for idx, paragraph in enumerate(doc.paragraphs):
         text = paragraph.text.strip()
-        # 使用从模板读取的正则表达式查找"摘 要"标题
-        if re.match(abstract_header_pattern, text):
-            # 从摘要标题后开始查找摘要内容结束位置
-            for j in range(idx + 1, len(doc.paragraphs)):
-                para_text = doc.paragraphs[j].text.strip()
-                if not para_text:
-                    continue
-                # 使用从模板读取的正则表达式查找关键词标题
-                if re.search(keywords_search_pattern, para_text):
-                    return j - 1
+        if re.match(abstract_header_pattern, text, match_flags):
+            return idx
     return None
 
-def check_keywords_structure(doc, tpl):
+def find_title_paragraph(doc, abstract_idx, language='chinese'):
     """
-    检查关键词结构
-    返回 {'ok': bool, 'messages': [], 'keywords_paragraph': paragraph, 'keywords_text': str, 'keywords_list': []}
+    查找标题段落（位于摘要上方）
+    参数:
+        doc: Word文档对象
+        abstract_idx: 摘要标题的段落索引
+        language: 'chinese' 或 'english'
+    返回: 标题段落对象和索引，如果未找到返回(None, None)
     """
-    report = {'ok': True, 'messages': [], 'keywords_paragraph': None, 'keywords_text': '', 'keywords_list': []}
+    if abstract_idx is None or abstract_idx == 0:
+        return None, None
+    
+    # 从摘要上方开始查找，跳过空段落
+    for i in range(abstract_idx - 1, -1, -1):
+        paragraph = doc.paragraphs[i]
+        text = paragraph.text.strip()
+        if text:
+            # 检查是否包含中文字符（中文标题）或全大写英文（英文标题）
+            if language == 'chinese':
+                if re.search(r'[\u4e00-\u9fff]', text):
+                    return paragraph, i
+            else:
+                # 英文标题：检查是否全大写（排除纯数字或特殊符号）
+                if re.search(r'[A-Z]', text) and text.isupper():
+                    return paragraph, i
+    
+    return None, None
+
+def check_title_structure(doc, tpl, language=None):
+    """
+    检查标题结构（统一函数，支持中文和英文）
+    返回 {'ok': bool, 'messages': [], 'title_paragraph': paragraph, 'title_text': str}
+    """
+    if language is None:
+        language = detect_title_language(tpl)
+    
+    report = {'ok': True, 'messages': [], 'title_paragraph': None, 'title_text': ''}
     
     structure_rules = tpl.get('structure_rules', {})
-    header_pattern = structure_rules.get('header_pattern', r'^\\s*关键词\\s*[:：]?\\s*(.+)$')
-    expected_separator = structure_rules.get('separator', '；')
-    min_count = structure_rules.get('min_keywords_count', 3)
-    max_count = structure_rules.get('max_keywords_count', 5)
-    blank_lines_before = structure_rules.get('blank_lines_before', 1)
+    min_length = structure_rules.get('min_length', 5)
+    max_length = structure_rules.get('max_length', 200)
     
-    # 查找关键词段落
-    keywords_para = None
-    keywords_idx = None
+    # 查找摘要位置
+    abstract_idx = find_abstract_start(doc, language)
     
-    for idx, paragraph in enumerate(doc.paragraphs):
-        text = paragraph.text.strip()
-        if re.search(header_pattern, text):
-            keywords_para = paragraph
-            keywords_idx = idx
-            break
-    
-    if not keywords_para:
+    if abstract_idx is None:
         report['ok'] = False
-        error_msg = tpl.get('messages', {}).get('structure_header_error')
+        error_msg = tpl.get('messages', {}).get('structure_position_error')
         if error_msg:
             report['messages'].append(error_msg)
         else:
-            report['messages'].append("未找到关键词段落")
+            report['messages'].append("未找到摘要，无法确定标题位置")
         return report
     
-    report['keywords_paragraph'] = keywords_para
+    # 查找标题段落
+    title_para, title_idx = find_title_paragraph(doc, abstract_idx, language)
     
-    # 检查标题格式
-    keywords_text = keywords_para.text.strip()
-    match = re.search(header_pattern, keywords_text)
-    if match:
-        ok_msg = tpl.get('messages', {}).get('structure_header_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
-        keywords_content = match.group(1).strip()
-    else:
+    if not title_para:
         report['ok'] = False
-        error_msg = tpl.get('messages', {}).get('structure_header_error')
+        error_msg = tpl.get('messages', {}).get('structure_position_error')
         if error_msg:
             report['messages'].append(error_msg)
-        keywords_content = keywords_text
-    
-    report['keywords_text'] = keywords_content
-    
-    # 检查摘要与关键词之间的空行
-    # 从Abstract.json模板中读取摘要标题的正则表达式
-    abstract_header_pattern = None
-    try:
-        abstract_tpl = load_template("Abstract")
-        abstract_structure_rules = abstract_tpl.get("structure_rules", {})
-        abstract_header_pattern = abstract_structure_rules.get("header_pattern", r'^\s*摘\s要\s*$')
-    except Exception:
-        # 如果加载失败，使用默认值
-        abstract_header_pattern = r'^\s*摘\s要\s*$'
-    
-    # 从当前模板中读取关键词标题的正则表达式
-    keywords_header_pattern = structure_rules.get("header_pattern", r'^\\s*关键词\\s*[:：]?\\s*(.+)$')
-    
-    abstract_end_idx = find_abstract_end(doc, abstract_header_pattern, keywords_header_pattern)
-    if abstract_end_idx is not None and keywords_idx is not None:
-        blank_count = keywords_idx - abstract_end_idx - 1
-        if blank_count != blank_lines_before:
-            report['ok'] = False
-            error_msg = tpl.get('messages', {}).get('structure_blank_before_error')
-            if error_msg:
-                report['messages'].append(error_msg)
         else:
-            ok_msg = tpl.get('messages', {}).get('structure_blank_before_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg)
+            report['messages'].append("未找到标题段落")
+        return report
     
-    # 检查分隔符和关键词数量
-    if keywords_content:
-        # 使用中文分号分隔
-        keywords_list = [kw.strip() for kw in re.split(r'[；;]', keywords_content) if kw.strip()]
-        
-        # 检查分隔符
-        separators = re.findall(r'[；;，,、]', keywords_content)
-        if separators:
-            wrong_separators = [sep for sep in separators if sep != expected_separator]
-            if wrong_separators:
+    report['title_paragraph'] = title_para
+    title_text = title_para.text.strip()
+    report['title_text'] = title_text
+    
+    # 检查位置
+    ok_msg = tpl.get('messages', {}).get('structure_position_ok')
+    if ok_msg:
+        report['messages'].append(ok_msg)
+    
+    # 检查长度
+    title_length = len(title_text)
+    if title_length < min_length:
+        report['ok'] = False
+        msg_tpl = tpl.get('messages', {}).get('structure_length_short')
+        if msg_tpl:
+            try:
+                report['messages'].append(msg_tpl.format(min=min_length))
+            except:
+                report['messages'].append(msg_tpl)
+    elif title_length > max_length:
+        report['ok'] = False
+        msg_tpl = tpl.get('messages', {}).get('structure_length_long')
+        if msg_tpl:
+            try:
+                report['messages'].append(msg_tpl.format(max=max_length))
+            except:
+                report['messages'].append(msg_tpl)
+    else:
+        ok_msg = tpl.get('messages', {}).get('structure_length_ok')
+        if ok_msg:
+            report['messages'].append(ok_msg)
+    
+    # 检查英文标题是否全大写
+    if language == 'english':
+        structure_rules = tpl.get('structure_rules', {})
+        must_uppercase = structure_rules.get('must_uppercase', False)
+        if must_uppercase:
+            # 检查是否全大写（排除标点符号和空格）
+            text_without_punct = re.sub(r'[^\w\s]', '', title_text)
+            if text_without_punct and not text_without_punct.isupper():
                 report['ok'] = False
-                error_msg = tpl.get('messages', {}).get('structure_separator_error')
+                error_msg = tpl.get('messages', {}).get('structure_uppercase_error')
                 if error_msg:
                     report['messages'].append(error_msg)
             else:
-                ok_msg = tpl.get('messages', {}).get('structure_separator_ok')
+                ok_msg = tpl.get('messages', {}).get('structure_uppercase_ok')
                 if ok_msg:
                     report['messages'].append(ok_msg)
-        
-        # 检查关键词数量
-        keyword_count = len(keywords_list)
-        if keyword_count < min_count:
-            report['ok'] = False
-            msg_tpl = tpl.get('messages', {}).get('structure_count_few')
-            if msg_tpl:
-                try:
-                    report['messages'].append(msg_tpl.format(count=keyword_count, min=min_count))
-                except:
-                    report['messages'].append(msg_tpl)
-        elif keyword_count > max_count:
-            report['ok'] = False
-            msg_tpl = tpl.get('messages', {}).get('structure_count_many')
-            if msg_tpl:
-                try:
-                    report['messages'].append(msg_tpl.format(count=keyword_count, max=max_count))
-                except:
-                    report['messages'].append(msg_tpl)
-        else:
-            ok_msg = tpl.get('messages', {}).get('structure_count_ok')
-            if ok_msg:
-                try:
-                    report['messages'].append(ok_msg.format(count=keyword_count))
-                except:
-                    report['messages'].append(ok_msg)
-        
-        report['keywords_list'] = keywords_list
     
     return report
 
-def check_keywords_format(paragraph, tpl):
+def check_title_format(paragraph, tpl, language=None):
     """
-    检查关键词格式
+    检查标题格式（统一函数，支持中文和英文）
     返回 {'ok': bool, 'messages': []}
     """
+    if language is None:
+        language = detect_title_language(tpl)
+    
     report = {'ok': True, 'messages': []}
     
     if not paragraph or not paragraph.runs:
         report['ok'] = False
-        report['messages'].append("关键词段落没有文本内容")
+        report['messages'].append("标题段落没有文本内容")
         return report
     
-    format_rules = tpl.get('format_rules', {}).get('keywords', {})
+    format_rules = tpl.get('format_rules', {}).get('title', {})
     issues = []
     
-    # 检测第一个非空run的格式
+    # 检测第一个非空run的格式（用于基本格式检查）
     main_run = None
+    english_runs = []  # 存储包含英文的run，用于检查英文部分字体
     for run in paragraph.runs:
         if run.text.strip():
-            main_run = run
-            break
+            if main_run is None:
+                main_run = run
+            # 收集包含英文的run
+            if language == 'chinese' and re.search(r'[a-zA-Z]', run.text):
+                english_runs.append(run)
     
     if not main_run:
         report['ok'] = False
-        report['messages'].append("关键词段落没有有效文本")
+        report['messages'].append("标题段落没有有效文本")
         return report
     
-    # 检测实际格式
-    actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
+    # 检测实际格式（中文标题需要检测中文字体，英文标题不需要）
+    detect_chinese = (language == 'chinese')
+    font_result = detect_font_for_run(main_run, paragraph, detect_chinese_font=detect_chinese)
+    
+    if detect_chinese:
+        actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = font_result
+    else:
+        actual_size_pt, actual_font_ascii, _, actual_bold, actual_italic, actual_line_spacing = font_result
+        actual_font_eastasia = None
     
     # 字体大小检查
     if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
@@ -497,17 +517,47 @@ def check_keywords_format(paragraph, tpl):
         if abs(actual_size_pt - expected_size_pt) > 0.5:
             issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
     
-    # 检查run中的中文字符
-    if re.search(r'[\u4e00-\u9fff]', main_run.text):
-        expected_chinese_font = format_rules.get('chinese_font', '宋体')
-        if expected_chinese_font.lower() not in actual_font_eastasia.lower():
-            issues.append(f"中文字体应为{expected_chinese_font}，实际为{actual_font_eastasia}")
-    
-    # 检查run中的英文字符
-    if re.search(r'[a-zA-Z]', main_run.text):
-        expected_english_font = format_rules.get('english_font', 'Times New Roman')
-        if expected_english_font.lower() not in actual_font_ascii.lower():
-            issues.append(f"英文字体应为{expected_english_font}，实际为{actual_font_ascii}")
+    # 字体名称检查
+    if language == 'chinese':
+        # 中文标题：检查中英文字体分别检测
+        # 中文标题内的英文单词或字母也应使用黑体，与中文一致
+        if re.search(r'[\u4e00-\u9fff]', main_run.text):
+            expected_chinese_font = format_rules.get('chinese_font', '黑体')
+            if expected_chinese_font.lower() not in (actual_font_eastasia or '').lower():
+                issues.append(f"中文字体应为{expected_chinese_font}，实际为{actual_font_eastasia}")
+        
+        # 检查标题内所有包含英文的run，确保英文部分也使用黑体
+        if english_runs:
+            expected_english_font = format_rules.get('english_font', '黑体')
+            for eng_run in english_runs:
+                eng_font_result = detect_font_for_run(eng_run, paragraph, detect_chinese_font=True)
+                eng_size, eng_font_ascii, eng_font_eastasia, _, _, _ = eng_font_result
+                
+                # 检查英文字体是否为黑体（可能通过ASCII或EastAsia字体设置）
+                english_font_ok = False
+                if expected_english_font.lower() in (eng_font_ascii or '').lower():
+                    english_font_ok = True
+                elif eng_font_eastasia and expected_english_font.lower() in eng_font_eastasia.lower():
+                    english_font_ok = True
+                
+                if not english_font_ok:
+                    issues.append(f"标题内的英文字体应为{expected_english_font}（与中文一致），实际为{eng_font_ascii}")
+                    break  # 找到一个错误即可
+                
+                # 检查英文字号是否与中文一致（三号16pt）
+                if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
+                    expected_size_pt = float(format_rules['font_size_pt'])
+                    if abs(eng_size - expected_size_pt) > 0.5:
+                        eng_size_name = get_font_size(eng_size, tpl)
+                        expected_size_name = get_font_size(expected_size_pt, tpl)
+                        issues.append(f"标题内的英文字号应为{expected_size_name}（{expected_size_pt}pt，与中文一致），实际为{eng_size_name}（{eng_size}pt）")
+                        break  # 找到一个错误即可
+    else:
+        # 英文标题：只检查英文字体
+        if not should_skip_check('font_name') and 'english_font' in format_rules:
+            expected_font = format_rules.get('english_font', 'Times New Roman')
+            if expected_font.lower() not in actual_font_ascii.lower():
+                issues.append(f"字体应为{expected_font}，实际为{actual_font_ascii}")
     
     # 加粗检查
     if not should_skip_check('bold') and 'bold' in format_rules:
@@ -537,6 +587,24 @@ def check_keywords_format(paragraph, tpl):
             expected_alignment_name = get_alignment_name(expected_alignment, tpl)
             issues.append(f"段落应为{expected_alignment_name}，实际为{actual_alignment_name}")
     
+    # 段前段后间距检查
+    def pt(v): 
+        return v.pt if v else 0.0
+    
+    if 'space_before_cm' in format_rules:
+        space_before = paragraph.paragraph_format.space_before
+        expected_before_pt = cm_to_pt(format_rules['space_before_cm'])
+        actual_before_pt = pt(space_before)
+        if abs(actual_before_pt - expected_before_pt) > 2.0:  # 2pt容差
+            issues.append(f"段前间距应为{format_rules['space_before_cm']}厘米（约{expected_before_pt:.1f}pt），实际为{actual_before_pt:.1f}pt")
+    
+    if 'space_after_cm' in format_rules:
+        space_after = paragraph.paragraph_format.space_after
+        expected_after_pt = cm_to_pt(format_rules['space_after_cm'])
+        actual_after_pt = pt(space_after)
+        if abs(actual_after_pt - expected_after_pt) > 2.0:  # 2pt容差
+            issues.append(f"段后间距应为{format_rules['space_after_cm']}厘米（约{expected_after_pt:.1f}pt），实际为{actual_after_pt:.1f}pt")
+    
     # 缩进检查
     if 'first_line_indent' in format_rules or 'left_indent' in format_rules:
         first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
@@ -553,43 +621,51 @@ def check_keywords_format(paragraph, tpl):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_keywords_issue_header')
+        header = tpl.get('messages', {}).get('format_title_issue_header')
         if header:
             report['messages'].append(header)
         report['messages'].extend([f"  - {i}" for i in issues])
     else:
-        ok_msg = tpl.get('messages', {}).get('format_keywords_ok')
+        ok_msg = tpl.get('messages', {}).get('format_title_ok')
         if ok_msg:
             report['messages'].append(ok_msg)
     
     return report
 
-def check_keywords_with_template(doc_path, template_identifier, skip_checks=None):
+def check_title_with_template(doc_path, template_identifier, skip_checks=None, language=None):
     """
-    主检查函数：检查中文关键词格式
+    主检查函数：检查标题格式（统一函数，支持中文和英文）
     参数:
         doc_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
+        language: 可选，'chinese' 或 'english'，如果不提供则自动检测
     """
     global _skip_checks_config
     _skip_checks_config = skip_checks or []
     
     tpl = load_template(template_identifier)
+    # 保存模板路径用于语言检测
+    tpl['_template_path'] = template_identifier
+    
+    if language is None:
+        language = detect_title_language(tpl)
+    
     doc = Document(doc_path)
     
     # 执行各项检查
-    structure_report = check_keywords_structure(doc, tpl)
+    structure_report = check_title_structure(doc, tpl, language)
     
     format_report = {'ok': True, 'messages': []}
-    if structure_report.get('keywords_paragraph'):
-        format_report = check_keywords_format(structure_report['keywords_paragraph'], tpl)
+    if structure_report.get('title_paragraph'):
+        format_report = check_title_format(structure_report['title_paragraph'], tpl, language)
     
     # 组装报告
     report = {
         'structure': structure_report,
         'format': format_report,
-        'summary': []
+        'summary': [],
+        'language': language
     }
     
     # 生成总结
@@ -603,52 +679,103 @@ def check_keywords_with_template(doc_path, template_identifier, skip_checks=None
     
     return report
 
+def check_bilingual_titles(doc_path, chinese_template=None, english_template=None, skip_checks=None):
+    """
+    同时检测中文和英文标题
+    参数:
+        doc_path: 文档路径
+        chinese_template: 中文标题模板标识符，默认 'Title'
+        english_template: 英文标题模板标识符，默认 'English_Title'
+        skip_checks: 要跳过的检测项列表
+    返回: 包含 'chinese' 和 'english' 子报告的字典
+    """
+    if chinese_template is None:
+        chinese_template = 'Title'
+    if english_template is None:
+        english_template = 'English_Title'
+    
+    chinese_report = check_title_with_template(doc_path, chinese_template, skip_checks, 'chinese')
+    english_report = check_title_with_template(doc_path, english_template, skip_checks, 'english')
+    
+    return {
+        'chinese': chinese_report,
+        'english': english_report,
+        'summary': []
+    }
+
 # ---------- 报告输出 ----------
-def print_keywords_report(report):
-    """打印中文关键词检查报告"""
-    print("=== 中文关键词检查报告 ===")
+def print_title_report(report):
+    """打印标题检查报告"""
+    print("=== Title Check Report ===")
     
     sections = [
-        ('structure', '结构检测'),
-        ('format', '格式检测')
+        ('structure', 'STRUCTURE'),
+        ('format', 'FORMAT')
     ]
     
     for sec_key, sec_name in sections:
-        info = report.get(sec_key, {})
+        info = report[sec_key]
         print(f"--- {sec_name} ---")
-        print(" 状态:", "✓ 通过" if info.get('ok', False) else "✗ 失败")
-        for m in info.get('messages', []):
+        print(" OK:", info['ok'])
+        for m in info['messages']:
             print("  -", m)
     
-    print("--- 总结 ---")
-    for s in report.get('summary', []):
+    print("--- SUMMARY ---")
+    for s in report['summary']:
         print(" ", s)
 
 def print_help():
-    print("使用方法:")
-    print("  python Keywords_detect.py check <paper.docx> <template.json_or_name>")
+    print("Usage:")
+    print("  python Title_detect.py check <paper.docx> <template.json_or_name>")
+    print("  python Title_detect.py check-both <paper.docx> <chinese_template.json> <english_template.json>")
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 3:
         print_help()
         sys.exit(0)
     
     cmd = sys.argv[1]
     if cmd == 'check':
+        if len(sys.argv) != 4:
+            print_help()
+            sys.exit(1)
         paper_path = sys.argv[2]
         tpl_id = sys.argv[3]
         if not os.path.isfile(paper_path):
             print(f"论文文件不存在: {paper_path}")
             sys.exit(1)
         try:
-            print("=== 开始中文关键词格式检查 ===")
-            report = check_keywords_with_template(paper_path, tpl_id)
+            print("=== 开始标题格式检查 ===")
+            report = check_title_with_template(paper_path, tpl_id)
         except Exception as e:
             print("检查时出错:", e)
             import traceback
             traceback.print_exc()
             sys.exit(1)
-        print_keywords_report(report)
+        print_title_report(report)
+    elif cmd == 'check-both':
+        if len(sys.argv) != 5:
+            print_help()
+            sys.exit(1)
+        paper_path = sys.argv[2]
+        chinese_tpl = sys.argv[3]
+        english_tpl = sys.argv[4]
+        if not os.path.isfile(paper_path):
+            print(f"论文文件不存在: {paper_path}")
+            sys.exit(1)
+        try:
+            print("=== 开始双语标题格式检查 ===")
+            report = check_bilingual_titles(paper_path, chinese_tpl, english_tpl)
+            print("=== 双语标题检查报告 ===")
+            print("【中文标题】")
+            print_title_report(report['chinese'])
+            print("【英文标题】")
+            print_title_report(report['english'])
+        except Exception as e:
+            print("检查时出错:", e)
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
     else:
         print_help()
         sys.exit(0)
