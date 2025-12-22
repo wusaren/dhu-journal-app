@@ -423,6 +423,27 @@ def check_keywords_structure(doc, tpl, language=None):
         return report
     
     report['keywords_paragraph'] = keywords_para
+    # save paragraph index for downstream consumers (first matching index in doc.paragraphs)
+    try:
+        para_idx = None
+        for i, p in enumerate(doc.paragraphs):
+            if p is keywords_para:
+                para_idx = i
+                break
+        report['keywords_paragraph_index'] = para_idx
+    except Exception:
+        report['keywords_paragraph_index'] = None
+    # record paragraph index for downstream consumers
+    try:
+        report['keywords_paragraph_index'] = keywords_idx
+        # if title_paragraph set, also expose its index
+        if 'title_paragraph' in locals() and title_paragraph is not None:
+            for i, p in enumerate(doc.paragraphs):
+                if p is title_paragraph:
+                    report['title_paragraph_index'] = i
+                    break
+    except Exception:
+        report['keywords_paragraph_index'] = None
     
     # 检查标题格式
     keywords_text = keywords_para.text.strip()

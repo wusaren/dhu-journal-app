@@ -250,6 +250,11 @@ def check_english_abstract(doc, tpl):
             title_idx = idx
             report["title_paragraph"] = para
             break
+    # save numeric title paragraph index for downstream consumers
+    try:
+        report["title_paragraph_index"] = title_idx
+    except Exception:
+        report["title_paragraph_index"] = None
     if title_idx is None:
         structure_report["ok"] = False
         msg = tpl.get("messages", {}).get("structure_header_error", "未找到 ABSTRACT 标题")
@@ -308,6 +313,46 @@ def check_english_abstract(doc, tpl):
         }
 
     report["content_paragraphs"] = content_paras
+    # also save numeric indices for content paragraphs to make locating deterministic
+    try:
+        content_indices = []
+        for p in content_paras:
+            found = False
+            # Prefer identity match (same Paragraph object)
+            for i, para in enumerate(doc.paragraphs):
+                if para is p:
+                    content_indices.append(i)
+                    found = True
+                    break
+            if found:
+                continue
+            # Fallback 1: exact text match (excluding already used indices)
+            ptext = p.text.strip()
+            if ptext:
+                for i, para in enumerate(doc.paragraphs):
+                    if i in content_indices:
+                        continue
+                    if para.text.strip() == ptext:
+                        content_indices.append(i)
+                        found = True
+                        break
+            if found:
+                continue
+            # Fallback 2: substring match (best-effort)
+            if ptext:
+                for i, para in enumerate(doc.paragraphs):
+                    if i in content_indices:
+                        continue
+                    if ptext in para.text:
+                        content_indices.append(i)
+                        found = True
+                        break
+            # If still not found, append None to preserve paragraph ordering
+            if not found:
+                content_indices.append(None)
+        report["content_paragraphs_indices"] = content_indices
+    except Exception:
+        report["content_paragraphs_indices"] = []
 
     # 长度检查
     content_text = " ".join([p.text.strip() for p in content_paras])
@@ -426,6 +471,9 @@ def check_english_abstract(doc, tpl):
         "structure": structure_report,
         "title_format": title_report,
         "content_format": content_report,
+        # expose deterministic paragraph indices for downstream consumers
+        "title_paragraph_index": title_idx if 'title_idx' in locals() else None,
+        "content_paragraphs_indices": content_indices if 'content_indices' in locals() else [],
         "summary": []
     }
     summary_tpl = tpl.get("messages", {}).get("summary_overall")
