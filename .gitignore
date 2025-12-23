@@ -4,3 +4,6 @@ __pycache__/
 
 .vscode/
 .idea/
+backend/venv/
+backend/uploads/format_check
+backend/logs

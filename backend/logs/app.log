@@ -24831,3 +24831,919 @@ AttributeError: 'PaperFormatDetector' object has no attribute 'modules'
 2025-12-15 15:17:31,297 - __main__ - INFO - 数据库记录已更新: ID=2
 2025-12-15 15:17:31,300 - werkzeug - INFO - 127.0.0.1 - - [15/Dec/2025 15:17:31] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
 2025-12-15 15:17:31,315 - werkzeug - INFO - 127.0.0.1 - - [15/Dec/2025 15:17:31] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 21:38:26,333 - __main__ - INFO - 创建目录: uploads
+2025-12-21 21:38:26,335 - __main__ - INFO - 创建目录: uploads/format_check
+2025-12-21 21:38:26,335 - __main__ - INFO - 创建目录: uploads/format_check/temp
+2025-12-21 21:38:26,337 - __main__ - INFO - 创建目录: uploads/format_check/reports
+2025-12-21 21:38:26,338 - __main__ - INFO - 创建目录: uploads/format_check/annotate
+2025-12-21 21:38:26,339 - __main__ - INFO - 创建目录: uploads/format_check/term
+2025-12-21 21:38:26,529 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 21:38:26,532 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 21:38:26,798 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.110.217:5000
+2025-12-21 21:38:26,799 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-21 21:38:26,801 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 21:38:31,504 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 21:38:31,508 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 21:38:31,531 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 21:38:31,572 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 21:42:01,406 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:42:01,409 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:01] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:42:05,354 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:42:05,358 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:05] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:42:06,902 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:06] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-12-21 21:42:08,177 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:42:08,177 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:08] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:42:09,597 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:09] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-12-21 21:42:21,058 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:21] "POST /api/login HTTP/1.1" 200 -
+2025-12-21 21:42:22,700 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:42:22,701 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:42:22] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:43:07,447 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:43:07,449 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:43:07] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:43:39,012 - __main__ - ERROR - 检查标题重复错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files 
+WHERE format_check_files.title = %(title_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'title_1': '毕业论文', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:43:39,013 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:43:39] "[35m[1mPOST /api/paper-format/check-duplicate HTTP/1.1[0m" 500 -
+2025-12-21 21:47:52,089 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:47:52] "GET /api/me HTTP/1.1" 200 -
+2025-12-21 21:47:52,523 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:47:52,524 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:47:52] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:48:04,728 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:48:04,730 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:48:04] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:48:08,391 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:48:08,392 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:48:08] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:48:15,019 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:48:15,020 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:48:15] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:49:18,742 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:49:18] "GET /api/me HTTP/1.1" 200 -
+2025-12-21 21:49:19,039 - __main__ - ERROR - 获取格式审查文件列表错误: (pymysql.err.OperationalError) (1054, "Unknown column 'format_check_files.term_result_path' in 'field list'")
+[SQL: SELECT format_check_files.id AS format_check_files_id, format_check_files.title AS format_check_files_title, format_check_files.submit_date AS format_check_files_submit_date, format_check_files.temp_file_path AS format_check_files_temp_file_path, format_check_files.report_path AS format_check_files_report_path, format_check_files.annotated_path AS format_check_files_annotated_path, format_check_files.content_details_path AS format_check_files_content_details_path, format_check_files.term_result_path AS format_check_files_term_result_path, format_check_files.check_status AS format_check_files_check_status, format_check_files.total_checks AS format_check_files_total_checks, format_check_files.passed_checks AS format_check_files_passed_checks, format_check_files.failed_checks AS format_check_files_failed_checks, format_check_files.pass_rate AS format_check_files_pass_rate, format_check_files.created_at AS format_check_files_created_at, format_check_files.updated_at AS format_check_files_updated_at 
+FROM format_check_files ORDER BY format_check_files.created_at DESC]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-21 21:49:19,040 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:49:19] "[35m[1mGET /api/paper-format/files HTTP/1.1[0m" 500 -
+2025-12-21 21:51:00,155 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 21:51:00,157 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 21:51:00,194 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.110.217:5000
+2025-12-21 21:51:00,194 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-21 21:51:00,197 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 21:51:03,641 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 21:51:03,641 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 21:51:03,674 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 21:51:03,704 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 21:51:06,206 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:06] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 21:51:16,656 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:16] "[33mGET /api/paper-format/open-original/2 HTTP/1.1[0m" 404 -
+2025-12-21 21:51:21,578 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:21] "[33mGET /api/paper-format/open-report/2 HTTP/1.1[0m" 404 -
+2025-12-21 21:51:24,487 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:24] "[33mGET /api/paper-format/open-annotated/2 HTTP/1.1[0m" 404 -
+2025-12-21 21:51:47,071 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:47] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-12-21 21:51:47,117 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 21:51:47,134 - __main__ - INFO - 格式审查文件记录已创建: ID=3
+2025-12-21 21:51:47,136 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:47] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-12-21 21:51:47,148 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 21:51:47] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 22:02:25,976 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 22:02:25,976 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 22:02:28,063 - services.Chinese_paper_format_detector - ERROR - 导入检测模块失败: No module named 'check_code'
+2025-12-21 22:02:28,063 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 22:02:28,063 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 22:02:28,063 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-21 22:02:28,063 - services.Chinese_paper_format_detector - ERROR - 摘要检测失败: 'ChinesePaperFormatDetector' object has no attribute 'modules'
+Traceback (most recent call last):
+  File "C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_format_detector.py", line 133, in detect_abstract
+    Abstract_detect = self.modules['Abstract']
+                      ^^^^^^^^^^^^
+AttributeError: 'ChinesePaperFormatDetector' object has no attribute 'modules'
+2025-12-21 22:02:28,064 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 22:02:28,064 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 22:02:28,064 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 22:02:28,066 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_220228_format_report.txt
+2025-12-21 22:02:28,070 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251221_220228_docx_annotated.docx
+2025-12-21 22:02:28,070 - services.document_annotator - INFO - 共识别出 0 个问题
+2025-12-21 22:02:28,070 - services.document_annotator - INFO - 未发现问题，无需添加批注
+2025-12-21 22:02:28,070 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251221_220228_docx_annotated.docx
+2025-12-21 22:02:28,078 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 22:02:28,080 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:02:28] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 22:02:28,094 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:02:28] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 22:02:44,485 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 22:02:44,486 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 22:02:44,490 - services.Chinese_paper_format_detector - ERROR - 导入检测模块失败: No module named 'check_code'
+2025-12-21 22:02:44,490 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 22:02:44,490 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 22:02:44,490 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-21 22:02:44,490 - services.Chinese_paper_format_detector - ERROR - 关键词检测失败: 'ChinesePaperFormatDetector' object has no attribute 'modules'
+Traceback (most recent call last):
+  File "C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_format_detector.py", line 183, in detect_keywords
+    Keywords_detect = self.modules['Keywords']
+                      ^^^^^^^^^^^^
+AttributeError: 'ChinesePaperFormatDetector' object has no attribute 'modules'
+2025-12-21 22:02:44,491 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 22:02:44,491 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 22:02:44,491 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 22:02:44,492 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_220244_format_report.txt
+2025-12-21 22:02:44,495 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251221_220244_docx_annotated.docx
+2025-12-21 22:02:44,495 - services.document_annotator - INFO - 共识别出 0 个问题
+2025-12-21 22:02:44,495 - services.document_annotator - INFO - 未发现问题，无需添加批注
+2025-12-21 22:02:44,495 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251221_220244_docx_annotated.docx
+2025-12-21 22:02:44,500 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 22:02:44,500 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:02:44] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 22:02:44,522 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:02:44] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 22:13:11,723 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 22:13:11,724 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 22:13:11,728 - services.Chinese_paper_format_detector - ERROR - 导入检测模块失败: No module named 'check_code'
+2025-12-21 22:13:11,728 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 22:13:11,728 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 22:13:11,728 - services.Chinese_paper_format_detector - INFO - 执行 Content 检测
+2025-12-21 22:13:11,728 - services.Chinese_paper_format_detector - ERROR - 正文检测失败: 'ChinesePaperFormatDetector' object has no attribute 'modules'
+Traceback (most recent call last):
+  File "C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_format_detector.py", line 226, in detect_content
+    Content_detect = self.modules['Content']
+                     ^^^^^^^^^^^^
+AttributeError: 'ChinesePaperFormatDetector' object has no attribute 'modules'
+2025-12-21 22:13:11,729 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 22:13:11,729 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 22:13:11,729 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 22:13:11,731 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_221311_format_report.txt
+2025-12-21 22:13:11,735 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251221_221311_docx_annotated.docx
+2025-12-21 22:13:11,735 - services.document_annotator - INFO - 共识别出 0 个问题
+2025-12-21 22:13:11,735 - services.document_annotator - INFO - 未发现问题，无需添加批注
+2025-12-21 22:13:11,735 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251221_221311_docx_annotated.docx
+2025-12-21 22:13:11,739 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 22:13:11,739 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:13:11] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 22:13:11,755 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:13:11] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 22:15:52,589 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_detect\\config_api.py', reloading
+2025-12-21 22:15:52,972 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 22:15:57,543 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 22:15:57,543 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 22:15:57,569 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 22:15:57,596 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 22:16:08,593 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 22:16:08,593 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 22:16:10,245 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-21 22:16:10,245 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 22:16:10,245 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 22:16:10,246 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-21 22:16:10,356 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 22:16:10,367 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 22:16:10,368 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 22:16:10,369 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_221610_format_report.txt
+2025-12-21 22:16:10,369 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251221_221610_docx_annotated.docx
+2025-12-21 22:16:10,369 - services.document_annotator - INFO - 共识别出 0 个问题
+2025-12-21 22:16:10,369 - services.document_annotator - INFO - 未发现问题，无需添加批注
+2025-12-21 22:16:10,369 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251221_221610_docx_annotated.docx
+2025-12-21 22:16:10,385 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 22:16:10,387 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:16:10] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 22:16:10,402 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:16:10] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 22:16:21,101 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 22:16:21,101 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 22:16:21,101 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-21 22:16:21,101 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 22:16:21,101 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 22:16:21,102 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-21 22:16:21,309 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-21 22:16:21,407 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-21 22:16:21,507 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 22:16:21,518 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 22:16:21,518 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 22:16:21,519 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_221621_format_report.txt
+2025-12-21 22:16:21,524 - services.document_annotator - INFO - 文档副本已创建: uploads/format_check/annotate\20251221_221621_docx_annotated.docx
+2025-12-21 22:16:21,525 - services.document_annotator - INFO - 共识别出 0 个问题
+2025-12-21 22:16:21,525 - services.document_annotator - INFO - 未发现问题，无需添加批注
+2025-12-21 22:16:21,525 - services.paper_format_service - INFO - 批注文档已自动生成: uploads/format_check/annotate\20251221_221621_docx_annotated.docx
+2025-12-21 22:16:21,531 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 22:16:21,533 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:16:21] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 22:16:21,548 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:16:21] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 22:16:30,512 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251221_221621_docx_annotated.docx
+2025-12-21 22:16:30,529 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 22:16:30] "GET /api/paper-format/download-annotated/20251221_221621_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-21 22:57:24,623 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 22:57:25,214 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 22:57:29,669 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 22:57:29,669 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 22:57:29,692 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 22:57:29,720 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:15:18,801 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-12-21 23:15:19,103 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:15:23,910 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:15:23,912 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:15:23,934 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:15:23,964 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:15:42,055 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-12-21 23:15:42,379 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:15:46,794 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:15:46,796 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:15:46,816 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:15:46,843 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:16:14,216 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 23:16:14,216 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 23:16:15,932 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-21 23:16:15,932 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 23:16:15,932 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 23:16:15,932 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-21 23:16:16,024 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-21 23:16:16,111 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-21 23:16:16,298 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 23:16:16,309 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 23:16:16,309 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 23:16:16,310 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_231616_format_report.txt
+2025-12-21 23:16:16,680 - services.chinese_annotation_engine - INFO - Added comment at para 313 for Abstract-chinese_abstract
+2025-12-21 23:16:16,815 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251221_231616_20251221_215147_docx_annotated.docx (count=1)
+2025-12-21 23:16:16,815 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251221_231616_20251221_215147_docx_annotated.docx
+2025-12-21 23:16:16,829 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 23:16:16,831 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:16:16] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 23:16:16,847 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:16:16] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 23:16:20,722 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251221_231616_20251221_215147_docx_annotated.docx
+2025-12-21 23:16:20,732 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:16:20] "GET /api/paper-format/download-annotated/20251221_231616_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-21 23:19:28,868 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-12-21 23:19:29,335 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:19:34,204 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:19:34,207 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:19:34,229 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:19:34,258 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:20:14,104 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\paper_format_service.py', reloading
+2025-12-21 23:20:14,382 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:20:18,955 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:20:18,958 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:20:18,976 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:20:19,004 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:37:58,380 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:37:58,691 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:38:03,375 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:38:03,380 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:38:03,399 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:38:03,427 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:38:12,769 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:38:13,049 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:38:18,018 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:38:18,024 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:38:18,046 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:38:18,080 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:38:26,042 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:38:26,332 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:38:30,836 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:38:30,839 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:38:30,858 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:38:30,886 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:38:57,280 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 23:38:57,281 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 23:38:58,964 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-21 23:38:58,964 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 23:38:58,964 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 23:38:58,964 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-21 23:38:59,064 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-21 23:38:59,158 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-21 23:38:59,340 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 23:38:59,349 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 23:38:59,350 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 23:38:59,351 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_233859_format_report.txt
+2025-12-21 23:38:59,660 - services.chinese_annotation_engine - INFO - Added comment at para 313 for Abstract-english_abstract
+2025-12-21 23:38:59,664 - services.chinese_annotation_engine - INFO - Added comment at para 76 for Keywords-chinese_keywords
+2025-12-21 23:38:59,682 - services.chinese_annotation_engine - INFO - Added comment at para 76 for Keywords-english_keywords
+2025-12-21 23:38:59,814 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251221_233859_20251221_215147_docx_annotated.docx (count=3)
+2025-12-21 23:38:59,814 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251221_233859_20251221_215147_docx_annotated.docx
+2025-12-21 23:38:59,823 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 23:38:59,824 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:38:59] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 23:38:59,842 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:38:59] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 23:39:09,890 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251221_233859_20251221_215147_docx_annotated.docx
+2025-12-21 23:39:09,905 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:39:09] "GET /api/paper-format/download-annotated/20251221_233859_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-21 23:44:04,488 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-21 23:44:04,489 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-21 23:44:04,489 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-21 23:44:04,489 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-21 23:44:04,489 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-21 23:44:04,489 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-21 23:44:04,574 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-21 23:44:04,821 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-21 23:44:04,986 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-21 23:44:04,995 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-21 23:44:04,995 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-21 23:44:04,996 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251221_234404_format_report.txt
+2025-12-21 23:44:05,344 - services.chinese_annotation_engine - INFO - Added comment at para 313 for Abstract-english_abstract
+2025-12-21 23:44:05,359 - services.chinese_annotation_engine - INFO - Added comment at para 76 for Keywords-chinese_keywords
+2025-12-21 23:44:05,372 - services.chinese_annotation_engine - INFO - Added comment at para 76 for Keywords-english_keywords
+2025-12-21 23:44:05,510 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251221_234404_20251221_215147_docx_annotated.docx (count=3)
+2025-12-21 23:44:05,511 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251221_234404_20251221_215147_docx_annotated.docx
+2025-12-21 23:44:05,511 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-21 23:44:05,511 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:44:05] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-21 23:44:05,530 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:44:05] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-21 23:49:42,533 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\scripts\\check_comments.py', reloading
+2025-12-21 23:49:43,194 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:49:48,162 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:49:48,165 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:49:48,193 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:49:48,229 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:53:51,625 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:53:51,972 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:53:57,344 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:53:57,347 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:53:57,374 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:53:57,405 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:54:08,665 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:54:09,075 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:54:14,091 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:54:14,093 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:54:14,119 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:54:14,155 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:54:19,634 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:54:19,954 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:54:25,470 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:54:25,474 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:54:25,503 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:54:25,535 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:54:43,558 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-21 23:54:43,846 - werkzeug - INFO -  * Restarting with stat
+2025-12-21 23:54:48,291 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-21 23:54:48,294 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-21 23:54:48,314 - werkzeug - WARNING -  * Debugger is active!
+2025-12-21 23:54:48,343 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-21 23:56:42,451 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251221_234404_20251221_215147_docx_annotated.docx
+2025-12-21 23:56:42,453 - werkzeug - INFO - 127.0.0.1 - - [21/Dec/2025 23:56:42] "GET /api/paper-format/download-annotated/20251221_234404_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 00:03:36,339 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:03:36,676 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:03:41,704 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:03:41,708 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:03:41,730 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:03:41,761 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:03:49,715 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:03:50,028 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:03:55,219 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:03:55,222 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:03:55,245 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:03:55,275 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:03:58,922 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:03:59,223 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:04:04,505 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:04:04,509 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:04:04,537 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:04:04,572 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:04:06,846 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:04:07,131 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:04:11,966 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:04:11,970 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:04:12,002 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:04:12,036 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:06:36,450 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:06:36,807 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:06:42,196 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:06:42,199 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:06:42,224 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:06:42,259 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:06:49,287 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:06:49,680 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:06:55,504 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:06:55,507 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:06:55,532 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:06:55,561 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:07:03,751 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:07:03,999 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:07:08,426 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:07:08,428 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:07:08,447 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:07:08,468 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:07:35,330 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 00:07:35,331 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 00:07:36,994 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 00:07:36,994 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 00:07:36,994 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 00:07:36,994 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 00:07:37,103 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 00:07:37,194 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 00:07:37,391 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 00:07:37,401 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 00:07:37,402 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 00:07:37,403 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_000737_format_report.txt
+2025-12-22 00:07:37,706 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_abstract
+2025-12-22 00:07:37,849 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_000737_20251221_215147_docx_annotated.docx (count=1)
+2025-12-22 00:07:37,849 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_000737_20251221_215147_docx_annotated.docx
+2025-12-22 00:07:37,860 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 00:07:37,861 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:07:37] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 00:07:37,879 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:07:37] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 00:07:39,674 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_000737_20251221_215147_docx_annotated.docx
+2025-12-22 00:07:39,685 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:07:39] "GET /api/paper-format/download-annotated/20251222_000737_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 00:13:03,484 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:13:04,127 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:13:09,674 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:13:09,676 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:13:09,700 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:13:09,744 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:13:23,987 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:13:24,339 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:13:29,799 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:13:29,802 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:13:29,828 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:13:29,860 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:13:42,590 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:13:42,848 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:13:47,479 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:13:47,482 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:13:47,503 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:13:47,532 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:14:00,351 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 00:14:00,352 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 00:14:02,110 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 00:14:02,110 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 00:14:02,110 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 00:14:02,110 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 00:14:02,209 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 00:14:02,297 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 00:14:02,479 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 00:14:02,484 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 00:14:02,484 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 00:14:02,484 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_001402_format_report.txt
+2025-12-22 00:14:02,791 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_title_format
+2025-12-22 00:14:02,805 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_content_format
+2025-12-22 00:14:02,821 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 00:14:02,966 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_001402_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 00:14:02,966 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_001402_20251221_215147_docx_annotated.docx
+2025-12-22 00:14:02,976 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 00:14:02,978 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:14:02] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 00:14:02,992 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:14:02] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 00:15:02,652 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_001402_20251221_215147_docx_annotated.docx
+2025-12-22 00:15:02,669 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:15:02] "GET /api/paper-format/download-annotated/20251222_001402_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 00:30:58,463 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Abstract_detect.py', reloading
+2025-12-22 00:30:58,968 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:31:04,180 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:31:04,183 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:31:04,212 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:31:04,244 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:31:06,432 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Keywords_detect_unified.py', reloading
+2025-12-22 00:31:06,784 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:31:11,988 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:31:11,990 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:31:12,010 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:31:12,044 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:31:31,834 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:31:32,205 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:31:37,350 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:31:37,353 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:31:37,382 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:31:37,421 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:31:42,706 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Keywords_detect_unified.py', reloading
+2025-12-22 00:31:42,965 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:31:47,633 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:31:47,636 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:31:47,652 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:31:47,685 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:33:12,896 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Abstract_detect.py', reloading
+2025-12-22 00:33:13,263 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:33:18,260 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:33:18,263 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:33:18,289 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:33:18,327 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:33:23,540 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Abstract_detect.py', reloading
+2025-12-22 00:33:23,825 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:33:28,829 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:33:28,829 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:33:28,858 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:33:28,888 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:33:35,619 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Keywords_detect_unified.py', reloading
+2025-12-22 00:33:35,939 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:33:41,113 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:33:41,116 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:33:41,138 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:33:41,163 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:34:28,793 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:34:29,115 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:34:34,418 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:34:34,422 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:34:34,447 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:34:34,480 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:35:03,199 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:35:03,512 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:35:09,150 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:35:09,153 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:35:09,175 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:35:09,208 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:36:27,850 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\scripts\\self_check_annotation.py', reloading
+2025-12-22 00:36:28,224 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:36:34,090 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:36:34,093 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:36:34,115 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:36:34,148 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:37:21,359 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\scripts\\self_check_annotation.py', reloading
+2025-12-22 00:37:21,684 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:37:26,875 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:37:26,883 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:37:26,904 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:37:26,934 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:37:46,914 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\scripts\\self_check_annotation.py', reloading
+2025-12-22 00:37:47,218 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:37:52,305 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:37:52,308 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:37:52,331 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:37:52,361 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:38:31,281 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:38:31,571 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:38:36,749 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:38:36,752 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:38:36,776 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:38:36,810 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:38:39,162 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:38:39,459 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:38:44,649 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:38:44,652 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:38:44,668 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:38:44,702 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:39:26,129 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Keywords_detect_unified.py', reloading
+2025-12-22 00:39:26,402 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:39:30,993 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:39:30,995 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:39:31,017 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:39:31,046 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 00:42:11,356 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 00:42:11,356 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 00:42:13,473 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 00:42:13,473 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 00:42:13,473 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 00:42:13,473 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 00:42:13,581 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 00:42:13,672 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 00:42:13,873 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 00:42:13,885 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 00:42:13,885 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 00:42:13,886 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_004213_format_report.txt
+2025-12-22 00:42:14,173 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_title_format
+2025-12-22 00:42:14,190 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_content_format
+2025-12-22 00:42:14,192 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 00:42:14,335 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_004213_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 00:42:14,335 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_004213_20251221_215147_docx_annotated.docx
+2025-12-22 00:42:14,345 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 00:42:14,348 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:42:14] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 00:42:14,373 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:42:14] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 00:42:17,623 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_004213_20251221_215147_docx_annotated.docx
+2025-12-22 00:42:17,637 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 00:42:17] "GET /api/paper-format/download-annotated/20251222_004213_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 00:52:29,193 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 00:52:30,218 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 00:52:36,492 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 00:52:36,495 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 00:52:36,522 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 00:52:36,552 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:05:07,365 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Abstract_detect.py', reloading
+2025-12-22 01:05:07,676 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:05:12,922 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:05:12,924 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:05:12,949 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:05:12,980 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:05:29,783 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Abstract_detect.py', reloading
+2025-12-22 01:05:30,053 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:05:34,781 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:05:34,785 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:05:34,805 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:05:34,835 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:07:58,089 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 01:07:58,089 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 01:08:00,109 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 01:08:00,109 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 01:08:00,109 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 01:08:00,109 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 01:08:00,225 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 01:08:00,318 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 01:08:00,498 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 01:08:00,502 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 01:08:00,502 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 01:08:00,509 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_010800_format_report.txt
+2025-12-22 01:08:00,788 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_title_format
+2025-12-22 01:08:00,803 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_content_format
+2025-12-22 01:08:00,806 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 01:08:00,944 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_010800_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 01:08:00,944 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_010800_20251221_215147_docx_annotated.docx
+2025-12-22 01:08:00,953 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 01:08:00,955 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:08:00] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 01:08:00,971 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:08:00] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 01:08:04,384 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_010800_20251221_215147_docx_annotated.docx
+2025-12-22 01:08:04,400 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:08:04] "GET /api/paper-format/download-annotated/20251222_010800_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 01:25:38,801 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Abstract_detect.py', reloading
+2025-12-22 01:25:39,457 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:25:44,349 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:25:44,353 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:25:44,373 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:25:44,401 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:26:16,711 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Abstract_detect.py', reloading
+2025-12-22 01:26:16,994 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:26:21,370 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:26:21,378 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:26:21,397 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:26:21,425 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:29:11,742 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 01:29:11,742 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 01:29:13,430 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 01:29:13,430 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 01:29:13,430 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 01:29:13,430 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 01:29:13,530 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 01:29:13,627 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 01:29:13,816 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 01:29:13,828 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 01:29:13,828 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 01:29:13,829 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_012913_format_report.txt
+2025-12-22 01:29:14,115 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-22 01:29:14,116 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_content_format
+2025-12-22 01:29:14,116 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 01:29:14,258 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_012913_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 01:29:14,259 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_012913_20251221_215147_docx_annotated.docx
+2025-12-22 01:29:14,266 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 01:29:14,266 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:29:14] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 01:29:14,295 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:29:14] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 01:29:16,011 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_012913_20251221_215147_docx_annotated.docx
+2025-12-22 01:29:16,025 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:29:16] "GET /api/paper-format/download-annotated/20251222_012913_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 01:30:48,468 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:30:48,944 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:30:53,649 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:30:53,653 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:30:53,670 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:30:53,702 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:31:15,917 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:31:16,178 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:31:20,538 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:31:20,540 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:31:20,560 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:31:20,588 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:32:21,798 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 01:32:21,798 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 01:32:23,462 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 01:32:23,462 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 01:32:23,462 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 01:32:23,463 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 01:32:23,564 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 01:32:23,656 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 01:32:23,833 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 01:32:23,842 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 01:32:23,843 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 01:32:23,844 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_013223_format_report.txt
+2025-12-22 01:32:24,093 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-22 01:32:24,097 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_content_format
+2025-12-22 01:32:24,099 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 01:32:24,232 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_013223_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 01:32:24,233 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_013223_20251221_215147_docx_annotated.docx
+2025-12-22 01:32:24,242 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 01:32:24,244 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:32:24] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 01:32:24,259 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:32:24] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 01:32:26,076 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_013223_20251221_215147_docx_annotated.docx
+2025-12-22 01:32:26,090 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:32:26] "GET /api/paper-format/download-annotated/20251222_013223_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 01:38:48,333 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Keywords_detect.py', reloading
+2025-12-22 01:38:48,820 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:38:53,708 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:38:53,711 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:38:53,732 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:38:53,762 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:39:17,496 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Keywords_detect.py', reloading
+2025-12-22 01:39:17,753 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:39:22,170 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:39:22,173 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:39:22,192 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:39:22,218 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:40:44,121 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Abstract_detect.py', reloading
+2025-12-22 01:40:44,413 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:40:49,034 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:40:49,036 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:40:49,058 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:40:49,088 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:40:51,200 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Keywords_detect_unified.py', reloading
+2025-12-22 01:40:51,487 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:40:56,187 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:40:56,190 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:40:56,211 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:40:56,238 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:41:41,383 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:41:41,671 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:41:46,490 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:41:46,492 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:41:46,512 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:41:46,543 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:41:56,109 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:41:56,410 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:42:01,305 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:42:01,307 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:42:01,329 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:42:01,360 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:42:19,153 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\Keywords_detect_unified.py', reloading
+2025-12-22 01:42:19,419 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:42:23,779 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:42:23,781 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:42:23,800 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:42:23,828 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:43:40,756 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 01:43:40,756 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 01:43:42,458 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 01:43:42,458 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 01:43:42,458 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 01:43:42,459 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 01:43:42,557 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 01:43:42,646 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 01:43:42,831 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 01:43:42,842 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 01:43:42,842 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 01:43:42,843 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_014342_format_report.txt
+2025-12-22 01:43:43,121 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-22 01:43:43,125 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_content_format
+2025-12-22 01:43:43,128 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 01:43:43,260 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_014342_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 01:43:43,261 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_014342_20251221_215147_docx_annotated.docx
+2025-12-22 01:43:43,272 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 01:43:43,275 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:43:43] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 01:43:43,288 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:43:43] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 01:43:45,537 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_014342_20251221_215147_docx_annotated.docx
+2025-12-22 01:43:45,547 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 01:43:45] "GET /api/paper-format/download-annotated/20251222_014342_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 01:49:52,063 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:49:52,620 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:49:57,523 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:49:57,525 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:49:57,550 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:49:57,580 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:50:25,838 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:50:26,147 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:50:31,095 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:50:31,096 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:50:31,121 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:50:31,154 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:50:53,510 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Abstract_detect.py', reloading
+2025-12-22 01:50:53,799 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:50:58,559 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:50:58,563 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:50:58,586 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:50:58,622 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:51:36,447 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:51:36,733 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:51:41,631 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:51:41,641 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:51:41,662 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:51:41,692 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:51:45,386 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:51:45,751 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 01:51:50,732 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 01:51:50,734 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 01:51:50,758 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 01:51:50,789 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 01:52:17,523 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 01:52:17,828 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:32:10,965 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:32:10,965 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:32:11,015 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.110.217:5000
+2025-12-22 02:32:11,016 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-22 02:32:11,018 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:32:15,707 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:32:15,715 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:32:15,737 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 02:32:15,767 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 02:32:19,483 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 02:32:19,484 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 02:32:21,257 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 02:32:21,257 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 02:32:21,257 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 02:32:21,257 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 02:32:21,369 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 02:32:21,459 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 02:32:21,640 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 02:32:21,650 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 02:32:21,650 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 02:32:21,651 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_023221_format_report.txt
+2025-12-22 02:32:21,890 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-22 02:32:21,899 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_content_format
+2025-12-22 02:32:21,901 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 02:32:22,035 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_023221_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 02:32:22,035 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_023221_20251221_215147_docx_annotated.docx
+2025-12-22 02:32:22,045 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 02:32:22,046 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 02:32:22] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 02:32:22,061 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 02:32:22] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 02:32:23,744 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_023221_20251221_215147_docx_annotated.docx
+2025-12-22 02:32:23,758 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 02:32:23] "GET /api/paper-format/download-annotated/20251222_023221_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-22 02:32:50,374 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_detect\\English_Abstract_detect.py', reloading
+2025-12-22 02:32:50,975 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:32:56,376 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:32:56,381 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:32:56,411 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 02:32:56,447 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 02:36:38,540 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 02:36:38,851 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:36:43,806 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:36:43,806 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:36:43,832 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 02:36:43,862 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 02:36:53,345 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 02:36:53,655 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:36:58,737 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:36:58,739 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:36:58,760 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 02:36:58,790 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 02:37:22,795 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 02:37:23,129 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:37:28,726 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:37:28,729 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:37:28,751 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 02:37:28,779 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 02:37:53,907 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 02:37:54,209 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 02:37:58,799 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 02:37:58,802 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 02:37:58,821 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 02:37:58,847 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 02:38:42,571 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\chinese_annotation_engine.py', reloading
+2025-12-22 02:38:42,875 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 03:01:47,129 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 03:01:47,131 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 03:01:47,174 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.110.217:5000
+2025-12-22 03:01:47,174 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-22 03:01:47,177 - werkzeug - INFO -  * Restarting with stat
+2025-12-22 03:01:51,617 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-22 03:01:51,619 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-22 03:01:51,640 - werkzeug - WARNING -  * Debugger is active!
+2025-12-22 03:01:51,668 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-22 03:02:04,017 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-22 03:02:04,017 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-22 03:02:05,833 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-22 03:02:05,833 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-22 03:02:05,833 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-22 03:02:05,834 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-22 03:02:05,945 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-22 03:02:06,088 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-22 03:02:06,258 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-22 03:02:06,267 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-22 03:02:06,268 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-22 03:02:06,269 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251222_030206_format_report.txt
+2025-12-22 03:02:06,521 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-22 03:02:06,523 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_content_format
+2025-12-22 03:02:06,526 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-22 03:02:06,657 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251222_030206_20251221_215147_docx_annotated.docx (count=3)
+2025-12-22 03:02:06,658 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251222_030206_20251221_215147_docx_annotated.docx
+2025-12-22 03:02:06,667 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-22 03:02:06,668 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 03:02:06] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-22 03:02:06,681 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 03:02:06] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-22 03:02:08,330 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251222_030206_20251221_215147_docx_annotated.docx
+2025-12-22 03:02:08,344 - werkzeug - INFO - 127.0.0.1 - - [22/Dec/2025 03:02:08] "GET /api/paper-format/download-annotated/20251222_030206_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-23 09:11:05,679 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-23 09:11:05,682 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-23 09:11:05,757 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.110.217:5000
+2025-12-23 09:11:05,758 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-23 09:11:05,760 - werkzeug - INFO -  * Restarting with stat
+2025-12-23 09:11:12,042 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-23 09:11:12,045 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-23 09:11:12,073 - werkzeug - WARNING -  * Debugger is active!
+2025-12-23 09:11:12,107 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-23 09:11:41,448 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:11:41] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 09:11:45,021 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:11:45] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 09:11:46,965 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:11:46] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 09:11:48,147 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:11:48] "[31m[1mGET /api/me HTTP/1.1[0m" 401 -
+2025-12-23 09:12:00,343 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:12:00] "POST /api/login HTTP/1.1" 200 -
+2025-12-23 09:12:01,668 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:12:01] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 09:12:07,965 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-23 09:12:07,966 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-23 09:12:12,448 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-23 09:12:12,449 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-23 09:12:12,449 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251221_215147_docx
+2025-12-23 09:12:12,449 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-23 09:12:12,570 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-23 09:12:12,726 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-23 09:12:12,941 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-23 09:12:12,952 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-23 09:12:12,952 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-23 09:12:12,953 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251223_091212_format_report.txt
+2025-12-23 09:12:13,377 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-23 09:12:13,381 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_content_format
+2025-12-23 09:12:13,385 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-23 09:12:13,533 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251223_091212_20251221_215147_docx_annotated.docx (count=3)
+2025-12-23 09:12:13,534 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251223_091212_20251221_215147_docx_annotated.docx
+2025-12-23 09:12:13,561 - __main__ - INFO - 数据库记录已更新: ID=3
+2025-12-23 09:12:13,564 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:12:13] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-23 09:12:13,621 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:12:13] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 09:12:17,816 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251223_091212_20251221_215147_docx_annotated.docx
+2025-12-23 09:12:17,829 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:12:17] "GET /api/paper-format/download-annotated/20251223_091212_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
+2025-12-23 10:00:16,089 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:00:16] "GET /api/paper-format/files HTTP/1.1" 200 -
