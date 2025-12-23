@@ -6,3 +6,8 @@ __pycache__/
 .idea/
 node_modules/
 backend/uploads/format_check/
+backend/services/paper_detect/config_api.py
+
+start.bat
+
+backend/logs/app.log

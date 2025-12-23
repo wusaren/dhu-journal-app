@@ -511,9 +511,6 @@ class TermDetector:
     def collect_lemma_variants(self, ngrams: Dict[str, int]) -> Dict[str, List[Tuple[str, int]]]:
         """
         收集术语的词形还原变体（以标准形式为键）
-        
-        复用 aggregate_term_variants 中的词形还原逻辑
-        
         Args:
             ngrams: {原始术语: 频率} 字典
             
@@ -773,7 +770,7 @@ class TermDetector:
         
         return cvalue_scores
     
-    def filter_by_patterns(self, candidates: List[Tuple[str, float]]) -> List[Tuple[str, float]]:
+    def filter_by_patterns(self, candidates: Dict[str, int]) -> Dict[str, int]:
         """
         基于模式过滤术语候选
         
@@ -794,7 +791,7 @@ class TermDetector:
         Returns:
             过滤后的候选列表
         """
-        filtered = []
+        filtered = {}
         filtered_out = {
             'length': 0,
             'single_char': 0,
@@ -804,7 +801,7 @@ class TermDetector:
             'invalid_pattern': 0
         }
         
-        for term, score in candidates:
+        for term, freq in candidates.items():
             words = term.split()
             word_count = len(words)
             
@@ -844,7 +841,7 @@ class TermDetector:
                 filtered_out['invalid_pattern'] += 1
                 continue
             
-            filtered.append((term, score))
+            filtered[term] = freq
         
         logger.info(f"模式过滤完成: 保留 {len(filtered)} 个，过滤 {sum(filtered_out.values())} 个")
         logger.info(f"  - 长度不符: {filtered_out['length']}")
@@ -889,30 +886,29 @@ class TermDetector:
             return []
         
         logger.info(f"提取到 {len(ngrams)} 个原始N-gram")
+
+        # 3. 基于模式过滤
+        filtered_candidates = self.filter_by_patterns(ngrams)
+        if not filtered_candidates:
+            logger.warning("过滤后无有效术语候选")
+            return [], {}
         
-        # 3. 收集词形还原变体（只收集词形变体，不收集包含关系变体）
-        lemma_variants = self.collect_lemma_variants(ngrams)
+        # 4. 收集词形还原变体（只收集词形变体，不收集包含关系变体）
+        lemma_variants = self.collect_lemma_variants(filtered_candidates)
         logger.info(f"收集到 {len(lemma_variants)} 组词形还原变体")
         
-        # 4. 聚合术语变体（词形还原）
-        aggregated_ngrams, _ = self.aggregate_term_variants(ngrams)
+        # 5. 聚合术语变体（词形还原）
+        aggregated_ngrams, _ = self.aggregate_term_variants(filtered_candidates)
         
         if not aggregated_ngrams:
             logger.warning("聚合后无有效术语")
             return [], {}
         
-        # 5. 计算C-value（使用聚合后的频率）
+        # 6. 计算C-value（使用聚合后的频率）
         cvalue_scores = self.calculate_cvalue(aggregated_ngrams)
         
-        # 6. 基于模式过滤
-        filtered_candidates = self.filter_by_patterns(cvalue_scores)
-        
-        if not filtered_candidates:
-            logger.warning("过滤后无有效术语候选")
-            return [], {}
-        
         # 7. 取Top K
-        top_terms = filtered_candidates[:top_k]
+        top_terms = cvalue_scores[:top_k]
         
         # 8. 构建返回结果
         results = []
