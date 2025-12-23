@@ -25747,3 +25747,74 @@ AttributeError: 'ChinesePaperFormatDetector' object has no attribute 'modules'
 2025-12-23 09:12:17,816 - __main__ - INFO - 下载批注文档: uploads/format_check/annotate\20251223_091212_20251221_215147_docx_annotated.docx
 2025-12-23 09:12:17,829 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 09:12:17] "GET /api/paper-format/download-annotated/20251223_091212_20251221_215147_docx_annotated.docx HTTP/1.1" 200 -
 2025-12-23 10:00:16,089 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:00:16] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 10:09:17,691 - werkzeug - INFO -  * Detected change in 'C:\\Users\\57189\\dhu-journal-app\\backend\\services\\Chinese_paper_format_detector.py', reloading
+2025-12-23 10:09:18,328 - werkzeug - INFO -  * Restarting with stat
+2025-12-23 10:09:24,692 - __main__ - INFO - 所有默认用户已创建完成
+2025-12-23 10:09:24,696 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 19
+2025-12-23 10:09:24,735 - werkzeug - WARNING -  * Debugger is active!
+2025-12-23 10:09:24,762 - werkzeug - INFO -  * Debugger PIN: 958-903-241
+2025-12-23 10:11:47,080 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:11:47] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 10:12:04,677 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:12:04] "POST /api/paper-format/check-duplicate HTTP/1.1" 200 -
+2025-12-23 10:12:04,724 - __main__ - INFO - 保存临时文件: uploads/format_check/temp\20251223_101204_paper2.docx
+2025-12-23 10:12:04,742 - __main__ - INFO - 格式审查文件记录已创建: ID=4
+2025-12-23 10:12:04,742 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:12:04] "POST /api/paper-format/save-temp HTTP/1.1" 200 -
+2025-12-23 10:12:04,762 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:12:04] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 10:12:16,951 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-23 10:12:16,954 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-23 10:12:21,391 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-23 10:12:21,391 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-23 10:12:21,391 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251223_101204_paper2.docx
+2025-12-23 10:12:21,391 - services.Chinese_paper_format_detector - INFO - 执行 Abstract 检测
+2025-12-23 10:12:21,503 - services.Chinese_paper_format_detector - INFO - 执行 English_Abstract 检测
+2025-12-23 10:12:21,627 - services.Chinese_paper_format_detector - INFO - 执行 Keywords 检测
+2025-12-23 10:12:21,868 - services.Chinese_paper_format_detector - INFO - 执行 Content 检测
+2025-12-23 10:12:22,511 - services.Chinese_paper_format_detector - INFO - 执行 Title 检测
+2025-12-23 10:12:22,521 - services.Chinese_paper_format_detector - ERROR - 标题检测失败: Template JSON 缺少 'author_regex' 字段。
+Traceback (most recent call last):
+  File "C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_format_detector.py", line 109, in detect_title
+    result = Title_detect.check_doc_with_template(docx_path, template_path, skip_checks)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\57189\dhu-journal-app\backend\services\paper_detect\Title_detect.py", line 975, in check_doc_with_template
+    tpl = load_template(template_identifier)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\57189\dhu-journal-app\backend\services\paper_detect\Title_detect.py", line 99, in load_template
+    raise ValueError("Template JSON 缺少 'author_regex' 字段。")
+ValueError: Template JSON 缺少 'author_regex' 字段。
+2025-12-23 10:12:22,539 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-23 10:12:22,594 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-23 10:12:22,594 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-23 10:12:22,602 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251223_101222_format_report.txt
+2025-12-23 10:12:22,811 - services.chinese_annotation_engine - INFO - Added comment at para 96 for Abstract-english_title_format
+2025-12-23 10:12:22,811 - services.chinese_annotation_engine - INFO - Added comment at para 98 for Abstract-english_content_format
+2025-12-23 10:12:22,827 - services.chinese_annotation_engine - INFO - Added comment at para 110 for Keywords-english_format
+2025-12-23 10:12:22,944 - services.chinese_annotation_engine - INFO - Annotation saved: uploads/format_check/annotate\20251223_101222_20251223_101204_paper2_annotated.docx (count=3)
+2025-12-23 10:12:22,944 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251223_101222_20251223_101204_paper2_annotated.docx
+2025-12-23 10:12:22,965 - __main__ - INFO - 数据库记录已更新: ID=4
+2025-12-23 10:12:22,973 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:12:22] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-23 10:12:22,981 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:12:22] "GET /api/paper-format/files HTTP/1.1" 200 -
+2025-12-23 10:13:46,670 - __main__ - INFO - 接收到skip_checks参数: {}
+2025-12-23 10:13:46,670 - services.Chinese_paper_format_detector - INFO - 论文格式检测器已初始化，模板目录: C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_detect_templates
+2025-12-23 10:13:46,670 - services.Chinese_paper_format_detector - INFO - 所有检测模块已加载
+2025-12-23 10:13:46,670 - services.paper_format_service - INFO - 论文格式检测服务已初始化
+2025-12-23 10:13:46,670 - services.paper_format_service - INFO - 开始进行格式检测: uploads/format_check/temp\20251223_101204_paper2.docx
+2025-12-23 10:13:46,670 - services.Chinese_paper_format_detector - INFO - 执行 Title 检测
+2025-12-23 10:13:46,670 - services.Chinese_paper_format_detector - ERROR - 标题检测失败: Template JSON 缺少 'author_regex' 字段。
+Traceback (most recent call last):
+  File "C:\Users\57189\dhu-journal-app\backend\services\Chinese_paper_format_detector.py", line 109, in detect_title
+    result = Title_detect.check_doc_with_template(docx_path, template_path, skip_checks)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\57189\dhu-journal-app\backend\services\paper_detect\Title_detect.py", line 975, in check_doc_with_template
+    tpl = load_template(template_identifier)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\57189\dhu-journal-app\backend\services\paper_detect\Title_detect.py", line 99, in load_template
+    raise ValueError("Template JSON 缺少 'author_regex' 字段。")
+ValueError: Template JSON 缺少 'author_regex' 字段。
+2025-12-23 10:13:46,670 - services.paper_format_service - INFO - 格式检测成功！
+2025-12-23 10:13:46,670 - services.paper_format_service - INFO - 检测报告处理成功！
+2025-12-23 10:13:46,670 - services.paper_format_service - INFO - 开始生成检测报告
+2025-12-23 10:13:46,675 - services.paper_format_service - INFO - 检测报告已保存到: uploads/format_check/reports\20251223_101346_format_report.txt
+2025-12-23 10:13:46,677 - services.chinese_annotation_engine - INFO - No issues from adapters -> nothing to annotate
+2025-12-23 10:13:46,677 - services.paper_format_service - INFO - 批注文档已自动生成 (chinese engine): uploads/format_check/annotate\20251223_101346_20251223_101204_paper2_annotated.docx
+2025-12-23 10:13:46,688 - __main__ - INFO - 数据库记录已更新: ID=4
+2025-12-23 10:13:46,688 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:13:46] "POST /api/chinese-paper-format/check-all HTTP/1.1" 200 -
+2025-12-23 10:13:46,708 - werkzeug - INFO - 127.0.0.1 - - [23/Dec/2025 10:13:46] "GET /api/paper-format/files HTTP/1.1" 200 -

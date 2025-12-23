@@ -1,0 +1,97 @@
+{
+  "content_rule": "正文标题层级检测：一级标题以“第一章 标题”开头，居中对齐，黑体三号，不加粗；二级标题以“1.1 标题”开头，黑体四号，不加粗，顶格左对齐，段前0.7厘米，段后0.7厘米，单倍行距；三级标题以“1.1.1 标题”开头，黑体小四，不加粗，顶格左对齐，段前0.7厘米，段后0.7厘米，单倍行距。",
+  "structure_rules": {
+    "level1_pattern": "^\\s*第([一二三四五六七八九十百零〇]+)章\\s+(.+)$",
+    "level2_pattern": "^\\s*(\\d+\\.\\d+)\\s*(.+)$",
+    "level3_pattern": "^\\s*(\\d+\\.\\d+\\.\\d+)\\s*(.+)$",
+    "numbering_start": 1
+  },
+  "format_rules": {
+    "level1_title": {
+      "font_size_pt": 16,
+      "font_name": "黑体",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "level2_title": {
+      "font_size_pt": 14,
+      "font_name": "黑体",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 19.8,
+      "space_after": 19.8,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "level3_title": {
+      "font_size_pt": 12,
+      "font_name": "黑体",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before": 19.8,
+      "space_after": 19.8,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_hierarchy_ok": "中文正文标题层级结构正确",
+    "structure_hierarchy_error": "中文正文标题层级结构有问题",
+    "structure_numbering_ok": "中文标题编号连续性正确",
+    "structure_numbering_error": "中文标题编号不连续或格式错误",
+    "format_level1_ok": "一级标题格式正确（黑体三号居中，不加粗）",
+    "format_level1_error": "一级标题格式问题",
+    "format_level2_ok": "二级标题格式正确（黑体四号，段前后0.7厘米）",
+    "format_level2_error": "二级标题格式问题",
+    "format_level3_ok": "三级标题格式正确（黑体小四，段前后0.7厘米）",
+    "format_level3_error": "三级标题格式问题",
+    "format_content_issue_header": "正文标题格式问题：",
+    "summary_overall": "中文正文格式检查结果: {ok}"
+  },
+  "notes": [
+    "一级标题：以“第一章 标题”形式，黑体三号，居中，不加粗。",
+    "二级标题：以“1.1 标题”形式，黑体四号，顶格左对齐，段前/段后各0.7厘米，单倍行距，不加粗。",
+    "三级标题：以“1.1.1 标题”形式，黑体小四，顶格左对齐，段前/段后各0.7厘米，单倍行距，不加粗。"
+  ],
+  "generated_from": "用户提供的中文正文格式要求"
+}
+
