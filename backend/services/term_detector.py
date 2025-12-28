@@ -1198,6 +1198,9 @@ class TermDetector:
                 # 跳过已经作为词形变体添加的
                 if scibert_term in seen_variants:
                     continue
+                # 跳过单个单词的术语
+                if len(scibert_term.split()) <= 1:
+                    continue
                 
                 scibert_term_lower = scibert_term.lower()
                 scibert_words = scibert_term_lower.split()
