@@ -11,6 +11,10 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
+try:
+    from .formula_symbol_llm import judge_symbol_definitions_with_llm, judge_symbol_definitions_auto_with_llm
+except ImportError:
+    from formula_symbol_llm import judge_symbol_definitions_with_llm, judge_symbol_definitions_auto_with_llm
 
 def should_skip_check(check_name):
     """
@@ -28,6 +32,232 @@ def should_skip_check(check_name):
 # 全局变量，用于存储当前模块的跳过检测项配置
 _skip_checks_config = []
 
+
+def _get_local_name(tag: str) -> str:
+    if not tag:
+        return ''
+    return tag.split('}')[-1]
+
+
+def _omml_to_linear(elem) -> str:
+    """Best-effort OMML -> linear text.
+
+    Preserve common sub/sup structures so that symbols like k_c or x_i^2 are representable.
+    """
+    if elem is None:
+        return ''
+
+    name = _get_local_name(getattr(elem, 'tag', ''))
+
+    # Text run
+    if name == 't':
+        return (elem.text or '').strip()
+
+    def _first_child_by_name(parent, child_name: str):
+        for c in list(parent):
+            if _get_local_name(getattr(c, 'tag', '')) == child_name:
+                return c
+        return None
+
+    def _children_by_name(parent, child_name: str):
+        return [c for c in list(parent) if _get_local_name(getattr(c, 'tag', '')) == child_name]
+
+    def _get_attr_by_local_name(node, local_name: str) -> str:
+        try:
+            for k, v in getattr(node, 'attrib', {}).items():
+                if isinstance(k, str) and k.endswith(local_name):
+                    return v
+        except Exception:
+            pass
+        return ''
+
+    # Subscript
+    if name == 'sSub':
+        base = _first_child_by_name(elem, 'e')
+        sub = _first_child_by_name(elem, 'sub')
+        base_text = _omml_to_linear(base)
+        sub_text = _omml_to_linear(sub)
+        if base_text and sub_text:
+            return f"{base_text}_{sub_text}"
+        return base_text + sub_text
+
+    # Superscript
+    if name == 'sSup':
+        base = _first_child_by_name(elem, 'e')
+        sup = _first_child_by_name(elem, 'sup')
+        base_text = _omml_to_linear(base)
+        sup_text = _omml_to_linear(sup)
+        if base_text and sup_text:
+            return f"{base_text}^{sup_text}"
+        return base_text + sup_text
+
+    # SubSup
+    if name == 'sSubSup':
+        base = _first_child_by_name(elem, 'e')
+        sub = _first_child_by_name(elem, 'sub')
+        sup = _first_child_by_name(elem, 'sup')
+        base_text = _omml_to_linear(base)
+        sub_text = _omml_to_linear(sub)
+        sup_text = _omml_to_linear(sup)
+        out = base_text
+        if base_text and sub_text:
+            out = f"{out}_{sub_text}"
+        else:
+            out = out + sub_text
+        if out and sup_text:
+            out = f"{out}^{sup_text}"
+        else:
+            out = out + sup_text
+        return out
+
+    # Fraction
+    if name == 'f':
+        num = _first_child_by_name(elem, 'num')
+        den = _first_child_by_name(elem, 'den')
+        num_text = _omml_to_linear(num)
+        den_text = _omml_to_linear(den)
+        if num_text and den_text:
+            return f"({num_text})/({den_text})"
+        return num_text + den_text
+
+    # Radical
+    if name == 'rad':
+        deg = _first_child_by_name(elem, 'deg')
+        e = _first_child_by_name(elem, 'e')
+        deg_text = _omml_to_linear(deg)
+        e_text = _omml_to_linear(e)
+        if deg_text:
+            return f"root({deg_text})({e_text})"
+        return f"sqrt({e_text})" if e_text else ''
+
+    # Function application, e.g. c(ω)
+    if name == 'func':
+        fname = _first_child_by_name(elem, 'fName')
+        e = _first_child_by_name(elem, 'e')
+        fname_text = _omml_to_linear(fname)
+        e_text = _omml_to_linear(e)
+        if fname_text and e_text:
+            return f"{fname_text}({e_text})"
+        return fname_text + e_text
+
+    # Delimiter, e.g. ( ... ), [ ... ]
+    if name == 'd':
+        dpr = _first_child_by_name(elem, 'dPr')
+        e = _first_child_by_name(elem, 'e')
+        inner = _omml_to_linear(e)
+        beg = _get_attr_by_local_name(dpr, 'begChr') if dpr is not None else ''
+        end = _get_attr_by_local_name(dpr, 'endChr') if dpr is not None else ''
+        beg = beg or '('
+        end = end or ')'
+        return f"{beg}{inner}{end}" if inner else f"{beg}{end}"
+
+    # Generic container: concatenate children
+    parts = []
+    for c in list(elem):
+        parts.append(_omml_to_linear(c))
+    return ''.join([p for p in parts if p])
+
+
+def _extract_formula_linear_from_paragraph(paragraph) -> str:
+    """Extract best-effort formula linear text from a paragraph."""
+    try:
+        para_xml = paragraph._element
+        math_elements = para_xml.xpath('.//m:oMath | .//w:oMath | .//oMath')
+        texts = []
+        for math_elem in math_elements:
+            linear = _omml_to_linear(math_elem)
+            if linear:
+                texts.append(linear)
+        if texts:
+            return ' | '.join(texts)
+    except Exception:
+        pass
+
+    return (paragraph.text or '').strip()
+
+
+def _extract_paragraph_text_with_math(paragraph) -> str:
+    """Best-effort paragraph text including inline OMML math.
+
+    Note: python-docx paragraph.text may drop inline equations; this helper keeps order (best-effort)
+    by walking text nodes outside oMath plus oMath elements in document order.
+    """
+    try:
+        para_xml = paragraph._element
+        nodes = para_xml.xpath(
+            './/*[local-name()="oMath" or (local-name()="t" and not(ancestor::*[local-name()="oMath"]) and not(ancestor::*[local-name()="oMathPara"]))]'
+        )
+        parts = []
+        for n in nodes:
+            name = _get_local_name(getattr(n, 'tag', ''))
+            if name == 't':
+                if getattr(n, 'text', None):
+                    parts.append(n.text)
+            elif name == 'oMath':
+                linear = _omml_to_linear(n)
+                if linear:
+                    parts.append(linear)
+        text = ''.join(parts)
+        return re.sub(r'\s+', ' ', (text or '')).strip()
+    except Exception:
+        return (paragraph.text or '').strip()
+
+
+def _extract_candidate_symbols(formula_linear: str) -> list:
+    if not formula_linear:
+        return []
+
+    # Keep letters/greek with optional sub/sup in ASCII form.
+    # Note: This is only for generating candidates; final decision is LLM-only.
+    pattern = re.compile(r'[A-Za-zΑ-Ωα-ω]+(?:_[A-Za-z0-9Α-Ωα-ω]+)?(?:\^[A-Za-z0-9Α-Ωα-ω]+)?')
+    raw = pattern.findall(formula_linear)
+
+    ignore = {
+        'sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'log', 'ln', 'exp',
+        'min', 'max', 'lim', 'sup', 'inf', 'arg', 'det', 'mod'
+    }
+
+    out = []
+    seen = set()
+    for s in raw:
+        if not s:
+            continue
+        if s.lower() in ignore:
+            continue
+        if s.isdigit():
+            continue
+        if s not in seen:
+            seen.add(s)
+            out.append(s)
+    return out
+
+
+def _is_single_letter_symbol(sym: str) -> bool:
+    if not isinstance(sym, str):
+        return False
+    s = sym.strip()
+    if not s:
+        return False
+    # Treat letter with optional sub/superscripts as a single symbol, e.g. x_1, x_i, x^2, x_0^2
+    return bool(
+        re.fullmatch(r'[A-Za-zΑ-Ωα-ω]', s)
+        or re.fullmatch(r'[A-Za-zΑ-Ωα-ω]_[A-Za-z0-9Α-Ωα-ω]+', s)
+        or re.fullmatch(r'[A-Za-zΑ-Ωα-ω]\^[A-Za-z0-9Α-Ωα-ω]+', s)
+        or re.fullmatch(r'[A-Za-zΑ-Ωα-ω]_[A-Za-z0-9Α-Ωα-ω]+\^[A-Za-z0-9Α-Ωα-ω]+', s)
+        or re.fullmatch(r'[A-Za-zΑ-Ωα-ω]\^[A-Za-z0-9Α-Ωα-ω]+_[A-Za-z0-9Α-Ωα-ω]+', s)
+    )
+
+
+def _get_composite_base_symbol(sym: str) -> str:
+    if not isinstance(sym, str):
+        return ''
+    s = sym.strip()
+    if not s:
+        return ''
+    m = re.match(r'^([A-Za-zΑ-Ωα-ω])\s*\(.*\)$', s)
+    if m:
+        return m.group(1)
+    return ''
 
 """
 === 论文格式检测系统 - 公式检测器 ===
@@ -154,6 +384,66 @@ def get_font_size(pt_size, tpl=None):
 
 # ---------- 公式检测核心函数 ----------
 
+def _has_equation_number_at_end(text):
+    """判断段落末尾是否有公式编号（如 (1) 或 （1））。"""
+    if not text:
+        return False
+    return bool(re.search(r'[\(（]\s*\d+\s*[\)）]\s*$', text.strip()))
+
+def _get_non_math_text_from_paragraph(paragraph) -> str:
+    """Extract non-math text (w:t outside any oMath) from a paragraph.
+
+    This is used to distinguish inline math in body sentences from standalone equation paragraphs.
+    """
+    try:
+        para_xml = paragraph._element
+        # Any text node that is not within an OMML container.
+        t_nodes = para_xml.xpath('.//*[local-name()="t" and not(ancestor::*[local-name()="oMath"]) and not(ancestor::*[local-name()="oMathPara"]) ]')
+        parts = []
+        for n in t_nodes:
+            if getattr(n, 'text', None):
+                parts.append(n.text)
+        return ''.join(parts)
+    except Exception:
+        return (getattr(paragraph, 'text', None) or '')
+
+def _is_pure_formula_paragraph(paragraph, text: str, has_math_object: bool) -> bool:
+    """Return True if a paragraph is essentially a display equation paragraph.
+
+    Rule (user requirement): only when the paragraph is all-math (allowing trailing equation number and tabs/spaces).
+    """
+    if not has_math_object:
+        return False
+
+    non_math_text = (_get_non_math_text_from_paragraph(paragraph) or '')
+    t = non_math_text.replace('\u00A0', ' ')
+    # Remove common equation number patterns at end, e.g. (1), （1）, (1-2)
+    t = re.sub(r'[\(（]\s*\d+(?:\s*[-–]\s*\d+)?\s*[\)）]\s*$', '', t).strip()
+    # Remove tabs and whitespace
+    t = re.sub(r'[\t\s]+', '', t)
+
+    # If any letters (English/Chinese) remain, it is not a pure formula paragraph.
+    if re.search(r'[A-Za-z\u4e00-\u9fff]', t):
+        return False
+
+    # Otherwise, allow only digits/punctuation (rare) or empty.
+    return True
+
+def _looks_like_body_sentence(text):
+    """启发式判断：文本更像正文句子，而不是独立公式段落。"""
+    if not text:
+        return False
+    t = text.strip()
+    # 正文句子通常更长，包含多个英文单词，并以句号/分号等结尾
+    words = re.findall(r'[A-Za-z]{2,}', t)
+    if len(t) >= 60 and len(words) >= 6:
+        if re.search(r'[\.;:]\s*$', t):
+            return True
+        # 即使没以标点结尾，只要明显是解释性语句也算正文
+        if re.search(r'\b(where|which|that|is|are|was|were|the)\b', t, flags=re.IGNORECASE):
+            return True
+    return False
+
 def identify_formula_paragraphs(doc):
     """
     识别真正的Word公式段落
@@ -161,10 +451,10 @@ def identify_formula_paragraphs(doc):
     """
     formula_paragraphs = []
     
-    for paragraph in doc.paragraphs:
-        # 跳过空段落
-        if not paragraph.text.strip():
-            continue
+    for para_idx, paragraph in enumerate(doc.paragraphs):
+        # 注意：段落 text 可能为空，但仍可能包含 Office Math（纯公式段落）。
+        raw_text = (paragraph.text or '')
+        text = raw_text.strip()
             
         # 1. 优先检查是否包含Office Math对象（最可靠的指标）
         has_math_object = False
@@ -184,6 +474,10 @@ def identify_formula_paragraphs(doc):
                 math_object_count = len(math_elements)
         except Exception:
             pass
+        
+        # 跳过真正的空段落（无文本且无数学对象）
+        if (not text) and (not has_math_object):
+            continue
         
         # 2. 检查是否包含公式样式的制表位设置
         has_formula_tab_stops = False
@@ -233,7 +527,7 @@ def identify_formula_paragraphs(doc):
             pass
         
         # 3. 获取段落文本（用于后续处理）
-        text = paragraph.text.strip()
+        # text 已在前面预先计算，避免 paragraph.text 为空导致误跳过
         
         # 4. 检查段落样式名称（如果应用了公式样式）
         has_formula_style = False
@@ -249,22 +543,16 @@ def identify_formula_paragraphs(doc):
         is_formula_paragraph = False
         confidence_score = 0
         
-        # 最高优先级：包含Office Math对象
-        if has_math_object:
+        # 用户要求：只要一个段落中全是公式，才认为是公式（允许尾部公式编号、空白、制表符）。
+        # 因此：必须含数学对象，并且段落的“非公式文本”在去掉编号后不得包含正文文字。
+        if has_math_object and _is_pure_formula_paragraph(paragraph, text, has_math_object):
             is_formula_paragraph = True
             confidence_score = 10
-        # 次高优先级：有公式制表位设置
-        elif has_formula_tab_stops:
-            is_formula_paragraph = True
-            confidence_score = 8
-        # 第三优先级：应用了公式样式
-        elif has_formula_style:
-            is_formula_paragraph = True
-            confidence_score = 6
-        
+
         if is_formula_paragraph:
             formula_paragraphs.append({
                 'paragraph': paragraph,
+                'paragraph_index': para_idx,
                 'has_math_object': has_math_object,
                 'math_object_count': math_object_count,
                 'has_formula_tab_stops': has_formula_tab_stops,
@@ -703,11 +991,17 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
         # 初始化报告
         report = {
             'formula_detection': {'ok': True, 'messages': []},
+            'symbol_definition': {'ok': True, 'messages': [], 'warnings': []},
             'summary': [],
             'details': {
                 'total_paragraphs': len(doc.paragraphs),
                 'formula_paragraphs_count': len(formula_paragraphs),
-                'formula_paragraphs': []
+                'formula_paragraphs': [],
+                'symbol_definition': {
+                    'explained_symbols': [],
+                    'warnings_summary': [],
+                    'per_formula': []
+                }
             }
         }
         
@@ -720,6 +1014,8 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
         # 检查每个公式段落
         all_formulas_ok = True
         
+        explained_symbols = set()
+
         for i, formula_para in enumerate(formula_paragraphs):
             paragraph = formula_para['paragraph']
             
@@ -764,20 +1060,143 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                 text_preview = f"[公式] {formula_number}"
             else:
                 text_preview = para_text
+
+            # 符号说明检测（LLM）
+            symbol_def_ok = True
+            missing_symbols = []
+            newly_explained_symbols = []
+            suspected_explained_symbols = []
+            evidence = {}
+            warnings = []
+            formula_linear = _extract_formula_linear_from_paragraph(paragraph)
+            candidate_symbols = []
+
+            before_text = ''
+            after_text = ''
+
+            if should_skip_check('symbol_definition'):
+                pass
+            else:
+                doc_para_idx = formula_para.get('paragraph_index', None)
+                if doc_para_idx is None:
+                    try:
+                        doc_para_idx = doc.paragraphs.index(paragraph)
+                    except Exception:
+                        doc_para_idx = None
+
+                if isinstance(doc_para_idx, int):
+                    before_parts = []
+                    for k in range(2, 0, -1):
+                        idx = doc_para_idx - k
+                        if idx >= 0:
+                            t = _extract_paragraph_text_with_math(doc.paragraphs[idx])
+                            if t:
+                                before_parts.append(t)
+                    after_parts = []
+                    for k in range(1, 3):
+                        idx = doc_para_idx + k
+                        if idx < len(doc.paragraphs):
+                            t = _extract_paragraph_text_with_math(doc.paragraphs[idx])
+                            if t:
+                                after_parts.append(t)
+
+                    before_text = "\n".join(before_parts)
+                    after_text = "\n".join(after_parts)
+
+                llm_result = judge_symbol_definitions_auto_with_llm(
+                    formula_text=formula_linear,
+                    context_before=before_text,
+                    context_after=after_text,
+                    already_explained_symbols=sorted(explained_symbols),
+                )
+
+                if llm_result.get('status') == 'ok':
+                    candidate_symbols = llm_result.get('extracted_symbols', [])
+                    newly_explained_symbols = llm_result.get('newly_explained_symbols', [])
+                    suspected_explained_symbols = llm_result.get('suspected_explained_symbols', [])
+                    missing_symbols = llm_result.get('missing_symbols', [])
+                    evidence = llm_result.get('evidence', {})
+                    for s in newly_explained_symbols:
+                        explained_symbols.add(s)
+
+                    # Template rule: symbols should be single-letter.
+                    # 1) Only single-letter missing symbols are treated as errors.
+                    suspected_explained_symbols = [s for s in (suspected_explained_symbols or []) if isinstance(s, str) and s]
+                    missing_all = [s for s in list(missing_symbols or []) if s not in suspected_explained_symbols]
+                    missing_single = [s for s in missing_all if _is_single_letter_symbol(s)]
+                    missing_composite = [s for s in missing_all if s and (not _is_single_letter_symbol(s))]
+                    missing_symbols = missing_single
+
+                    suspected_single = [s for s in suspected_explained_symbols if _is_single_letter_symbol(s)]
+                    if suspected_single:
+                        pass
+
+                    # 2) Any composite symbol is a warning (whether explained or not).
+                    explained_in_this_formula = [s for s in (candidate_symbols or []) if s and s not in missing_all]
+                    composite_explained = [s for s in explained_in_this_formula if not _is_single_letter_symbol(s)]
+                    composite_warn = []
+                    for cs in composite_explained:
+                        base = _get_composite_base_symbol(cs)
+                        if base and (base not in explained_symbols):
+                            composite_warn.append(f"{cs}（未单独说明 {base}）")
+                    if composite_warn:
+                        warnings.append(f"复合符号已说明但未单独说明基符号: {', '.join(composite_warn)}")
+                    if missing_composite:
+                        warnings.append(f"复合符号未说明（按模板记为警告，不记为缺失错误）: {', '.join(missing_composite)}")
+
+                    symbol_def_ok = len(missing_symbols) == 0
+                else:
+                    symbol_def_ok = False
+                    candidate_symbols = []
+                    missing_symbols = []
+                    suspected_explained_symbols = []
+                    warnings = []
+                    report['symbol_definition']['ok'] = False
+                    report['symbol_definition']['messages'].append(
+                        f"公式段落 {i + 1} 符号说明检测失败: {llm_result.get('message', '未知错误')}"
+                    )
             
             # 添加段落信息
             para_info = {
                 'index': i + 1,
                 'text_preview': text_preview[:150] + ('...' if len(text_preview) > 150 else ''),
+                'paragraph_index': (formula_para.get('paragraph_index', -1) + 1) if isinstance(formula_para.get('paragraph_index', None), int) else None,
                 'has_math_object': formula_para['has_math_object'],
                 'math_object_count': formula_para['math_object_count'],
                 'has_formula_tab_stops': formula_para['has_formula_tab_stops'],
                 'has_formula_style': formula_para['has_formula_style'],
                 'confidence_score': formula_para['confidence_score'],
-                'format_check': para_report
+                'format_check': para_report,
+                'formula_linear': formula_linear,
+                'candidate_symbols': candidate_symbols,
+                'symbol_definition': {
+                    'ok': symbol_def_ok,
+                    'missing_symbols': missing_symbols,
+                    'newly_explained_symbols': newly_explained_symbols,
+                    'suspected_explained_symbols': suspected_explained_symbols if not should_skip_check('symbol_definition') else [],
+                    'evidence': evidence,
+                    'warnings': warnings
+                }
             }
             
             report['details']['formula_paragraphs'].append(para_info)
+
+            # 收集符号说明检测的 per-formula 结构化信息，用于 run_all_detections 精准定位批注
+            report['details']['symbol_definition']['per_formula'].append({
+                'index': i + 1,
+                'paragraph_index': para_info.get('paragraph_index'),
+                'formula_number': formula_number,
+                'formula_text': formula_linear,
+                'context_before': before_text,
+                'context_after': after_text,
+                'candidate_symbols': candidate_symbols,
+                'missing_symbols': missing_symbols,
+                'newly_explained_symbols': newly_explained_symbols,
+                'suspected_explained_symbols': suspected_explained_symbols if not should_skip_check('symbol_definition') else [],
+                'evidence': evidence,
+                'warnings': warnings,
+                'ok': symbol_def_ok,
+            })
             
             if not para_report['ok']:
                 all_formulas_ok = False
@@ -795,6 +1214,26 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                 for msg in para_report['messages']:
                     if "检查通过" in msg or "正确" in msg:
                         report['formula_detection']['messages'].append(f"  - {msg}")
+
+            # 汇总符号说明检测结果
+            if not should_skip_check('symbol_definition'):
+                if not symbol_def_ok:
+                    report['symbol_definition']['ok'] = False
+                    if missing_symbols:
+                        if formula_number:
+                            report['symbol_definition']['messages'].append(
+                                f"公式 {formula_number} 中符号首次出现未说明: {', '.join(missing_symbols)}"
+                            )
+                        else:
+                            report['symbol_definition']['messages'].append(
+                                f"公式段落 {i + 1} 中符号首次出现未说明: {', '.join(missing_symbols)}"
+                            )
+
+                if warnings:
+                    report['symbol_definition']['warnings'].extend(warnings)
+                    report['details']['symbol_definition']['warnings_summary'].extend(warnings)
+
+        report['details']['symbol_definition']['explained_symbols'] = sorted(explained_symbols)
         
         # 生成总结
         if all_formulas_ok:

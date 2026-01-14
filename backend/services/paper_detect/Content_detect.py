@@ -303,6 +303,7 @@ def identify_title_hierarchy(doc, tpl):
     
     # 获取结构规则
     structure_rules = tpl.get('structure_rules', {})
+    enable_word_auto_numbering_titles = structure_rules.get('enable_word_auto_numbering_titles', True)
     level0_pattern = structure_rules.get('level0_pattern', r'^\\s*0\\s+Introduction\\s*$')
     level1_pattern = structure_rules.get('level1_pattern', r'^\\s*(\\d+)\\s+(.+)$')
     level2_pattern = structure_rules.get('level2_pattern', r'^\\s*(\\d+\\.\\d+)\\s+(.+)$')
@@ -490,7 +491,26 @@ def identify_title_hierarchy(doc, tpl):
             has_auto_num, auto_num_level = get_paragraph_numbering_info(paragraph)
             
             # 如果有 Word 自动编号且级别为 0（一级编号）
-            if has_auto_num and auto_num_level == 0:
+            if enable_word_auto_numbering_titles and has_auto_num and auto_num_level == 0:
+                main_run = next((r for r in paragraph.runs if r.text.strip()), None)
+                if main_run:
+                    actual_size_pt, _, actual_bold, _, _ = detect_font_for_run(main_run, paragraph)
+                else:
+                    actual_size_pt, actual_bold = None, False
+
+                actual_space_before = paragraph.paragraph_format.space_before
+                actual_space_after = paragraph.paragraph_format.space_after
+                space_before_pt = actual_space_before.pt if actual_space_before and actual_space_before.pt else 0.0
+                space_after_pt = actual_space_after.pt if actual_space_after and actual_space_after.pt else 0.0
+
+                is_likely_title = (
+                    bool(actual_bold)
+                    and (actual_size_pt is None or actual_size_pt >= 12.0 or space_before_pt >= 8.0 or space_after_pt >= 8.0)
+                    and 5 <= len(text) <= 150
+                )
+
+                if not is_likely_title:
+                    continue
                 # 排除图表、参考文献等
                 text_lower = text.lower()
                 # 判断是否是参考文献：通常包含作者名、期刊名、年份等特征

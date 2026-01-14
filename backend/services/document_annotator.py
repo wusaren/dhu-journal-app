@@ -169,7 +169,7 @@ def find_content_paragraph_by_number(doc, para_number, hierarchy_report):
     # 如果没有找到Introduction，尝试用关键字查找
     if introduction_index is None:
         for i, para in enumerate(doc.paragraphs):
-            if 'Introduction' in para.text:
+            if para.text and 'Introduction' in para.text:
                 introduction_index = i
                 break
     
@@ -730,25 +730,130 @@ def parse_issues_from_reports(all_reports):
             for section_key, section_value in report.items():
                 if section_key in ['summary', 'extracted']:
                     continue
-                
+
+                if section_key == 'symbol_definition':
+                    details = report.get('details', {})
+                    symbol_def_details = details.get('symbol_definition', {})
+                    per_formula = symbol_def_details.get('per_formula', []) if isinstance(symbol_def_details, dict) else []
+
+                    for pf in per_formula:
+                        if not isinstance(pf, dict):
+                            continue
+
+                        missing = pf.get('missing_symbols', []) or []
+                        warnings = pf.get('warnings', []) or []
+                        suspected = pf.get('suspected_explained_symbols', []) or []
+                        if (not missing) and (not warnings) and (not suspected):
+                            continue
+
+                        formula_number = pf.get('formula_number')
+                        para_idx_1based = pf.get('paragraph_index')
+
+                        if isinstance(formula_number, str) and formula_number.strip():
+                            section_suffix = re.sub(r'[^\w]', '_', formula_number.strip())
+                        else:
+                            section_suffix = f"para{pf.get('index', i)}"
+
+                        formula_text = pf.get('formula_text', '')
+                        if isinstance(formula_text, str):
+                            formula_snippet = formula_text.strip()
+                            if len(formula_snippet) > 140:
+                                formula_snippet = formula_snippet[:140] + '...'
+                        else:
+                            formula_snippet = ''
+
+                        evidence = pf.get('evidence', {}) if isinstance(pf.get('evidence', {}), dict) else {}
+
+                        def _append_issue(issue_section: str, issue_messages: list):
+                            if isinstance(para_idx_1based, int) and para_idx_1based >= 1:
+                                issues.append({
+                                    'module': module_name,
+
+                                    'section': issue_section,
+                                    'messages': issue_messages,
+                                    'locate_method': 'index',
+                                    'locate_data': para_idx_1based - 1
+                                })
+                            elif isinstance(formula_number, str) and formula_number.strip():
+                                issues.append({
+                                    'module': module_name,
+                                    'section': issue_section,
+                                    'messages': issue_messages,
+                                    'locate_method': 'formula_number',
+                                    'locate_data': formula_number.strip()
+                                })
+
+                        if missing:
+                            pf_messages = [
+                                "[类型] error",
+                                f"[描述] 符号首次出现未说明: {', '.join(missing)}",
+                                f"[建议] 建议在公式附近使用 where/denotes/其中… 等规范句式逐一定义: {', '.join(missing)}",
+                            ]
+                            if formula_snippet:
+                                pf_messages.append(f"[片段] {formula_snippet}")
+                            for sym in missing[:2]:
+                                ev = evidence.get(sym)
+                                if isinstance(ev, str) and ev.strip():
+                                    pf_messages.append(f"[证据] {sym}: {ev.strip()}")
+
+                            _append_issue(f"symbol_definition_error_{section_suffix}", pf_messages)
+
+                        if suspected:
+                            pf_messages = [
+                                "[类型] warning",
+                                f"[描述] 符号疑似已说明（非标准定义句式）: {', '.join(suspected)}",
+                                "[建议] 建议补充规范定义句式（where/denotes/其中…），避免歧义。",
+                            ]
+                            if formula_snippet:
+                                pf_messages.append(f"[片段] {formula_snippet}")
+                            for sym in suspected[:2]:
+                                ev = evidence.get(sym)
+                                if isinstance(ev, str) and ev.strip():
+                                    pf_messages.append(f"[证据] {sym}: {ev.strip()}")
+
+                            _append_issue(f"symbol_definition_suspected_{section_suffix}", pf_messages)
+
+                        if isinstance(warnings, list) and warnings:
+                            w_msgs = []
+                            for w in warnings[:5]:
+                                if w:
+                                    desc = str(w)
+                                    if desc.startswith('复合符号已说明但未单独说明基符号'):
+                                        suggest = '建议在首次出现处单独定义基符号（如 c、k），或按模板要求使用单字母符号。'
+                                    elif desc.startswith('复合符号未说明'):
+                                        suggest = '建议在首次出现处补充对该符号的文字说明。'
+                                    elif desc.startswith('符号疑似已说明'):
+                                        suggest = '建议补充规范定义句式（where/denotes/其中…），避免歧义。'
+                                    else:
+                                        suggest = '建议按模板规范补充符号说明。'
+                                    w_msgs.append("[类型] warning")
+                                    w_msgs.append(f"[描述] {desc}")
+                                    w_msgs.append(f"[建议] {suggest}")
+                                    if formula_snippet:
+                                        w_msgs.append(f"[片段] {formula_snippet}")
+                            if w_msgs:
+                                _append_issue(f"symbol_definition_warning_{section_suffix}", w_msgs)
+
+                    continue
+
                 if isinstance(section_value, dict) and not section_value.get('ok', False):
                     messages = section_value.get('messages', [])
                     if not messages:
                         continue
-                    
+
                     # 尝试从details中获取公式段落信息
                     details = report.get('details', {})
                     formula_paragraphs = details.get('formula_paragraphs', [])
-                    
+
                     if formula_paragraphs:
                         # 如果有公式段落信息，使用第一个公式段落的文本片段定位
                         first_formula = formula_paragraphs[0]
                         text_preview = first_formula.get('text_preview', '')
-                        
+
                         # 从文本中提取公式编号，如 (1)、(2) 等
                         # 公式编号通常在文本末尾
                         number_match = re.search(r'\((\d+)\)\s*$', text_preview)
-                        
+
                         if number_match:
                             # 使用公式编号定位
                             formula_number = number_match.group(0).strip()  # 如 "(2)"
@@ -766,7 +871,7 @@ def parse_issues_from_reports(all_reports):
                             # 如果没有公式编号，尝试使用文本末尾的部分
                             # 只取最后的一小段（可能包含编号或特征）
                             locate_text = text_preview[-20:].strip() if len(text_preview) > 20 else text_preview
-                            
+
                             if locate_text and len(locate_text) >= 3:
                                 issues.append({
                                     'module': module_name,
@@ -834,7 +939,7 @@ def parse_issues_from_reports(all_reports):
                             'locate_method': 'keyword',
                             'locate_data': caption_text[:20]
                         })
-                
+
                 # 检查表格对齐
                 table_alignment = table_report.get('table_alignment', {})
                 if isinstance(table_alignment, dict) and not table_alignment.get('ok', False):
@@ -847,7 +952,7 @@ def parse_issues_from_reports(all_reports):
                             'locate_method': 'keyword',
                             'locate_data': caption_text[:20]
                         })
-        
+
         elif module_name == 'Figure':
             # Figure模块：定位到图片标题段落（类似Table模块）
             # 1. 处理numbering问题（图片编号连续性）
@@ -918,34 +1023,51 @@ def parse_issues_from_reports(all_reports):
                         'locate_method': 'index',
                         'locate_data': para_idx
                     })
-    
+
         elif module_name == 'Chinese_section':
             # 为中文部分的每个子项添加精确定位
+            details = report.get('details', {})
             for section_key, section_value in report.items():
-                if section_key in ['summary', 'affiliations_detail'] or not isinstance(section_value, dict) or section_value.get('ok', True):
+                if section_key in ['summary', 'affiliations_detail', 'details'] or not isinstance(section_value, dict) or section_value.get('ok', True):
                     continue
 
                 messages = section_value.get('messages', [])
                 if not messages:
                     continue
 
-                locate_method = 'keyword'
-                locate_data = ''
+                locate_method = 'index'
+                locate_data = None
 
                 if section_key == 'chinese_title_format':
-                    # 从报告的 'details' 中获取标题文本用于定位
-                    title_text = report.get('details', {}).get('title_text', '')
-                    locate_data = title_text[:30] if title_text else '用于高效电催化析氢反应'
+                    locate_data = details.get('title_index')
                 elif section_key == 'chinese_author_format':
-                    locate_data = '刘   影'
+                    locate_data = details.get('author_index')
                 elif section_key == 'chinese_affiliation_format':
-                    locate_data = '东华大学'
+                    locate_data = details.get('affiliation_index')
                 elif section_key == 'chinese_abstract_format':
-                    locate_data = '摘   要'
+                    locate_data = details.get('abstract_index')
                 elif section_key == 'chinese_keywords_format':
-                    locate_data = '关键词'
+                    locate_data = details.get('keywords_index')
 
-                if locate_data:
+                # 兼容旧结构：如果details缺失索引，回退到keyword定位
+                if locate_data is None:
+                    locate_method = 'keyword'
+                    locate_data = ''
+
+                    if section_key == 'chinese_title_format':
+                        # 从报告的 'details' 中获取标题文本用于定位
+                        title_text = report.get('details', {}).get('title_text', '')
+                        locate_data = title_text[:30] if title_text else '用于高效电催化析氢反应'
+                    elif section_key == 'chinese_author_format':
+                        locate_data = '刘   影'
+                    elif section_key == 'chinese_affiliation_format':
+                        locate_data = '东华大学'
+                    elif section_key == 'chinese_abstract_format':
+                        locate_data = '摘   要'
+                    elif section_key == 'chinese_keywords_format':
+                        locate_data = '关键词'
+
+                if locate_data is not None and locate_data != '':
                     issues.append({
                         'module': module_name,
                         'section': section_key,
@@ -957,6 +1079,7 @@ def parse_issues_from_reports(all_reports):
     # 单独处理分类号不一致的批注
     if 'Classification' in all_reports:
         class_report = all_reports['Classification']
+
         if class_report.get('match_status') == '不一致':
             messages = [
                 f"API建议分类号与原文不一致。",
@@ -1057,7 +1180,12 @@ def add_all_comments(doc_path, copy_path, issues_list):
             elif locate_method == 'index':
                 # 判断是否需要跳过空行
                 # 单位段落和Content标题格式批注都不应该跳过空行（使用实际索引）
-                skip_empty = 'affiliation_para' not in section_name and 'Content-format' not in f"{module_name}-{section_name}" and 'Content-case' not in f"{module_name}-{section_name}"
+                skip_empty = (
+                    module_name not in ['Figure', 'Chinese_section', 'Formula']
+                    and 'affiliation_para' not in section_name
+                    and 'Content-format' not in f"{module_name}-{section_name}"
+                    and 'Content-case' not in f"{module_name}-{section_name}"
+                )
                 paragraph = find_paragraph_by_index(doc, locate_data, skip_empty=skip_empty)
             elif locate_method == 'text':
                 paragraph = find_paragraph_by_text(doc, locate_data)

@@ -235,25 +235,43 @@ def identify_table_captions(doc, tpl):
     
     return captions
 
+def _get_body_index_for_paragraph(doc, paragraph):
+    if paragraph is None:
+        return None
+    try:
+        p_elm = paragraph._p
+        for i, element in enumerate(doc.element.body):
+            if element is p_elm:
+                return i
+    except Exception:
+        return None
+    return None
+
+
 def find_table_after_caption(doc, caption_info):
     """
     在标题后查找对应的表格
     返回：Table对象或None
     """
-    caption_idx = caption_info['paragraph_index']
-    
-    # 在标题后的几个元素中查找表格
-    for i in range(caption_idx + 1, min(caption_idx + 5, len(doc.element.body))):
-        element = doc.element.body[i]
-        if element.tag.endswith('tbl'):  # 表格元素
-            # 通过索引找到对应的Table对象
+    paragraph = caption_info.get('paragraph')
+    caption_body_idx = _get_body_index_for_paragraph(doc, paragraph)
+    if caption_body_idx is None:
+        caption_body_idx = caption_info.get('paragraph_index')
+
+    if caption_body_idx is None:
+        return None
+
+    search_end = min(caption_body_idx + 30, len(doc.element.body))
+    for body_idx in range(caption_body_idx + 1, search_end):
+        element = doc.element.body[body_idx]
+        if element.tag.endswith('tbl'):
             table_idx = 0
-            for j, elem in enumerate(doc.element.body):
+            for elem in doc.element.body[: body_idx + 1]:
                 if elem.tag.endswith('tbl'):
-                    if j == i:
-                        return doc.tables[table_idx] if table_idx < len(doc.tables) else None
                     table_idx += 1
-    
+            table_idx -= 1
+            return doc.tables[table_idx] if 0 <= table_idx < len(doc.tables) else None
+
     return None
 
 def check_table_style(table, tpl):

@@ -388,7 +388,7 @@
         />
         
         <el-checkbox-group v-model="currentSkipChecks">
-          <div class="skip-check-option" v-for="check in availableSkipChecks" :key="check.value">
+          <div class="skip-check-option" v-for="check in getAvailableSkipChecksForModule(currentModuleForSkip)" :key="check.value">
             <el-checkbox :value="check.value">
               <span class="check-label">{{ check.label }}</span>
               <span class="check-description">{{ check.description }}</span>
@@ -672,7 +672,7 @@
                 <span class="module-description">{{ module.description }}</span>
               </el-checkbox>
               <el-button
-                v-if="selectedModules.includes(module.value) && !modulesWithoutSkipChecks.includes(module.value)"
+                v-if="selectedModules.includes(module.value)"
                 size="small"
                 text
                 type="primary"
@@ -711,7 +711,7 @@
             style="margin-bottom: 10px;padding: 0"
           />
           <el-checkbox v-model="enableClassificationApi" style="padding-bottom: 10px;">
-            <span class="module-label">启用分类号智能检测</span>
+            <span class="module-label">启用摘要分类号检测</span>
             <span class="module-description">*需要调用API，自动识别并验证中图分类号</span>
           </el-checkbox>
         </div>
@@ -872,8 +872,6 @@ const availableModules = [
   { value: 'Chinese_section', label: '中文部分检测', description: '检测中文标题、作者、单位、摘要和关键词格式' }
 ]
 
-// 不支持跳过项功能的模块列表
-const modulesWithoutSkipChecks = ['Chinese_section']
 
 // 可跳过的检测项列表
 const availableSkipChecks = [
@@ -884,6 +882,16 @@ const availableSkipChecks = [
   { value: 'spacing', label: '行距', description: '跳过行距检测' },
   { value: 'indent', label: '缩进', description: '跳过首行缩进检测' }
 ]
+
+// 根据模块获取可选择的跳过检测项
+const getAvailableSkipChecksForModule = (moduleValue: string) => {
+  // 中文部分检测：只允许跳过“地址审核与邮编检测”
+  if (moduleValue === 'Chinese_section') {
+    return [{value: 'address_zipcode', label: '地址审核与邮编检测', description: '跳过中文单位的地址审核与邮编验证'}]
+  }
+  // 其他模块使用通用跳过项配置
+  return availableSkipChecks
+}
 
 // 计算是否为半选状态
 const isIndeterminate = computed(() => {
@@ -1282,6 +1290,8 @@ const startFormatCheck = async () => {
       }
     }, 500)
     
+    console.log(skipChecks.value)
+
     // 执行格式检测
     const result = await paperFormatService.checkAll(
       currentPaper.value.tempFilePath, 

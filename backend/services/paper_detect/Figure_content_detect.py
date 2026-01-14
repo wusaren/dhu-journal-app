@@ -232,8 +232,81 @@ class FigureContentDetector:
         with open(image_path, 'rb') as f:
             image_bytes = f.read()
         return base64.b64encode(image_bytes).decode('utf-8')
+
+    def _prepare_image_for_api(self, image_path: str) -> Tuple[str, str]:
+        image = Image.open(image_path)
+        image = image.convert('RGB')
+
+        w, h = image.size
+        max_dim = max(w, h)
+
+        scale = 1
+        if max_dim < 1600:
+            scale = 2
+        if max_dim < 900:
+            scale = 3
+
+        if scale > 1:
+            new_w = min(w * scale, 2400)
+            new_h = int(h * (new_w / w))
+            image = image.resize((new_w, new_h), Image.LANCZOS)
+
+        buf = io.BytesIO()
+        image.save(buf, format='JPEG', quality=95, optimize=True)
+        image_bytes = buf.getvalue()
+
+        return base64.b64encode(image_bytes).decode('utf-8'), 'image/jpeg'
+
+    def _postprocess_decimal_consistency(self, parsed_result: Dict) -> Dict:
+        import re
+
+        def _count_decimals(value) -> Optional[int]:
+            if value is None:
+                return None
+            s = value if isinstance(value, str) else str(value)
+            s = s.strip()
+            m = re.search(r'[-+]?\d+(?:\.(\d+))?', s)
+            if not m:
+                return None
+            decimals = m.group(1)
+            return 0 if decimals is None else len(decimals)
+
+        def _decimals_set(samples) -> set:
+            if not isinstance(samples, list):
+                return set()
+            out = set()
+            for x in samples:
+                d = _count_decimals(x)
+                if d is not None:
+                    out.add(d)
+            return out
+
+        x_set = _decimals_set(parsed_result.get('x_samples'))
+        y_set = _decimals_set(parsed_result.get('y_samples'))
+
+        inconsistent = (len(x_set) > 1) or (len(y_set) > 1)
+        if not inconsistent:
+            return parsed_result
+
+        updated = dict(parsed_result)
+        updated['ok'] = False
+
+        codes = updated.get('codes')
+        if not isinstance(codes, list):
+            codes = [] if codes is None else [codes]
+
+        existing = set()
+        for c in codes:
+            try:
+                existing.add(int(c))
+            except Exception:
+                continue
+        if 8 not in existing:
+            codes.append(8)
+        updated['codes'] = codes
+        return updated
     
-    def call_vision_api(self, image_base64: str, prompt: str) -> Optional[Dict]:
+    def call_vision_api(self, image_base64: str, prompt, image_mime: str = 'image/jpeg') -> Optional[Dict]:
         """
         调用硅基流动视觉API
         
@@ -248,6 +321,9 @@ class FigureContentDetector:
             print("错误: 未安装 requests 库")
             return None
         
+        if isinstance(prompt, list):
+            prompt = "\n".join([str(x) for x in prompt])
+
         url = f"{self.api_base}/chat/completions"
         
         headers = {
@@ -268,7 +344,7 @@ class FigureContentDetector:
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_base64}"
+                                "url": f"data:{image_mime};base64,{image_base64}"
                             }
                         },
                         {
@@ -335,34 +411,147 @@ class FigureContentDetector:
         try:
             if not response or 'choices' not in response:
                 return {'error': 'API响应格式错误'}
-            
+
             content = response['choices'][0]['message']['content']
-            
-            # 尝试从响应中提取JSON
+
             import json
             import re
-            
-            # 查找JSON代码块
+
             json_match = re.search(r'```json\s*(.*?)\s*```', content, re.DOTALL)
             if json_match:
-                json_str = json_match.group(1)
-                result = json.loads(json_str)
-                return result
-            
-            # 如果没有代码块，尝试直接解析
+                content = json_match.group(1)
+
             try:
-                result = json.loads(content)
-                return result
-            except:
-                # 返回原始文本
+                return json.loads(content)
+            except Exception:
                 return {
                     'raw_response': content,
                     'parsed': False
                 }
-                
+
         except Exception as e:
             return {'error': f'解析响应失败: {e}'}
-    
+
+    def detect_image_file(self, image_path: str) -> Dict:
+        result = {
+            'ok': True,
+            'is_chart': False,
+            'messages': [],
+            'details': {},
+            'image_path': image_path
+        }
+
+        try:
+            image_base64, image_mime = self._prepare_image_for_api(image_path)
+        except Exception as e:
+            result['ok'] = False
+            result['messages'].append(f"读取图片文件失败: {e}")
+            return result
+
+        is_chart_response = self.call_vision_api(image_base64, self.detection_prompts['is_chart'], image_mime=image_mime)
+        if not is_chart_response:
+            result['ok'] = False
+            result['messages'].append("图片类型判断失败")
+            return result
+
+        is_chart_result = self.parse_api_response(is_chart_response)
+        result['details']['is_chart_check'] = is_chart_result
+        if not is_chart_result.get('is_chart', False):
+            result['is_chart'] = False
+            result['messages'].append(f"图片类型: {is_chart_result.get('chart_type', '非图表')}")
+            return result
+
+        result['is_chart'] = True
+
+        check_results = {}
+
+        code_messages = {
+            1: "刻度线未指向图内",
+            2: "物理量与单位未用“/”分隔",
+            3: "物理量符号未斜体",
+            4: "单位符号未正体",
+            5: "组合单位未加括号",
+            6: "℃被错误地加了括号",
+            7: "角度单位符号未写作(°)",
+            8: "坐标轴刻度数字的小数位数不统一",
+            9: "纵横坐标标题风格不统一（文字/符号混用）",
+            10: "坐标轴标题缺少“物理量/单位”结构（缺物理量或缺单位）",
+        }
+
+        check_code_prefix = {
+            'tick_direction': 'a',
+            'unit_separator': 'b',
+            'quantity_italic': 'b',
+            'unit_roman': 'b',
+            'axis_structure': 'b',
+            'unit_brackets': 'c/d',
+            'decimal_consistency': 'e',
+            'axis_title_consistency': 'f',
+        }
+
+        def _extract_codes(parsed_result: Dict) -> List[int]:
+            codes = parsed_result.get('codes')
+            if not codes:
+                return []
+            extracted: List[int] = []
+            for c in codes:
+                try:
+                    extracted.append(int(c))
+                except Exception:
+                    continue
+            return extracted
+
+        check_order = [
+            ('tick_direction', '刻度线方向'),
+            ('unit_separator', '分隔符“/”'),
+            ('quantity_italic', '物理量符号斜体'),
+            ('unit_roman', '单位符号正体'),
+            ('axis_structure', '物理量/单位结构'),
+            ('unit_brackets', '组合单位括号'),
+            ('decimal_consistency', '数值格式统一性'),
+            ('axis_title_consistency', '坐标轴标题一致性')
+        ]
+
+        for check_key, check_name in check_order:
+            response = self.call_vision_api(image_base64, self.detection_prompts[check_key], image_mime=image_mime)
+            if not response:
+                check_results[check_key] = {'ok': False, 'error': 'API调用失败'}
+                result['ok'] = False
+                result['messages'].append(f"❌ [{check_name}] API调用失败")
+                continue
+
+            parsed_result = self.parse_api_response(response)
+            if check_key == 'decimal_consistency' and isinstance(parsed_result, dict):
+                parsed_result = self._postprocess_decimal_consistency(parsed_result)
+            check_results[check_key] = parsed_result
+
+            if not parsed_result.get('ok', True):
+                result['ok'] = False
+
+                codes = _extract_codes(parsed_result)
+                if codes:
+                    rule_tag = check_code_prefix.get(check_key, "")
+                    for code in codes:
+                        msg = code_messages.get(code, f"未知问题码: {code}")
+                        if rule_tag:
+                            result['messages'].append(f"❌ [{rule_tag}]({code}) {msg}")
+                        else:
+                            result['messages'].append(f"❌ ({code}) {msg}")
+                else:
+                    if 'issues' in parsed_result and parsed_result['issues']:
+                        for issue in parsed_result['issues']:
+                            result['messages'].append(f"❌ [{check_name}] {issue}")
+                    elif 'description' in parsed_result and parsed_result['description']:
+                        result['messages'].append(f"❌ [{check_name}] {parsed_result['description']}")
+                    elif 'issue' in parsed_result and parsed_result['issue']:
+                        result['messages'].append(f"❌ [{check_name}] {parsed_result['issue']}")
+
+        result['details']['check_results'] = check_results
+        if result['ok']:
+            result['messages'].append("✅ 图表内容符合所有规范")
+
+        return result
+
     def detect_figure_content(self, paragraph, doc_path: str, figure_number: int = None) -> Dict:
         """
         检测图片内容规范性（完整流程：提取→保存→逐项分析）
@@ -395,7 +584,7 @@ class FigureContentDetector:
         
         # 2. 读取图片并编码为base64
         try:
-            image_base64 = self.encode_image_base64_from_file(image_path)
+            image_base64, image_mime = self._prepare_image_for_api(image_path)
         except Exception as e:
             result['ok'] = False
             result['messages'].append(f"读取图片文件失败: {e}")
@@ -405,8 +594,9 @@ class FigureContentDetector:
             return result
         
         # 3. 第一步：判断是否为图表
-        print(f"    [1/6] 判断图片类型...")
-        is_chart_response = self.call_vision_api(image_base64, self.detection_prompts['is_chart'])
+        total_steps = 1 + 8
+        print(f"    [1/{total_steps}] 判断图片类型...")
+        is_chart_response = self.call_vision_api(image_base64, self.detection_prompts['is_chart'], image_mime=image_mime)
         
         if not is_chart_response:
             result['ok'] = False
@@ -431,39 +621,90 @@ class FigureContentDetector:
         
         # 4. 逐项检测（针对图表）
         check_results = {}
+        
+        code_messages = {
+            1: "刻度线未指向图内",
+            2: "物理量与单位未用“/”分隔",
+            3: "物理量符号未斜体",
+            4: "单位符号未正体",
+            5: "组合单位未加括号",
+            6: "℃被错误地加了括号",
+            7: "角度单位符号未写作(°)",
+            8: "坐标轴刻度数字的小数位数不统一",
+            9: "纵横坐标标题风格不统一（文字/符号混用）",
+            10: "坐标轴标题缺少“物理量/单位”结构（缺物理量或缺单位）",
+        }
+
+        check_code_prefix = {
+            'tick_direction': 'a',
+            'unit_separator': 'b',
+            'quantity_italic': 'b',
+            'unit_roman': 'b',
+            'axis_structure': 'b',
+            'unit_brackets': 'c/d',
+            'decimal_consistency': 'e',
+            'axis_title_consistency': 'f',
+        }
+
+        def _extract_codes(parsed_result: Dict) -> List[int]:
+            codes = parsed_result.get('codes')
+            if not codes:
+                return []
+            extracted: List[int] = []
+            for c in codes:
+                try:
+                    extracted.append(int(c))
+                except Exception:
+                    continue
+            return extracted
         check_order = [
             ('tick_direction', '刻度线方向'),
-            ('unit_format', '物理量单位表示'),
+            ('unit_separator', '分隔符“/”'),
+            ('quantity_italic', '物理量符号斜体'),
+            ('unit_roman', '单位符号正体'),
+            ('axis_structure', '物理量/单位结构'),
             ('unit_brackets', '组合单位括号'),
             ('decimal_consistency', '数值格式统一性'),
             ('axis_title_consistency', '坐标轴标题一致性')
         ]
         
+        total_steps = 1 + len(check_order)
         for idx, (check_key, check_name) in enumerate(check_order, start=2):
-            print(f"    [{idx}/6] 检查{check_name}...")
+            print(f"    [{idx}/{total_steps}] 检查{check_name}...")
             
-            response = self.call_vision_api(image_base64, self.detection_prompts[check_key])
+            response = self.call_vision_api(image_base64, self.detection_prompts[check_key], image_mime=image_mime)
             if not response:
                 check_results[check_key] = {'ok': False, 'error': 'API调用失败'}
                 continue
             
             parsed_result = self.parse_api_response(response)
+            if check_key == 'decimal_consistency' and isinstance(parsed_result, dict):
+                parsed_result = self._postprocess_decimal_consistency(parsed_result)
             check_results[check_key] = parsed_result
             
             # 收集问题
             if not parsed_result.get('ok', True):
                 result['ok'] = False
-                
-                # 根据不同的结果格式提取问题描述
-                if 'issues' in parsed_result and parsed_result['issues']:
-                    for issue in parsed_result['issues']:
-                        result['messages'].append(f"❌ [{check_name}] {issue}")
-                elif 'description' in parsed_result and parsed_result['description']:
-                    result['messages'].append(f"❌ [{check_name}] {parsed_result['description']}")
-                elif 'issue' in parsed_result and parsed_result['issue']:
-                    # 新增：处理 axis_title_consistency 返回的 'issue' 字段
-                    result['messages'].append(f"❌ [{check_name}] {parsed_result['issue']}")
-        
+
+                codes = _extract_codes(parsed_result)
+                if codes:
+                    rule_tag = check_code_prefix.get(check_key, "")
+                    for code in codes:
+                        msg = code_messages.get(code, f"未知问题码: {code}")
+                        if rule_tag:
+                            result['messages'].append(f"❌ [{rule_tag}]({code}) {msg}")
+                        else:
+                            result['messages'].append(f"❌ ({code}) {msg}")
+                else:
+                    # 兼容旧格式：issues/description/issue
+                    if 'issues' in parsed_result and parsed_result['issues']:
+                        for issue in parsed_result['issues']:
+                            result['messages'].append(f"❌ [{check_name}] {issue}")
+                    elif 'description' in parsed_result and parsed_result['description']:
+                        result['messages'].append(f"❌ [{check_name}] {parsed_result['description']}")
+                    elif 'issue' in parsed_result and parsed_result['issue']:
+                        result['messages'].append(f"❌ [{check_name}] {parsed_result['issue']}")
+
         result['details']['check_results'] = check_results
         
         # 清理临时文件（如果不是永久保存）

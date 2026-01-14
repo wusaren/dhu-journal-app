@@ -165,7 +165,8 @@ class PaperFormatService:
                   enable_classification_api: bool = False,
                   modules: Optional[List[str]] = None, 
                   reports_dir = None, annotate_dir = None,
-                  skip_checks: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
+                  skip_checks: Optional[Dict[str, List[str]]] = None,
+                  enable_page_numbers: bool = True) -> Dict[str, Any]:
         """
         执行所选择的格式检测
 
@@ -175,6 +176,7 @@ class PaperFormatService:
         enable_classification_api: 是否启用摘要分类号API检测
         modules: 检测配置列表，指定启动哪些检测模块
         skip_checks: 跳过检测项字典，格式：{"Title": ["bold", "font_size"], "Abstract": ["font_size"]}
+        enable_page_numbers: 禁用综合报告中的页码定位
         
         返回：
             {模块名: 报告字典} 的字典
@@ -233,7 +235,10 @@ class PaperFormatService:
         logger.info('检测报告处理成功！')
 
         # 开始生成检测报告
-        report_text = self.generate_comprehensive_report(all_reports)
+        rint("\n正在生成综合报告...")
+        report_docx_path = docx_path if enable_page_numbers else None
+        report_text = self.generate_comprehensive_report(all_reports, docx_path=report_docx_path)
+        
         # 保存报告
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         report_filename = f"{timestamp}_format_report.txt"
@@ -279,7 +284,7 @@ class PaperFormatService:
         return result
         
 
-    def generate_comprehensive_report(self, all_reports):
+    def generate_comprehensive_report(self, all_reports, docx_path: str = None):
         """
         生成综合文本报告
         
@@ -497,7 +502,7 @@ class PaperFormatService:
                         # 检测项标题
                         # 优先从中文映射获取，否则进行转换
                         section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
-                        ok_status = "✓ 通过" if section_value.get('ok', False) else "✗ 失败"
+                        ok_status = "✓ 通过" if section_value.get('ok') else "✗ 失败"
                         lines.append(f"\n  [{section_title}] {ok_status}")
                         
                         # 检测项消息
@@ -517,6 +522,111 @@ class PaperFormatService:
                     lines.append(f"    {summary_item}")
             
             lines.append("")
+        
+        # 公式符号说明问题清单（结构化）
+        formula_report = all_reports.get('Formula', {}) if isinstance(all_reports, dict) else {}
+        try:
+            details = formula_report.get('details', {}) if isinstance(formula_report, dict) else {}
+            sd_details = details.get('symbol_definition', {}) if isinstance(details, dict) else {}
+            per_formula = sd_details.get('per_formula', []) if isinstance(sd_details, dict) else []
+        except Exception:
+            per_formula = []
+
+        if per_formula:
+            issue_lines = []
+            for pf in per_formula:
+                if not isinstance(pf, dict):
+                    continue
+
+                missing = pf.get('missing_symbols', []) or []
+                warnings = pf.get('warnings', []) or []
+                suspected = pf.get('suspected_explained_symbols', []) or []
+                if (not missing) and (not warnings) and (not suspected):
+                    continue
+
+                fno = (pf.get('formula_number') or '').strip() if isinstance(pf.get('formula_number'), str) else ''
+                idx = pf.get('index', '')
+                number_display = fno if fno else f"段落{pf.get('paragraph_index', idx)}"
+
+                page_display = 'N/A'
+
+                formula_text = pf.get('formula_text', '')
+                if isinstance(formula_text, str):
+                    snippet_formula = formula_text.strip()
+                    if len(snippet_formula) > 120:
+                        snippet_formula = snippet_formula[:120] + '...'
+                else:
+                    snippet_formula = ''
+
+                evidence = pf.get('evidence', {}) if isinstance(pf.get('evidence', {}), dict) else {}
+
+                if missing:
+                    desc = f"符号首次出现未说明: {', '.join(missing)}"
+                    suggest = f"建议在公式附近使用 where/denotes/其中… 等规范句式逐一定义: {', '.join(missing)}"
+                    snippet_parts = []
+                    if snippet_formula:
+                        snippet_parts.append(snippet_formula)
+                    if evidence:
+                        for sym in missing[:2]:
+                            ev = evidence.get(sym)
+                            if isinstance(ev, str) and ev.strip():
+                                snippet_parts.append(f"{sym}: {ev.strip()}")
+                    issue_lines.append(
+                        f"编号: {number_display} | 页码: {page_display} | 类型: error\n"
+                        f"描述: {desc}\n"
+                        f"建议: {suggest}\n"
+                        f"文本片段: {' | '.join(snippet_parts) if snippet_parts else 'N/A'}\n"
+                    )
+
+                if suspected:
+                    desc = f"符号疑似已说明（非标准定义句式）: {', '.join(suspected)}"
+                    suggest = "建议补充规范定义句式（where/denotes/其中…），避免歧义。"
+                    snippet_parts = []
+                    if snippet_formula:
+                        snippet_parts.append(snippet_formula)
+                    for sym in suspected[:2]:
+                        ev = evidence.get(sym)
+                        if isinstance(ev, str) and ev.strip():
+                            snippet_parts.append(f"{sym}: {ev.strip()}")
+                    issue_lines.append(
+                        f"编号: {number_display} | 页码: {page_display} | 类型: warning\n"
+                        f"描述: {desc}\n"
+                        f"建议: {suggest}\n"
+                        f"文本片段: {' | '.join(snippet_parts) if snippet_parts else 'N/A'}\n"
+                    )
+
+                if isinstance(warnings, list) and warnings:
+                    for w in warnings:
+                        if not w:
+                            continue
+                        desc = str(w)
+                        if desc.startswith('复合符号已说明但未单独说明基符号'):
+                            suggest = '建议在首次出现处单独定义基符号（如 c、k），或按模板要求使用单字母符号。'
+                        elif desc.startswith('复合符号未说明'):
+                            suggest = '建议在首次出现处补充对该符号的文字说明。'
+                        elif desc.startswith('符号疑似已说明'):
+                            suggest = '建议补充规范定义句式（where/denotes/其中…），避免歧义。'
+                        else:
+                            suggest = '建议按模板规范补充符号说明。'
+
+                        snippet_parts = []
+                        if snippet_formula:
+                            snippet_parts.append(snippet_formula)
+                        issue_lines.append(
+                            f"编号: {number_display} | 页码: {page_display} | 类型: warning\n"
+                            f"描述: {desc}\n"
+                            f"建议: {suggest}\n"
+                            f"文本片段: {' | '.join(snippet_parts) if snippet_parts else 'N/A'}\n"
+                        )
+
+            if issue_lines:
+                lines.append("-" * 80)
+                lines.append("【公式符号说明问题清单】")
+                lines.append("-" * 80)
+                for it in issue_lines:
+                    for line in it.strip().split('\n'):
+                        lines.append(line)
+                    lines.append("")
         
         # 单独处理分类号报告
         if 'Classification' in all_reports:

@@ -49,6 +49,21 @@ except ImportError as e:
 # 定义直辖市列表，用于地址格式检测
 MUNICIPALITIES = ["北京", "上海", "天津", "重庆"]
 
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
 """
 === 论文格式检测系统 - 中文部分检测器 ===
 
@@ -551,6 +566,7 @@ def check_chinese_author(doc, chinese_section, tpl):
 
 def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
     """检测中文单位格式和内容"""
+    
     report = {'ok': True, 'messages': [], 'affiliations_detail': []}
     
     if chinese_section is None or chinese_section['affiliation_index'] is None:
@@ -637,161 +653,171 @@ def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
             else:
                 print(f"  单位引用检查: ✓ 所有引用的编号都存在")
     
-    # 4. API地址审核与邮编验证
-    amap_enabled = bool(AMAP_API_KEY)
-    aliyun_enabled = all([ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET])
-    deepseek_enabled = bool(DEEPSEEK_API_KEY)
-
-    if not any([amap_enabled, aliyun_enabled, deepseek_enabled]):
-        print("  所有API均未配置，跳过地址审核与邮编验证。")
+    if should_skip_check('address_zipcode'):
+        print("  已跳过地址审核与邮编检测（address_zipcode）。")
     else:
-        print("  正在使用API进行地址审核与邮编验证...")
-        for aff_idx, aff_para in enumerate(affiliation_paragraphs, 1):
-            text = aff_para['text']
+        # 4. API地址审核与邮编验证
+        amap_enabled = bool(AMAP_API_KEY)
+        aliyun_enabled = all([ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET])
+        deepseek_enabled = bool(DEEPSEEK_API_KEY)
 
-            # a. 提取单位名称和邮编
-            # 支持编号后直接跟中文或有分隔符的格式
-            match = re.search(r'^(?:\d+[．.]\s*)?(.+?)(?=\s*[，,])', text)
-            if not match:
-                continue
-            raw_unit_name = match.group(1)
-            unit_name = "".join(raw_unit_name.split())
-            
-            # 支持任意位数的邮编（作者可能写错）
-            zip_match = re.search(r'(\d{4,})', text)
-            doc_zipcode = zip_match.group(1) if zip_match else None
+        if not any([amap_enabled, aliyun_enabled, deepseek_enabled]):
+            print("  所有API均未配置，跳过地址审核与邮编验证。")
+        else:
+            print("  正在使用API进行地址审核与邮编验证...")
+            for aff_idx, aff_para in enumerate(affiliation_paragraphs, 1):
+                text = aff_para['text']
 
-            # b. 阶段一：高德地图地址审核
-            address_ok = False
-            if amap_enabled:
-                address_info = get_address_info(unit_name, AMAP_API_KEY)
-                if not address_info['is_exact_match']:
-                    msg = f"单位名称 '{unit_name}' 可能有误。{address_info['message']}"
-                    if msg not in report['messages']:
-                        report['ok'] = False
-                        report['messages'].append(msg)
-                else:
-                    address_ok = True
-            else:
-                print("  高德地图API未配置，跳过地址审核。")
-                address_ok = True
+                # a. 提取单位名称和邮编
+                # 支持编号后直接跟中文或有分隔符的格式
+                match = re.search(r'^(?:\d+[．.]\s*)?(.+?)(?=\s*[，,])', text)
+                if not match:
+                    continue
+                raw_unit_name = match.group(1)
+                unit_name = "".join(raw_unit_name.split())
 
-            # c. 阶段二 & 三：邮编查询（两种方式）
-            # 邮编检测独立进行，不依赖地址审核结果
-            if deepseek_enabled and doc_zipcode:
-                # 方式1：直接文档地址检测
-                # 移除邮编，只保留地址部分，避免干扰模型识别
-                full_address_text = ' '.join(text.split())
-                # 移除邮编（4位及以上的数字）
-                direct_address = re.sub(r'\d{4,}', '', full_address_text).strip()
-                direct_zipcode = None
-                
-                if direct_address:
-                    print(f"  邮编检测 (文档地址):")
-                    print(f"    检测地址: {direct_address}")
-                    zip_info_direct = get_zipcode_from_deepseek(direct_address, DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL)
-                    if zip_info_direct['status'] == 'ok':
-                        direct_zipcode = zip_info_direct['zipcode']
-                        print(f"    API检测邮编: {direct_zipcode}")
+                # 支持任意位数的邮编（作者可能写错）
+                zip_match = re.search(r'(\d{4,})', text)
+                doc_zipcode = zip_match.group(1) if zip_match else None
+
+                # b. 阶段一：高德地图地址审核
+                address_ok = False
+                if amap_enabled:
+                    address_info = get_address_info(unit_name, AMAP_API_KEY)
+                    print(f"  高德地图地址审核:")
+                    print(f"    查询关键词: {unit_name}")
+                    if not address_info['is_exact_match']:
+                        print(f"    ✗ 未精确匹配: {address_info.get('message', '')}")
+                        candidates = address_info.get('candidates')
+                        if isinstance(candidates, list) and candidates:
+                            print(f"    候选Top-{len(candidates)}: {', '.join([str(x) for x in candidates])}")
+                        msg = f"单位名称 '{unit_name}' 可能有误。{address_info['message']}"
+                        if msg not in report['messages']:
+                            report['ok'] = False
+                            report['messages'].append(msg)
                     else:
-                        print(f"    API调用失败: {zip_info_direct.get('message', '未知错误')}")
-                
-                # 方式2：结构化地址检测（如果启用了阿里云）
-                struct_zipcode = None
-                formatted_address = None
-                
-                if aliyun_enabled:
+                        print(f"    ✓ 精确匹配成功")
+                        address_ok = True
+                else:
+                    print("  高德地图API未配置，跳过地址审核。")
+                    address_ok = True
+
+                # c. 阶段二 & 三：邮编查询（两种方式）
+                # 邮编检测独立进行，不依赖地址审核结果
+                if deepseek_enabled and doc_zipcode:
+                    # 方式1：直接文档地址检测
+                    # 移除邮编，只保留地址部分，避免干扰模型识别
                     full_address_text = ' '.join(text.split())
-                    struct_info = get_structured_address_aliyun(full_address_text, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET)
+                    # 移除邮编（4位及以上的数字）
+                    direct_address = re.sub(r'\d{4,}', '', full_address_text).strip()
+                    direct_zipcode = None
 
-                    if struct_info['status'] == 'ok' and struct_info['structured_address']:
-                        zip_info = get_zipcode_from_deepseek(struct_info['structured_address'], DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL)
-                        if zip_info['status'] == 'ok':
-                            struct_zipcode = zip_info['zipcode']
-                            # 解析结构化地址为连贯的自然语言格式
-                            address_parts = []
-                            struct_addr = struct_info['structured_address']
-                            
-                            # 提取各个部分
-                            prov_match = re.search(r'prov=([^\s]+)', struct_addr)
-                            city_match = re.search(r'city=([^\s]+)', struct_addr)
-                            district_match = re.search(r'district=([^\s]+)', struct_addr)
-                            town_match = re.search(r'town=([^\s]+)', struct_addr)
-                            road_match = re.search(r'road=([^\s]+)', struct_addr)
-                            poi_match = re.search(r'poi=([^\s]+)', struct_addr)
-                            
-                            if prov_match:
-                                address_parts.append(prov_match.group(1))
-                            if city_match:
-                                address_parts.append(city_match.group(1))
-                            if district_match:
-                                address_parts.append(district_match.group(1))
-                            if town_match:
-                                address_parts.append(town_match.group(1))
-                            if road_match:
-                                address_parts.append(road_match.group(1))
-                            if poi_match:
-                                address_parts.append(poi_match.group(1))
-                            
-                            formatted_address = '，'.join(address_parts) if address_parts else struct_addr
-                            
-                            print(f"  邮编检测 (结构化地址):")
-                            print(f"    检测地址: {formatted_address}")
-                            print(f"    API检测邮编: {struct_zipcode}")
-                
-                # 使用结构化地址的结果作为主要检测结果（如果有的话），否则使用文档地址的结果
-                api_zipcode = struct_zipcode if struct_zipcode else direct_zipcode
-                detected_address = formatted_address if formatted_address else direct_address
-                
-                # 保存单位详细信息
-                aff_detail = {
-                    'number': aff_para.get('number', aff_idx),
-                    'unit_name': unit_name,
-                    'direct_address': direct_address,
-                    'direct_zipcode': direct_zipcode,
-                    'structured_address': formatted_address,
-                    'structured_zipcode': struct_zipcode,
-                    'api_zipcode': api_zipcode,
-                    'doc_zipcode': doc_zipcode,
-                    'match': api_zipcode == doc_zipcode if api_zipcode else None
-                }
-                report['affiliations_detail'].append(aff_detail)
-                
-                if api_zipcode and api_zipcode != doc_zipcode:
-                    msg = f"单位 '{unit_name}' 的邮编可能不正确。文档邮编: {doc_zipcode}, API建议邮编: {api_zipcode}"
-                    if msg not in report['messages']:
-                        report['ok'] = False
-                        report['messages'].append(msg)
-                    print(f"    ✗ 邮编不匹配 - 文档邮编: {doc_zipcode}")
-                elif api_zipcode:
-                    print(f"    ✓ 邮编验证通过 - 文档邮编: {doc_zipcode}")
-            else:
-                if not aliyun_enabled: print("  阿里云API未配置，跳过邮编验证。")
-                if not deepseek_enabled: print("  DeepSeek API未配置，跳过邮编验证。")
+                    if direct_address:
+                        print(f"  邮编检测 (文档地址):")
+                        print(f"    检测地址: {direct_address}")
+                        zip_info_direct = get_zipcode_from_deepseek(direct_address, DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL)
+                        if zip_info_direct['status'] == 'ok':
+                            direct_zipcode = zip_info_direct['zipcode']
+                            print(f"    API检测邮编: {direct_zipcode}")
+                        else:
+                            print(f"    API调用失败: {zip_info_direct.get('message', '未知错误')}")
 
-    # 5. 检测地址格式
-    for aff_para in affiliation_paragraphs:
-        text = aff_para['text']
-        # 匹配地址和邮编，例如 "上海 201620" 或 "江苏 南通 226019"
-        match = re.search(r'([\u4e00-\u9fa5\s]+)(\d{6})', text)
-        if match:
-            address_part = match.group(1).strip()
-            # 地址格式规则检查
-            if ' ' in address_part:
-                # 如果包含空格，检查第一部分是否为直辖市
-                parts = address_part.split()
-                if parts[0] in MUNICIPALITIES:
-                    msg = f"单位地址 '{address_part}' 格式错误，直辖市名称后不应有空格和下级区划（应直接写 '{parts[0]}'）"
-                    if msg not in report['messages']:
-                        report['ok'] = False
-                        report['messages'].append(msg)
-            else:
-                # 如果不包含空格，那它必须是直辖市
-                if address_part not in MUNICIPALITIES:
-                    msg = f"单位地址 '{address_part}' 不是直辖市，应在其前加上省份名并用空格隔开（例如：'江苏 南通'）"
-                    if msg not in report['messages']:
-                        report['ok'] = False
-                        report['messages'].append(msg)
+                    # 方式2：结构化地址检测（如果启用了阿里云）
+                    struct_zipcode = None
+                    formatted_address = None
+
+                    if aliyun_enabled:
+                        full_address_text = ' '.join(text.split())
+                        struct_info = get_structured_address_aliyun(full_address_text, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET)
+
+                        if struct_info['status'] == 'ok' and struct_info['structured_address']:
+                            zip_info = get_zipcode_from_deepseek(struct_info['structured_address'], DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL)
+                            if zip_info['status'] == 'ok':
+                                struct_zipcode = zip_info['zipcode']
+                                # 解析结构化地址为连贯的自然语言格式
+                                address_parts = []
+                                struct_addr = struct_info['structured_address']
+
+                                # 提取各个部分
+                                prov_match = re.search(r'prov=([^\s]+)', struct_addr)
+                                city_match = re.search(r'city=([^\s]+)', struct_addr)
+                                district_match = re.search(r'district=([^\s]+)', struct_addr)
+                                town_match = re.search(r'town=([^\s]+)', struct_addr)
+                                road_match = re.search(r'road=([^\s]+)', struct_addr)
+                                poi_match = re.search(r'poi=([^\s]+)', struct_addr)
+
+                                if prov_match:
+                                    address_parts.append(prov_match.group(1))
+                                if city_match:
+                                    address_parts.append(city_match.group(1))
+                                if district_match:
+                                    address_parts.append(district_match.group(1))
+                                if town_match:
+                                    address_parts.append(town_match.group(1))
+                                if road_match:
+                                    address_parts.append(road_match.group(1))
+                                if poi_match:
+                                    address_parts.append(poi_match.group(1))
+
+                                formatted_address = '，'.join(address_parts) if address_parts else struct_addr
+
+                                print(f"  邮编检测 (结构化地址):")
+                                print(f"    检测地址: {formatted_address}")
+                                print(f"    API检测邮编: {struct_zipcode}")
+
+                    # 使用结构化地址的结果作为主要检测结果（如果有的话），否则使用文档地址的结果
+                    api_zipcode = struct_zipcode if struct_zipcode else direct_zipcode
+                    detected_address = formatted_address if formatted_address else direct_address
+
+                    # 保存单位详细信息
+                    aff_detail = {
+                        'number': aff_para.get('number', aff_idx),
+                        'unit_name': unit_name,
+                        'direct_address': direct_address,
+                        'direct_zipcode': direct_zipcode,
+                        'structured_address': formatted_address,
+                        'structured_zipcode': struct_zipcode,
+                        'api_zipcode': api_zipcode,
+                        'doc_zipcode': doc_zipcode,
+                        'match': api_zipcode == doc_zipcode if api_zipcode else None
+                    }
+                    report['affiliations_detail'].append(aff_detail)
+
+                    if api_zipcode and api_zipcode != doc_zipcode:
+                        msg = f"单位 '{unit_name}' 的邮编可能不正确。文档邮编: {doc_zipcode}, API建议邮编: {api_zipcode}"
+                        if msg not in report['messages']:
+                            report['ok'] = False
+                            report['messages'].append(msg)
+                        print(f"    ✗ 邮编不匹配 - 文档邮编: {doc_zipcode}")
+                    elif api_zipcode:
+                        print(f"    ✓ 邮编验证通过 - 文档邮编: {doc_zipcode}")
+                else:
+                    if not aliyun_enabled: print("  阿里云API未配置，跳过邮编验证。")
+                    if not deepseek_enabled: print("  DeepSeek API未配置，跳过邮编验证。")
+
+        # 5. 检测地址格式
+        for aff_para in affiliation_paragraphs:
+            text = aff_para['text']
+            # 匹配地址和邮编，例如 "上海 201620" 或 "江苏 南通 226019"
+            match = re.search(r'([\u4e00-\u9fa5\s]+)(\d{6})', text)
+            if match:
+                address_part = match.group(1).strip()
+                # 地址格式规则检查
+                if ' ' in address_part:
+                    # 如果包含空格，检查第一部分是否为直辖市
+                    parts = address_part.split()
+                    if parts[0] in MUNICIPALITIES:
+                        msg = f"单位地址 '{address_part}' 格式错误，直辖市名称后不应有空格和下级区划（应直接写 '{parts[0]}'）"
+                        if msg not in report['messages']:
+                            report['ok'] = False
+                            report['messages'].append(msg)
+                else:
+                    # 如果不包含空格，那它必须是直辖市
+                    if address_part not in MUNICIPALITIES:
+                        msg = f"单位地址 '{address_part}' 不是直辖市，应在其前加上省份名并用空格隔开（例如：'江苏 南通'）"
+                        if msg not in report['messages']:
+                            report['ok'] = False
+                            report['messages'].append(msg)
 
     # 6. 检测单位编号规则
     affiliation_rules = tpl.get('check_rules', {}).get('affiliation_rules', {})
@@ -1011,10 +1037,18 @@ def check_chinese_keywords(doc, chinese_section, tpl):
     
     return report
 
-def check_chinese_section_with_template(docx_path, template_identifier):
+def check_chinese_section_with_template(docx_path, template_identifier, skip_checks=None):
     """
     中文部分检测的主函数
+    参数:
+        docx_path: 文档路径
+        template_identifier: 模板标识符
+        skip_checks: 要跳过的检测项列表
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     print(f"--- 开始中文部分检测 ---")
     tpl = load_template(template_identifier)
     doc = Document(docx_path)
@@ -1026,6 +1060,13 @@ def check_chinese_section_with_template(docx_path, template_identifier):
     if not chinese_section:
         print("文档中未找到中文部分，跳过检测")
         return {"summary": ["未找到中文部分"]}
+
+    all_reports['details'] = dict(chinese_section)
+    try:
+        if chinese_section.get('title_index') is not None:
+            all_reports['details']['title_text'] = doc.paragraphs[chinese_section['title_index']].text.strip()
+    except Exception:
+        pass
     
     # 2. 依次检测各个部分
     # 检测标题

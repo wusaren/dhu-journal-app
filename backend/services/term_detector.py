@@ -1199,7 +1199,7 @@ class TermDetector:
                 if scibert_term in seen_variants:
                     continue
                 # 跳过单个单词的术语
-                if len(scibert_term.split()) <= 1:
+                if len(core_term.split()) > 1 and len(scibert_term.split()) <= 1:
                     continue
                 
                 scibert_term_lower = scibert_term.lower()

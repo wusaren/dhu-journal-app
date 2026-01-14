@@ -278,12 +278,13 @@ class PaperFormatDetector:
                 'summary': [f'表格检测失败: {e}']
             }
     
-    def detect_chinese_section(self, docx_path: str) -> Dict[str, Any]:
+    def detect_chinese_section(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
         检测中文部分格式（中文标题、作者、单位、摘要和关键词）
         
         Args:
             docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
         
         Returns:
             检测结果字典
@@ -292,7 +293,7 @@ class PaperFormatDetector:
             template_path = str(self.templates_dir / 'Chinese_section.json')
             Chinese_section_detect = self.modules['Chinese_section']
             
-            result = Chinese_section_detect.check_chinese_section_with_template(docx_path, template_path)
+            result = Chinese_section_detect.check_chinese_section_with_template(docx_path, template_path, skip_checks)
             return result
             
         except Exception as e:
@@ -319,7 +320,7 @@ class PaperFormatDetector:
             包含所有模块检测结果的字典
         """
         if modules is None:
-            modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
+            modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
         
         if skip_checks is None:
             skip_checks = {}
@@ -349,8 +350,7 @@ class PaperFormatDetector:
                 elif module_name == 'Table':
                     result = self.detect_table(docx_path, module_skip_checks)
                 elif module_name == 'Chinese_section':
-                    # 中文部分检测不支持跳过项
-                    result = self.detect_chinese_section(docx_path)
+                    result = self.detect_chinese_section(docx_path, skip_checks=module_skip_checks)
                 else:
                     logger.warning(f"未知模块: {module_name}")
                     continue
