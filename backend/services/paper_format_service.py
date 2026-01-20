@@ -23,7 +23,7 @@ DETECTION_ORDER = ['Title', 'Abstract', 'English_Abstract', 'Keywords', 'Content
 
 # 模块中文名称映射
 MODULE_NAMES_CN = {
-    'Title': '英文标题、作者与单位',
+    'Title': '标题',
     'Abstract': '摘要',
     'English_Abstract': '英文摘要',
     'Keywords': '关键词',
@@ -809,24 +809,36 @@ class ChinesePaperFormatService:
                 'error_message': report.get('error_message', '')
             }
         
-        # Keywords模块特殊处理（双语检测）
-        if module_name == 'Keywords' and isinstance(report, dict) and 'chinese' in report and 'english' in report:
+        # Keywords和Title模块特殊处理（双语检测）
+        if module_name in ['Keywords', 'Title'] and isinstance(report, dict) and 'chinese' in report and 'english' in report:
             # 提取双语关键词的检查项
             checks = {}
             chinese_report = report.get('chinese', {})
             english_report = report.get('english', {})
             
-            # 处理中文关键词检查项
+            # 处理中文检查项
             if isinstance(chinese_report, dict):
+                exclude_keys = ['summary', 'extracted', 'details', 'language']
+                if module_name == 'Keywords':
+                    exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
+                elif module_name == 'Title':
+                    exclude_keys.extend(['title_paragraph', 'title_text'])
+                
                 for key, value in chinese_report.items():
-                    if key not in ['summary', 'extracted', 'details', 'keywords_paragraph', 'keywords_text', 'keywords_list']:
+                    if key not in exclude_keys:
                         if isinstance(value, dict) and 'ok' in value:
                             checks[f'chinese_{key}'] = value
             
-            # 处理英文关键词检查项
+            # 处理英文检查项
             if isinstance(english_report, dict):
+                exclude_keys = ['summary', 'extracted', 'details', 'language']
+                if module_name == 'Keywords':
+                    exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
+                elif module_name == 'Title':
+                    exclude_keys.extend(['title_paragraph', 'title_text'])
+                
                 for key, value in english_report.items():
-                    if key not in ['summary', 'extracted', 'details', 'keywords_paragraph', 'keywords_text', 'keywords_list']:
+                    if key not in exclude_keys:
                         if isinstance(value, dict) and 'ok' in value:
                             checks[f'english_{key}'] = value
             
@@ -1026,8 +1038,8 @@ class ChinesePaperFormatService:
             
             # 统计该模块的检测项
             if isinstance(report, dict):
-                # Keywords模块特殊处理（双语检测）
-                if module_name == 'Keywords' and 'chinese' in report and 'english' in report:
+                # Keywords和Title模块特殊处理（双语检测）
+                if module_name in ['Keywords', 'Title'] and 'chinese' in report and 'english' in report:
                     # 统计中文关键词检测项
                     chinese_report = report.get('chinese', {})
                     if isinstance(chinese_report, dict):
@@ -1217,14 +1229,24 @@ class ChinesePaperFormatService:
                             for msg in messages:
                                 lines.append(f"      • {msg}")
             
-            # Keywords模块特殊处理（双语检测）
-            elif module_name == 'Keywords' and 'chinese' in report and 'english' in report:
-                # 处理中文关键词
+            # Keywords和Title模块特殊处理（双语检测）
+            elif module_name in ['Keywords', 'Title'] and 'chinese' in report and 'english' in report:
+                # 处理中文部分
                 chinese_report = report.get('chinese', {})
                 if chinese_report and not chinese_report.get('error'):
-                    lines.append("\n  【中文关键词】")
+                    if module_name == 'Keywords':
+                        lines.append("\n  【中文关键词】")
+                    elif module_name == 'Title':
+                        lines.append("\n  【中文标题】")
+                    
+                    exclude_keys = ['summary', 'extracted', 'details', 'language']
+                    if module_name == 'Keywords':
+                        exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
+                    elif module_name == 'Title':
+                        exclude_keys.extend(['title_paragraph', 'title_text'])
+                    
                     for section_key, section_value in chinese_report.items():
-                        if section_key in ['summary', 'extracted', 'details', 'keywords_paragraph', 'keywords_text', 'keywords_list']:
+                        if section_key in exclude_keys:
                             continue
                         
                         if isinstance(section_value, dict) and 'ok' in section_value:
@@ -1240,18 +1262,28 @@ class ChinesePaperFormatService:
                                     else:
                                         lines.append(f"      • {msg}")
                     
-                    # 中文关键词总结
+                    # 中文部分总结
                     if 'summary' in chinese_report and chinese_report['summary']:
                         lines.append("\n    【总结】")
                         for summary_item in chinese_report['summary']:
                             lines.append(f"      {summary_item}")
                 
-                # 处理英文关键词
+                # 处理英文部分
                 english_report = report.get('english', {})
                 if english_report and not english_report.get('error'):
-                    lines.append("\n  【英文关键词】")
+                    if module_name == 'Keywords':
+                        lines.append("\n  【英文关键词】")
+                    elif module_name == 'Title':
+                        lines.append("\n  【英文标题】")
+                    
+                    exclude_keys = ['summary', 'extracted', 'details', 'language']
+                    if module_name == 'Keywords':
+                        exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
+                    elif module_name == 'Title':
+                        exclude_keys.extend(['title_paragraph', 'title_text'])
+                    
                     for section_key, section_value in english_report.items():
-                        if section_key in ['summary', 'extracted', 'details', 'keywords_paragraph', 'keywords_text', 'keywords_list']:
+                        if section_key in exclude_keys:
                             continue
                         
                         if isinstance(section_value, dict) and 'ok' in section_value:
@@ -1267,7 +1299,7 @@ class ChinesePaperFormatService:
                                     else:
                                         lines.append(f"      • {msg}")
                     
-                    # 英文关键词总结
+                    # 英文部分总结
                     if 'summary' in english_report and english_report['summary']:
                         lines.append("\n    【总结】")
                         for summary_item in english_report['summary']:

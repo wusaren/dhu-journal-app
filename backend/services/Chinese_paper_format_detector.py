@@ -42,11 +42,11 @@ class ChinesePaperFormatDetector:
         """导入所有检测模块"""
         try:
             # 导入检测模块
-            from services.paper_detect import Title_detect
+            from services.Chinese_paper_detect import Title_detect
             from services.Chinese_paper_detect import Abstract_detect
             from services.Chinese_paper_detect import English_Abstract_detect
             from services.Chinese_paper_detect import Keywords_detect_unified as Keywords_detect
-            from services.paper_detect import Content_detect
+            from services.Chinese_paper_detect import Content_detect_cn as Content_detect
             from services.paper_detect import Figure_detect
             from services.paper_detect import Formula_detect
             from services.paper_detect import Table_detect
@@ -93,20 +93,36 @@ class ChinesePaperFormatDetector:
     
     def detect_title(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
         """
-        检测标题、作者、单位格式
+        检测标题格式（双语检测：同时检测中文和英文标题）
         
         Args:
             docx_path: Word文档路径
             skip_checks: 要跳过的检测项列表
         
         Returns:
-            检测结果字典
+            检测结果字典，包含 'chinese'、'english' 和 'summary' 字段
         """
         try:
-            template_path = str(self.templates_dir / 'Title.json')
+            chinese_template_path = str(self.templates_dir / 'Title.json')
+            english_template_path = str(self.templates_dir / 'English_Title.json')
             Title_detect = self.modules['Title']
             
-            result = Title_detect.check_doc_with_template(docx_path, template_path, skip_checks)
+            # 执行双语标题检测
+            result = Title_detect.check_bilingual_titles(
+                docx_path, 
+                chinese_template=chinese_template_path,
+                english_template=english_template_path,
+                skip_checks=skip_checks
+            )
+            
+            # 确保返回结果包含必要的字段
+            if 'chinese' not in result:
+                result['chinese'] = {'error': True, 'error_message': '中文标题检测未执行'}
+            if 'english' not in result:
+                result['english'] = {'error': True, 'error_message': '英文标题检测未执行'}
+            if 'summary' not in result:
+                result['summary'] = []
+            
             return result
             
         except Exception as e:
@@ -114,6 +130,8 @@ class ChinesePaperFormatDetector:
             return {
                 'error': True,
                 'error_message': str(e),
+                'chinese': {'error': True, 'error_message': str(e)},
+                'english': {'error': True, 'error_message': str(e)},
                 'summary': [f'标题检测失败: {e}']
             }
     
@@ -222,10 +240,10 @@ class ChinesePaperFormatDetector:
             检测结果字典
         """
         try:
-            template_path = str(self.templates_dir / 'Content.json')
+            template_identifier = 'Content'  # 使用模板标识符，而不是完整路径
             Content_detect = self.modules['Content']
             
-            result = Content_detect.check_content_with_template(docx_path, template_path, skip_checks)
+            result = Content_detect.check_content_with_template(docx_path, template_identifier, skip_checks)
             return result
             
         except Exception as e:
