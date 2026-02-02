@@ -47,9 +47,10 @@ class ChinesePaperFormatDetector:
             from services.Chinese_paper_detect import English_Abstract_detect
             from services.Chinese_paper_detect import Keywords_detect_unified as Keywords_detect
             from services.Chinese_paper_detect import Content_detect_cn as Content_detect
-            from services.paper_detect import Figure_detect
             from services.Chinese_paper_detect import Formula_detect
             from services.Chinese_paper_detect import Table_detect
+            from services.Chinese_paper_detect import TOC_detect
+            from services.Chinese_paper_detect import Figure_detect
             from services.paper_detect import Chinese_section_detect
             
             # 保存模块引用
@@ -59,6 +60,7 @@ class ChinesePaperFormatDetector:
                 'English_Abstract': English_Abstract_detect,
                 'Keywords': Keywords_detect,
                 'Content': Content_detect,
+                'TOC': TOC_detect,
                 'Figure': Figure_detect,
                 'Formula': Formula_detect,
                 'Table': Table_detect,
@@ -254,6 +256,31 @@ class ChinesePaperFormatDetector:
                 'summary': [f'正文检测失败: {e}']
             }
     
+    def detect_toc(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
+        """
+        检测目录格式
+        
+        Args:
+            docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
+    
+        Returns:
+            检测结果字典
+        """
+        try:
+            template_path = str(self.templates_dir / 'TOC.json')
+            TOC_detect = self.modules['TOC']
+            
+            result = TOC_detect.check_toc_with_template(docx_path, template_path, skip_checks)
+            return result
+            
+        except Exception as e:
+            logger.error(f"目录检测失败: {e}", exc_info=True)
+            return {
+                'error': True,
+                'error_message': str(e),
+                'summary': [f'目录检测失败: {e}']
+            }
     def detect_figure(self, docx_path: str, enable_content_check: bool = False,
                      skip_checks: List[str] = None) -> Dict[str, Any]:
         """
@@ -392,7 +419,7 @@ class ChinesePaperFormatDetector:
             包含所有模块检测结果的字典
         """
         if modules is None:
-            modules = ['Title', 'Abstract','English_Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table']
+            modules = ['Title', 'Abstract','English_Abstract', 'Keywords', 'Content', 'TOC', 'Formula', 'Figure', 'Table']
         
         if skip_checks is None:
             skip_checks = {}
@@ -416,6 +443,8 @@ class ChinesePaperFormatDetector:
                     result = self.detect_keywords(docx_path, module_skip_checks)
                 elif module_name == 'Content':
                     result = self.detect_content(docx_path, module_skip_checks)
+                elif module_name == 'TOC':
+                    result = self.detect_toc(docx_path, module_skip_checks)
                 elif module_name == 'Figure':
                     result = self.detect_figure(docx_path, enable_content_check=enable_figure_api, 
                                                 skip_checks=module_skip_checks)

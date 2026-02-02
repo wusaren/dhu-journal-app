@@ -1,0 +1,101 @@
+{
+  "abstract_rule": "摘要二字中间空一格，摘要与内容中间隔一行",
+  "structure_rules": {
+    "header_pattern": "^\\\\s*摘\\\\s要\\\\s*$",
+    "no_paragraph_breaks": false,
+    "content_start_line": 2
+  },
+  "format_rules": {
+    "title": {
+      "font_name": "黑体",
+      "font_size_pt": 3.0,
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.25,
+      "space_before": 0.0,
+      "space_after": 0.0,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "abstract": {
+      "font_name": "黑体",
+      "font_size_pt": 3.0,
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.25,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "content": {
+      "chinese_font": "黑体",
+      "english_font": "Times New Roman",
+      "font_size_pt": 3.0,
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.25,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "left",
+      "first_line_indent": 2,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    },
+    "indent_mapping": {
+      "0": "无缩进",
+      "2": "缩进2字符",
+      "4": "缩进4字符",
+      "8": "缩进8字符"
+    }
+  },
+  "messages": {
+    "structure_header_ok": "摘要标题格式正确",
+    "structure_header_error": "摘要标题格式错误",
+    "structure_no_paragraph_ok": "摘要段落符合要求",
+    "structure_paragraph_error": "摘要段落格式错误",
+    "format_abstract_issue_header": "摘要格式问题：",
+    "format_abstract_ok": "摘要格式检查通过",
+    "format_content_ok": "正文格式检查通过"
+  },
+  "notes": [
+    "请检查所有格式设置是否符合要求",
+    "如果发现解析有误，请手动调整对应字段",
+    "特殊规则：摘要二字中间空一格，摘要与内容中间隔一行",
+    "解析置信度：0.96"
+  ],
+  "metadata": {
+    "source_text": "摘要二字中间空一格：黑体3号字，段前段后0行，单倍行距。摘要与内容之间空一行。摘要内容宋体小四号字，英文字体TimesNewRome，1.25倍行距。",
+    "parsed_at": "2026-01-26T14:57:37.309707",
+    "confidence": 0.9615384615384617
+  }
+}
