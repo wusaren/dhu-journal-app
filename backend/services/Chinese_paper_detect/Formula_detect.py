@@ -1,0 +1,1504 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+import json
+import re
+import xml.etree.ElementTree as ET
+import logging
+from pathlib import Path
+
+from docx import Document
+from docx.oxml.ns import qn
+
+logger = logging.getLogger(__name__)
+
+
+
+# 添加项目根目录到 sys.path 以支持独立运行（与 Title_detect.py 保持一致）
+if __name__ == "__main__" and __package__ is None:
+    logging.basicConfig(level=logging.INFO)
+    file = Path(__file__).resolve()
+    parent, root = file.parent, file.parents[1]
+    sys.path.append(str(root))
+    try:
+        sys.path.remove(str(parent))
+    except ValueError:
+        pass
+
+
+def should_skip_check(check_name):
+    """判断是否应该跳过某个检测项"""
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+
+_skip_checks_config = []
+
+
+def resolve_template_path(identifier):
+    """解析模板路径，支持文件路径和模板名称（与 Title_detect.py 风格一致）"""
+    if os.path.isfile(identifier):
+        return identifier
+
+    current_dir = Path(__file__).parent
+    candidates = [
+        os.path.join("templates", identifier + ".json"),
+        os.path.join("Chinese_paper_detect_templates", identifier + ".json"),
+        os.path.join("services", "Chinese_paper_detect_templates", identifier + ".json"),
+        str(current_dir.parent / "Chinese_paper_detect_templates" / (identifier + ".json")),
+        str(current_dir / ".." / "Chinese_paper_detect_templates" / (identifier + ".json")),
+    ]
+
+    for candidate in candidates:
+        abs_path = os.path.abspath(candidate)
+        if os.path.isfile(abs_path):
+            return abs_path
+        if os.path.isfile(candidate):
+            return candidate
+
+    raise FileNotFoundError(f"Template not found: '{identifier}' (tried file path and {candidates})")
+
+
+def load_template(identifier):
+    tpl_path = resolve_template_path(identifier)
+    with open(tpl_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
+def get_font_size(pt_size, tpl=None):
+    if tpl and 'check_rules' in tpl and 'font_size_mapping' in tpl['check_rules']:
+        size_config = tpl['check_rules']['font_size_mapping']
+        size_map = {}
+        for key, value in size_config.items():
+            try:
+                size_map[float(key)] = value
+            except (ValueError, TypeError):
+                continue
+    else:
+        size_map = {
+            9: "小五", 10.5: "五号", 12: "小四", 14: "四号",
+            16: "三号", 18: "小二", 22: "二号", 24: "小一", 26: "一号"
+        }
+
+    if not size_map:
+        return f"{pt_size}pt"
+
+    closest_size = min(size_map.keys(), key=lambda x: abs(x - pt_size))
+    return size_map[closest_size]
+
+
+def detect_font_for_run(run, paragraph=None):
+    """检测 run 的字号、字体、加粗"""
+    font_source = run.font if run else (paragraph.style.font if paragraph else None)
+    if not font_source:
+        return 12.0, "Unknown", False, False
+
+    # 优先从 XML 中读取字体信息（更准确）
+    font_name = "Unknown"
+    try:
+        if hasattr(run, '_element') and hasattr(run._element, 'rPr'):
+            rpr = run._element.rPr
+            if rpr is not None:
+                rFonts = rpr.find('.//w:rFonts')
+                if rFonts is not None:
+                    # 检查所有可能的字体属性
+                    for attr in ['w:cambriaMath', 'w:ascii', 'w:eastAsia', 'w:hAnsi', 'w:cs']:
+                        val = rFonts.get(qn(attr))
+                        if val:
+                            font_name = val
+                            # 如果找到 cambria 相关的字体，优先使用
+                            if 'cambria' in val.lower():
+                                break
+    except Exception:
+        pass
+
+    # 如果 XML 中没有获取到，fallback 到 API
+    if font_name == "Unknown":
+        font_name = font_source.name if font_source.name else "Times New Roman"
+
+    font_size = None
+    try:
+        if run and run.font and run.font.size and hasattr(run.font.size, 'pt'):
+            font_size = float(run.font.size.pt)
+
+        if font_size is None and hasattr(run._element, 'rPr'):
+            sz_nodes = run._element.xpath('.//w:sz')
+            if sz_nodes and sz_nodes[0].get(qn('w:val')):
+                font_size = float(sz_nodes[0].get(qn('w:val'))) / 2.0
+
+        if font_size is None and paragraph and paragraph.style and hasattr(paragraph.style.font, 'size') and hasattr(paragraph.style.font.size, 'pt'):
+            font_size = float(paragraph.style.font.size.pt)
+
+        if font_size is None and paragraph and hasattr(paragraph.style, 'element'):
+            sz_nodes = paragraph.style.element.xpath('.//w:sz')
+            if sz_nodes and sz_nodes[0].get(qn('w:val')):
+                font_size = float(sz_nodes[0].get(qn('w:val'))) / 2.0
+    except Exception:
+        pass
+
+    font_size = font_size if font_size is not None else 12.0
+
+    is_bold = font_source.bold if font_source.bold is not None else False
+    is_italic = font_source.italic if font_source.italic is not None else False
+    if run and run.font:
+        is_bold = run.font.bold if run.font.bold is not None else is_bold
+        is_italic = run.font.italic if run.font.italic is not None else is_italic
+
+    is_bold = bool(is_bold) if is_bold is not None else False
+    is_italic = bool(is_italic) if is_italic is not None else False
+
+    return font_size, font_name, is_bold, is_italic
+
+
+def detect_run_color_is_default(run):
+    """返回 True 表示未设置颜色或为自动/默认颜色。"""
+    try:
+        if not hasattr(run, '_element'):
+            return True
+        rpr = run._element.rPr
+        if rpr is None:
+            return True
+        color = rpr.find(qn('w:color'))
+        if color is None:
+            return True
+        val = color.get(qn('w:val'))
+        if val is None:
+            return True
+        return str(val).lower() in ['auto', '000000']
+    except Exception:
+        return True
+
+
+def _debug_enabled(tpl, debug=None):
+    if debug is not None:
+        return bool(debug)
+    return bool(tpl.get('check_rules', {}).get('debug', False))
+
+def iter_all_w_p_elements(doc):
+    """
+    返回所有 w:p 段落节点（包含正文流 + 文本框/形状中的段落）。
+    """
+    try:
+        body_ps = doc.element.body.xpath('./w:p')
+        tbx_ps = doc.element.xpath('.//w:txbxContent//w:p')
+        return body_ps + tbx_ps
+    except Exception:
+        return []
+
+def get_text_from_w_p(p):
+    """
+    从 w:p 提取文本（尽量覆盖公式框场景）：w:t + w:instrText + m:t
+    """
+    try:
+        parts = []
+        parts.extend(p.xpath('.//w:t/text()'))
+        parts.extend(p.xpath('.//w:instrText/text()'))
+        parts.extend(p.xpath('.//m:t/text()'))
+        text = ''.join(parts)
+        return (text or '').strip()
+    except Exception:
+        return ''
+
+def detect_paragraph_alignment(paragraph):
+    direct_alignment = paragraph.paragraph_format.alignment
+    if direct_alignment is not None:
+        return int(direct_alignment)
+
+    if paragraph.style:
+        try:
+            style_alignment = paragraph.style.paragraph_format.alignment
+            if style_alignment is not None:
+                return int(style_alignment)
+        except Exception:
+            pass
+
+    return 0
+
+def find_formula_candidates(doc, template, debug=None):
+    """
+    找出所有可能是公式的段落（简化版）
+
+    核心逻辑：
+    1. 找到包含 Math 对象的段落
+    2. 提取 Math 对象内的文本作为公式内容
+    3. 在段落中搜索编号（#3-3, (1-1) 等）
+    """
+    dbg = _debug_enabled(template, debug)
+
+    rules = template.get('formula_detection_rules', {})
+    number_pattern = rules.get('number_pattern', r'[##]?\s*\d+[-－–]?\s*\d+')
+    mod = rules.get('math_object_detection', {})
+    fallback_patterns = mod.get('fallback_patterns', [])
+
+    candidates = []
+    all_ps = list(iter_all_w_p_elements(doc))
+
+    if dbg:
+        logger.info("[Formula] 扫描到 w:p 节点总数=%s", len(all_ps))
+
+    # 编号模式列表
+    number_patterns = [
+        number_pattern,
+        r'[##]\s*\d+[-－–]\s*\d+',
+        r'\(\d+[-－–]\d+\)',
+        r'\(\d+\)',
+    ]
+
+    def parse_formula_number(num_text):
+        """解析编号，返回 (chapter, seq) 或 None"""
+        if '-' in num_text or '－' in num_text or '–' in num_text:
+            num_m = re.search(r'(?P<chapter>\d+)\s*[-－–]\s*(?P<seq>\d+)', num_text)
+            if num_m:
+                try:
+                    return (int(num_m.group('chapter')), int(num_m.group('seq')))
+                except Exception:
+                    pass
+        num_m = re.search(r'\d+', num_text)
+        if num_m:
+            return (1, int(num_m.group()))
+        return None
+
+    for idx, p in enumerate(all_ps):
+        text = get_text_from_w_p(p)
+        if not text:
+            continue
+
+        # ========== 1. 检测 Math 对象 ==========
+        math_elements = []
+        math_paths = ['.//w:oMath', './/m:oMath', './/oMath', './/m:math']
+        for path in math_paths:
+            try:
+                elements = p.xpath(path)
+                if elements:
+                    math_elements.extend(elements)
+            except Exception:
+                continue
+
+        if not math_elements:
+            # 没有 Math 对象，跳过
+            continue
+
+        # ========== 2. 逐个 Math 对象检查，找到包含编号的那个 ==========
+        target_math_elem = None
+        parsed_number = None
+        number_text = None
+        number_position_in_math = -1  # 编号在目标 Math 对象中的位置
+
+        for elem in math_elements:
+            # 提取当前 Math 对象的文本
+            math_text = ''
+            for node in elem.iter():
+                if hasattr(node, 'text') and node.text:
+                    math_text += node.text.strip() + ' '
+            math_text = math_text.strip()
+
+            if not math_text:
+                continue
+
+            # 在当前 Math 对象内搜索编号
+            for pat in number_patterns:
+                try:
+                    for m in re.finditer(pat, math_text):
+                        num_text = m.group()
+                        parsed = parse_formula_number(num_text)
+                        if parsed:
+                            target_math_elem = elem
+                            parsed_number = parsed
+                            number_text = num_text
+                            number_position_in_math = m.start()
+                            if dbg:
+                                logger.info("[Formula] w:p[%s]：在Math对象内找到编号 num=%s math_text=%r", idx, num_text, math_text[:80])
+                            break
+                except Exception:
+                    continue
+                if parsed_number:
+                    break
+            if parsed_number:
+                break
+
+        # ========== 3. 如果没在 Math 内找到，在段落中搜索编号 ==========
+        if not parsed_number:
+            for elem in math_elements:
+                # 提取当前 Math 对象的文本
+                math_text = ''
+                for node in elem.iter():
+                    if hasattr(node, 'text') and node.text:
+                        math_text += node.text.strip() + ' '
+                math_text = math_text.strip()
+
+                if not math_text:
+                    continue
+
+                # 在段落中搜索编号，看是否在 Math 对象之后
+                for pat in number_patterns:
+                    try:
+                        for m in re.finditer(pat, text):
+                            num_text = m.group()
+                            parsed = parse_formula_number(num_text)
+                            if parsed:
+                                # 检查 Math 对象在段落中的位置
+                                pos_in_text = text.find(math_text)
+                                if pos_in_text >= 0 and m.start() > pos_in_text:
+                                    target_math_elem = elem
+                                    parsed_number = parsed
+                                    number_text = num_text
+                                    number_position_in_math = m.start() - pos_in_text  # 编号在 math_text 中的相对位置
+                                    if dbg:
+                                        logger.info("[Formula] w:p[%s]：在Math对象右侧找到编号 num=%s", idx, num_text)
+                                    break
+                    except Exception:
+                        continue
+                    if parsed_number:
+                        break
+                if parsed_number:
+                    break
+
+        if not parsed_number:
+            if dbg:
+                logger.info("[Formula] w:p[%s]：有Math对象但未找到编号 preview=%r", idx, text[:80])
+            continue
+
+        # ========== 4. 提取目标 Math 对象的文本作为公式内容 ==========
+        formula_content = ''
+        if target_math_elem is not None:
+            for node in target_math_elem.iter():
+                if hasattr(node, 'text') and node.text:
+                    # 如果当前节点包含编号，只取编号之前的部分
+                    node_text = node.text.strip()
+                    if number_text in node_text:
+                        # 编号在这个节点的文本中
+                        pos = node_text.find(number_text)
+                        formula_content += node_text[:pos]
+                    else:
+                        formula_content += node_text
+
+        formula_content = formula_content.strip()
+
+        if not formula_content:
+            if dbg:
+                logger.info("[Formula] w:p[%s]：公式内容为空 preview=%r", idx, text[:80])
+            continue
+
+        # ========== 6. 构建候选结果 ==========
+        candidates.append({
+            'w_p_index': idx,
+            'w_p': p,
+            'text': text,
+            'number': parsed_number,
+            'number_text': number_text,
+            'formula_content': formula_content,
+            'formula_font': 'Cambria Math',
+            'math_object_detected': True,
+            'target_math_elem': target_math_elem,  # 保存 Math 对象引用，用于字体检测
+        })
+
+    if dbg:
+        logger.info("[Formula] 候选公式段落数=%s", len(candidates))
+
+    return candidates
+
+
+def check_tab_stops(paragraph, expected_tabs, tolerance_chars=2, dbg=False):
+    """
+    检查段落制表位
+    - paragraph: 段落对象
+    - expected_tabs: 期望的制表位配置列表
+    - tolerance_chars: 位置容差（字符数）
+    - dbg: 是否输出调试日志
+    返回: (是否通过, 问题列表, 检测到的制表位列表)
+    """
+    issues = []
+    detected_tabs = []
+
+    if dbg:
+        logger.info("[TabStops] 开始检查制表位...")
+        logger.info("[TabStops] 期望制表位: %s", expected_tabs)
+        logger.info("[TabStops] 容差: %s 字符", tolerance_chars)
+
+    try:
+        pPr = paragraph.paragraph_format._element
+        tabs_elements = pPr.xpath('.//w:tabs')
+
+        if not tabs_elements and paragraph.style and hasattr(paragraph.style, '_element'):
+            style_elem = paragraph.style._element
+            tabs_elements = style_elem.xpath('.//w:tabs')
+
+        if not tabs_elements:
+            if dbg:
+                logger.info("[TabStops] 未在段落格式和样式中检测到制表位设置")
+            issues.append("未检测到制表位设置（段落格式和样式中都没有）")
+            return False, issues, detected_tabs
+
+        # 提取制表位信息
+        for tabs_elem in tabs_elements:
+            tab_elements = tabs_elem.xpath('.//w:tab')
+            for tab_elem in tab_elements:
+                pos_attr = tab_elem.get(qn('w:pos'))
+                val_attr = tab_elem.get(qn('w:val'))
+
+                if pos_attr and val_attr:
+                    pos_twips = int(pos_attr)
+                    pos_chars = round(pos_twips / 210.0)
+
+                    alignment_map = {
+                        'center': 'center',
+                        'right': 'right',
+                        'left': 'left',
+                        'decimal': 'decimal'
+                    }
+                    alignment = alignment_map.get(val_attr, val_attr)
+
+                    detected_tabs.append({
+                        'position_chars': pos_chars,
+                        'position_twips': pos_twips,
+                        'alignment': alignment
+                    })
+
+        if dbg:
+            logger.info("[TabStops] 检测到 %d 个制表位: %s", len(detected_tabs), detected_tabs)
+
+        # 检查制表位数量
+        if len(detected_tabs) < len(expected_tabs):
+            issues.append(f"制表位数量不足，期望{len(expected_tabs)}个，实际{len(detected_tabs)}个")
+            if dbg:
+                logger.info("[TabStops] 问题: 制表位数量不足")
+
+        # 检查每个期望的制表位
+        for expected_tab in expected_tabs:
+            expected_pos = int(expected_tab['position_chars'])
+            expected_align = str(expected_tab['alignment'])
+
+            matching_tab = None
+            for detected_tab in detected_tabs:
+                diff = abs(detected_tab['position_chars'] - expected_pos)
+                if diff <= tolerance_chars:
+                    matching_tab = detected_tab
+                    if dbg:
+                        logger.info("[TabStops] 找到匹配的制表位: 期望位置=%s, 检测位置=%s, 差距=%s, 容差=%s",
+                                  expected_pos, detected_tab['position_chars'], diff, tolerance_chars)
+                    break
+
+            if not matching_tab:
+                issues.append(f"未找到位置为{expected_pos}字符的制表位")
+                if dbg:
+                    logger.info("[TabStops] 问题: 未找到位置为 %s 字符的制表位", expected_pos)
+            else:
+                if matching_tab['alignment'] != expected_align:
+                    issues.append(f"制表位{expected_pos}字符处对齐方式错误，期望{expected_align}，实际{matching_tab['alignment']}")
+                    if dbg:
+                        logger.info("[TabStops] 问题: 对齐方式错误，期望=%s, 实际=%s",
+                                   expected_align, matching_tab['alignment'])
+
+        # 检查制表符使用情况
+        tab_char_count = paragraph.text.count('\t')
+        expected_tab_chars = len(expected_tabs)
+
+        if tab_char_count == 0:
+            issues.append("设置了制表位但没有使用制表符，公式不会按预期对齐")
+            if dbg:
+                logger.info("[TabStops] 问题: 段落中没有使用制表符")
+        elif tab_char_count < expected_tab_chars:
+            issues.append(f"制表符使用不足，期望{expected_tab_chars}个，实际{tab_char_count}个")
+            if dbg:
+                logger.info("[TabStops] 问题: 制表符使用不足，期望=%s, 实际=%s", expected_tab_chars, tab_char_count)
+        elif tab_char_count > expected_tab_chars:
+            issues.append(f"制表符使用过多，期望{expected_tab_chars}个，实际{tab_char_count}个")
+            if dbg:
+                logger.info("[TabStops] 问题: 制表符使用过多，期望=%s, 实际=%s", expected_tab_chars, tab_char_count)
+        else:
+            if dbg:
+                logger.info("[TabStops] 制表符使用正确，数量=%d", tab_char_count)
+
+        if dbg:
+            logger.info("[TabStops] 检查完成，问题数量=%d", len(issues))
+
+        return len(issues) == 0, issues, detected_tabs
+
+    except Exception as e:
+        if dbg:
+            logger.info("[TabStops] 检测异常: %s", str(e))
+        return False, [f"制表位检测异常: {str(e)}"], detected_tabs
+
+
+def detect_math_objects(paragraph):
+    """
+    检测段落中的数学对象
+    返回：是否包含数学对象、数学对象列表、详细信息
+    详细信息包含：计数、类型列表、内容预览、以及字体信息
+    """
+    math_objects = []
+    info = {
+        'count': 0,
+        'types': [],
+        'content_preview': [],
+        'font_info': []  # 新增：每个 Math 对象的字体信息
+    }
+
+    try:
+        para_xml = paragraph._element
+
+        math_elements = []
+        math_paths = [
+            './/w:oMath',
+            './/m:oMath',
+            './/oMath',
+            './/w:r/w:object',
+            './/w:r[.//w:oMath]'
+        ]
+
+        for path in math_paths:
+            try:
+                math_elements.extend(para_xml.xpath(path))
+            except Exception:
+                continue
+
+        unique_elements = []
+        for elem in math_elements:
+            if elem not in unique_elements:
+                unique_elements.append(elem)
+
+        info['count'] = len(unique_elements)
+
+        for elem in unique_elements:
+            try:
+                obj = {
+                    'element': elem,
+                    'tag': elem.tag,
+                    'type': 'unknown',
+                    'text_content': '',
+                    'font_info': {}  # 字体信息
+                }
+
+                if 'oMath' in elem.tag:
+                    obj['type'] = 'office_math'
+                elif 'object' in elem.tag:
+                    obj['type'] = 'embedded_object'
+                else:
+                    obj['type'] = 'math_container'
+
+                text_parts = []
+                for node in elem.iter():
+                    if hasattr(node, 'text') and node.text:
+                        text_parts.append(node.text.strip())
+                obj['text_content'] = ' '.join(filter(None, text_parts))
+
+                # ========== 提取字体信息 ==========
+                try:
+                    xml_str = ET.tostring(elem, encoding='unicode')
+
+                    # 检查 rPr（格式属性）
+                    rpr = elem.find('.//w:rPr')
+                    if rpr is not None:
+                        rpr_str = ET.tostring(rpr, encoding='unicode')
+                        obj['font_info']['has_rpr'] = True
+
+                        # 检查字体
+                        font_elems = rpr.xpath('.//w:rFonts')
+                        if font_elems:
+                            font_elem = font_elems[0]
+                            fonts = {
+                                'ascii': font_elem.get(qn('w:ascii')),
+                                'east_asia': font_elem.get(qn('w:eastAsia')),
+                                'h_ansi': font_elem.get(qn('w:hAnsi')),
+                                'cambria': font_elem.get(qn('w:cambriaMath')),
+                            }
+                            obj['font_info']['fonts'] = {k: v for k, v in fonts.items() if v}
+
+                            # 检查是否有 Cambria Math 字体
+                            if 'cambriaMath' in fonts and fonts['cambriaMath']:
+                                obj['font_info']['is_cambria_math'] = True
+                    else:
+                        obj['font_info']['has_rpr'] = False
+
+                    # 检查 Math 对象的默认字体设置
+                    if 'cambria' in xml_str.lower():
+                        obj['font_info']['contains_cambria'] = True
+
+                except Exception as e:
+                    obj['font_info']['error'] = str(e)
+
+                math_objects.append(obj)
+                info['types'].append(obj['type'])
+
+                preview = obj['text_content'][:50] + ('...' if len(obj['text_content']) > 50 else '')
+                if preview:
+                    info['content_preview'].append(preview)
+
+                # 添加字体信息到 info
+                info['font_info'].append({
+                    'type': obj['type'],
+                    'is_cambria_math': obj['font_info'].get('is_cambria_math', False),
+                    'contains_cambria': obj['font_info'].get('contains_cambria', False),
+                    'fonts': obj['font_info'].get('fonts', {})
+                })
+
+            except Exception:
+                continue
+
+        return len(math_objects) > 0, math_objects, info
+
+    except Exception:
+        return False, [], info
+
+
+def extract_formula_number(text, number_pattern):
+    m = re.search(number_pattern, text)
+    if not m:
+        return None
+
+    try:
+        chapter = int(m.group('chapter'))
+        seq = int(m.group('seq'))
+        return chapter, seq
+    except Exception:
+        return None
+
+
+def check_formula_fonts(paragraph, math_objects, template, number_pattern, formula_content_text=None, target_math_elem=None, dbg=False):
+    """
+    检测公式字体要求：
+    1. 公式内容必须全部使用 Cambria Math 字体
+    2. 公式编号字号应为 12pt（小四）
+    3. 公式编号字体可以是任意字体（不强检）
+    """
+    issues = []
+
+    # 获取 debug 标志（优先使用参数传递的 dbg，否则从模板获取）
+    check_rules = template.get('check_rules', {})
+    dbg = dbg or check_rules.get('debug', False)
+
+    font_requirements = template.get('formula_detection_rules', {}).get('font_requirements', {})
+    messages = template.get('messages', {})
+
+    # 从模板读取配置
+    expected_number_font = font_requirements.get('formula_number', 'Times New Roman')
+    expected_size_pt = float(font_requirements.get('font_size_pt', 12))
+    expected_math_font = font_requirements.get('formula_content', 'Cambria Math')
+
+    # 从模板读取斜体/加粗配置
+    expected_content_italic = check_rules.get('formula_content_italic', False)
+    expected_content_bold = check_rules.get('formula_content_bold', False)
+    expected_number_italic = check_rules.get('formula_number_italic', False)
+    expected_number_bold = check_rules.get('formula_number_bold', False)
+    check_number_color = check_rules.get('number_color_check', True)
+
+    # ========== 0. 提取 Math 对象中的属性信息 ==========
+    math_font_info = {
+        'cambria_math': None,  # Cambria Math 字体
+        'font_size': None,     # 字号 (pt)
+        'is_bold': None,       # 是否加粗
+        'is_italic': None,     # 是否斜体
+    }
+
+    if target_math_elem is not None:
+        if dbg:
+            logger.info("[Formula] target_math_elem type: %s, tag: %s",
+                        type(target_math_elem).__name__,
+                        target_math_elem.tag if hasattr(target_math_elem, 'tag') else 'N/A')
+            # 打印 XML 前 200 字符
+            from lxml import etree
+            xml_str = etree.tostring(target_math_elem, encoding='unicode', method='text')[:200]
+            logger.info("[Formula] target_math_elem XML preview: %s...", xml_str[:200])
+            # 打印所有子元素标签
+            child_tags = [child.tag for child in target_math_elem]
+            logger.info("[Formula] target_math_elem child tags: %s", child_tags[:10])
+            # 打印第一个子元素的完整结构
+            if target_math_elem:
+                first_child = list(target_math_elem)[0] if len(list(target_math_elem)) > 0 else None
+                if first_child:
+                    # 打印所有深度1的子元素标签
+                    level1_tags = [c.tag for c in first_child]
+                    logger.info("[Formula] First child (eqArr) level1 tags: %s", level1_tags[:15])
+                    # 打印深度2的子元素
+                    if len(list(first_child)) > 0:
+                        second_child = list(first_child)[0]
+                        level2_tags = [c.tag for c in second_child]
+                        logger.info("[Formula] Second level tags: %s", level2_tags[:15])
+        try:
+            # 遍历 oMath 的所有子元素，查找字体信息
+            # MathML 结构: oMath -> eqArr -> {eqArrPr, e}
+            # eqArrPr 是数组属性，不是公式内容字体
+            # 真正的公式内容字体在 e 元素内的 sPre/rPr 中
+            rpr = None
+            for elem in target_math_elem.iter():
+                tag = elem.tag if hasattr(elem, 'tag') else ''
+                # 跳过 eqArrPr（公式数组属性）
+                if 'eqArrPr' in tag:
+                    continue
+                # 查找 rPr 元素（公式内容字体）
+                if 'rPr' in tag and 'eqArrPr' not in tag:
+                    rpr = elem
+                    if dbg:
+                        logger.info("[Formula] Found content rPr in element: %s", tag)
+                    break
+            if rpr is None:
+                # 备选：尝试使用安全的 XPath（不使用前缀）
+                try:
+                    rpr_candidates = target_math_elem.xpath('.//*[local-name()="rPr"]')
+                    if rpr_candidates:
+                        rpr = rpr_candidates[0]
+                        if dbg:
+                            logger.info("[Formula] Found rPr via local-name()")
+                except Exception as e:
+                    if dbg:
+                        logger.info("[Formula] XPath with local-name() failed: %s", str(e))
+            if dbg:
+                logger.info("[Formula] rPr find result: %s", 'Found' if rpr is not None else 'Not found')
+            if rpr is not None:
+                # 尝试多种方式查找 rFonts
+                rFonts = None
+                for xpath_expr in [
+                    './/*[local-name()="rFonts"]',
+                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}rFonts',
+                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rFonts'
+                ]:
+                    try:
+                        results = rpr.xpath(xpath_expr)
+                        if results:
+                            rFonts = results[0]
+                            if dbg:
+                                logger.info("[Formula] Found rFonts with xpath: %s", xpath_expr)
+                            break
+                    except Exception:
+                        continue
+                if dbg:
+                    logger.info("[Formula] rFonts find result: %s", 'Found' if rFonts is not None else 'Not found')
+                if rFonts is not None:
+                    # MathML 中的属性没有命名空间前缀，直接使用 get() 获取
+                    cambria = rFonts.get('cambriaMath')
+                    if not cambria:
+                        cambria = rFonts.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}cambriaMath')
+                    if cambria:
+                        math_font_info['cambria_math'] = cambria
+
+                    # 检查其他字体属性（MathML 中无命名空间前缀）
+                    ascii_font = rFonts.get('ascii')
+                    east_asia = rFonts.get('eastAsia')
+                    hAnsi = rFonts.get('hAnsi')
+                    math_font_info['other_fonts'] = {
+                        'ascii': ascii_font,
+                        'eastAsia': east_asia,
+                        'hAnsi': hAnsi,
+                    }
+
+                # 检查字号 (w:sz / w:szCs) - MathML 中使用 val 属性
+                sz = None
+                for xpath_expr in [
+                    './/*[local-name()="sz"]',
+                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}sz',
+                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sz'
+                ]:
+                    try:
+                        results = rpr.xpath(xpath_expr)
+                        if results:
+                            sz = results[0]
+                            break
+                    except Exception:
+                        continue
+                if sz is not None:
+                    val = sz.get('val')
+                    if not val:
+                        val = sz.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                    if val:
+                        math_font_info['font_size'] = float(val) / 2.0
+
+                # 检查是否斜体 (i / iCs)
+                i_elem = None
+                for xpath_expr in [
+                    './/*[local-name()="i"]',
+                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}i',
+                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}i'
+                ]:
+                    try:
+                        results = rpr.xpath(xpath_expr)
+                        if results:
+                            i_elem = results[0]
+                            break
+                    except Exception:
+                        continue
+                if i_elem is not None:
+                    val = i_elem.get('val')
+                    if not val:
+                        val = i_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                    math_font_info['is_italic'] = val != '0'
+
+                # 检查是否加粗 (b / bCs)
+                b_elem = None
+                for xpath_expr in [
+                    './/*[local-name()="b"]',
+                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}b',
+                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}b'
+                ]:
+                    try:
+                        results = rpr.xpath(xpath_expr)
+                        if results:
+                            b_elem = results[0]
+                            break
+                    except Exception:
+                        continue
+                if b_elem is not None:
+                    val = b_elem.get('val')
+                    if not val:
+                        val = b_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                    math_font_info['is_bold'] = val != '0'
+        except Exception as e:
+            if dbg:
+                logger.info("[Formula] 解析Math对象字体信息失败: %s", str(e))
+
+        # 调试日志：打印提取到的字体信息
+        if dbg:
+            logger.info("[Formula] 公式内容字体信息: %s", math_font_info)
+
+    # ========== 1. 检查公式内容字体（必须全为 Cambria Math） ==========
+    if target_math_elem is not None:
+        # 从 Math 对象 XML 检测字体
+        if math_font_info.get('cambria_math'):
+            # Cambria Math 字体存在
+            if dbg:
+                logger.info("[Formula] 公式内容使用 Cambria Math 字体: %s", math_font_info.get('cambria_math'))
+        elif math_font_info.get('other_fonts', {}).get('ascii') or math_font_info.get('other_fonts', {}).get('eastAsia'):
+            # 其他字体（非 Cambria Math）
+            issues.append(f"公式内容应全部使用 {expected_math_font} 字体")
+    elif formula_content_text and paragraph:
+        # 备选：从 paragraph runs 检测
+        formula_runs = []
+        for run in paragraph.runs:
+            text = run.text or ''
+            if formula_content_text in text or text in formula_content_text:
+                formula_runs.append(run)
+
+        if formula_runs:
+            all_cambria = True
+            for run in formula_runs:
+                _, font, _, _ = detect_font_for_run(run, paragraph)
+                font_lower = (font or '').lower()
+                if 'cambria' not in font_lower:
+                    all_cambria = False
+                    break
+
+            if not all_cambria:
+                issues.append(f"公式内容应全部使用 {expected_math_font} 字体")
+    elif math_objects:
+        # 通过 Math 对象检查字体
+        all_cambria = True
+        for mo in math_objects:
+            try:
+                xml_str = ET.tostring(mo['element'], encoding='unicode')
+                rpr = mo['element'].find('.//w:rPr')
+                if rpr is not None:
+                    rpr_str = ET.tostring(rpr, encoding='unicode')
+                    font_elems = rpr.xpath('.//w:rFonts')
+                    if font_elems:
+                        font_elem = font_elems[0]
+                        cambria_font = font_elem.get(qn('w:cambriaMath'))
+                        if not cambria_font:
+                            all_cambria = False
+                            break
+                else:
+                    if 'cambria' not in xml_str.lower():
+                        all_cambria = False
+                        break
+            except Exception:
+                all_cambria = False
+                break
+
+        if not all_cambria:
+            issues.append(f"公式内容应全部使用 {expected_math_font} 字体")
+
+    # ========== 1b. 检查公式内容字号 ==========
+    actual_size = math_font_info.get('font_size')
+    if actual_size is not None:
+        if dbg:
+            logger.info("[Formula] 公式内容字号: 预期=%spt, 实际=%spt", expected_size_pt, actual_size)
+        if abs(actual_size - expected_size_pt) > 0.5:
+            issues.append(f"公式内容字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(actual_size, template)}（{actual_size}pt）")
+    else:
+        # 无法提取字号时，记录为问题
+        if dbg:
+            logger.info("[Formula] 公式内容：无法从Math对象提取字号信息")
+
+    # ========== 1c. 检查公式内容是否斜体 ==========
+    if expected_content_italic is not None:
+        if math_font_info.get('is_italic') is not None:
+            if math_font_info.get('is_italic') != expected_content_italic:
+                issues.append(f"公式内容斜体设置不正确，期望{'斜体' if expected_content_italic else '正体'}")
+
+    # ========== 1d. 检查公式内容是否加粗 ==========
+    if expected_content_bold is not None:
+        if math_font_info.get('is_bold') is not None:
+            if math_font_info.get('is_bold') != expected_content_bold:
+                issues.append(f"公式内容加粗设置不正确，期望{'加粗' if expected_content_bold else '正常'}")
+
+    # ========== 2. 检查公式编号 ==========
+    # 编号字体：检查字体名称、字号、斜体、加粗、颜色
+
+    # 尝试从 target_math_elem 内部提取编号信息
+    if target_math_elem is not None:
+        # 使用 XPath 查找所有 MathML r 元素
+        for xpath_expr in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}r',
+                          './/m:r']:
+            try:
+                run_elems = target_math_elem.xpath(xpath_expr)
+                break
+            except Exception:
+                run_elems = []
+        
+        for run_elem in run_elems:
+            try:
+                # 查找 t 元素
+                t_elem = None
+                for t_tag in ['{http://schemas.openxmlformats.org/officeDocument/2006/math}t',
+                              '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t', 't']:
+                    t_elem = run_elem.find(t_tag)
+                    if t_elem is not None:
+                        break
+                if t_elem is None:
+                    continue
+                run_text = t_elem.text or ''
+                if not run_text.strip():
+                    continue
+
+                # 检查是否是编号
+                if re.search(number_pattern, run_text.strip()):
+                    # 检测字体和字号 - 查找 rPr (使用 XPath)
+                    rpr = None
+                    for rpr_xpath in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}rPr',
+                                     './/m:rPr',
+                                     './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr']:
+                        try:
+                            results = run_elem.xpath(rpr_xpath)
+                            if results:
+                                rpr = results[0]
+                                break
+                        except Exception:
+                            continue
+                    num_font = 'Unknown'
+                    num_size = None
+                    num_italic = False
+                    num_bold = False
+
+                    if rpr is not None:
+                        # 查找 rFonts (使用 XPath)
+                        rFonts = None
+                        for rf_xpath in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}rFonts',
+                                        './/m:rFonts',
+                                        './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rFonts']:
+                            try:
+                                results = rpr.xpath(rf_xpath)
+                                if results:
+                                    rFonts = results[0]
+                                    break
+                            except Exception:
+                                continue
+                        if rFonts is not None:
+                            for attr_name in ['cambriaMath', 'ascii', 'eastAsia', 'hAnsi']:
+                                val = rFonts.get(attr_name)
+                                if val:
+                                    num_font = val
+                                    break
+
+                        # 字号 (使用 XPath)
+                        sz = None
+                        for sz_xpath in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}sz',
+                                        './/m:sz',
+                                        './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sz']:
+                            try:
+                                results = rpr.xpath(sz_xpath)
+                                if results:
+                                    sz = results[0]
+                                    break
+                            except Exception:
+                                continue
+                        if sz is not None:
+                            val = sz.get('val')
+                            if not val:
+                                val = sz.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                            if val:
+                                num_size = float(val) / 2.0
+
+                        # 斜体 (使用 XPath)
+                        i_elem = None
+                        for i_xpath in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}i',
+                                        './/m:i',
+                                        './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}i']:
+                            try:
+                                results = rpr.xpath(i_xpath)
+                                if results:
+                                    i_elem = results[0]
+                                    break
+                            except Exception:
+                                continue
+                        if i_elem is not None:
+                            val = i_elem.get('val')
+                            if not val:
+                                val = i_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                            num_italic = val != '0'
+
+                        # 检查加粗 (使用 XPath)
+                        b_elem = None
+                        for b_xpath in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}b',
+                                        './/m:b',
+                                        './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}b']:
+                            try:
+                                results = rpr.xpath(b_xpath)
+                                if results:
+                                    b_elem = results[0]
+                                    break
+                            except Exception:
+                                continue
+                        if b_elem is not None:
+                            val = b_elem.get('val')
+                            if not val:
+                                val = b_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
+                            num_bold = val != '0'
+
+                    # 检查字号
+                    if num_size is not None and abs(num_size - expected_size_pt) > 0.5:
+                        issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(num_size, template)}（{num_size}pt）")
+
+                    # 检查斜体
+                    if expected_number_italic is not None and num_italic != expected_number_italic:
+                        issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
+
+                    # 检查加粗
+                    if expected_number_bold is not None and num_bold != expected_number_bold:
+                        issues.append(f"公式编号加粗设置不正确，期望{'加粗' if expected_number_bold else '正常'}")
+
+                    # 检查字体名称
+                    if num_font and num_font != 'Unknown':
+                        font_lower = num_font.lower()
+                        expected_font_lower = expected_number_font.lower()
+                        # 允许 Times New Roman 或其变体
+                        if 'times new roman' not in font_lower and font_lower != expected_font_lower:
+                            issues.append(messages.get('font_number_error', f'公式编号字体应为{expected_number_font}，实际为{num_font}'))
+
+                    break
+            except Exception:
+                continue
+
+    # 备选：从 paragraph runs 检测编号
+    if not issues or paragraph is not None:
+        for run in paragraph.runs if paragraph else []:
+            if not run.text.strip():
+                continue
+
+            t = run.text.strip()
+
+            # 检查是否是编号
+            if re.search(number_pattern, t):
+                size, font, is_italic, _ = detect_font_for_run(run, paragraph)
+
+                # 检查字号
+                if abs(size - expected_size_pt) > 0.5:
+                    issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(size, template)}（{size}pt）")
+
+                # 检查斜体
+                if expected_number_italic is not None and is_italic != expected_number_italic:
+                    issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
+
+                # 检查字体名称
+                if font and font != 'Unknown':
+                    font_lower = font.lower()
+                    # 允许 Times New Roman 或其变体
+                    if 'times new roman' not in font_lower and font_lower != expected_number_font.lower():
+                        issues.append(messages.get('font_number_error', f'公式编号字体应为{expected_number_font}，实际为{font}'))
+
+                # 检查颜色
+                if check_number_color and not detect_run_color_is_default(run):
+                    issues.append(messages.get('font_number_color_error', '公式编号应为无特殊颜色'))
+
+                break
+
+    return len(issues) == 0, issues
+
+
+def check_formula_reference(paragraph, parsed_number, template, tpl, doc, dbg=False):
+    """
+    检查公式引用：公式上一个段落必须提及该公式引用（公式{章}-{序}）
+    """
+    report = {'ok': True, 'messages': []}
+    messages = tpl.get('messages', {})
+    check_rules = tpl.get('check_rules', {})
+
+    # 检查是否启用引用检查
+    reference_check = check_rules.get('formula_reference_check', True)
+    if not reference_check:
+        return report
+
+    if parsed_number is None:
+        return report
+
+    chapter, seq = parsed_number
+
+    # 获取段落在 body 中的位置
+    para_elem = paragraph._element
+    body = doc.element.body
+
+    # 查找段落的索引
+    para_index = -1
+    for i, el in enumerate(body):
+        if el == para_elem:
+            para_index = i
+            break
+
+    if para_index <= 0:
+        report['ok'] = False
+        report['messages'].append(messages.get('formula_reference_error', f'公式上一段落未提及该公式引用'))
+        return report
+
+    # 向前查找直到找到有效的段落
+    prev_index = para_index - 1
+    while prev_index >= 0:
+        prev_elem = body[prev_index]
+
+        # 如果不是段落，则继续向前查找
+        if not prev_elem.tag.endswith('p'):
+            prev_index -= 1
+            continue
+
+        # 获取段落文本
+        prev_text = ''
+        for el in prev_elem.iter():
+            if hasattr(el, 'text') and el.text:
+                prev_text += el.text
+        prev_text = prev_text.strip()
+
+        if prev_text:
+            # 检查是否包含公式引用
+            # 匹配模式：公式3-1, 公式 3-1, 公式3.1, 公式 3 . 1 等变体
+            ref_patterns = [
+                rf'公式\s*{chapter}\s*[-－.．]\s*{seq}',  # 公式3-1
+                rf'公式\s*{chapter}\s*[-－.．]\s*{seq}\b',  # 公式3-1 后面是单词边界
+                rf'\({chapter}\s*[-－.．]\s*{seq}\)',  # (3-1) 格式
+            ]
+
+            found_ref = False
+            for pattern in ref_patterns:
+                if re.search(pattern, prev_text, re.IGNORECASE):
+                    found_ref = True
+                    break
+
+            if found_ref:
+                return report  # 找到引用，通过检查
+
+            # 如果没有找到引用，检查是否是章节标题
+            # 章节标题正则（匹配形如 "3.1", "第三章", "3.1.1 模型架构" 等）
+            chapter_title_pattern = r'^\s*\d+[\.\d]+|^第[一二三四五六七八九十0-9]+[章节]'
+
+            if re.match(chapter_title_pattern, prev_text):
+                # 是标题，继续向前查找
+                prev_index -= 1
+                continue
+
+            # 不是标题也没有引用，报告错误
+            report['ok'] = False
+            report['messages'].append(
+                messages.get('formula_reference_error', f'公式上一段落未提及该公式引用（如：公式{chapter}-{seq}）')
+            )
+            return report
+
+        # 空段落，继续向前查找
+        prev_index -= 1
+
+    # 没找到有效的段落
+    report['ok'] = False
+    report['messages'].append(messages.get('formula_reference_error', f'公式上一段落未提及该公式引用'))
+    return report
+
+
+def validate_formula_format(paragraph, template, parsed_number=None, formula_content_text=None, target_math_elem=None, doc=None, dbg=False):
+    """
+    检查单个公式段落的格式
+    - parsed_number: 已解析出的编号 (chapter, seq)
+    - formula_content_text: 公式内容文本（不含编号）
+    - target_math_elem: 目标 Math 对象（用于检测公式内容字体）
+    - doc: 文档对象（用于引用检查）
+    - dbg: 是否启用调试日志
+    """
+    report = {'ok': True, 'messages': [], 'details': {}}
+
+    rules = template.get('formula_detection_rules', {})
+    messages = template.get('messages', {})
+    check_rules = template.get('check_rules', {})
+
+    number_pattern = rules.get('number_pattern')
+    tab_stops_config = rules.get('tab_stops', [])
+
+    # ========== 1. 制表位检查（根据模板配置执行） ==========
+    tab_check_enabled = check_rules.get('tab_stops_check', True)
+    if tab_check_enabled and tab_stops_config:
+        tolerance = check_rules.get('tab_position_tolerance', 5)
+        tab_ok, tab_issues, detected_tabs = check_tab_stops(
+            paragraph, tab_stops_config, tolerance_chars=tolerance, dbg=dbg
+        )
+        report['details']['tab_stops'] = {
+            'ok': tab_ok,
+            'issues': tab_issues,
+            'detected': detected_tabs,
+            'expected': tab_stops_config
+        }
+        if not tab_ok:
+            if tab_issues:
+                report['messages'].append(f"对齐建议: {'; '.join(tab_issues[:2])}")
+    else:
+        tab_check_skipped = not tab_check_enabled
+        report['details']['tab_stops'] = {'skipped': tab_check_skipped}
+
+    # ========== 2. 数学对象检查 ==========
+    has_math, math_objects, math_info = detect_math_objects(paragraph)
+    report['details']['math_objects'] = {
+        'has_math': has_math,
+        'count': math_info.get('count', 0),
+        'types': math_info.get('types', []),
+        'preview': math_info.get('content_preview', [])
+    }
+    if not has_math:
+        report['messages'].append(messages.get('math_object_missing', '未检测到Office Math对象（可能是手动输入的公式）'))
+
+    # ========== 3. 编号检查 ==========
+    report['details']['number'] = {'parsed': parsed_number is not None, 'value': parsed_number}
+    if not parsed_number:
+        report['ok'] = False
+        report['messages'].append(messages.get('formula_number_missing', '未检测到公式编号'))
+
+    # ========== 4. 字体检查（传递 target_math_elem 和 dbg） ==========
+    font_ok, font_issues = check_formula_fonts(
+        paragraph, math_objects, template, number_pattern,
+        formula_content_text=formula_content_text,
+        target_math_elem=target_math_elem,
+        dbg=dbg
+    )
+    report['details']['fonts'] = {'correct': font_ok, 'issues': font_issues}
+    if not font_ok:
+        report['ok'] = False
+        report['messages'].extend([f"字体问题: {x}" for x in font_issues])
+
+    # ========== 5. 公式引用检查 ==========
+    ref_report = check_formula_reference(paragraph, parsed_number, template, template, doc, dbg=dbg)
+    report['details']['reference'] = {
+        'ok': ref_report['ok'],
+        'messages': ref_report['messages'] if not ref_report['ok'] else [messages.get('formula_reference_ok', '公式引用检查通过')]
+    }
+    if not ref_report['ok']:
+        report['ok'] = False
+        report['messages'].extend(ref_report['messages'])
+
+    if report['ok']:
+        report['messages'].append(messages.get('formula_detection_ok', '公式格式检查通过'))
+
+    return report
+
+
+def check_numbering_by_chapter(numbers):
+    report = {'ok': True, 'messages': []}
+
+    if not numbers:
+        return report
+
+    chapter_to_seqs = {}
+    for ch, seq in numbers:
+        chapter_to_seqs.setdefault(ch, []).append(seq)
+
+    for ch, seqs in chapter_to_seqs.items():
+        seqs_sorted = sorted(seqs)
+        if seqs_sorted[0] != 1:
+            report['ok'] = False
+            report['messages'].append(f"第{ch}章公式序号应从1开始，当前从{seqs_sorted[0]}开始")
+
+        for i in range(len(seqs_sorted) - 1):
+            if seqs_sorted[i + 1] - seqs_sorted[i] != 1:
+                report['ok'] = False
+                report['messages'].append(f"第{ch}章公式序号不连续：{seqs_sorted}")
+                break
+
+    return report
+
+
+def check_doc_with_template(doc_path, template_identifier, skip_checks=None, debug=None, log_file_path=None):
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+
+    try:
+        template = load_template(template_identifier)
+        dbg = _debug_enabled(template, debug)
+
+        if dbg:
+            logger.info("[Formula] 开始公式检测: doc=%s, template=%s", doc_path, template_identifier)
+
+        doc = Document(doc_path)
+
+        # 1. 先找所有可能是公式的候选（含 Math 对象 + 有编号）
+        candidates = find_formula_candidates(doc, template, debug=dbg)
+
+        # candidates 已经是过滤后的结果，每个 item 都包含 number 和 formula_content
+        formula_paragraphs = []
+        for item in candidates:
+            num = item.get('number')
+            if not num:
+                continue
+
+            # 把 paragraph 对象补上（用于后续格式检查）
+            try:
+                item['paragraph'] = next(p for p in doc.paragraphs if p._element is item['w_p'])
+            except StopIteration:
+                item['paragraph'] = None  # 文本框段落，无法直接用 paragraph API
+
+            formula_paragraphs.append(item)
+
+        if dbg:
+            logger.info("[Formula] 最终识别公式数量=%s（已应用编号过滤）", len(formula_paragraphs))
+        if dbg and formula_paragraphs:
+            logger.info("[Formula] 最终识别到的公式列表（前50条预览）：")
+            for k, fp in enumerate(formula_paragraphs[:50], start=1):
+                num = fp.get('number')
+                # 显示 formula_content（提取后的公式内容），而不是整个段落 text
+                formula_preview = (fp.get('formula_content') or '').replace('\n', ' ')
+                text_preview = (fp.get('text') or '').replace('\n', ' ')
+                if len(formula_preview) > 160:
+                    formula_preview = formula_preview[:160] + '...'
+                if len(text_preview) > 160:
+                    text_preview = text_preview[:160] + '...'
+                logger.info(
+                    "[Formula]  #%s idx=%s num=%s formula=%r text=%r",
+                    k,
+                    fp.get('paragraph_index', fp.get('w_p_index')),
+                    num,
+                    formula_preview,
+                    text_preview
+                )
+        report = {
+            'formula_detection': {'ok': True, 'messages': []},
+            'numbering': {},
+            'summary': [],
+            'details': {
+                'total_paragraphs': len(doc.paragraphs),
+                'formula_paragraphs_count': len(formula_paragraphs),
+                'formula_paragraphs': [],
+                'debug': dbg
+            }
+        }
+
+        messages = template.get('messages', {})
+
+        if not formula_paragraphs:
+            # 如果过滤后没有公式，按“通过”处理，不报“发现问题”
+            report['formula_detection']['ok'] = True
+            report['summary'].append(messages.get('summary_overall', '公式格式检查结果: {ok}').format(ok='通过'))
+            stats_msg = f"检测统计：共 {report['details']['total_paragraphs']} 个段落，识别出 0 个带编号的公式段落"
+            report['summary'].append(stats_msg)
+            return report
+
+        all_ok = True
+        extracted_numbers = []
+
+        for i, fp in enumerate(formula_paragraphs):
+            paragraph = fp.get('paragraph')
+
+            # 无论是否在文本框，都先统计编号
+            num = fp.get('number')
+            if isinstance(num, tuple):
+                extracted_numbers.append(num)
+
+            # 用公式编号作为标识（如 #3-1），没有编号则用索引
+            num_text = fp.get('number_text', f"#{num[0]}-{num[1]}" if isinstance(num, tuple) else f"#{i+1}")
+            formula_label = f"公式{num_text}"
+
+            if paragraph is None:
+                # 这是文本框/公式框里的段落，没有 Paragraph 对象，跳过深度格式检查
+                para_report = {'ok': True, 'messages': ["文本框公式，跳过格式检查"], 'details': {}}
+                para_text = fp.get('text', '')
+            else:
+                # 这是正文流里的段落，可以正常检查
+                para_report = validate_formula_format(
+                    paragraph, template,
+                    parsed_number=fp.get('number'),
+                    formula_content_text=fp.get('formula_content', ''),
+                    target_math_elem=fp.get('target_math_elem'),  # 传入 Math 对象用于字体检测
+                    doc=doc,  # 传入文档对象用于引用检查
+                    dbg=debug  # 传入调试标志
+                )
+                para_text = (paragraph.text or '').strip()
+
+            text_preview = para_text[:150] + ('...' if len(para_text) > 150 else '')
+
+            para_info = {
+                'index': i + 1,
+                'paragraph_index': fp.get('paragraph_index', fp.get('w_p_index')),
+                'text_preview': text_preview,
+                'formula_label': formula_label,  # 添加公式编号标识
+                'has_math_object': fp.get('has_math_object', False),
+                'math_object_count': fp.get('math_object_count', 0),
+                'has_formula_tab_stops': fp.get('has_formula_tab_stops', False),
+                'has_formula_style': fp.get('has_formula_style', False),
+                'confidence_score': fp.get('confidence_score', 10),
+                'format_check': para_report
+            }
+
+            report['details']['formula_paragraphs'].append(para_info)
+
+            # 只报告有问题的内容
+            if not para_report['ok']:
+                all_ok = False
+                report['formula_detection']['ok'] = False
+                for msg in para_report['messages']:
+                    report['formula_detection']['messages'].append(f"{formula_label}: {msg}")
+
+        numbering_report = check_numbering_by_chapter(extracted_numbers)
+        report['numbering'] = numbering_report
+        if not numbering_report.get('ok', True):
+            report['formula_detection']['ok'] = False
+            all_ok = False
+            for msg in numbering_report.get('messages', []):
+                report['formula_detection']['messages'].append(f"编号问题: {msg}")
+
+        summary_tpl = messages.get('summary_overall', '公式格式检查结果: {ok}')
+        report['summary'].append(summary_tpl.format(ok='通过' if all_ok else '发现问题'))
+
+        stats_msg = f"检测统计：共 {report['details']['total_paragraphs']} 个段落，识别出 {len(formula_paragraphs)} 个带编号的公式段落"
+        report['summary'].append(stats_msg)
+
+        return report
+
+    except Exception as e:
+        logger.error("公式检测过程中发生异常", exc_info=True)
+        return {
+            'formula_detection': {'ok': False, 'messages': [f"公式检测过程中发生异常: {str(e)}"]},
+            'summary': [f"检查失败: {str(e)}"],
+            'details': {}
+        }
+
+
+def print_help():
+    print("用法:")
+    print("  python Formula_detect.py check <paper.docx> <template.json_or_name>")
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 4:
+        print_help()
+        sys.exit(0)
+
+    cmd = sys.argv[1]
+    if cmd == 'check':
+        paper_path = sys.argv[2]
+        tpl_id = sys.argv[3]
+
+        if not os.path.isfile(paper_path):
+            print(f"论文文件不存在: {paper_path}")
+            sys.exit(1)
+
+        try:
+            report = check_doc_with_template(paper_path, tpl_id, debug=True)
+            print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
+        except Exception as e:
+            print("检查时出错:", e)
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+    else:
+        print_help()
+        sys.exit(0)

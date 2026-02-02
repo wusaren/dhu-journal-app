@@ -48,8 +48,8 @@ class ChinesePaperFormatDetector:
             from services.Chinese_paper_detect import Keywords_detect_unified as Keywords_detect
             from services.Chinese_paper_detect import Content_detect_cn as Content_detect
             from services.paper_detect import Figure_detect
-            from services.paper_detect import Formula_detect
-            from services.paper_detect import Table_detect
+            from services.Chinese_paper_detect import Formula_detect
+            from services.Chinese_paper_detect import Table_detect
             from services.paper_detect import Chinese_section_detect
             
             # 保存模块引用
@@ -302,7 +302,13 @@ class ChinesePaperFormatDetector:
             template_path = str(self.templates_dir / 'Formula.json')
             Formula_detect = self.modules['Formula']
             
-            result = Formula_detect.check_doc_with_template(docx_path, template_path, skip_checks)
+            result = Formula_detect.check_doc_with_template(
+                docx_path,
+                template_path,
+                skip_checks,
+                debug=True,
+                log_file_path=r"C:\\Users\\57189\\dhu-journal-app\\backend\\logs\\app.log"
+            )
             return result
             
         except Exception as e:
@@ -328,7 +334,13 @@ class ChinesePaperFormatDetector:
             template_path = str(self.templates_dir / 'Table.json')
             Table_detect = self.modules['Table']
             
-            result = Table_detect.check_doc_with_template(docx_path, template_path, skip_checks)
+            result = Table_detect.check_doc_with_template(
+                docx_path,
+                template_path,
+                skip_checks,
+                debug=True,
+                log_file_path=r"C:\\Users\\57189\\dhu-journal-app\\backend\\logs\\app.log"
+            )
             return result
             
         except Exception as e:

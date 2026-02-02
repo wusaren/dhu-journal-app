@@ -854,18 +854,19 @@ class ChinesePaperFormatService:
             extracted = {}
             details = {}
         else:
-            # 提取summary、extracted和details
-            summary = report.pop('summary', []) if isinstance(report, dict) else []
-            extracted = report.pop('extracted', {}) if isinstance(report, dict) else {}
-            details = report.pop('details', {}) if isinstance(report, dict) else {}
+            # 提取summary、extracted和details（使用get而不是pop，避免修改原始报告）
+            summary = report.get('summary', []) if isinstance(report, dict) else []
+            extracted = report.get('extracted', {}) if isinstance(report, dict) else {}
+            details = report.get('details', {}) if isinstance(report, dict) else {}
             
-            # 剩余的都是检查项
-            checks = {k: v for k, v in report.items() if isinstance(v, dict) and 'ok' in v}
+            # 剩余的都是检查项（排除已提取的键）
+            exclude_keys = ['summary', 'extracted', 'details']
+            checks = {k: v for k, v in report.items() if k not in exclude_keys and isinstance(v, dict) and 'ok' in v}
             
             # 如果没有检查项，保留原始结构
             if not checks and isinstance(report, dict):
                 if 'tables' in report or 'numbering' in report:
-                    checks = report
+                    checks = {k: v for k, v in report.items() if k not in exclude_keys}
         
         # 确保所有数据都是JSON可序列化的
         # 这是关键步骤，防止Paragraph等对象导致序列化失败
@@ -1127,9 +1128,11 @@ class ChinesePaperFormatService:
                 # 处理每个表格
                 tables = report.get('tables', [])
                 for i, table_report in enumerate(tables, 1):
-                    caption_info = table_report.get('caption', {})
-                    caption_text = caption_info.get('text', f'Table {i}')
-                    lines.append(f"\n  [表格 {i}: {caption_text[:40]}{'...' if len(caption_text) > 40 else ''}]")
+                    # 优先使用 table_desc（包含续表标记），否则使用 captions.cn.title
+                    table_desc = table_report.get('table_desc', '')
+                    cn_title = table_report.get('captions', {}).get('cn', {}).get('title', '')
+                    caption_text = table_desc or cn_title or f'表格 {i}'
+                    lines.append(f"\n  [{caption_text}]")
                     
                     # 标题格式
                     caption_format = table_report.get('caption_format', {})
@@ -1158,6 +1161,29 @@ class ChinesePaperFormatService:
                         lines.append(f"    内容对齐: {ok_status}")
                         messages = table_alignment.get('messages', [])
                         if messages and not table_alignment.get('ok', False):
+                            for msg in messages:
+                                lines.append(f"      • {msg}")
+
+                    # 表格内容对齐
+                    table_content_alignment = table_report.get('table_content_alignment', {})
+                    if isinstance(table_content_alignment, dict):
+                        if table_content_alignment.get('skipped'):
+                            lines.append(f"    内容对齐: ⊘ 跳过")
+                        else:
+                            ok_status = "✓" if table_content_alignment.get('ok', False) else "✗"
+                            lines.append(f"    内容对齐: {ok_status}")
+                            messages = table_content_alignment.get('messages', [])
+                            if messages and not table_content_alignment.get('ok', False):
+                                for msg in messages:
+                                    lines.append(f"      • {msg}")
+
+                    # 表格引用检查
+                    table_reference = table_report.get('table_reference', {})
+                    if isinstance(table_reference, dict):
+                        ok_status = "✓" if table_reference.get('ok', False) else "✗"
+                        lines.append(f"    表格引用: {ok_status}")
+                        messages = table_reference.get('messages', [])
+                        if messages and not table_reference.get('ok', False):
                             for msg in messages:
                                 lines.append(f"      • {msg}")
             

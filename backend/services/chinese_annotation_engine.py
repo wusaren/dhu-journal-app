@@ -8,12 +8,12 @@
 
 当前实现包含：
 - Issue dataclass
-- Locator 注册与若干内置 locator（index, keyword, abstract_title, abstract_content, keywords_title, keywords_content, content_paragraph）
+- Locator 注册与若干内置 locator（index, keyword, abstract_title, abstract_content, keywords_title, keywords_content, content_paragraph, table_caption_cn, table_caption_en, formula_paragraph）
 - Commenter（只打开一次 doc，按 paragraph index 添加注释并保存）
-- 两个 adapter：abstract_adapter、keywords_adapter（针对中文检测器输出）
+- Adapter：abstract_adapter, keywords_adapter, table_adapter, formula_adapter
 - orchestrator 函数：annotate_chinese_abstract_and_keywords(docx_path, all_reports, output_dir)
 
-说明：此模块为独立实现，不依赖原有的 document_annotator.py；用于快速接入中文摘要/关键词批注功能。
+说明：此模块为独立实现，不依赖原有的 document_annotator.py；用于快速接入中文摘要/关键词/表格/公式批注功能。
 """
 
 from dataclasses import dataclass
@@ -190,6 +190,65 @@ def locate_content_paragraph(doc: Document, data: Any, extra: Optional[Dict[str,
         count += 1
         if count == para_no:
             return j
+    return None
+
+
+@register_locator('table_caption_cn')
+def locate_table_caption_cn(doc: Document, data: Any, extra: Optional[Dict[str, Any]] = None) -> Optional[int]:
+    """定位中文表题段落"""
+    if isinstance(data, dict):
+        idx = data.get('paragraph_index')
+        if isinstance(idx, int) and 0 <= idx < len(doc.paragraphs):
+            return idx
+        # 尝试从 captions.cn 获取
+        cn = data.get('captions', {}).get('cn', {})
+        idx = cn.get('paragraph_index')
+        if isinstance(idx, int) and 0 <= idx < len(doc.paragraphs):
+            return idx
+    return None
+
+
+@register_locator('table_caption_en')
+def locate_table_caption_en(doc: Document, data: Any, extra: Optional[Dict[str, Any]] = None) -> Optional[int]:
+    """定位英文表题段落"""
+    if isinstance(data, dict):
+        idx = data.get('paragraph_index')
+        if isinstance(idx, int) and 0 <= idx < len(doc.paragraphs):
+            return idx
+        # 尝试从 captions.en 获取
+        en = data.get('captions', {}).get('en', {})
+        idx = en.get('paragraph_index')
+        if isinstance(idx, int) and 0 <= idx < len(doc.paragraphs):
+            return idx
+    return None
+
+
+@register_locator('formula_paragraph')
+def locate_formula_paragraph(doc: Document, data: Any, extra: Optional[Dict[str, Any]] = None) -> Optional[int]:
+    """定位公式段落"""
+    if isinstance(data, dict):
+        idx = data.get('paragraph_index')
+        if isinstance(idx, int) and 0 <= idx < len(doc.paragraphs):
+            return idx
+    elif isinstance(data, int):
+        if 0 <= data < len(doc.paragraphs):
+            return data
+    return None
+
+
+@register_locator('formula_with_fallback')
+def locate_formula_with_fallback(doc: Document, data: Any, extra: Optional[Dict[str, Any]] = None) -> Optional[int]:
+    """
+    定位公式段落：如果公式段落无法添加批注（公式在文本框中），
+    则尝试在右边的段落添加批注
+    """
+    if not isinstance(data, int):
+        return None
+    
+    # 优先返回公式段落本身
+    if 0 <= data < len(doc.paragraphs):
+        return data
+    
     return None
 
 
@@ -560,6 +619,264 @@ def keywords_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
     return issues
 
 
+def table_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
+    """表格检测结果适配器"""
+    issues: List[Issue] = []
+    
+    table_report = all_reports.get('Table')
+    if not isinstance(table_report, dict):
+        logger.info("table_adapter: Table report is not a dict or missing")
+        return issues
+    
+    logger.info(f"table_adapter: found Table report with {len(table_report.get('tables', []))} tables")
+    
+    tables = table_report.get('tables', [])
+    if not isinstance(tables, list):
+        tables = []
+    
+    # 首先处理编号连续性问题（全局，只添加一次）
+    numbering = table_report.get('numbering', {})
+    if isinstance(numbering, dict) and numbering.get('ok') is False:
+        for msg in numbering.get('messages', []):
+            issues.append(Issue(
+                module='Table',
+                section='编号连续性',
+                messages=[f"[编号问题] {msg}"],
+                locate_method='keyword',
+                locate_data='表'
+            ))
+    
+    # 用于去重：记录已处理过的表格编号（基于 table_desc）
+    processed_tables = set()
+    
+    # 遍历每个表格
+    for idx, table_item in enumerate(tables):
+        if not isinstance(table_item, dict):
+            continue
+
+        table_desc = table_item.get('table_desc', f"表格")
+        cn_idx = table_item.get('captions', {}).get('cn', {}).get('paragraph_index')
+        en_idx = table_item.get('captions', {}).get('en', {}).get('paragraph_index')
+
+        logger.info(f"table_adapter: processing table {idx}: {table_desc}, cn_para_idx={cn_idx}, en_para_idx={en_idx}")
+        
+        # 去重：检查是否已经处理过相同的表格编号
+        # 使用 table_desc 作为去重键，同时考虑中文表题段落索引
+        dedup_key = (table_desc, cn_idx)
+        if dedup_key in processed_tables:
+            logger.info(f"table_adapter: skipping duplicate table {table_desc} at cn_para_idx={cn_idx}")
+            continue
+        processed_tables.add(dedup_key)
+        
+        # 收集所有问题（不包含编号连续性问题，因为那是全局的）
+        # 每个表格独立收集问题，避免问题累积
+        all_messages = []
+        
+        # 中文表题格式问题
+        cn_format = table_item.get('caption_cn_format', {})
+        if isinstance(cn_format, dict) and cn_format.get('ok') is False:
+            for msg in cn_format.get('messages', []):
+                all_messages.append(f"[中文表题] {msg}")
+        
+        # 英文表题格式问题
+        en_format = table_item.get('caption_en_format', {})
+        if isinstance(en_format, dict) and en_format.get('ok') is False:
+            for msg in en_format.get('messages', []):
+                all_messages.append(f"[英文表题] {msg}")
+        
+        # 表格样式问题
+        table_style = table_item.get('table_style', {})
+        if isinstance(table_style, dict) and table_style.get('ok') is False:
+            for msg in table_style.get('messages', []):
+                all_messages.append(f"[表格样式] {msg}")
+        
+        # 内容对齐问题
+        content_align = table_item.get('table_content_alignment', {})
+        if isinstance(content_align, dict) and content_align.get('ok') is False:
+            for msg in content_align.get('messages', []):
+                all_messages.append(f"[内容对齐] {msg}")
+        
+        # 引用检查问题
+        table_ref = table_item.get('table_reference', {})
+        if isinstance(table_ref, dict) and table_ref.get('ok') is False:
+            for msg in table_ref.get('messages', []):
+                all_messages.append(f"[表格引用] {msg}")
+        
+        if not all_messages:
+            continue
+        
+        # 获取定位信息
+        para_idx = None
+        captions = table_item.get('captions', {})
+        cn_caption = captions.get('cn', {})
+        en_caption = captions.get('en', {})
+        
+        # 优先使用中文表题段落（用户要求定位到中文表题）
+        para_idx = cn_caption.get('paragraph_index')
+        if para_idx is None:
+            para_idx = en_caption.get('paragraph_index')
+        if para_idx is None:
+            para_idx = table_item.get('table_body_index')
+        
+        logger.info(f"table_adapter: adding issue for {table_desc} at para_idx={para_idx} with {len(all_messages)} messages")
+        
+        if isinstance(para_idx, int) and 0 <= para_idx < 100000:  # 合理的段落索引范围
+            issues.append(Issue(
+                module='Table',
+                section=table_desc,
+                messages=all_messages,
+                locate_method='index',
+                locate_data=para_idx
+            ))
+        else:
+            # 尝试通过表题关键词定位
+            locate_method = 'table_caption_en'
+            locate_data = table_item
+            issues.append(Issue(
+                module='Table',
+                section=table_desc,
+                messages=all_messages,
+                locate_method=locate_method,
+                locate_data=locate_data
+            ))
+    
+    logger.info(f"table_adapter: total issues generated = {len(issues)}")
+    return issues
+
+
+def formula_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
+    """公式检测结果适配器"""
+    issues: List[Issue] = []
+    
+    formula_report = all_reports.get('Formula')
+    if not isinstance(formula_report, dict):
+        logger.info("formula_adapter: Formula report is not a dict or missing")
+        return issues
+    
+    # 输出完整报告结构用于调试
+    logger.info(f"formula_adapter: formula_report type={type(formula_report)}, keys={formula_report.keys()}")
+    logger.info(f"formula_adapter: formula_report={formula_report}")
+    
+    # 尝试从 formula_detection 获取公式段落列表（公式报告结构可能是 {formula_detection: {...}, numbering: {...}}）
+    formula_paragraphs = []
+    formula_detection = formula_report.get('formula_detection')
+    
+    logger.info(f"formula_adapter: formula_detection type={type(formula_detection)}, value={formula_detection}")
+    
+    if isinstance(formula_detection, dict):
+        # 方式1: formula_detection 包含 details
+        if 'details' in formula_detection:
+            details = formula_detection['details']
+            logger.info(f"formula_adapter: found details in formula_detection: {details}")
+            if isinstance(details, dict) and 'formula_paragraphs' in details:
+                formula_paragraphs = details['formula_paragraphs']
+                logger.info(f"formula_adapter: found {len(formula_paragraphs)} formula paragraphs in formula_detection.details")
+        
+        # 方式2: formula_detection 直接包含 formula_paragraphs
+        if not formula_paragraphs and 'formula_paragraphs' in formula_detection:
+            formula_paragraphs = formula_detection['formula_paragraphs']
+            logger.info(f"formula_adapter: found {len(formula_paragraphs)} formula paragraphs in formula_detection directly")
+    
+    # 备选：从顶层获取（正确的位置是 report['details']['formula_paragraphs']）
+    if not formula_paragraphs:
+        logger.info(f"formula_adapter: checking top-level formula_report, keys={list(formula_report.keys())}")
+        if 'details' in formula_report:
+            details = formula_report['details']
+            logger.info(f"formula_adapter: found details at top-level: {details}")
+            if isinstance(details, dict) and 'formula_paragraphs' in details:
+                formula_paragraphs = details['formula_paragraphs']
+                logger.info(f"formula_adapter: found {len(formula_paragraphs)} formula paragraphs in formula_report.details")
+        if not formula_paragraphs and 'formula_paragraphs' in formula_report:
+            formula_paragraphs = formula_report['formula_paragraphs']
+            logger.info(f"formula_adapter: found {len(formula_paragraphs)} formula paragraphs in formula_report directly")
+    
+    if not isinstance(formula_paragraphs, list):
+        formula_paragraphs = []
+    
+    logger.info(f"formula_adapter: total formula_paragraphs found = {len(formula_paragraphs)}")
+    
+    # 遍历每个公式段落
+    for para_item in formula_paragraphs:
+        if not isinstance(para_item, dict):
+            continue
+        
+        format_check = para_item.get('format_check', {})
+        if not isinstance(format_check, dict):
+            continue
+        
+        # 只处理有问题的公式
+        is_ok = format_check.get('ok', True)
+        formula_label = para_item.get('formula_label', '公式')
+        logger.info(f"formula_adapter: processing {formula_label}, ok={is_ok}")
+        
+        if is_ok:
+            continue
+        
+        all_messages = []
+        
+        # 收集所有问题消息
+        for msg in format_check.get('messages', []):
+            all_messages.append(msg)
+        
+        # 引用检查问题
+        reference = format_check.get('details', {}).get('reference', {})
+        if isinstance(reference, dict) and reference.get('ok') is False:
+            for msg in reference.get('messages', []):
+                all_messages.append(f"[引用检查] {msg}")
+        
+        if not all_messages:
+            continue
+        
+        # 获取段落索引
+        para_idx = para_item.get('paragraph_index')
+        if para_idx is None:
+            para_idx = para_item.get('index')
+        if para_idx is None:
+            para_idx = para_item.get('w_p_index')
+        
+        logger.info(f"formula_adapter: adding issue for {formula_label} at para_idx={para_idx}")
+        
+        if isinstance(para_idx, int) and 0 <= para_idx < 100000:
+            # 尝试在公式段落添加批注，如果失败则在右边段落添加
+            # 使用 special 定位方式，Commenter 会处理
+            issues.append(Issue(
+                module='Formula',
+                section=formula_label,
+                messages=all_messages,
+                locate_method='formula_with_fallback',
+                locate_data=para_idx
+            ))
+        else:
+            import re
+            kw_match = re.search(r'公式?[\s#]*(\d+[-\uFF0D]\d+)', formula_label)
+            if kw_match:
+                kw = f"公式{kw_match.group(1)}"
+            else:
+                kw = '公式'
+            issues.append(Issue(
+                module='Formula',
+                section=formula_label,
+                messages=all_messages,
+                locate_method='keyword',
+                locate_data=kw
+            ))
+    
+    # 处理编号连续性问题（全局）
+    numbering = formula_report.get('numbering', {})
+    if isinstance(numbering, dict) and numbering.get('ok') is False:
+        for msg in numbering.get('messages', []):
+            issues.append(Issue(
+                module='Formula',
+                section='编号连续性',
+                messages=[f"[编号问题] {msg}"],
+                locate_method='keyword',
+                locate_data='公式'
+            ))
+    
+    logger.info(f"formula_adapter: total issues generated = {len(issues)}")
+    return issues
+
+
 # Orchestrator
 def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str, Any], output_dir: str) -> Optional[str]:
     """
@@ -576,6 +893,8 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
         issues: List[Issue] = []
         issues.extend(abstract_adapter(all_reports))
         issues.extend(keywords_adapter(all_reports))
+        issues.extend(table_adapter(all_reports))       # 添加表格适配器
+        issues.extend(formula_adapter(all_reports))     # 添加公式适配器
 
         if not issues:
             logger.info("No issues from adapters -> nothing to annotate")
@@ -596,6 +915,14 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
                     para_idx = locator(doc, issue.locate_data, issue.extra)
                 except Exception as e:
                     logger.warning(f"locator {issue.locate_method} error: {e}")
+            
+            # 对于 formula_with_fallback，如果定位失败或添加失败，尝试右边段落
+            if para_idx is None and issue.locate_method == 'formula_with_fallback':
+                # 直接使用传入的段落索引
+                original_idx = issue.locate_data
+                if isinstance(original_idx, int) and 0 <= original_idx < len(doc.paragraphs):
+                    para_idx = original_idx
+            
             # fallback: keyword search across paragraphs
             if para_idx is None and issue.locate_data:
                 kw = str(issue.locate_data).lower()
@@ -633,6 +960,16 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
                 comment_text += f"• {m}\n"
 
             added = commenter.add_comment_to_para_idx(para_idx, comment_text.strip())
+            
+            # 如果公式段落添加失败，尝试在右边的段落添加
+            if not added and issue.locate_method == 'formula_with_fallback':
+                # 尝试右边的段落
+                right_idx = para_idx + 1
+                if right_idx < len(doc.paragraphs):
+                    added = commenter.add_comment_to_para_idx(right_idx, comment_text.strip())
+                    if added:
+                        logger.info(f"Added comment at right para {right_idx} for {issue.module}-{issue.section}")
+            
             if added:
                 logger.info(f"Added comment at para {para_idx} for {issue.module}-{issue.section}")
             else:
