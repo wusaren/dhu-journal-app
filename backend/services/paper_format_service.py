@@ -12,14 +12,14 @@ import sys
 
 from services.paper_format_detector import PaperFormatDetector
 from services.Chinese_paper_format_detector import ChinesePaperFormatDetector
-from services.document_annotator import generate_annotated_document
+from services.document_annotator import generate_annotated_document, create_document_copy, parse_issues_from_reports, add_all_comments
 # 新的中文注释引擎（并行使用，暂不删除旧实现）
 from services.chinese_annotation_engine import annotate_chinese_abstract_and_keywords
 from services.paper_detect.Classification_detect import detect_classification
 
 logger = logging.getLogger(__name__)
 
-DETECTION_ORDER = ['Title', 'Abstract', 'English_Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
+DETECTION_ORDER = ['Title', 'Abstract', 'English_Abstract', 'Keywords', 'Content', 'Formula', 'TOC', 'Figure', 'Table', 'Chinese_section']
 
 # 模块中文名称映射
 MODULE_NAMES_CN = {
@@ -29,6 +29,7 @@ MODULE_NAMES_CN = {
     'Keywords': '关键词',
     'Content': '正文',
     'Formula': '公式',
+    'TOC': '目录/图录/表录',
     'Figure': '图',
     'Table': '表格',
     'Chinese_section': '中文部分',
@@ -809,8 +810,30 @@ class ChinesePaperFormatService:
                 'error_message': report.get('error_message', '')
             }
         
+            # TOC模块特殊处理
+        if module_name == 'TOC' and isinstance(report, dict):
+            checks = {}
+            # 处理 structure
+            structure = report.get('structure', {})
+            if isinstance(structure, dict) and 'ok' in structure:
+                checks['structure'] = structure
+            
+            # 处理 format（是一个列表）
+            format_reports = report.get('format', [])
+            if isinstance(format_reports, list):
+                for fr in format_reports:
+                    title_type = fr.get('title_type', '未知')
+                    format_report = fr.get('report', {})
+                    if isinstance(format_report, dict) and 'ok' in format_report:
+                        checks[f'format_{title_type}'] = format_report
+            
+            # 提取总结信息
+            summary = report.get('summary', [])
+            extracted = {}
+            details = {}
+        
         # Keywords和Title模块特殊处理（双语检测）
-        if module_name in ['Keywords', 'Title'] and isinstance(report, dict) and 'chinese' in report and 'english' in report:
+        elif module_name in ['Keywords', 'Title'] and isinstance(report, dict) and 'chinese' in report and 'english' in report:
             # 提取双语关键词的检查项
             checks = {}
             chinese_report = report.get('chinese', {})
@@ -862,7 +885,22 @@ class ChinesePaperFormatService:
             # 剩余的都是检查项
             checks = {k: v for k, v in report.items() if isinstance(v, dict) and 'ok' in v}
             
-            # 如果没有检查项，保留原始结构
+            # Figure 模块特殊处理：将 figures 列表中的检测结果转换为 checks 格式
+            if module_name == 'Figure' and isinstance(report, dict) and 'figures' in report:
+                figures = report.get('figures', [])
+                for i, fig_report in enumerate(figures, 1):
+                    # 为每张图片创建检查项
+                    if isinstance(fig_report, dict):
+                        if 'format_check' in fig_report and isinstance(fig_report['format_check'], dict) and 'ok' in fig_report['format_check']:
+                            checks[f'figure{i}_format'] = fig_report['format_check']
+                        if 'picture_check' in fig_report and isinstance(fig_report['picture_check'], dict) and 'ok' in fig_report['picture_check']:
+                            checks[f'figure{i}_picture'] = fig_report['picture_check']
+                        if 'reference_check' in fig_report and isinstance(fig_report['reference_check'], dict) and 'ok' in fig_report['reference_check']:
+                            checks[f'figure{i}_reference'] = fig_report['reference_check']
+                        if 'content_check' in fig_report and isinstance(fig_report['content_check'], dict) and 'ok' in fig_report['content_check']:
+                            checks[f'figure{i}_content'] = fig_report['content_check']
+            
+            # 如果没有检查项，保留原始结构（Table 模块特殊处理）
             if not checks and isinstance(report, dict):
                 if 'tables' in report or 'numbering' in report:
                     checks = report
@@ -982,22 +1020,74 @@ class ChinesePaperFormatService:
         result['data']['report_download_url'] = f'/api/paper-format/download-report/{report_filename}'
         result['data']['report_text'] = report_text
 
-        # 生成带批注文档（仅使用新的中文注释引擎）
+        # 生成带批注文档（使用中文注释引擎 + document_annotator）
+        annotated_path = None
         try:
+            # 1. 先使用中文注释引擎处理摘要和关键词
             annotated_path = annotate_chinese_abstract_and_keywords(
                 docx_path,
                 all_reports,
                 annotate_dir
             )
             if annotated_path:
-                result['data']['annotated_saved'] = True
-                result['data']['annotated_filename'] = os.path.basename(annotated_path)
-                result['data']['annotated_download_url'] = f'/api/paper-format/download-annotated/{os.path.basename(annotated_path)}'
-                logger.info(f"批注文档已自动生成 (chinese engine): {annotated_path}")
+                logger.info(f"中文注释引擎已生成批注文档: {annotated_path}")
             else:
-                logger.warning("中文注释引擎未生成批注文档")
+                # 如果中文引擎失败，创建基础副本供后续使用
+                annotated_path = create_document_copy(docx_path, annotate_dir)
+                if annotated_path:
+                    logger.info(f"已创建文档副本供批注使用: {annotated_path}")
         except Exception as e:
             logger.exception(f"中文注释引擎生成批注文档时发生异常: {e}")
+            # 创建基础副本供后续使用
+            try:
+                annotated_path = create_document_copy(docx_path, annotate_dir)
+            except Exception as e2:
+                logger.error(f"创建文档副本失败: {e2}")
+        
+        # 2. 使用 document_annotator 处理其他模块（Title, Content, Formula, Figure, Table, Chinese_section等）
+        if annotated_path:
+            try:
+                # 调试：检查 all_reports 中的模块
+                logger.info(f"document_annotator 开始处理，all_reports 中的模块: {list(all_reports.keys())}")
+                
+                # 从报告中提取问题（排除已由 chinese_annotation_engine 处理的 Abstract 和 Keywords）
+                issues_list = parse_issues_from_reports(all_reports)
+                logger.info(f"document_annotator parse_issues_from_reports 返回 {len(issues_list)} 个问题")
+                
+                # 调试：显示所有问题
+                if issues_list:
+                    for issue in issues_list:
+                        logger.debug(f"  - 模块: {issue.get('module')}, 检测项: {issue.get('section')}, 消息数: {len(issue.get('messages', []))}")
+                
+                # 过滤掉 Abstract 和 Keywords 的问题，避免重复批注
+                filtered_issues = [
+                    issue for issue in issues_list 
+                    if issue.get('module') not in ['Abstract', 'Keywords']
+                ]
+                logger.info(f"过滤后剩余 {len(filtered_issues)} 个问题（已排除 Abstract 和 Keywords）")
+                
+                if filtered_issues:
+                    logger.info(f"document_annotator 识别出 {len(filtered_issues)} 个问题需要批注")
+                    comment_count = add_all_comments(docx_path, annotated_path, filtered_issues)
+                    if comment_count > 0:
+                        logger.info(f"document_annotator 成功添加 {comment_count} 个批注")
+                    else:
+                        logger.warning("document_annotator 未能添加任何批注")
+                else:
+                    logger.info("document_annotator 未发现需要批注的问题（除摘要和关键词外）")
+                    if issues_list:
+                        logger.warning(f"注意：parse_issues_from_reports 返回了 {len(issues_list)} 个问题，但全部被过滤（可能都是 Abstract 或 Keywords）")
+            except Exception as e:
+                logger.exception(f"document_annotator 添加批注时发生异常: {e}")
+        
+        # 3. 设置返回结果
+        if annotated_path:
+            result['data']['annotated_saved'] = True
+            result['data']['annotated_filename'] = os.path.basename(annotated_path)
+            result['data']['annotated_download_url'] = f'/api/paper-format/download-annotated/{os.path.basename(annotated_path)}'
+            logger.info(f"批注文档已自动生成 (chinese engine + document_annotator): {annotated_path}")
+        else:
+            logger.warning("批注文档生成失败")
 
         return result
         
@@ -1057,6 +1147,25 @@ class ChinesePaperFormatService:
                                 total_checks += 1
                                 if value.get('ok', False):
                                     total_ok += 1
+                # TOC模块特殊处理
+                elif module_name == 'TOC':
+                    # 统计structure
+                    structure = report.get('structure', {})
+                    if isinstance(structure, dict) and 'ok' in structure:
+                        total_checks += 1
+                        if structure.get('ok', False):
+                            total_ok += 1
+                    
+                    # 统计format（是一个列表）
+                    format_reports = report.get('format', [])
+                    if isinstance(format_reports, list):
+                        for fr in format_reports:
+                            format_report = fr.get('report', {})
+                            if isinstance(format_report, dict) and 'ok' in format_report:
+                                total_checks += 1
+                                if format_report.get('ok', False):
+                                    total_ok += 1
+                
                 # Table模块特殊处理
                 elif module_name == 'Table':
                     # 统计numbering
@@ -1218,16 +1327,67 @@ class ChinesePaperFormatService:
                         if messages and not picture_check.get('ok', False):
                             for msg in messages:
                                 lines.append(f"      • {msg}")
+                    
+                    # 引用检测
+                    reference_check = fig_report.get('reference_check', {})
+                    if isinstance(reference_check, dict) and 'ok' in reference_check:
+                        ok_status = "✓" if reference_check.get('ok', False) else "✗"
+                        lines.append(f"    引用检查: {ok_status}")
+                        messages = reference_check.get('messages', [])
+                        if messages:
+                            # 显示所有消息（包括成功和失败）
+                            for msg in messages:
+                                lines.append(f"      • {msg}")
+                        # 如果找到引用，也显示引用文本
+                        if reference_check.get('reference_found', False) and reference_check.get('reference_text'):
+                            lines.append(f"      • 找到引用：{reference_check['reference_text']}")
 
                     # 内容检测
                     content_check = fig_report.get('content_check', {})
-                    if isinstance(content_check, dict) and 'ok' in content_check:
-                        ok_status = "✓" if content_check.get('ok', False) else "✗"
-                        lines.append(f"    内容规范: {ok_status}")
-                        messages = content_check.get('messages', [])
-                        if messages and not content_check.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
+                    if isinstance(content_check, dict) and ('ok' in content_check or 'is_chart' in content_check):
+                        is_chart = content_check.get('is_chart', False)
+                        if is_chart:
+                            # 是图表，显示检测结果
+                            ok_status = "✓" if content_check.get('ok', False) else "✗"
+                            lines.append(f"    内容规范: {ok_status}")
+                            messages = content_check.get('messages', [])
+                            if messages:
+                                # 显示所有消息（包括成功和失败）
+                                for msg in messages:
+                                    lines.append(f"      • {msg}")
+                        else:
+                            # 不是图表，显示类型信息
+                            chart_type = content_check.get('details', {}).get('is_chart_check', {}).get('chart_type', '非图表')
+                            lines.append(f"    内容检测: 图片类型为 {chart_type}，跳过图表规范检测")
+            
+            # TOC模块特殊处理
+            elif module_name == 'TOC':
+                # 处理结构检测
+                structure = report.get('structure', {})
+                if isinstance(structure, dict) and 'ok' in structure:
+                    ok_status = "✓ 通过" if structure.get('ok', False) else "✗ 失败"
+                    lines.append(f"\n  [Structure] {ok_status}")
+                    messages = structure.get('messages', [])
+                    if messages:
+                        for msg in messages:
+                            lines.append(f"    • {msg}")
+                
+                # 处理格式检测（format 是一个列表）
+                format_reports = report.get('format', [])
+                if isinstance(format_reports, list):
+                    for fr in format_reports:
+                        title_type = fr.get('title_type', '未知')
+                        format_report = fr.get('report', {})
+                        if isinstance(format_report, dict) and 'ok' in format_report:
+                            ok_status = "✓ 通过" if format_report.get('ok', False) else "✗ 失败"
+                            lines.append(f"\n  [{title_type} Format] {ok_status}")
+                            messages = format_report.get('messages', [])
+                            if messages:
+                                for msg in messages:
+                                    if msg.strip().startswith('-'):
+                                        lines.append(f"      {msg.strip()}")
+                                    else:
+                                        lines.append(f"    • {msg}")
             
             # Keywords和Title模块特殊处理（双语检测）
             elif module_name in ['Keywords', 'Title'] and 'chinese' in report and 'english' in report:

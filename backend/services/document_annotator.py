@@ -16,7 +16,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 # 检测模块执行顺序
-DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
+DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'TOC', 'Chinese_section']
 
 # 批注关键词配置（支持外部 JSON 覆盖，未找到时使用默认值）
 def load_annotation_keyword_config():
@@ -102,6 +102,56 @@ def find_paragraph_by_keyword(doc, keyword, case_sensitive=False):
         
         if search_key in text:
             return paragraph
+    
+    return None
+
+
+def find_title_by_abstract(doc, language='chinese'):
+    """
+    根据摘要位置查找标题段落（位于摘要上方）
+    
+    参数：
+        doc: Document对象
+        language: 'chinese' 或 'english'
+    
+    返回：
+        标题段落对象，未找到返回None
+    """
+    # 先找到摘要位置
+    abstract_keywords = ['摘 要', '摘要'] if language == 'chinese' else ['Abstract', 'ABSTRACT']
+    abstract_idx = None
+    
+    for idx, paragraph in enumerate(doc.paragraphs):
+        text = paragraph.text.strip()
+        if not text:
+            continue
+        
+        # 检查是否匹配摘要标题
+        if language == 'chinese':
+            if re.match(r'^\s*摘\s要\s*$', text) or text == '摘要':
+                abstract_idx = idx
+                break
+        else:
+            if re.match(r'^\s*Abstract\s*$', text, re.IGNORECASE):
+                abstract_idx = idx
+                break
+    
+    if abstract_idx is None or abstract_idx == 0:
+        return None
+    
+    # 从摘要上方开始查找标题
+    for i in range(abstract_idx - 1, -1, -1):
+        paragraph = doc.paragraphs[i]
+        text = paragraph.text.strip()
+        if text:
+            # 检查是否包含中文字符（中文标题）或全大写英文（英文标题）
+            if language == 'chinese':
+                if re.search(r'[\u4e00-\u9fff]', text):
+                    return paragraph
+            else:
+                # 英文标题：检查是否全大写（排除纯数字或特殊符号）
+                if re.search(r'[A-Z]', text) and text.isupper():
+                    return paragraph
     
     return None
 
@@ -392,39 +442,114 @@ def parse_issues_from_reports(all_reports):
     """
     issues = []
     
+    logger.info(f"parse_issues_from_reports: 开始处理，all_reports 键: {list(all_reports.keys())}")
+    logger.info(f"parse_issues_from_reports: DETECTION_ORDER: {DETECTION_ORDER}")
+    
     for module_name in DETECTION_ORDER:
         if module_name not in all_reports:
+            logger.debug(f"parse_issues_from_reports: 跳过模块 {module_name}（不在 all_reports 中）")
             continue
         
         report = all_reports[module_name]
+        logger.info(f"parse_issues_from_reports: 处理模块 {module_name}, report 类型: {type(report)}")
         
         # 跳过错误报告
         if report.get('error', False):
+            logger.warning(f"parse_issues_from_reports: 跳过模块 {module_name}（有错误标记）")
             continue
         
         # 为不同模块设计定位策略
         if module_name == 'Title':
-            # Title模块：使用关键字定位
-            for section_key, section_value in report.items():
-                if section_key in ['summary', 'extracted', 'details']:
-                    continue
+            logger.info(f"parse_issues_from_reports: 开始处理 Title 模块，report keys: {list(report.keys()) if isinstance(report, dict) else 'not a dict'}")
+            
+            # 检查是否是中文检测器的双语结构（包含 'chinese' 和 'english' 键）
+            if isinstance(report, dict) and ('chinese' in report or 'english' in report):
+                logger.info("parse_issues_from_reports: 检测到中文检测器的双语 Title 结构")
+                # 处理中文标题
+                if 'chinese' in report and isinstance(report['chinese'], dict):
+                    chinese_report = report['chinese']
+                    logger.info(f"parse_issues_from_reports: 处理中文标题，keys: {list(chinese_report.keys())}")
+                    # 从 structure 中获取标题文本用于定位
+                    structure_report = chinese_report.get('structure', {})
+                    title_text = structure_report.get('title_text', '')
+                    
+                    # 处理 structure 和 format
+                    for sub_key in ['structure', 'format']:
+                        if sub_key in chinese_report and isinstance(chinese_report[sub_key], dict):
+                            sub_report = chinese_report[sub_key]
+                            if not sub_report.get('ok', False):
+                                messages = sub_report.get('messages', [])
+                                if messages:
+                                    # 使用基于摘要位置的定位方法（避免定位到封面标题）
+                                    issues.append({
+                                        'module': module_name,
+                                        'section': f'chinese_{sub_key}',
+                                        'messages': messages,
+                                        'locate_method': 'title_by_abstract',
+                                        'locate_data': 'chinese'
+                                    })
+                                    logger.info(f"parse_issues_from_reports: Title 模块添加中文标题问题 - section: chinese_{sub_key}, 使用摘要位置定位, 消息数: {len(messages)}")
                 
-                if isinstance(section_value, dict) and not section_value.get('ok', False):
-                    messages = section_value.get('messages', [])
-                    if not messages:
+                # 处理英文标题（如果有）
+                if 'english' in report and isinstance(report['english'], dict):
+                    english_report = report['english']
+                    logger.info(f"parse_issues_from_reports: 处理英文标题，keys: {list(english_report.keys())}")
+                    # 从 structure 中获取标题文本用于定位
+                    structure_report = english_report.get('structure', {})
+                    title_text = structure_report.get('title_text', '')
+                    
+                    # 处理 structure 和 format
+                    for sub_key in ['structure', 'format']:
+                        if sub_key in english_report and isinstance(english_report[sub_key], dict):
+                            sub_report = english_report[sub_key]
+                            if not sub_report.get('ok', False):
+                                messages = sub_report.get('messages', [])
+                                if messages:
+                                    # 使用基于摘要位置的定位方法（避免定位到封面标题）
+                                    issues.append({
+                                        'module': module_name,
+                                        'section': f'english_{sub_key}',
+                                        'messages': messages,
+                                        'locate_method': 'title_by_abstract',
+                                        'locate_data': 'english'
+                                    })
+                                    logger.info(f"parse_issues_from_reports: Title 模块添加英文标题问题 - section: english_{sub_key}, 使用摘要位置定位, 消息数: {len(messages)}")
+            else:
+                # 处理英文检测器的单语结构（title, authors, affiliations, format）
+                logger.info("parse_issues_from_reports: 使用英文检测器的单语 Title 结构")
+                # 从 extracted 中获取标题文本用于定位
+                extracted = report.get('extracted', {})
+                title_text = extracted.get('title', '') if isinstance(extracted, dict) else ''
+                
+                # Title模块：使用关键字定位
+                title_issue_count = 0
+                for section_key, section_value in report.items():
+                    if section_key in ['summary', 'extracted', 'details']:
+                        logger.debug(f"parse_issues_from_reports: Title 模块跳过 section {section_key}（在排除列表中）")
                         continue
                     
-                    # 根据section类型确定关键字
+                    logger.debug(f"parse_issues_from_reports: Title 模块检查 section {section_key}, 类型: {type(section_value)}, ok: {section_value.get('ok') if isinstance(section_value, dict) else 'N/A'}")
+                    
+                    if isinstance(section_value, dict) and not section_value.get('ok', False):
+                        messages = section_value.get('messages', [])
+                        logger.debug(f"parse_issues_from_reports: Title 模块 section {section_key} 有 {len(messages)} 条消息")
+                        if not messages:
+                            logger.debug(f"parse_issues_from_reports: Title 模块 section {section_key} 没有消息，跳过")
+                            continue
+                    
+                    # 根据section类型确定定位方法
                     if 'title' in section_key.lower():
-                        locate_method = 'index'
-                        locate_data = 0  # 标题通常是第一个段落
+                        # 使用基于摘要位置的定位方法（避免定位到封面标题）
+                        # 对于英文检测器，默认使用英文摘要
                         issues.append({
                             'module': module_name,
                             'section': section_key,
                             'messages': messages,
-                            'locate_method': locate_method,
-                            'locate_data': locate_data
+                            'locate_method': 'title_by_abstract',
+                            'locate_data': 'english'  # 英文检测器默认使用英文摘要
                         })
+                        title_issue_count += 1
+                        logger.info(f"parse_issues_from_reports: Title 模块添加问题 - section: {section_key}, 使用摘要位置定位, 消息数: {len(messages)}")
                     elif 'author' in section_key.lower():
                         locate_method = 'index'
                         locate_data = 1  # 作者通常是第二个段落
@@ -455,13 +580,15 @@ def parse_issues_from_reports(all_reports):
                         
                         if use_structured:
                             if structured_title_msgs and any('问题' in msg or '错误' in msg for msg in structured_title_msgs):
+                                # 使用基于摘要位置的定位方法（避免定位到封面标题）
                                 issues.append({
                                     'module': module_name,
                                     'section': section_key + '_title',
                                     'messages': structured_title_msgs,
-                                    'locate_method': 'index',
-                                    'locate_data': 0
+                                    'locate_method': 'title_by_abstract',
+                                    'locate_data': 'english'  # 英文检测器默认使用英文摘要
                                 })
+                                logger.info(f"parse_issues_from_reports: Title 模块 format_title 使用摘要位置定位")
                             
                             if structured_author_msgs and any('问题' in msg or '错误' in msg for msg in structured_author_msgs):
                                 issues.append({
@@ -522,13 +649,15 @@ def parse_issues_from_reports(all_reports):
                             # 为每组消息创建独立的issue（只添加包含问题的组）
                             # 判断是否有实际问题：检查消息中是否包含"问题"或"错误"关键字
                             if title_msgs and any('问题' in msg or '错误' in msg for msg in title_msgs):
+                                # 使用基于摘要位置的定位方法（避免定位到封面标题）
                                 issues.append({
                                     'module': module_name,
                                     'section': section_key + '_title',
                                     'messages': title_msgs,
-                                    'locate_method': 'index',
-                                    'locate_data': 0
+                                    'locate_method': 'title_by_abstract',
+                                    'locate_data': 'english'  # 英文检测器默认使用英文摘要
                                 })
+                                logger.info(f"parse_issues_from_reports: Title 模块 format_title 使用摘要位置定位")
                             
                             if author_msgs and any('问题' in msg or '错误' in msg for msg in author_msgs):
                                 issues.append({
@@ -696,22 +825,152 @@ def parse_issues_from_reports(all_reports):
         
         elif module_name == 'Content':
             # Content模块：需要识别具体的正文段落
+            logger.info(f"parse_issues_from_reports: 开始处理 Content 模块，report keys: {list(report.keys()) if isinstance(report, dict) else 'not a dict'}")
+            
+            # 检查是否是中文检测器的结构（包含 'structure' 和 'format' 键）
+            if isinstance(report, dict) and 'structure' in report:
+                logger.info("parse_issues_from_reports: 检测到中文检测器的 Content 结构")
+                structure_report = report.get('structure', {})
+                format_report = report.get('format', {})
+                
+                # 从 structure 中获取 titles（中文检测器可能将 titles 放在 structure 中）
+                titles = structure_report.get('titles', [])
+                logger.info(f"parse_issues_from_reports: Content 模块从 structure 获取 titles count: {len(titles)}")
+                
+                # 处理 format section
+                if isinstance(format_report, dict) and not format_report.get('ok', False):
+                    messages = format_report.get('messages', [])
+                    logger.info(f"parse_issues_from_reports: Content 模块 format section 有 {len(messages)} 条消息")
+                    
+                    if messages:
+                        # 中文检测器的消息格式是：标题"{text}"... 或 "  - 标题"{text}"..."
+                        # 需要提取标题文本并匹配到对应的标题段落
+                        title_issues = {}  # {title_text: [messages]}
+                        
+                        for msg in messages:
+                            # 跳过 header 消息（如 "正文标题格式问题："）
+                            if msg.strip().endswith('：') or msg.strip().endswith(':'):
+                                continue
+                            # 移除 "  - " 前缀
+                            clean_msg = msg.strip()
+                            if clean_msg.startswith('- '):
+                                clean_msg = clean_msg[2:].strip()
+                            
+                            # 提取标题文本（支持中文双引号 "" 和英文引号 "'）
+                            # 消息格式：标题"xxx"段前应为... 或 标题'xxx'段前应为...
+                            # 中文双引号：左引号 " (U+201C)，右引号 " (U+201D)
+                            # 使用字符类匹配所有可能的引号
+                            title_match = re.search(r'标题[\u201C\u201D"\']([^\u201C\u201D"\']+)[\u201C\u201D"\']', clean_msg)
+                            
+                            if title_match:
+                                title_text = title_match.group(1)
+                                if title_text not in title_issues:
+                                    title_issues[title_text] = []
+                                title_issues[title_text].append(clean_msg)
+                            else:
+                                # 如果正则匹配失败，记录日志以便调试
+                                logger.debug(f"parse_issues_from_reports: Content 模块无法提取标题文本，消息: {clean_msg[:50]}")
+                        
+                        logger.info(f"parse_issues_from_reports: Content 模块 format 提取到 {len(title_issues)} 个标题的问题")
+                        logger.debug(f"parse_issues_from_reports: Content 模块提取的标题列表: {list(title_issues.keys())[:5]}...")  # 只显示前5个
+                        logger.debug(f"parse_issues_from_reports: Content 模块 titles 列表中的标题: {[t.get('text', '')[:20] for t in titles[:5]]}...")  # 只显示前5个
+                        
+                        # 为每个标题创建批注
+                        for title_text, title_messages in title_issues.items():
+                            # 在 titles 列表中查找对应的标题
+                            title_info = None
+                            for t in titles:
+                                title_in_report = t.get('text', '')
+                                # 匹配标题文本（可能包含编号，所以使用包含匹配）
+                                # 先尝试精确匹配，再尝试包含匹配
+                                if title_in_report == title_text:
+                                    title_info = t
+                                    break
+                                elif title_text in title_in_report or title_in_report in title_text:
+                                    title_info = t
+                                    break
+                            
+                            if title_info:
+                                # 尝试多种方式获取段落索引
+                                para_idx = (title_info.get('paragraph_index') or 
+                                          title_info.get('para_idx') or
+                                          title_info.get('index'))
+                                
+                                if para_idx is not None:
+                                    clean_title = re.sub(r'[^\w]', '_', title_text[:20])
+                                    issues.append({
+                                        'module': module_name,
+                                        'section': f'format_{clean_title}',
+                                        'messages': title_messages,
+                                        'locate_method': 'index',
+                                        'locate_data': para_idx
+                                    })
+                                    logger.info(f"parse_issues_from_reports: Content 模块添加标题格式问题 - title: {title_text}, para_idx: {para_idx}, 消息数: {len(title_messages)}")
+                                else:
+                                    # 如果没有索引，尝试用文本定位
+                                    clean_title = re.sub(r'[^\w]', '_', title_text[:20])
+                                    issues.append({
+                                        'module': module_name,
+                                        'section': f'format_{clean_title}',
+                                        'messages': title_messages,
+                                        'locate_method': 'text',
+                                        'locate_data': title_text
+                                    })
+                                    logger.info(f"parse_issues_from_reports: Content 模块添加标题格式问题（文本定位，无索引） - title: {title_text}, 消息数: {len(title_messages)}")
+                            elif title_text:
+                                # 如果完全找不到匹配的标题，仍然尝试用文本定位
+                                clean_title = re.sub(r'[^\w]', '_', title_text[:20])
+                                issues.append({
+                                    'module': module_name,
+                                    'section': f'format_{clean_title}',
+                                    'messages': title_messages,
+                                    'locate_method': 'text',
+                                    'locate_data': title_text
+                                })
+                                logger.warning(f"parse_issues_from_reports: Content 模块添加标题格式问题（文本定位，未在titles中找到） - title: {title_text}, 消息数: {len(title_messages)}")
+                
+                # 处理 structure section（如果有问题）
+                if isinstance(structure_report, dict) and not structure_report.get('ok', False):
+                    structure_messages = structure_report.get('messages', [])
+                    if structure_messages:
+                        # structure 问题通常定位到 Introduction
+                        issues.append({
+                            'module': module_name,
+                            'section': 'structure',
+                            'messages': structure_messages,
+                            'locate_method': 'keyword',
+                            'locate_data': 'Introduction'
+                        })
+                        logger.info(f"parse_issues_from_reports: Content 模块添加 structure 问题，消息数: {len(structure_messages)}")
+                
+                continue  # 跳过后续的英文检测器结构处理
+            
+            # 英文检测器的结构处理（原有逻辑）
             hierarchy_report = report.get('hierarchy', {})
             titles = report.get('titles', [])  # 获取标题信息用于定位
+            logger.info(f"parse_issues_from_reports: Content 模块使用英文检测器结构，hierarchy keys: {list(hierarchy_report.keys()) if isinstance(hierarchy_report, dict) else 'not a dict'}, titles count: {len(titles)}")
             
+            content_issue_count = 0
             for section_key, section_value in report.items():
                 if section_key in ['summary', 'extracted', 'details', 'hierarchy', 'titles']:
+                    logger.debug(f"parse_issues_from_reports: Content 模块跳过 section {section_key}（在排除列表中）")
                     continue
+                
+                logger.info(f"parse_issues_from_reports: Content 模块检查 section {section_key}, 类型: {type(section_value)}, ok: {section_value.get('ok') if isinstance(section_value, dict) else 'N/A'}")
                 
                 if isinstance(section_value, dict) and not section_value.get('ok', False):
                     messages = section_value.get('messages', [])
+                    logger.info(f"parse_issues_from_reports: Content 模块 section {section_key} 有 {len(messages)} 条消息")
                     if not messages:
+                        logger.debug(f"parse_issues_from_reports: Content 模块 section {section_key} 没有消息，跳过")
                         continue
                     
                     # 特殊处理content_format：按段落分组
                     if section_key == 'content_format':
+                        logger.info(f"parse_issues_from_reports: Content 模块处理 content_format，消息数: {len(messages)}")
                         # 将消息按段落编号分组
                         grouped_messages = group_messages_by_paragraph(messages)
+                        logger.info(f"parse_issues_from_reports: Content 模块 content_format 分组后: {list(grouped_messages.keys())}")
                         
                         # 为每个段落创建独立的批注issue
                         for para_num, para_messages in grouped_messages.items():
@@ -728,12 +987,18 @@ def parse_issues_from_reports(all_reports):
                                         'hierarchy_report': hierarchy_report  # 传递标题信息
                                     }
                                 })
+                                content_issue_count += 1
+                                logger.info(f"parse_issues_from_reports: Content 模块添加问题 - section: {section_key}_para{para_num}, 消息数: {len(para_messages)}")
+                            else:
+                                logger.debug(f"parse_issues_from_reports: Content 模块 content_format 忽略无段落编号的消息: {para_messages[:1] if para_messages else 'empty'}")
                             # 忽略没有段落编号的消息（如标题行）
                     
                     elif section_key in ['format', 'case']:
+                        logger.info(f"parse_issues_from_reports: Content 模块处理 {section_key}，消息数: {len(messages)}")
                         # 标题format和case问题：按标题分组定位
                         # 从messages中提取标题名称，定位到具体标题段落
                         grouped_title_messages = group_messages_by_title(messages, titles)
+                        logger.info(f"parse_issues_from_reports: Content 模块 {section_key} 分组后标题数: {len(grouped_title_messages)}")
                         
                         for title_text, title_messages in grouped_title_messages.items():
                             if title_text and title_messages:
@@ -751,6 +1016,8 @@ def parse_issues_from_reports(all_reports):
                                         'locate_method': 'index',
                                         'locate_data': para_idx
                                     })
+                                    content_issue_count += 1
+                                    logger.info(f"parse_issues_from_reports: Content 模块添加问题 - section: {section_key}_{clean_title}, 消息数: {len(title_messages)}, para_idx: {para_idx}")
                                 elif title_text:
                                     # 如果没有索引，尝试用完整标题文本（包括编号）定位
                                     full_title_text = title_info.get('full_text', title_text) if title_info else title_text
@@ -762,7 +1029,10 @@ def parse_issues_from_reports(all_reports):
                                         'locate_method': 'text',
                                         'locate_data': full_title_text
                                     })
+                                    content_issue_count += 1
+                                    logger.info(f"parse_issues_from_reports: Content 模块添加问题 - section: {section_key}_{clean_title}, 消息数: {len(title_messages)}, 使用文本定位")
                     else:
+                        logger.info(f"parse_issues_from_reports: Content 模块处理其他 section {section_key}，消息数: {len(messages)}")
                         # 其他section（如hierarchy）使用Introduction定位
                         issues.append({
                             'module': module_name,
@@ -771,6 +1041,10 @@ def parse_issues_from_reports(all_reports):
                             'locate_method': 'keyword',
                             'locate_data': 'Introduction'
                         })
+                        content_issue_count += 1
+                        logger.info(f"parse_issues_from_reports: Content 模块添加问题 - section: {section_key}, 消息数: {len(messages)}")
+            
+            logger.info(f"parse_issues_from_reports: Content 模块总共添加了 {content_issue_count} 个问题")
         
         elif module_name == 'Formula':
             # Formula模块：根据报告中的公式段落信息进行定位
@@ -828,6 +1102,102 @@ def parse_issues_from_reports(all_reports):
                         # 如果没有找到公式段落，说明文档中可能没有公式
                         # 不添加批注，因为无法准确定位
                         print(f"  ! Formula模块未检测到公式段落，跳过批注")
+        
+        elif module_name == 'TOC':
+            # TOC模块：处理目录/图录/表录的格式问题
+            logger.info(f"parse_issues_from_reports: 开始处理 TOC 模块，report keys: {list(report.keys()) if isinstance(report, dict) else 'not a dict'}")
+            
+            # 处理 structure section
+            structure_report = report.get('structure', {})
+            if isinstance(structure_report, dict) and not structure_report.get('ok', False):
+                structure_messages = structure_report.get('messages', [])
+                if structure_messages:
+                    # structure 问题定位到第一个找到的标题（目录、图录或表录）
+                    titles = structure_report.get('titles', [])
+                    if titles:
+                        # 使用第一个标题的段落索引
+                        first_title = titles[0]
+                        # 优先使用 index（TOC 检测器返回的是 index，是 doc.paragraphs 的实际索引，包括空行）
+                        para_idx = first_title.get('index') or first_title.get('paragraph_index') or first_title.get('para_idx')
+                        if para_idx is not None:
+                            issues.append({
+                                'module': module_name,
+                                'section': 'structure',
+                                'messages': structure_messages,
+                                'locate_method': 'index',
+                                'locate_data': para_idx
+                            })
+                            logger.info(f"parse_issues_from_reports: TOC 模块添加 structure 问题，para_idx: {para_idx}, 消息数: {len(structure_messages)}")
+                        else:
+                            # 如果没有索引，使用关键字定位（目录、图录或表录）
+                            title_type = first_title.get('title_type', '目录')
+                            issues.append({
+                                'module': module_name,
+                                'section': 'structure',
+                                'messages': structure_messages,
+                                'locate_method': 'keyword',
+                                'locate_data': title_type
+                            })
+                            logger.info(f"parse_issues_from_reports: TOC 模块添加 structure 问题（关键字定位），title_type: {title_type}, 消息数: {len(structure_messages)}")
+            
+            # 处理 format section（是一个列表）
+            format_reports = report.get('format', [])
+            if isinstance(format_reports, list):
+                logger.info(f"parse_issues_from_reports: TOC 模块 format 列表长度: {len(format_reports)}")
+                for fr in format_reports:
+                    title_type = fr.get('title_type', '未知')
+                    format_report = fr.get('report', {})
+                    
+                    if isinstance(format_report, dict) and not format_report.get('ok', False):
+                        format_messages = format_report.get('messages', [])
+                        # 过滤掉 header 消息（如 "目录格式问题："）
+                        filtered_messages = []
+                        for msg in format_messages:
+                            # 跳过以 "：" 或 ":" 结尾的 header 消息
+                            if not (msg.strip().endswith('：') or msg.strip().endswith(':')):
+                                filtered_messages.append(msg)
+                        
+                        if filtered_messages:
+                            # 从 structure 中查找对应标题的段落索引
+                            titles = structure_report.get('titles', [])
+                            title_info = None
+                            for t in titles:
+                                if t.get('title_type') == title_type:
+                                    title_info = t
+                                    break
+                            
+                            if title_info:
+                                # 优先使用 index（TOC 检测器返回的是 index，是 doc.paragraphs 的实际索引，包括空行）
+                                para_idx = title_info.get('index') or title_info.get('paragraph_index') or title_info.get('para_idx')
+                                if para_idx is not None:
+                                    issues.append({
+                                        'module': module_name,
+                                        'section': f'format_{title_type}',
+                                        'messages': filtered_messages,
+                                        'locate_method': 'index',
+                                        'locate_data': para_idx
+                                    })
+                                    logger.info(f"parse_issues_from_reports: TOC 模块添加格式问题 - title_type: {title_type}, para_idx: {para_idx}, 消息数: {len(filtered_messages)}")
+                                else:
+                                    # 使用关键字定位
+                                    issues.append({
+                                        'module': module_name,
+                                        'section': f'format_{title_type}',
+                                        'messages': filtered_messages,
+                                        'locate_method': 'keyword',
+                                        'locate_data': title_type
+                                    })
+                                    logger.info(f"parse_issues_from_reports: TOC 模块添加格式问题（关键字定位） - title_type: {title_type}, 消息数: {len(filtered_messages)}")
+                            else:
+                                # 如果找不到标题信息，使用关键字定位
+                                issues.append({
+                                    'module': module_name,
+                                    'section': f'format_{title_type}',
+                                    'messages': filtered_messages,
+                                    'locate_method': 'keyword',
+                                    'locate_data': title_type
+                                })
+                                logger.info(f"parse_issues_from_reports: TOC 模块添加格式问题（关键字定位，未找到标题） - title_type: {title_type}, 消息数: {len(filtered_messages)}")
         
         elif module_name == 'Table':
             # Table模块：定位到表格标题段落
@@ -903,17 +1273,52 @@ def parse_issues_from_reports(all_reports):
                 messages = numbering_report.get('messages', [])
                 if messages:
                     # 定位到第一个图片标题
-                    captions = report.get('captions', [])
-                    if captions:
-                        first_caption = captions[0]
-                        caption_text = first_caption.get('full_text', 'Fig.')
-                        issues.append({
-                            'module': module_name,
-                            'section': 'numbering',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]  # 使用标题前20个字符
-                        })
+                    # 优先从 figures 列表中获取第一个有标题的图片
+                    figures = report.get('figures', [])
+                    first_caption_info = None
+                    for fig_report in figures:
+                        if fig_report.get('has_caption', False):
+                            first_caption_info = fig_report.get('caption_info')
+                            if first_caption_info:
+                                break
+                    
+                    if first_caption_info:
+                        # 优先使用段落索引
+                        caption_para_idx = first_caption_info.get('paragraph_index')
+                        if caption_para_idx is not None:
+                            issues.append({
+                                'module': module_name,
+                                'section': 'numbering',
+                                'messages': messages,
+                                'locate_method': 'index',
+                                'locate_data': caption_para_idx
+                            })
+                            logger.info(f"parse_issues_from_reports: Figure 模块添加编号问题，para_idx: {caption_para_idx}, 消息数: {len(messages)}")
+                        else:
+                            # 使用文本定位
+                            caption_text = first_caption_info.get('full_text', 'Fig.')
+                            issues.append({
+                                'module': module_name,
+                                'section': 'numbering',
+                                'messages': messages,
+                                'locate_method': 'text',
+                                'locate_data': caption_text
+                            })
+                            logger.info(f"parse_issues_from_reports: Figure 模块添加编号问题（文本定位），消息数: {len(messages)}")
+                    else:
+                        # 备选方案：从 captions 列表获取
+                        captions = report.get('captions', [])
+                        if captions:
+                            first_caption = captions[0]
+                            caption_text = first_caption.get('full_text', 'Fig.')
+                            issues.append({
+                                'module': module_name,
+                                'section': 'numbering',
+                                'messages': messages,
+                                'locate_method': 'text',
+                                'locate_data': caption_text
+                            })
+                            logger.info(f"parse_issues_from_reports: Figure 模块添加编号问题（从captions列表，文本定位），消息数: {len(messages)}")
             
             # 2. 处理每张图片的问题（支持新的报告结构）
             figures = report.get('figures', [])
@@ -933,14 +1338,28 @@ def parse_issues_from_reports(all_reports):
                 
                 if caption_messages and has_caption:
                     # 批注在标题上
-                    caption_text = caption_info.get('full_text', f'Fig.{caption_info.get("number", fig_idx)}')[:30]
-                    issues.append({
-                        'module': module_name,
-                        'section': f'figure{fig_idx}_caption',
-                        'messages': caption_messages,
-                        'locate_method': 'keyword',
-                        'locate_data': caption_text
-                    })
+                    # 优先使用段落索引定位（更准确）
+                    caption_para_idx = caption_info.get('paragraph_index')
+                    if caption_para_idx is not None:
+                        issues.append({
+                            'module': module_name,
+                            'section': f'figure{fig_idx}_caption',
+                            'messages': caption_messages,
+                            'locate_method': 'index',
+                            'locate_data': caption_para_idx
+                        })
+                        logger.info(f"parse_issues_from_reports: Figure 模块添加标题格式问题 - figure{fig_idx}, para_idx: {caption_para_idx}, 消息数: {len(caption_messages)}")
+                    else:
+                        # 如果没有段落索引，使用文本定位（比关键字定位更准确）
+                        caption_text = caption_info.get('full_text', f'Fig.{caption_info.get("number", fig_idx)}')
+                        issues.append({
+                            'module': module_name,
+                            'section': f'figure{fig_idx}_caption',
+                            'messages': caption_messages,
+                            'locate_method': 'text',
+                            'locate_data': caption_text
+                        })
+                        logger.info(f"parse_issues_from_reports: Figure 模块添加标题格式问题（文本定位） - figure{fig_idx}, 消息数: {len(caption_messages)}")
                 
                 # 图片本身的问题 → 批注在图片段落
                 picture_messages = []
@@ -1019,6 +1438,7 @@ def parse_issues_from_reports(all_reports):
                 'locate_data': 'CLC number'
             })
 
+    logger.info(f"parse_issues_from_reports: 总共识别出 {len(issues)} 个问题")
     return issues
 
 
@@ -1122,8 +1542,13 @@ def add_all_comments(doc_path, copy_path, issues_list):
                         paragraph = find_paragraph_by_regex(doc, cfg["title_regex"], re.IGNORECASE)
             elif locate_method == 'index':
                 # 判断是否需要跳过空行
-                # 单位段落和Content标题格式批注都不应该跳过空行（使用实际索引）
-                skip_empty = 'affiliation_para' not in section_name and 'Content-format' not in f"{module_name}-{section_name}" and 'Content-case' not in f"{module_name}-{section_name}"
+                # 单位段落、Content标题格式批注、TOC格式批注、Figure批注和Title批注都不应该跳过空行（使用实际索引）
+                skip_empty = ('affiliation_para' not in section_name and 
+                             'Content-format' not in f"{module_name}-{section_name}" and 
+                             'Content-case' not in f"{module_name}-{section_name}" and
+                             module_name != 'TOC' and 
+                             module_name != 'Figure' and
+                             module_name != 'Title')  # TOC、Figure 和 Title 模块不跳过空行，确保准确定位到标题所在行
                 paragraph = find_paragraph_by_index(doc, locate_data, skip_empty=skip_empty)
             elif locate_method == 'text':
                 paragraph = find_paragraph_by_text(doc, locate_data)
@@ -1136,6 +1561,48 @@ def add_all_comments(doc_path, copy_path, issues_list):
             elif locate_method == 'formula_number':
                 # 通过公式编号定位（如 "(2)"）
                 paragraph = find_paragraph_by_keyword(doc, locate_data)
+            elif locate_method == 'title_by_abstract':
+                # 根据摘要位置定位标题（避免定位到封面标题）
+                language = locate_data if isinstance(locate_data, str) else 'chinese'
+                paragraph = find_title_by_abstract(doc, language)
+                if not paragraph:
+                    logger.warning(f"无法通过摘要位置定位标题（语言: {language}），尝试使用文本定位")
+                    # 如果找不到，尝试使用文本定位作为备选
+                    # 这里可以从报告中获取标题文本，但为了简化，我们使用关键字定位
+                    if language == 'chinese':
+                        # 尝试查找包含中文的段落（可能是标题）
+                        for para in doc.paragraphs:
+                            if para.text and re.search(r'[\u4e00-\u9fff]', para.text):
+                                # 检查是否在摘要之前
+                                para_idx = None
+                                abstract_idx = None
+                                for idx, p in enumerate(doc.paragraphs):
+                                    if p is para:
+                                        para_idx = idx
+                                    if p.text and ('摘 要' in p.text or '摘要' in p.text):
+                                        abstract_idx = idx
+                                        break
+                                if para_idx is not None and abstract_idx is not None and para_idx < abstract_idx:
+                                    paragraph = para
+                                    break
+                    else:
+                        # 英文标题：查找全大写的段落
+                        for para in doc.paragraphs:
+                            if para.text and para.text.strip():
+                                text = para.text.strip()
+                                if re.search(r'[A-Z]', text) and text.isupper():
+                                    # 检查是否在 Abstract 之前
+                                    para_idx = None
+                                    abstract_idx = None
+                                    for idx, p in enumerate(doc.paragraphs):
+                                        if p is para:
+                                            para_idx = idx
+                                        if p.text and re.match(r'^\s*Abstract\s*$', p.text, re.IGNORECASE):
+                                            abstract_idx = idx
+                                            break
+                                    if para_idx is not None and abstract_idx is not None and para_idx < abstract_idx:
+                                        paragraph = para
+                                        break
             
             if paragraph:
                 # 构建批注内容

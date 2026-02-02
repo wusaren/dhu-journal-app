@@ -851,6 +851,7 @@ const availableModules = [
   { value: 'English_Abstract', label: '英文摘要格式检测', description: '检测英文摘要结构和格式' },
   { value: 'Keywords', label: '关键词格式检测', description: '检测关键词格式' },
   { value: 'Content', label: '正文格式检测', description: '检测正文格式' },
+  { value: 'TOC', label: '目录/图录/表录检测', description: '检测目录/图录/表录格式检测'},
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
   { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' },
