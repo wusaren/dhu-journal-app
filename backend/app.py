@@ -112,7 +112,7 @@ if not os.path.exists(log_dir):
 
 # 配置日志：同时输出到控制台和文件
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,  # 改为DEBUG级别以便输出调试信息
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8'),

@@ -855,6 +855,7 @@ const availableModules = [
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
   { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' },
+  { value: 'References', label: '参考文献格式检测', description: '检测参考文献结构和格式' },
   { value: 'Chinese_section', label: '中文部分检测', description: '检测中文标题、作者、单位、摘要和关键词格式' }
 ]
 

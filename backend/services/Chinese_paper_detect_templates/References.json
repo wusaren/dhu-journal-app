@@ -1,0 +1,117 @@
+{
+  "references_rule": "参考文献检测：参考文献标题'参考文献'黑体3号居中，段前0.7厘米，段后0厘米，单倍行距；内容中文小四号宋体，英文Times New Roman，1.5倍行距；[标号]与作者间空一格，换行悬挂缩进。",
+  "structure_rules": {
+    "header_pattern": "^\\s*参\\s*考\\s*文\\s*献\\s*$",
+    "blank_lines_after_header": 2,
+    "start_after": "正文或最后一个章节结束后",
+    "end_before": "附录或致谢",
+    "min_references_count": 1,
+    "max_references_count": 200,
+    "number_pattern": "^\\s*\\[(\\d+)\\]\\s*"
+  },
+  "format_rules": {
+    "header": {
+      "font_size_pt": 16,
+      "font_name": "黑体",
+      "bold": true,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before_cm": 0.7,
+      "space_after_cm": 0,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    },
+    "content": {
+      "chinese_font": "宋体",
+      "english_font": "Times New Roman",
+      "font_size_pt": 12,
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.5,
+      "space_before": 0,
+      "space_after": 0,
+      "alignment": "left",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0,
+      "hanging_indent": 2
+    },
+    "number": {
+      "font_size_pt": 12,
+      "font_name": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "space_after_number": 1
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    },
+    "indent_mapping": {
+      "0": "无缩进",
+      "2": "缩进2字符",
+      "4": "缩进4字符",
+      "6": "缩进6字符",
+      "8": "缩进8字符"
+    }
+  },
+  "messages": {
+    "structure_header_ok": "参考文献标题格式正确",
+    "structure_header_error": "未找到参考文献标题，或标题格式不正确（应为'参考文献'）",
+    "structure_blank_after_ok": "标题与内容之间空行正确（空2行）",
+    "structure_blank_after_error": "参考文献标题与内容之间应空两行",
+    "structure_count_ok": "参考文献数量适中（{count}条）",
+    "structure_count_none": "未检测到参考文献",
+    "structure_number_ok": "参考文献序号格式正确（[1]格式）",
+    "structure_number_error": "参考文献序号格式错误，应使用[1]、[2]格式",
+    "structure_sequence_ok": "参考文献序号连续",
+    "structure_sequence_error": "参考文献序号不连续（{missing}缺失）",
+    
+    "format_header_ok": "参考文献标题格式检查通过",
+    "format_header_font_error": "参考文献标题字体应为黑体，实际为{actual}",
+    "format_header_size_error": "参考文献标题字号应为三号（16pt），实际为{actual}",
+    "format_header_bold_error": "参考文献标题应加粗",
+    "format_header_alignment_error": "参考文献标题应居中对齐，实际为{actual}",
+    "format_header_spacing_error": "参考文献标题段前应为0.7厘米，实际为{actual}厘米",
+    
+    "format_content_ok": "参考文献内容格式检查通过",
+    "format_content_chinese_font_error": "参考文献中文内容字体应为宋体，实际为{actual}",
+    "format_content_english_font_error": "参考文献英文内容字体应为Times New Roman，实际为{actual}",
+    "format_content_size_error": "参考文献字号应为小四（12pt），实际为{actual}",
+    "format_content_line_spacing_error": "参考文献行间距应为1.5倍，实际为{actual}倍",
+    "format_content_hanging_indent_error": "参考文献应使用悬挂缩进（2字符），实际首行缩进为{actual}字符",
+    "format_content_number_space_error": "[标号]与作者之间应空一格",
+    
+    "summary_overall": "参考文献检查结果: {ok}"
+  },
+  "notes": [
+    "参考文献检查重点：1) '参考文献'标题黑体3号居中 2) 段前0.7厘米，段后0厘米 3) 单倍行距 4) 与内容空两行",
+    "参考文献内容格式要求：1) 中文小四宋体，英文Times New Roman 2) 1.5倍行距 3) [标号]与作者间空一格 4) 悬挂缩进2字符",
+    "序号格式：使用[1]、[2]格式，按顺序连续编号"
+  ],
+  "generated_from": "用户提供的参考文献格式要求"
+}

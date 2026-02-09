@@ -877,6 +877,123 @@ def formula_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
     return issues
 
 
+def references_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
+    """参考文献检测结果适配器"""
+    issues: List[Issue] = []
+    
+    references_report = all_reports.get('References')
+    if not isinstance(references_report, dict):
+        logger.info("references_adapter: References report is not a dict or missing")
+        return issues
+    
+    logger.info(f"references_adapter: found References report")
+    
+    # 获取结构报告（包含段落索引信息）
+    structure_report = references_report.get('structure', {})
+    header_idx = structure_report.get('header_paragraph_index')
+    content_paragraphs = structure_report.get('content_paragraphs', [])
+    content_paragraph_indices = structure_report.get('content_paragraph_indices', [])
+    reference_numbers = structure_report.get('reference_numbers', [])
+    
+    # 获取格式报告
+    header_format = references_report.get('header_format', {})
+    content_format = references_report.get('content_format', {})
+    
+    # 1. 处理标题格式问题
+    if isinstance(header_format, dict) and header_format.get('ok') is False:
+        for msg in header_format.get('messages', []):
+            if header_idx is not None:
+                issues.append(Issue(
+                    module='References',
+                    section='标题格式',
+                    messages=[msg],
+                    locate_method='index',
+                    locate_data=header_idx
+                ))
+            else:
+                # 尝试通过关键词定位
+                issues.append(Issue(
+                    module='References',
+                    section='标题格式',
+                    messages=[msg],
+                    locate_method='keyword',
+                    locate_data='参考文献'
+                ))
+    
+    # 2. 处理内容格式问题（精确定位到具体条目）
+    if isinstance(content_format, dict) and content_format.get('ok') is False:
+        content_messages = content_format.get('messages', [])
+        
+        if content_messages and content_paragraph_indices:
+            import re
+            
+            # 用于记录已添加问题的段落索引，避免重复
+            processed_indices = set()
+            
+            for msg in content_messages:
+                # 匹配 "第X条" 来确定具体条目
+                match = re.search(r'第\s*(\d+)\s*条', msg)
+                if match:
+                    ref_idx = int(match.group(1)) - 1  # 转为0-based
+                    if 0 <= ref_idx < len(content_paragraph_indices):
+                        para_idx = content_paragraph_indices[ref_idx]
+                        
+                        # 避免同一段落重复添加问题
+                        if para_idx not in processed_indices:
+                            issues.append(Issue(
+                                module='References',
+                                section=f'第{ref_idx + 1}条参考文献',
+                                messages=[msg],
+                                locate_method='index',
+                                locate_data=para_idx
+                            ))
+                            processed_indices.add(para_idx)
+                        else:
+                            # 如果段落已添加过问题，只追加消息
+                            # 找到已存在的 issue 并追加消息
+                            for issue in issues:
+                                if issue.locate_data == para_idx:
+                                    issue.messages.append(msg)
+                                    break
+                    continue
+                
+                # 如果没有匹配到"第X条"，添加到标题
+                if header_idx is not None and header_idx not in processed_indices:
+                    issues.append(Issue(
+                        module='References',
+                        section='内容格式',
+                        messages=[msg],
+                        locate_method='index',
+                        locate_data=header_idx
+                    ))
+                    processed_indices.add(header_idx)
+    
+    # 3. 处理结构问题（序号连续性等）
+    structure_messages = structure_report.get('messages', [])
+    numbering_issues = [m for m in structure_messages if '序号' in m or '连续' in m]
+    
+    if numbering_issues:
+        if header_idx is not None:
+            issues.append(Issue(
+                module='References',
+                section='序号连续性',
+                messages=numbering_issues,
+                locate_method='index',
+                locate_data=header_idx
+            ))
+        else:
+            issues.append(Issue(
+                module='References',
+                section='序号连续性',
+                messages=numbering_issues,
+                locate_method='keyword',
+                locate_data='参考文献'
+            ))
+    
+    logger.info(f"references_adapter: total issues generated = {len(issues)}")
+    return issues
+
+
 # Orchestrator
 def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str, Any], output_dir: str) -> Optional[str]:
     """
@@ -895,6 +1012,7 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
         issues.extend(keywords_adapter(all_reports))
         issues.extend(table_adapter(all_reports))       # 添加表格适配器
         issues.extend(formula_adapter(all_reports))     # 添加公式适配器
+        issues.extend(references_adapter(all_reports)) # 添加参考文献适配器
 
         if not issues:
             logger.info("No issues from adapters -> nothing to annotate")

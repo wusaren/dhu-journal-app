@@ -51,6 +51,7 @@ class ChinesePaperFormatDetector:
             from services.Chinese_paper_detect import Table_detect
             from services.Chinese_paper_detect import TOC_detect
             from services.Chinese_paper_detect import Figure_detect
+            from services.Chinese_paper_detect import References_detect
             from services.paper_detect import Chinese_section_detect
             
             # 保存模块引用
@@ -64,6 +65,7 @@ class ChinesePaperFormatDetector:
                 'Figure': Figure_detect,
                 'Formula': Formula_detect,
                 'Table': Table_detect,
+                'References': References_detect,
                 'Chinese_section': Chinese_section_detect
             }
             
@@ -378,6 +380,38 @@ class ChinesePaperFormatDetector:
                 'summary': [f'表格检测失败: {e}']
             }
     
+    def detect_references(self, docx_path: str, skip_checks: List[str] = None, debug: bool = False) -> Dict[str, Any]:
+        """
+        检测参考文献格式
+        
+        Args:
+            docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
+            debug: 是否输出详细调试日志
+        
+        Returns:
+            检测结果字典
+        """
+        try:
+            template_path = str(self.templates_dir / 'References.json')
+            References_detect = self.modules['References']
+            
+            result = References_detect.check_references_with_template(
+                docx_path, 
+                template_path, 
+                skip_checks,
+                debug=debug
+            )
+            return result
+            
+        except Exception as e:
+            logger.error(f"参考文献检测失败: {e}", exc_info=True)
+            return {
+                'error': True,
+                'error_message': str(e),
+                'summary': [f'参考文献检测失败: {e}']
+            }
+    
     def detect_chinese_section(self, docx_path: str) -> Dict[str, Any]:
         """
         检测中文部分格式（中文标题、作者、单位、摘要和关键词）
@@ -419,7 +453,7 @@ class ChinesePaperFormatDetector:
             包含所有模块检测结果的字典
         """
         if modules is None:
-            modules = ['Title', 'Abstract','English_Abstract', 'Keywords', 'Content', 'TOC', 'Formula', 'Figure', 'Table']
+            modules = ['Title', 'Abstract','English_Abstract', 'Keywords', 'Content', 'TOC', 'Formula', 'Figure', 'Table', 'References']
         
         if skip_checks is None:
             skip_checks = {}
@@ -452,6 +486,8 @@ class ChinesePaperFormatDetector:
                     result = self.detect_formula(docx_path, module_skip_checks)
                 elif module_name == 'Table':
                     result = self.detect_table(docx_path, module_skip_checks)
+                elif module_name == 'References':
+                    result = self.detect_references(docx_path, module_skip_checks, debug=True)
                 elif module_name == 'Chinese_section':
                     # 中文部分检测不支持跳过项
                     result = self.detect_chinese_section(docx_path)

@@ -8,3 +8,6 @@ backend/venv/
 backend/uploads/format_check
 backend/logs
 backend/logs/app.log
+
+
+backend/instance/journal.db

@@ -50,6 +50,7 @@ class PaperFormatDetector:
             from services.paper_detect import Formula_detect
             from services.paper_detect import Table_detect
             from services.paper_detect import Chinese_section_detect
+            from services.Chinese_paper_detect import References_detect
             
             # 保存模块引用
             self.modules = {
@@ -60,7 +61,8 @@ class PaperFormatDetector:
                 'Figure': Figure_detect,
                 'Formula': Formula_detect,
                 'Table': Table_detect,
-                'Chinese_section': Chinese_section_detect
+                'Chinese_section': Chinese_section_detect,
+                'References': References_detect
             }
             
             logger.info("所有检测模块已加载")
@@ -303,6 +305,32 @@ class PaperFormatDetector:
                 'summary': [f'中文部分检测失败: {e}']
             }
     
+    def detect_references(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
+        """
+        检测参考文献格式
+        
+        Args:
+            docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
+        
+        Returns:
+            检测结果字典
+        """
+        try:
+            template_path = str(self.templates_dir / 'References.json')
+            References_detect = self.modules['References']
+            
+            result = References_detect.check_references_with_template(docx_path, template_path, skip_checks)
+            return result
+            
+        except Exception as e:
+            logger.error(f"参考文献检测失败: {e}", exc_info=True)
+            return {
+                'error': True,
+                'error_message': str(e),
+                'summary': [f'参考文献检测失败: {e}']
+            }
+    
     def detect_all(self, docx_path: str, modules: List[str] = None,
                    enable_figure_api: bool = False,
                    skip_checks: Dict[str, List[str]] = None) -> Dict[str, Any]:
@@ -351,6 +379,8 @@ class PaperFormatDetector:
                 elif module_name == 'Chinese_section':
                     # 中文部分检测不支持跳过项
                     result = self.detect_chinese_section(docx_path)
+                elif module_name == 'References':
+                    result = self.detect_references(docx_path, module_skip_checks)
                 else:
                     logger.warning(f"未知模块: {module_name}")
                     continue
