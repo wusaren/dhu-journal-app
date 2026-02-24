@@ -58,7 +58,24 @@ _skip_checks_config = []
    - 内容格式：中文小四宋体（12pt），英文Times New Roman，1.5倍行距
    - [标号]与作者之间空一格
    - 悬挂缩进2字符
+
+3. 【引用检测 (Citation Detection)】
+   - 检测正文中的上标引用（run.font.superscript）
+   - 对比参考文献序号，找出未被引用的文献
+   - 检测引用了不存在的序号
 """
+
+# 需要排除的章节标题关键词（用于正文范围界定）
+EXCLUDE_SECTIONS = [
+    '摘要', 'Abstract',           # 摘要
+    '关键词', 'Keywords',         # 关键词
+    '参考文献', 'Reference',      # 参考文献本身
+    '附录', 'Appendix',           # 附录
+    '致谢', 'Acknowledg',         # 致谢
+    '作者简历', 'Resume',         # 作者简历
+    'Bibliography',              # 参考文献（英文）
+    '参考文献', 'References',     # 参考文献
+]
 
 # ---------- 模板加载 ----------
 def resolve_template_path(identifier):
@@ -1076,6 +1093,444 @@ def check_reference_content_format(content_paragraphs, tpl):
     
     return report
 
+
+# ==================== 引用检测模块 ====================
+
+def extract_superscript_citations(paragraph, debug=False):
+    """
+    从段落中提取上标引用序号
+    
+    参数:
+        paragraph: 段落对象
+        debug: 是否输出调试日志
+    
+    返回:
+        list: 提取到的引用序号列表（去重）
+    """
+    citations = set()
+    
+    if debug:
+        para_text = paragraph.text.strip()[:60] if paragraph.text.strip() else "(空段落)"
+        logger.debug(f"\n--- 检查段落: {para_text}... ---")
+        logger.debug(f"    段落共有 {len(paragraph.runs)} 个 run")
+    
+    for run_idx, run in enumerate(paragraph.runs):
+        if debug:
+            # 输出 run 的详细信息
+            run_text = run.text if run.text else "(空)"
+            superscript = run.font.superscript
+            subscript = run.font.subscript
+            logger.debug(f"    Run[{run_idx}]: text='{run_text[:30]}...' | superscript={superscript}, subscript={subscript}")
+        
+        # 检查是否为上标
+        if run.font.superscript:
+            text = run.text.strip()
+            if not text:
+                continue
+            
+            if debug:
+                logger.debug(f"    ★ 检测到上标文本: '{text}'")
+            
+            # 解析上标内容
+            # 支持格式：
+            # - 纯数字: "1" -> 1
+            # - 带方括号: "[27]" -> 27, "[1-3]" -> 1,2,3, "[1,3,5]" -> 1,3,5
+            # - 范围: "1-3" -> 1,2,3
+            # - 列表: "1,3,5" -> 1,3,5
+            
+            # 先去除方括号
+            cleaned_text = text.strip('[]')
+            
+            # 处理带方括号的格式: [27], [1-3], [1,3,5]
+            if text.startswith('[') and text.endswith(']'):
+                # 处理范围: "1-3" -> 1,2,3
+                if '-' in cleaned_text and cleaned_text.replace('-', '').replace(',', '').isdigit():
+                    parts = cleaned_text.split('-')
+                    if len(parts) == 2:
+                        try:
+                            start = int(parts[0])
+                            end = int(parts[1])
+                            for i in range(start, end + 1):
+                                citations.add(i)
+                            if debug:
+                                logger.debug(f"    → 解析为带方括号范围: {text} -> {list(range(start, end + 1))}")
+                        except ValueError:
+                            pass
+                    # 处理列表: "1,3,5" -> 1,3,5
+                    elif ',' in cleaned_text:
+                        parts = cleaned_text.split(',')
+                        for part in parts:
+                            part = part.strip()
+                            if part.isdigit():
+                                citations.add(int(part))
+                        if debug:
+                            logger.debug(f"    → 解析为带方括号列表: {text} -> {list(citations)}")
+                        
+                # 处理列表: "1,3,5" -> 1,3,5
+                elif ',' in cleaned_text and cleaned_text.replace(',', '').isdigit():
+                    parts = cleaned_text.split(',')
+                    for part in parts:
+                        part = part.strip()
+                        if part.isdigit():
+                            citations.add(int(part))
+                    if debug:
+                        logger.debug(f"    → 解析为带方括号列表: {text} -> {list(citations)}")
+                        
+                # 处理单个数字: "27" -> 27
+                elif cleaned_text.isdigit():
+                    citations.add(int(cleaned_text))
+                    if debug:
+                        logger.debug(f"    → 解析为带方括号数字: {text} -> {cleaned_text}")
+                else:
+                    if debug:
+                        logger.debug(f"    → 无法解析的带方括号文本: '{text}'")
+            
+            # 处理不带方括号的格式（原有逻辑）
+            else:
+                # 处理范围: "1-3" -> 1,2,3
+                if '-' in text and text.replace('-', '').isdigit():
+                    parts = text.split('-')
+                    if len(parts) == 2:
+                        try:
+                            start = int(parts[0])
+                            end = int(parts[1])
+                            for i in range(start, end + 1):
+                                citations.add(i)
+                            if debug:
+                                logger.debug(f"    → 解析为范围: {text} -> {list(range(start, end + 1))}")
+                        except ValueError:
+                            pass
+                            
+                # 处理列表: "1,3,5" -> 1,3,5
+                elif ',' in text and text.replace(',', '').isdigit():
+                    parts = text.split(',')
+                    for part in parts:
+                        part = part.strip()
+                        if part.isdigit():
+                            citations.add(int(part))
+                    if debug:
+                        logger.debug(f"    → 解析为列表: {text} -> {list(citations)}")
+                        
+                # 处理单个数字: "1" -> 1
+                elif text.isdigit():
+                    citations.add(int(text))
+                    if debug:
+                        logger.debug(f"    → 解析为单个数字: {text}")
+                else:
+                    if debug:
+                        logger.debug(f"    → 无法解析的上标文本: '{text}'")
+    
+    if debug:
+        logger.debug(f"    本段落提取到的引用: {sorted(citations) if citations else '无'}")
+    
+    return list(citations)
+
+
+def find_body_range(doc, references_header_idx, debug=False):
+    """
+    查找正文范围：从文档开头到"参考文献"标题之前
+    
+    参数:
+        doc: Word文档对象
+        references_header_idx: 参考文献标题的段落索引（如果为None则自动查找）
+        debug: 是否输出调试日志
+    
+    返回:
+        tuple: (正文起始段落索引, 正文结束段落索引)
+    """
+    if debug:
+        logger.debug("\n" + "=" * 80)
+        logger.debug("【正文范围定位】")
+        logger.debug(f"文档共有 {len(doc.paragraphs)} 个段落")
+        logger.debug("=" * 80)
+    
+    # 如果没有提供参考文献标题索引，先查找
+    if references_header_idx is None:
+        # 查找参考文献标题
+        if debug:
+            logger.debug("未提供参考文献标题索引，开始自动查找...")
+        
+        for idx, para in enumerate(doc.paragraphs):
+            text = para.text.strip()
+            if re.match(r'^参\s*考\s*文\s*献\s*$', text):
+                references_header_idx = idx
+                if debug:
+                    logger.debug(f"✓ 找到参考文献标题在第 {idx} 段: '{text}'")
+                break
+        else:
+            if debug:
+                logger.debug("✗ 未找到参考文献标题")
+    
+    # 确定正文结束位置
+    end_idx = references_header_idx if references_header_idx is not None else len(doc.paragraphs)
+    
+    if debug:
+        logger.debug(f"\n正文结束位置: 第 {end_idx - 1} 段 (参考文献标题在第 {references_header_idx} 段)")
+    
+    # 确定正文起始位置
+    # 跳过摘要、关键词等前面的内容，从第一个章节标题开始
+    start_idx = 0
+    
+    # 常见的第一章标题模式
+    chapter_patterns = [
+        r'^第[一二三四五六七八九十百]+[章节篇部]\s*',  # 第一章、第二节等
+        r'^[1-9]\s*[\.、]\s*\S',                      # 1. xxx
+        r'^引言$',
+        r'^绪论$',
+        r'^Introduction$',
+    ]
+    
+    if debug:
+        logger.debug("\n开始查找正文起始位置...")
+        logger.debug(f"将排除的章节关键词: {EXCLUDE_SECTIONS}")
+        logger.debug("章节标题匹配模式:")
+        for p in chapter_patterns:
+            logger.debug(f"  - {p}")
+    
+    scanned = 0
+    for idx in range(len(doc.paragraphs)):
+        text = doc.paragraphs[idx].text.strip()
+        
+        # 跳过空段落
+        if not text:
+            continue
+        
+        scanned += 1
+        if debug and scanned <= 20:  # 只显示前20个检查的段落
+            # 检查是否在排除列表中
+            is_excluded = False
+            excluded_by = None
+            for keyword in EXCLUDE_SECTIONS:
+                if keyword in text:
+                    is_excluded = True
+                    excluded_by = keyword
+                    break
+            
+            if is_excluded:
+                logger.debug(f"  段落[{idx}] ✗ 跳过 (包含排除关键词 '{excluded_by}'): {text[:40]}...")
+            else:
+                # 检查是否匹配章节标题
+                matched = False
+                for pattern in chapter_patterns:
+                    if re.match(pattern, text):
+                        matched = True
+                        break
+                
+                if matched:
+                    logger.debug(f"  段落[{idx}] ✓ 识别为章节标题: {text[:40]}...")
+                else:
+                    logger.debug(f"  段落[{idx}] 继续检查: {text[:40]}...")
+        
+        # 跳过摘要、关键词
+        is_exclude = False
+        for keyword in EXCLUDE_SECTIONS:
+            if keyword in text:
+                is_exclude = True
+                break
+        
+        if is_exclude:
+            continue
+        
+        # 检查是否为章节标题
+        for pattern in chapter_patterns:
+            if re.match(pattern, text):
+                start_idx = idx
+                if debug:
+                    logger.debug(f"\n✓ 正文从第 {idx} 段开始: '{text[:50]}...'")
+                break
+        
+        if start_idx > 0:
+            break
+    else:
+        if debug:
+            logger.debug(f"\n未找到匹配的章节标题，正文从第 0 段开始")
+            logger.debug(f"已扫描 {scanned} 个非空段落")
+    
+    if debug:
+        logger.debug(f"\n最终确定正文范围: 第 {start_idx} 段 到 第 {end_idx - 1} 段")
+        logger.debug(f"正文共包含 {end_idx - start_idx} 个段落")
+    
+    return start_idx, end_idx
+
+
+def check_citations(doc, reference_numbers, references_header_idx=None, content_paragraphs=None, debug=False):
+    """
+    检测引用情况：检查参考文献是否被正文引用
+    
+    参数:
+        doc: Word文档对象
+        reference_numbers: 参考文献序号列表（从结构检测获取）
+        references_header_idx: 参考文献标题段落索引（用于确定正文范围）
+        content_paragraphs: 参考文献内容段落列表（用于显示具体内容）
+        debug: 是否输出调试日志
+    
+    返回:
+        dict: 引用检测报告
+    """
+    report = {
+        'ok': True,
+        'messages': [],
+        'total_citations': 0,        # 正文总共引用的次数
+        'total_references': 0,       # 参考文献总条数
+        'unreferenced': [],          # 未被引用的文献序号
+        'unreferenced_details': [],  # 未被引用的文献详情（包含序号和内容）
+        'invalid_citations': [],     # 引用了不存在的序号
+        'cited_count': 0,            # 被引用的文献数量
+    }
+    
+    # 内容段落列表，用于显示未被引用文献的具体内容
+    if content_paragraphs is None:
+        content_paragraphs = []
+    
+    if debug:
+        logger.debug("\n" + "=" * 80)
+        logger.debug("【引用检测】开始分析...")
+        logger.debug("=" * 80)
+    
+    # 1. 获取正文范围
+    body_start, body_end = find_body_range(doc, references_header_idx, debug=debug)
+    
+    if debug:
+        logger.debug(f"正文范围: 第 {body_start} 段 到 第 {body_end - 1} 段")
+    
+    # 2. 提取正文中的所有上标引用
+    all_citations = set()
+    
+    if debug:
+        logger.debug("\n--- 提取正文中的上标引用 ---")
+    
+    for idx in range(body_start, body_end):
+        para = doc.paragraphs[idx]
+        text = para.text.strip()
+        
+        if not text:
+            continue
+        
+        # 检查段落中是否有上标引用
+        para_citations = extract_superscript_citations(para, debug=debug)
+        
+        if para_citations:
+            all_citations.update(para_citations)
+            if debug:
+                logger.debug(f"  段落 {idx}: 检测到上标引用 {para_citations}, 内容: {text[:40]}...")
+    
+    report['total_citations'] = len(all_citations)
+    
+    if debug:
+        logger.debug(f"\n正文中共检测到 {len(all_citations)} 个上标引用")
+        logger.debug(f"引用的序号: {sorted(all_citations)}")
+    
+    # 3. 获取参考文献序号列表（排除自动编号-1）
+    # 如果全是自动编号（-1），则生成虚拟序号 1,2,3... 用于比对
+    auto_count = sum(1 for num in reference_numbers if num == -1 or num is None)
+    if auto_count > 0 and all(num == -1 or num is None for num in reference_numbers):
+        # 全是自动编号，生成虚拟序号
+        valid_ref_numbers = list(range(1, len(reference_numbers) + 1))
+        if debug:
+            logger.debug(f"参考文献全部为自动编号，生成虚拟序号: {valid_ref_numbers}")
+    else:
+        # 过滤掉 None 和 -1（自动编号），只保留有实际数字的序号
+        valid_ref_numbers = [num for num in reference_numbers if num and num > 0]
+    
+    report['total_references'] = len(valid_ref_numbers)
+    
+    if debug:
+        logger.debug(f"\n参考文献共 {len(valid_ref_numbers)} 条")
+        logger.debug(f"参考文献序号: {valid_ref_numbers}")
+    
+    # 4. 比对分析
+    
+    # 找出未被引用的文献
+    if valid_ref_numbers:
+        ref_set = set(valid_ref_numbers)
+        unreferenced = ref_set - all_citations
+        report['unreferenced'] = sorted(unreferenced)
+        
+        # 构建序号到内容的映射（只对自动编号有效）
+        # 如果是自动编号，序号是虚拟的 1,2,3...，内容对应 content_paragraphs 的顺序
+        is_auto_numbered = (len(reference_numbers) > 0 and all(num == -1 or num is None for num in reference_numbers))
+        
+        # 记录未被引用文献的详情
+        for idx, ref_num in enumerate(valid_ref_numbers):
+            if ref_num in unreferenced:
+                # 获取文献内容
+                if is_auto_numbered:
+                    # 自动编号：序号是虚拟的，内容按索引获取
+                    ref_idx = ref_num - 1  # 虚拟序号从1开始
+                else:
+                    # 手动编号：需要找到对应实际序号的位置
+                    try:
+                        ref_idx = reference_numbers.index(ref_num)
+                    except ValueError:
+                        ref_idx = None
+                
+                if ref_idx is not None and ref_idx < len(content_paragraphs):
+                    content = content_paragraphs[ref_idx].text.strip()[:80]  # 截取前80字符
+                else:
+                    content = "(无法获取内容)"
+                
+                report['unreferenced_details'].append({
+                    'number': ref_num,
+                    'content': content
+                })
+        
+        if debug:
+            if unreferenced:
+                logger.debug(f"\n未被引用的文献: {report['unreferenced']}")
+                for detail in report['unreferenced_details']:
+                    logger.debug(f"  [{detail['number']}] {detail['content']}...")
+            else:
+                logger.debug("\n所有文献都被引用了")
+    
+    # 找出引用了不存在的序号
+    if all_citations and valid_ref_numbers:
+        ref_set = set(valid_ref_numbers)
+        invalid_refs = all_citations - ref_set
+        report['invalid_citations'] = sorted(invalid_refs)
+        
+        if debug:
+            if invalid_refs:
+                logger.debug(f"引用了不存在的序号: {report['invalid_citations']}")
+            else:
+                logger.debug("没有引用不存在的序号")
+    
+    # 5. 生成报告消息
+    if report['unreferenced']:
+        report['ok'] = False
+        if len(report['unreferenced']) <= 10:
+            # 构建详细消息，包含序号和内容
+            details = []
+            for detail in report['unreferenced_details']:
+                details.append(f"[{detail['number']}] {detail['content']}...")
+            msg = f"检测到 {len(report['unreferenced'])} 条文献未被正文引用:\n" + "\n".join(f"  {d}" for d in details)
+        else:
+            msg = f"检测到 {len(report['unreferenced'])} 条文献未被正文引用"
+        report['messages'].append(msg)
+    
+    if report['invalid_citations']:
+        report['ok'] = False
+        if len(report['invalid_citations']) <= 10:
+            msg = f"正文引用了 {len(report['invalid_citations'])} 个不存在的序号: {report['invalid_citations']}"
+        else:
+            msg = f"正文引用了 {len(report['invalid_citations'])} 个不存在的序号"
+        report['messages'].append(msg)
+    
+    if not report['unreferenced'] and not report['invalid_citations']:
+        if report['total_citations'] > 0:
+            report['messages'].append(f"引用检测通过，共引用 {report['total_citations']} 次")
+        else:
+            report['ok'] = False
+            report['messages'].append("未在正文中检测到任何引用")
+    
+    if debug:
+        logger.debug("\n--- 引用检测结果 ---")
+        logger.debug(f"状态: {'通过' if report['ok'] else '失败'}")
+        for msg in report['messages']:
+            logger.debug(f"  - {msg}")
+    
+    return report
+
+
 # ---------- 主检测函数 ----------
 def check_references_with_template(doc_path, template_identifier, skip_checks=None, debug=False):
     """
@@ -1098,6 +1553,7 @@ def check_references_with_template(doc_path, template_identifier, skip_checks=No
     
     header_format_report = {'ok': True, 'messages': []}
     content_format_report = {'ok': True, 'messages': []}
+    citation_report = {'ok': True, 'messages': []}  # 引用检测报告
     
     if structure_report.get('header_paragraph'):
         header_format_report = check_reference_header_format(structure_report['header_paragraph'], tpl)
@@ -1105,16 +1561,39 @@ def check_references_with_template(doc_path, template_identifier, skip_checks=No
     if structure_report.get('content_paragraphs'):
         content_format_report = check_reference_content_format(structure_report['content_paragraphs'], tpl)
     
+    # 引用检测
+    if structure_report.get('header_paragraph') is not None:
+        # 获取参考文献标题的索引
+        ref_header_idx = None
+        for idx, para in enumerate(doc.paragraphs):
+            if para == structure_report.get('header_paragraph'):
+                ref_header_idx = idx
+                break
+        
+        # 获取参考文献序号列表和内容段落
+        reference_numbers = structure_report.get('reference_numbers', [])
+        content_paragraphs = structure_report.get('content_paragraphs', [])
+        
+        # 执行引用检测
+        citation_report = check_citations(
+            doc, 
+            reference_numbers, 
+            references_header_idx=ref_header_idx,
+            content_paragraphs=content_paragraphs,
+            debug=debug
+        )
+    
     # 组装报告
     report = {
         'structure': structure_report,
         'header_format': header_format_report,
         'content_format': content_format_report,
+        'citation': citation_report,  # 添加引用检测结果
         'summary': []
     }
     
     # 生成总结
-    all_ok = (structure_report['ok'] and header_format_report['ok'] and content_format_report['ok'])
+    all_ok = (structure_report['ok'] and header_format_report['ok'] and content_format_report['ok'] and citation_report['ok'])
     summary_tpl = tpl.get('messages', {}).get('summary_overall')
     if summary_tpl:
         try:
@@ -1132,7 +1611,8 @@ def print_references_report(report):
     sections = [
         ('structure', '结构检测'),
         ('header_format', '标题格式'),
-        ('content_format', '内容格式')
+        ('content_format', '内容格式'),
+        ('citation', '引用检测')
     ]
     
     for sec_key, sec_name in sections:
@@ -1141,6 +1621,17 @@ def print_references_report(report):
         print(" 状态:", "✓ 通过" if info.get('ok', False) else "✗ 失败")
         for m in info.get('messages', []):
             print("  -", m)
+        
+        # 额外显示引用检测的详细统计信息
+        if sec_key == 'citation':
+            if info.get('total_citations'):
+                print(f"  总引用次数: {info.get('total_citations')}")
+            if info.get('total_references'):
+                print(f"  参考文献总数: {info.get('total_references')}")
+            if info.get('unreferenced'):
+                print(f"  未被引用的文献: {info.get('unreferenced')}")
+            if info.get('invalid_citations'):
+                print(f"  无效引用: {info.get('invalid_citations')}")
     
     print("--- 总结 ---")
     for s in report.get('summary', []):

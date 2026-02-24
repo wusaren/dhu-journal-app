@@ -46,6 +46,11 @@
       "space_after_number": 1
     }
   },
+  "citation_rules": {
+    "enabled": true,
+    "detect_superscript": true,
+    "exclude_sections": ["摘要", "关键词", "参考文献", "附录", "致谢", "作者简历"]
+  },
   "check_rules": {
     "font_size_mapping": {
       "9": "小五",
@@ -106,12 +111,18 @@
     "format_content_hanging_indent_error": "参考文献应使用悬挂缩进（2字符），实际首行缩进为{actual}字符",
     "format_content_number_space_error": "[标号]与作者之间应空一格",
     
+    "citation_ok": "引用检测通过",
+    "citation_unreferenced": "检测到 {count} 条文献未被正文引用: {list}",
+    "citation_invalid": "正文引用了 {count} 个不存在的序号: {list}",
+    "citation_none": "未在正文中检测到任何引用",
+    
     "summary_overall": "参考文献检查结果: {ok}"
   },
   "notes": [
     "参考文献检查重点：1) '参考文献'标题黑体3号居中 2) 段前0.7厘米，段后0厘米 3) 单倍行距 4) 与内容空两行",
     "参考文献内容格式要求：1) 中文小四宋体，英文Times New Roman 2) 1.5倍行距 3) [标号]与作者间空一格 4) 悬挂缩进2字符",
-    "序号格式：使用[1]、[2]格式，按顺序连续编号"
+    "序号格式：使用[1]、[2]格式，按顺序连续编号",
+    "引用检测：检查正文中的上标引用，识别未被引用的文献"
   ],
   "generated_from": "用户提供的参考文献格式要求"
 }
