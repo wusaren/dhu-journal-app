@@ -7,7 +7,7 @@
       "english_font": "Times New Roman",
       "bold": true,
       "italic": false,
-      "alignment": "center",
+      "alignment": "justify",
       "space_before": 1,
       "space_after": 1
     },
@@ -17,7 +17,7 @@
       "english_font": "Times New Roman",
       "bold": false,
       "italic": false,
-      "alignment": "center"
+      "alignment": "justify"
     },
     "affiliation": {
       "font_size_pt": 10.5,
@@ -25,7 +25,7 @@
       "english_font": "Times New Roman",
       "bold": false,
       "italic": false,
-      "alignment": "center"
+      "alignment": "justify"
     },
     "abstract": {
       "font_size_pt": 10.5,

@@ -98,22 +98,26 @@ def detect_font_for_run(run, paragraph=None):
     except Exception:
         pass
     
-    # 3. 加粗检测
+    # 3. 加粗检测 - 优先直接格式，直接格式为None时使用样式格式
     is_bold = False
     try:
-        if getattr(run.font, 'bold', None) is not None:
+        if run and run.font and run.font.bold is not None:
             is_bold = bool(run.font.bold)
+        elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+            is_bold = bool(paragraph.style.font.bold)
         elif hasattr(run._element, 'rPr') and run._element.rPr is not None:
             b = run._element.rPr.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}b')
             is_bold = b is not None
     except Exception:
         pass
     
-    # 4. 斜体检测
+    # 4. 斜体检测 - 优先直接格式，直接格式为None时使用样式格式
     is_italic = False
     try:
-        if getattr(run.font, 'italic', None) is not None:
+        if run and run.font and run.font.italic is not None:
             is_italic = bool(run.font.italic)
+        elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+            is_italic = bool(paragraph.style.font.italic)
         elif hasattr(run._element, 'rPr') and run._element.rPr is not None:
             i = run._element.rPr.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}i')
             is_italic = i is not None
@@ -257,36 +261,55 @@ def detect_paragraph_indent(paragraph):
 def check_abstract_structure(text, tpl):
     """
     检查摘要结构（Abstract:冒号格式）
-    返回 {'ok': bool, 'messages': [], 'content': str}
+    返回 {'ok': bool, 'errors': [], 'content': str}
     """
-    report = {'ok': True, 'messages': [], 'content': ''}
+    report = {'ok': True, 'errors': [], 'content': ''}
     
     # 检查Abstract:格式
     structure_rules = tpl.get('structure_rules', {})
     header_pattern = structure_rules.get('header_pattern', r'^\\s*Abstract\\s*:\\s*(.+)$')
     
+    # 提取文本片段
+    text_snippet = text.strip()[:150]
+    if len(text.strip()) > 150:
+        text_snippet += '...'
+    
     try:
         match = re.match(header_pattern, text.strip(), re.DOTALL | re.IGNORECASE)
         if match:
             report['content'] = match.group(1).strip()
-            ok_msg = tpl.get('messages', {}).get('structure_header_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg)
+            # 格式正确，不添加错误
         elif re.match(r'^\s*Abstract\s*$', text.strip(), re.IGNORECASE):
             # 检测到错误格式：Abstract单独成行
             report['ok'] = False
-            report['messages'].append("摘要格式错误：'Abstract'后应紧跟冒号和内容")
-            report['messages'].append("正确格式：'Abstract: 摘要内容...'")
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': "摘要格式错误：'Abstract'后应紧跟冒号和内容",
+                'suggestion': "建议：使用正确格式 'Abstract: 摘要内容...'",
+                'text_snippet': text_snippet
+            })
             # 将文本作为内容（用于后续长度检查，即使格式错误）
             report['content'] = text.strip()
         else:
             report['ok'] = False
-            error_msg = tpl.get('messages', {}).get('structure_header_error')
-            if error_msg:
-                report['messages'].append(error_msg)
-    except Exception:
+            error_msg = tpl.get('messages', {}).get('structure_header_error', '未找到Abstract标题或格式不正确')
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': error_msg,
+                'suggestion': "建议：确保摘要以'Abstract: '开头",
+                'text_snippet': text_snippet
+            })
+    except Exception as e:
         report['ok'] = False
-        report['messages'].append("摘要格式检查出错")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': f"摘要格式检查出错: {str(e)}",
+            'suggestion': "建议：检查摘要格式是否符合规范",
+            'text_snippet': text_snippet
+        })
     
     # 检查内容长度
     if report['content']:
@@ -296,89 +319,129 @@ def check_abstract_structure(text, tpl):
         
         if content_length < min_length:
             report['ok'] = False
-            msg_tpl = tpl.get('messages', {}).get('structure_length_short')
-            if msg_tpl:
-                try:
-                    report['messages'].append(msg_tpl.format(min=min_length))
-                except:
-                    report['messages'].append(msg_tpl)
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"摘要内容过短：当前{content_length}字符，最少需要{min_length}字符",
+                'suggestion': f"建议：补充摘要内容至至少{min_length}字符",
+                'text_snippet': report['content'][:150] + ('...' if len(report['content']) > 150 else '')
+            })
         elif content_length > max_length:
             report['ok'] = False
-            msg_tpl = tpl.get('messages', {}).get('structure_length_long')
-            if msg_tpl:
-                try:
-                    report['messages'].append(msg_tpl.format(max=max_length))
-                except:
-                    report['messages'].append(msg_tpl)
-        else:
-            ok_msg = tpl.get('messages', {}).get('structure_length_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg)
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"摘要内容过长：当前{content_length}字符，最多允许{max_length}字符",
+                'suggestion': f"建议：精简摘要内容至{max_length}字符以内",
+                'text_snippet': report['content'][:150] + ('...' if len(report['content']) > 150 else '')
+            })
     
     return report
 
 def check_abstract_paragraphs(doc, tpl):
     """
     检查摘要是否分段
-    返回 {'ok': bool, 'messages': [], 'abstract_paragraph': paragraph}
+    返回 {'ok': bool, 'errors': [], 'abstract_paragraph': paragraph, 'para_index': int}
     """
-    report = {'ok': True, 'messages': [], 'abstract_paragraph': None}
+    report = {'ok': True, 'errors': [], 'abstract_paragraph': None, 'para_index': None}
     
     # 方案1：查找包含Abstract:的段落（正确格式）
     abstract_with_colon = []
-    for paragraph in doc.paragraphs:
+    abstract_indices = []
+    for i, paragraph in enumerate(doc.paragraphs):
         if paragraph.text and re.search(r'\bAbstract\s*:', paragraph.text, re.IGNORECASE):
             abstract_with_colon.append(paragraph)
+            abstract_indices.append(i)  # python索引（从0开始）
     
     # 方案2：查找单独的Abstract段落（错误格式）
     abstract_alone = None
+    abstract_alone_index = None
     next_paragraph = None
+    next_para_index = None
     for i, paragraph in enumerate(doc.paragraphs):
         if paragraph.text and re.match(r'^\s*Abstract\s*$', paragraph.text.strip(), re.IGNORECASE):
             abstract_alone = paragraph
+            abstract_alone_index = i  # python索引（从0开始）
             # 查找下一个非空段落作为摘要内容
             for j in range(i+1, min(i+3, len(doc.paragraphs))):
                 if doc.paragraphs[j].text and doc.paragraphs[j].text.strip():
                     next_paragraph = doc.paragraphs[j]
+                    next_para_index = j  # python索引（从0开始）
                     break
             break
     
     if len(abstract_with_colon) == 1:
         # 找到正确格式
         report['abstract_paragraph'] = abstract_with_colon[0]
-        ok_msg = tpl.get('messages', {}).get('structure_no_paragraph_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        report['para_index'] = abstract_indices[0]
+        # 格式正确，不添加错误
     elif abstract_alone:
         # 找到错误格式（Abstract单独一行）
         report['ok'] = False
         report['abstract_paragraph'] = next_paragraph  # 返回内容段落用于后续格式检查
-        report['messages'].append("摘要格式错误：'Abstract'应与内容在同一段落，格式为'Abstract: 内容'")
-        report['messages'].append("当前错误格式：'Abstract'单独成行，内容另起一段")
+        report['para_index'] = next_para_index
+        
+        text_snippet = 'N/A'
         if next_paragraph:
-            content_preview = next_paragraph.text[:50] + "..." if len(next_paragraph.text) > 50 else next_paragraph.text
-            report['messages'].append(f"检测到摘要内容段落：'{content_preview}'")
+            text_snippet = next_paragraph.text[:150]
+            if len(next_paragraph.text) > 150:
+                text_snippet += '...'
+        
+        report['errors'].append({
+            'type': 'error',
+            'page_number': f"段落{abstract_alone_index}",
+            'description': "摘要格式错误：'Abstract'应与内容在同一段落，格式为'Abstract: 内容'",
+            'suggestion': "建议：将'Abstract'标题与摘要内容合并到同一段落，使用'Abstract: 内容'格式",
+            'text_snippet': text_snippet
+        })
     elif len(abstract_with_colon) > 1:
         report['ok'] = False
-        error_msg = tpl.get('messages', {}).get('structure_paragraph_error')
-        if error_msg:
-            report['messages'].append(error_msg)
+        error_msg = tpl.get('messages', {}).get('structure_paragraph_error', '摘要分段错误：摘要应为单一段落')
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': error_msg,
+            'suggestion': "建议：将摘要合并为单一段落",
+            'text_snippet': 'N/A'
+        })
     else:
         report['ok'] = False
-        report['messages'].append("未找到Abstract段落")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': "未找到Abstract段落",
+            'suggestion': "建议：添加Abstract段落，格式为'Abstract: 摘要内容'",
+            'text_snippet': 'N/A'
+        })
     
     return report
 
-def check_abstract_format(paragraph, tpl):
+def check_abstract_format(paragraph, tpl, para_index=None):
     """
     检查摘要格式（字体、加粗、行间距等）
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
+    
+    # 提取文本片段
+    text_snippet = 'N/A'
+    if paragraph and paragraph.text:
+        text_snippet = paragraph.text.strip()[:150]
+        if len(paragraph.text.strip()) > 150:
+            text_snippet += '...'
+    
+    # 页码信息
+    page_number = f"段落{para_index}" if para_index is not None else 'N/A'
     
     if not paragraph or not paragraph.runs:
         report['ok'] = False
-        report['messages'].append("摘要段落没有文本内容")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': page_number,
+            'description': "摘要段落没有文本内容",
+            'suggestion': "建议：确保摘要段落包含有效文本",
+            'text_snippet': text_snippet
+        })
         return report
     
     # 取第一个非空 run
@@ -390,7 +453,13 @@ def check_abstract_format(paragraph, tpl):
     
     if not main_run:
         report['ok'] = False
-        report['messages'].append("摘要段落没有有效文本")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': page_number,
+            'description': "摘要段落没有有效文本",
+            'suggestion': "建议：确保摘要段落包含有效文本",
+            'text_snippet': text_snippet
+        })
         return report
     
     # 获取格式规则
@@ -399,8 +468,6 @@ def check_abstract_format(paragraph, tpl):
     # 检测实际格式
     actual_size_pt, actual_font_name, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
     
-    issues = []
-    
     # 字体大小检查
     if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
         expected_size_pt = float(format_rules['font_size_pt'])
@@ -408,14 +475,28 @@ def check_abstract_format(paragraph, tpl):
         expected_size_name = get_font_size(expected_size_pt, tpl)
         print(f"字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_size_pt}pt）)")
         if abs(actual_size_pt - expected_size_pt) > 0.5:
-            issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）",
+                'suggestion': f"建议：调整字体大小为{expected_size_name}（{expected_size_pt}pt）",
+                'text_snippet': text_snippet
+            })
     
     # 字体名称检查
     if not should_skip_check('font_name') and 'font_name' in format_rules:
         expected_font_name = str(format_rules['font_name'])
         print(f"字体名称: {actual_font_name} (期望: {expected_font_name})")
         if expected_font_name.lower() not in actual_font_name.lower():
-            issues.append(f"字体应为{expected_font_name}，实际为{actual_font_name}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体应为{expected_font_name}，实际为{actual_font_name}",
+                'suggestion': f"建议：将字体设置为{expected_font_name}",
+                'text_snippet': text_snippet
+            })
     
     # 加粗检查
     if not should_skip_check('bold') and 'bold' in format_rules:
@@ -424,7 +505,14 @@ def check_abstract_format(paragraph, tpl):
         if actual_bold != expected_bold:
             bold_status = "加粗" if expected_bold else "不加粗"
             actual_status = "加粗" if actual_bold else "不加粗"
-            issues.append(f"字体应为{bold_status}，实际为{actual_status}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体应为{bold_status}，实际为{actual_status}",
+                'suggestion': f"建议：将字体设置为{bold_status}",
+                'text_snippet': text_snippet
+            })
     
     # 斜体检查
     if not should_skip_check('italic') and 'italic' in format_rules:
@@ -433,7 +521,14 @@ def check_abstract_format(paragraph, tpl):
         if actual_italic != expected_italic:
             italic_status = "斜体" if expected_italic else "正体"
             actual_status = "斜体" if actual_italic else "正体"
-            issues.append(f"字体应为{italic_status}，实际为{actual_status}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体应为{italic_status}，实际为{actual_status}",
+                'suggestion': f"建议：将字体设置为{italic_status}",
+                'text_snippet': text_snippet
+            })
     
     # 行间距检查
     if not should_skip_check('spacing') and 'line_spacing' in format_rules:
@@ -442,7 +537,14 @@ def check_abstract_format(paragraph, tpl):
         expected_spacing_name = get_line_spacing_name(expected_line_spacing, tpl)
         print(f"行间距: {actual_spacing_name}（{actual_line_spacing}倍）(期望: {expected_spacing_name}（{expected_line_spacing}倍）)")
         if abs(actual_line_spacing - expected_line_spacing) > 0.1:
-            issues.append(f"行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）",
+                'suggestion': f"建议：调整行间距为{expected_spacing_name}（{expected_line_spacing}倍）",
+                'text_snippet': text_snippet
+            })
     
     # 段落对齐检查
     if 'alignment' in format_rules:
@@ -455,7 +557,14 @@ def check_abstract_format(paragraph, tpl):
         expected_alignment_name = get_alignment_name(expected_alignment, tpl)
         print(f"段落对齐: {actual_alignment_name} (期望: {expected_alignment_name})")
         if actual_alignment != expected_alignment:
-            issues.append(f"段落应为{expected_alignment_name}，实际为{actual_alignment_name}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"段落应为{expected_alignment_name}，实际为{actual_alignment_name}",
+                'suggestion': f"建议：将对齐方式设置为{expected_alignment_name}",
+                'text_snippet': text_snippet
+            })
     
     # 段落缩进检查
     if 'first_line_indent' in format_rules or 'left_indent' in format_rules or 'right_indent' in format_rules:
@@ -465,35 +574,46 @@ def check_abstract_format(paragraph, tpl):
             expected_first_indent = float(format_rules['first_line_indent'])
             print(f"首行缩进: {first_line_indent:.1f}pt (期望: {expected_first_indent}pt)")
             if abs(first_line_indent - expected_first_indent) > 1.0:  # 1pt容差
-                issues.append(f"首行缩进应为{expected_first_indent}pt，实际为{first_line_indent:.1f}pt")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': page_number,
+                    'description': f"首行缩进应为{expected_first_indent}pt，实际为{first_line_indent:.1f}pt",
+                    'suggestion': f"建议：调整首行缩进为{expected_first_indent}pt",
+                    'text_snippet': text_snippet
+                })
         
         if 'left_indent' in format_rules:
             expected_left_indent = float(format_rules['left_indent'])
             print(f"左缩进: {left_indent:.1f}pt (期望: {expected_left_indent}pt)")
             if abs(left_indent - expected_left_indent) > 1.0:
-                issues.append(f"左缩进应为{expected_left_indent}pt，实际为{left_indent:.1f}pt")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': page_number,
+                    'description': f"左缩进应为{expected_left_indent}pt，实际为{left_indent:.1f}pt",
+                    'suggestion': f"建议：调整左缩进为{expected_left_indent}pt",
+                    'text_snippet': text_snippet
+                })
         
         if 'right_indent' in format_rules:
             expected_right_indent = float(format_rules['right_indent'])
             print(f"右缩进: {right_indent:.1f}pt (期望: {expected_right_indent}pt)")
             if abs(right_indent - expected_right_indent) > 1.0:
-                issues.append(f"右缩进应为{expected_right_indent}pt，实际为{right_indent:.1f}pt")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': page_number,
+                    'description': f"右缩进应为{expected_right_indent}pt，实际为{right_indent:.1f}pt",
+                    'suggestion': f"建议：调整右缩进为{expected_right_indent}pt",
+                    'text_snippet': text_snippet
+                })
     
-    print(f"发现 {len(issues)} 个格式问题")
+    print(f"发现 {len(report['errors'])} 个格式问题")
     print("---")
     
-    if issues:
-        report['ok'] = False
-        header = tpl.get('messages', {}).get('format_abstract_issue_header')
-        if header:
-            report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
-    else:
-        ok_msg = tpl.get('messages', {}).get('format_abstract_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
-    
     return report
+
 
 def check_abstract_with_template(doc_path, template_identifier, skip_checks=None):
     """
@@ -502,6 +622,7 @@ def check_abstract_with_template(doc_path, template_identifier, skip_checks=None
         doc_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
+    返回包含所有errors的报告
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -542,36 +663,42 @@ def check_abstract_with_template(doc_path, template_identifier, skip_checks=None
     # 如果完全找不到Abstract
     if not abstract_text and not paragraphs_report.get('abstract_paragraph'):
         return {
-            'structure': {'ok': False, 'messages': ['未找到Abstract段落']},
-            'paragraphs': {'ok': False, 'messages': ['未找到Abstract段落']},
-            'format': {'ok': False, 'messages': ['未找到Abstract段落']},
-            'summary': ['摘要检查失败：未找到Abstract段落']
+            'ok': False,
+            'errors': [{
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': '未找到Abstract段落',
+                'suggestion': "建议：添加Abstract段落，格式为'Abstract: 摘要内容'",
+                'text_snippet': 'N/A'
+            }],
+            'structure': {'ok': False, 'errors': []},
+            'paragraphs': {'ok': False, 'errors': []},
+            'format': {'ok': False, 'errors': []}
         }
     
     # 执行各项检查
-    structure_report = check_abstract_structure(abstract_text, tpl) if abstract_text else {'ok': False, 'messages': ['无法检查摘要结构']}
+    structure_report = check_abstract_structure(abstract_text, tpl) if abstract_text else {'ok': False, 'errors': []}
     
     if paragraphs_report['abstract_paragraph']:
-        format_report = check_abstract_format(paragraphs_report['abstract_paragraph'], tpl)
+        para_index = paragraphs_report.get('para_index')
+        format_report = check_abstract_format(paragraphs_report['abstract_paragraph'], tpl, para_index)
     else:
-        format_report = {'ok': False, 'messages': ['无法检测摘要格式']}
+        format_report = {'ok': False, 'errors': []}
     
-    # 组装报告
+    # 合并所有errors
+    all_errors = []
+    all_errors.extend(structure_report.get('errors', []))
+    all_errors.extend(paragraphs_report.get('errors', []))
+    all_errors.extend(format_report.get('errors', []))
+    
+    # 组装最终报告
     report = {
+        'ok': (structure_report['ok'] and paragraphs_report['ok'] and format_report['ok']),
+        'errors': all_errors,  # 统一的errors数组
         'structure': structure_report,
         'paragraphs': paragraphs_report,
-        'format': format_report,
-        'summary': []
+        'format': format_report
     }
-    
-    # 生成总结
-    all_ok = (structure_report['ok'] and paragraphs_report['ok'] and format_report['ok'])
-    summary_tpl = tpl.get('messages', {}).get('summary_overall')
-    if summary_tpl:
-        try:
-            report['summary'].append(summary_tpl.format(ok=all_ok))
-        except Exception:
-            report['summary'].append(str(summary_tpl))
     
     return report
 
@@ -580,22 +707,37 @@ def print_abstract_report(report):
     """打印摘要检查报告"""
     print("=== Abstract Check Report ===")
     
+    # 打印总体状态
+    print("--- OVERALL ---")
+    print(" OK:", report.get('ok', False))
+    
+    # 打印所有错误
+    if 'errors' in report and report['errors']:
+        print("--- ERRORS ---")
+        for error in report['errors']:
+            print(f"  [{error.get('type', 'unknown').upper()}] {error.get('page_number', 'N/A')}")
+            print(f"    描述: {error.get('description', '')}")
+            print(f"    建议: {error.get('suggestion', '')}")
+            if error.get('text_snippet') and error.get('text_snippet') != 'N/A':
+                print(f"    片段: {error.get('text_snippet', '')[:100]}...")
+    else:
+        print("--- NO ERRORS ---")
+        print("  摘要检查通过")
+    
+    # 打印详细的子检查状态（可选）
     sections = [
         ('structure', 'STRUCTURE'),
         ('paragraphs', 'PARAGRAPHS'), 
         ('format', 'FORMAT')
     ]
     
+    print("\n--- DETAILED CHECKS ---")
     for sec_key, sec_name in sections:
-        info = report[sec_key]
-        print(f"--- {sec_name} ---")
-        print(" OK:", info['ok'])
-        for m in info['messages']:
-            print("  -", m)
-    
-    print("--- SUMMARY ---")
-    for s in report['summary']:
-        print(" ", s)
+        if sec_key in report:
+            info = report[sec_key]
+            print(f"{sec_name}: {'✓' if info.get('ok', False) else '✗'}")
+            if 'errors' in info and info['errors']:
+                print(f"  {len(info['errors'])} 个问题")
 
 def print_help():
     print("Usage:")

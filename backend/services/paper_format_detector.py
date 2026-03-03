@@ -49,6 +49,7 @@ class PaperFormatDetector:
             from services.paper_detect import Figure_detect
             from services.paper_detect import Formula_detect
             from services.paper_detect import Table_detect
+            from services.paper_detect import Reference_detect
             from services.paper_detect import Chinese_section_detect
             
             # 保存模块引用
@@ -60,6 +61,7 @@ class PaperFormatDetector:
                 'Figure': Figure_detect,
                 'Formula': Formula_detect,
                 'Table': Table_detect,
+                'Reference': Reference_detect,
                 'Chinese_section': Chinese_section_detect
             }
             
@@ -304,6 +306,84 @@ class PaperFormatDetector:
                 'summary': [f'中文部分检测失败: {e}']
             }
     
+    def detect_reference(self, docx_path: str, skip_checks: List[str] = None) -> Dict[str, Any]:
+        """
+        检测参考文献格式
+        
+        Args:
+            docx_path: Word文档路径
+            skip_checks: 要跳过的检测项列表
+        
+        Returns:
+            检测结果字典
+        """
+        try:
+            template_path = str(self.templates_dir / 'Reference.json')
+            Reference_detect = self.modules['Reference']
+            
+            result = Reference_detect.check_doc_with_template(docx_path, template_path)
+            return result
+            
+        except Exception as e:
+            logger.error(f"参考文献检测失败: {e}", exc_info=True)
+            return {
+                'error': True,
+                'error_message': str(e),
+                'summary': [f'参考文献检测失败: {e}']
+            }
+        
+    def _normalize_report_errors(self, module_name, report):
+        if not isinstance(report, dict):
+            return report
+
+        raw_errors = report.get('errors')
+        if not isinstance(raw_errors, list):
+            return report
+
+        try:
+            from services.paper_detect.report_styles import get_section_code
+        except Exception:
+            get_section_code = lambda _: 'X'
+
+        code = get_section_code(module_name)
+        normalized = []
+        counter = 0
+
+        for e in raw_errors:
+            if not isinstance(e, dict):
+                continue
+
+            counter += 1
+            et = e.get('type') or e.get('error_type') or 'warning'
+            if isinstance(et, str):
+                et_stripped = et.strip().lower()
+                if et_stripped in ['warning', 'warn', 'w', '警告']:
+                    e['type'] = 'warning'
+                elif et_stripped in ['error', 'err', 'e', '错误']:
+                    e['type'] = 'error'
+                else:
+                    e['type'] = et_stripped
+            else:
+                e['type'] = 'warning'
+
+            if 'page_number' not in e or e.get('page_number') is None:
+                e['page_number'] = 'N/A'
+            if 'description' not in e or e.get('description') is None:
+                e['description'] = ''
+            if 'suggestion' not in e or e.get('suggestion') is None:
+                e['suggestion'] = 'N/A'
+            if 'text_snippet' not in e or e.get('text_snippet') is None:
+                e['text_snippet'] = 'N/A'
+
+            if not e.get('error_id'):
+                e['error_id'] = f"{code}-{counter}"
+
+            normalized.append(e)
+
+        report['errors'] = normalized
+        return report
+    
+    
     def detect_all(self, docx_path: str, modules: List[str] = None,
                    enable_figure_api: bool = False,
                    skip_checks: Dict[str, List[str]] = None) -> Dict[str, Any]:
@@ -320,7 +400,7 @@ class PaperFormatDetector:
             包含所有模块检测结果的字典
         """
         if modules is None:
-            modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
+            modules = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Reference', 'Chinese_section']
         
         if skip_checks is None:
             skip_checks = {}
@@ -335,27 +415,46 @@ class PaperFormatDetector:
             
             try:
                 if module_name == 'Title':
-                    result = self.detect_title(docx_path, module_skip_checks)
+                    report = self.detect_title(docx_path, module_skip_checks)
                 elif module_name == 'Abstract':
-                    result = self.detect_abstract(docx_path, module_skip_checks)
+                    report = self.detect_abstract(docx_path, module_skip_checks)
                 elif module_name == 'Keywords':
-                    result = self.detect_keywords(docx_path, module_skip_checks)
+                    report = self.detect_keywords(docx_path, module_skip_checks)
                 elif module_name == 'Content':
-                    result = self.detect_content(docx_path, module_skip_checks)
+                    report = self.detect_content(docx_path, module_skip_checks)
                 elif module_name == 'Figure':
-                    result = self.detect_figure(docx_path, enable_content_check=enable_figure_api, 
+                    report = self.detect_figure(docx_path, enable_content_check=enable_figure_api, 
                                                 skip_checks=module_skip_checks)
                 elif module_name == 'Formula':
-                    result = self.detect_formula(docx_path, module_skip_checks)
+                    report = self.detect_formula(docx_path, module_skip_checks)
                 elif module_name == 'Table':
-                    result = self.detect_table(docx_path, module_skip_checks)
+                    report = self.detect_table(docx_path, module_skip_checks)
                 elif module_name == 'Chinese_section':
-                    result = self.detect_chinese_section(docx_path, skip_checks=module_skip_checks)
+                    report = self.detect_chinese_section(docx_path, skip_checks=module_skip_checks)
+                elif module_name == 'Reference':
+                    report = self.detect_reference(docx_path, module_skip_checks)
                 else:
                     logger.warning(f"未知模块: {module_name}")
                     continue
                 
-                all_reports[module_name] = result
+                all_reports[module_name] = self._normalize_report_errors(module_name, report)
+
+                # 简要显示检测结果
+                if isinstance(report, dict):
+                    # 新格式：{'ok': bool, 'errors': []}
+                    if 'ok' in report and 'errors' in report:
+                        ok_status = "✓ 通过" if report['ok'] else "✗ 发现问题"
+                        error_count = len(report.get('errors', []))
+                        print(f"  结果: {ok_status} (错误数: {error_count})")
+                    else:
+                        # 旧格式兼容（如Chinese_section等）
+                        ok_count = sum(1 for key, value in report.items() 
+                                    if isinstance(value, dict) and value.get('ok', False))
+                        total_count = sum(1 for key, value in report.items() 
+                                        if isinstance(value, dict) and 'ok' in value)
+                        print(f"  结果: {ok_count}/{total_count} 项检测通过")
+                else:
+                    print(f"  结果: 已完成")
                 
             except Exception as e:
                 logger.error(f"{module_name} 检测异常: {e}")

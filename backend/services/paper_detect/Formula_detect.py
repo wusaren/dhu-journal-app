@@ -338,15 +338,25 @@ def detect_font_for_run(run, paragraph=None):
 
     font_size = font_size if font_size is not None else 12.0
 
-    is_bold = font_source.bold if font_source.bold is not None else False
-    is_italic = font_source.italic if font_source.italic is not None else False
-    if run and run.font:
-        is_bold = run.font.bold if run.font.bold is not None else is_bold
-        is_italic = run.font.italic if run.font.italic is not None else is_italic
+    # 加粗检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.bold is not None:
+        is_bold = run.font.bold
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+        is_bold = paragraph.style.font.bold
+    else:
+        is_bold = False
     
-    # 确保返回明确的布尔值，而不是None
-    is_bold = bool(is_bold) if is_bold is not None else False
-    is_italic = bool(is_italic) if is_italic is not None else False
+    # 斜体检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.italic is not None:
+        is_italic = run.font.italic
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+        is_italic = paragraph.style.font.italic
+    else:
+        is_italic = False
+    
+    # 确保返回明确的布尔值
+    is_bold = bool(is_bold)
+    is_italic = bool(is_italic)
 
     return font_size, font_name, is_bold, is_italic, {}
 
@@ -972,7 +982,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
         doc_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
-    返回完整的检查报告
+    返回 {'ok': bool, 'errors': []}
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -989,31 +999,20 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
         formula_paragraphs = identify_formula_paragraphs(doc)
         
         # 初始化报告
-        report = {
-            'formula_detection': {'ok': True, 'messages': []},
-            'symbol_definition': {'ok': True, 'messages': [], 'warnings': []},
-            'summary': [],
-            'details': {
-                'total_paragraphs': len(doc.paragraphs),
-                'formula_paragraphs_count': len(formula_paragraphs),
-                'formula_paragraphs': [],
-                'symbol_definition': {
-                    'explained_symbols': [],
-                    'warnings_summary': [],
-                    'per_formula': []
-                }
-            }
-        }
+        report = {'ok': True, 'errors': []}
         
         if not formula_paragraphs:
-            report['formula_detection']['ok'] = False
-            report['formula_detection']['messages'].append("未检测到公式段落")
-            report['summary'].append("文档中未找到符合公式格式的段落")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': '未检测到公式段落',
+                'suggestion': '建议：使用Word的"插入→公式"功能创建公式',
+                'text_snippet': 'N/A'
+            })
             return report
         
         # 检查每个公式段落
-        all_formulas_ok = True
-        
         explained_symbols = set()
 
         for i, formula_para in enumerate(formula_paragraphs):
@@ -1060,30 +1059,66 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                 text_preview = f"[公式] {formula_number}"
             else:
                 text_preview = para_text
+            
+            # 获取段落索引
+            doc_para_idx = formula_para.get('paragraph_index', None)
+            if doc_para_idx is None:
+                try:
+                    doc_para_idx = doc.paragraphs.index(paragraph)
+                except Exception:
+                    doc_para_idx = None
+            
+            page_number = f"段落{doc_para_idx + 1}" if isinstance(doc_para_idx, int) else 'N/A'
+            formula_prefix = formula_number if formula_number else f"公式{i + 1}"
+            
+            # 检查公式格式
+            if not para_report['ok']:
+                report['ok'] = False
+                # 直接将messages转换为具体的error对象
+                for msg in para_report['messages']:
+                    # 分析消息类型，生成具体建议
+                    if '制表位问题' in msg:
+                        # 检查具体的制表位问题
+                        if '未检测到制表位' in msg:
+                            suggestion = '建议：使用Word的"段落→制表位"功能添加制表位（20字符居中对齐，40字符右对齐）'
+                        elif '制表位数量不足' in msg:
+                            suggestion = '建议：添加缺失的制表位，确保有居中和右对齐两个制表位'
+                        elif '对齐方式错误' in msg:
+                            suggestion = '建议：调整制表位对齐方式（第一个制表位应为居中对齐，第二个应为右对齐）'
+                        elif '制表符使用不足' in msg or '没有使用制表符' in msg:
+                            suggestion = '建议：在公式前按Tab键跳到居中位置，在公式后按Tab键跳到右对齐位置'
+                        else:
+                            suggestion = '建议：使用Word的"段落→制表位"功能设置正确的制表位（20字符居中，40字符右对齐）'
+                    elif '未检测到Office Math对象' in msg:
+                        suggestion = '建议：使用Word的"插入→公式"功能创建公式，而不是手动输入'
+                    elif '字体问题' in msg:
+                        # 检查具体的字体问题
+                        if '公式内容字体' in msg:
+                            suggestion = '建议：将公式内容的字体改为Cambria Math'
+                        elif '公式编号字体' in msg:
+                            suggestion = '建议：将公式编号的字体改为Times New Roman'
+                        elif '字体大小' in msg:
+                            suggestion = '建议：将字体大小调整为小四号（12pt）'
+                        else:
+                            suggestion = '建议：确保公式使用Cambria Math字体，编号使用Times New Roman字体，字体大小为小四号（12pt）'
+                    else:
+                        suggestion = '建议：按照模板要求调整公式格式'
+                    
+                    report['errors'].append({
+                        'type': 'error',
+                        'page_number': page_number,
+                        'description': f"{formula_prefix} - {msg}",
+                        'suggestion': suggestion,
+                        'text_snippet': text_preview[:150] + ('...' if len(text_preview) > 150 else '')
+                    })
 
             # 符号说明检测（LLM）
-            symbol_def_ok = True
-            missing_symbols = []
-            newly_explained_symbols = []
-            suspected_explained_symbols = []
-            evidence = {}
-            warnings = []
-            formula_linear = _extract_formula_linear_from_paragraph(paragraph)
-            candidate_symbols = []
-
-            before_text = ''
-            after_text = ''
-
-            if should_skip_check('symbol_definition'):
-                pass
-            else:
-                doc_para_idx = formula_para.get('paragraph_index', None)
-                if doc_para_idx is None:
-                    try:
-                        doc_para_idx = doc.paragraphs.index(paragraph)
-                    except Exception:
-                        doc_para_idx = None
-
+            if not should_skip_check('symbol_definition'):
+                formula_linear = _extract_formula_linear_from_paragraph(paragraph)
+                
+                before_text = ''
+                after_text = ''
+                
                 if isinstance(doc_para_idx, int):
                     before_parts = []
                     for k in range(2, 0, -1):
@@ -1115,7 +1150,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                     newly_explained_symbols = llm_result.get('newly_explained_symbols', [])
                     suspected_explained_symbols = llm_result.get('suspected_explained_symbols', [])
                     missing_symbols = llm_result.get('missing_symbols', [])
-                    evidence = llm_result.get('evidence', {})
+                    
                     for s in newly_explained_symbols:
                         explained_symbols.add(s)
 
@@ -1127,10 +1162,6 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                     missing_composite = [s for s in missing_all if s and (not _is_single_letter_symbol(s))]
                     missing_symbols = missing_single
 
-                    suspected_single = [s for s in suspected_explained_symbols if _is_single_letter_symbol(s)]
-                    if suspected_single:
-                        pass
-
                     # 2) Any composite symbol is a warning (whether explained or not).
                     explained_in_this_formula = [s for s in (candidate_symbols or []) if s and s not in missing_all]
                     composite_explained = [s for s in explained_in_this_formula if not _is_single_letter_symbol(s)]
@@ -1139,128 +1170,54 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                         base = _get_composite_base_symbol(cs)
                         if base and (base not in explained_symbols):
                             composite_warn.append(f"{cs}（未单独说明 {base}）")
+                    
                     if composite_warn:
-                        warnings.append(f"复合符号已说明但未单独说明基符号: {', '.join(composite_warn)}")
+                        report['errors'].append({
+                            'type': 'warning',
+                            'page_number': page_number,
+                            'description': f"{formula_prefix} - 复合符号已说明但未单独说明基符号: {', '.join(composite_warn)}",
+                            'suggestion': '建议：在首次使用复合符号前，先说明基符号的含义',
+                            'text_snippet': text_preview[:150] + ('...' if len(text_preview) > 150 else '')
+                        })
+                    
                     if missing_composite:
-                        warnings.append(f"复合符号未说明（按模板记为警告，不记为缺失错误）: {', '.join(missing_composite)}")
+                        report['errors'].append({
+                            'type': 'warning',
+                            'page_number': page_number,
+                            'description': f"{formula_prefix} - 复合符号未说明: {', '.join(missing_composite)}",
+                            'suggestion': '建议：说明复合符号的含义',
+                            'text_snippet': text_preview[:150] + ('...' if len(text_preview) > 150 else '')
+                        })
 
-                    symbol_def_ok = len(missing_symbols) == 0
-                else:
-                    symbol_def_ok = False
-                    candidate_symbols = []
-                    missing_symbols = []
-                    suspected_explained_symbols = []
-                    warnings = []
-                    report['symbol_definition']['ok'] = False
-                    report['symbol_definition']['messages'].append(
-                        f"公式段落 {i + 1} 符号说明检测失败: {llm_result.get('message', '未知错误')}"
-                    )
-            
-            # 添加段落信息
-            para_info = {
-                'index': i + 1,
-                'text_preview': text_preview[:150] + ('...' if len(text_preview) > 150 else ''),
-                'paragraph_index': (formula_para.get('paragraph_index', -1) + 1) if isinstance(formula_para.get('paragraph_index', None), int) else None,
-                'has_math_object': formula_para['has_math_object'],
-                'math_object_count': formula_para['math_object_count'],
-                'has_formula_tab_stops': formula_para['has_formula_tab_stops'],
-                'has_formula_style': formula_para['has_formula_style'],
-                'confidence_score': formula_para['confidence_score'],
-                'format_check': para_report,
-                'formula_linear': formula_linear,
-                'candidate_symbols': candidate_symbols,
-                'symbol_definition': {
-                    'ok': symbol_def_ok,
-                    'missing_symbols': missing_symbols,
-                    'newly_explained_symbols': newly_explained_symbols,
-                    'suspected_explained_symbols': suspected_explained_symbols if not should_skip_check('symbol_definition') else [],
-                    'evidence': evidence,
-                    'warnings': warnings
-                }
-            }
-            
-            report['details']['formula_paragraphs'].append(para_info)
-
-            # 收集符号说明检测的 per-formula 结构化信息，用于 run_all_detections 精准定位批注
-            report['details']['symbol_definition']['per_formula'].append({
-                'index': i + 1,
-                'paragraph_index': para_info.get('paragraph_index'),
-                'formula_number': formula_number,
-                'formula_text': formula_linear,
-                'context_before': before_text,
-                'context_after': after_text,
-                'candidate_symbols': candidate_symbols,
-                'missing_symbols': missing_symbols,
-                'newly_explained_symbols': newly_explained_symbols,
-                'suspected_explained_symbols': suspected_explained_symbols if not should_skip_check('symbol_definition') else [],
-                'evidence': evidence,
-                'warnings': warnings,
-                'ok': symbol_def_ok,
-            })
-            
-            if not para_report['ok']:
-                all_formulas_ok = False
-                report['formula_detection']['ok'] = False
-                
-                # 添加具体的错误信息
-                header = f"公式段落 {i + 1} 格式问题："
-                report['formula_detection']['messages'].append(header)
-                for msg in para_report['messages']:
-                    report['formula_detection']['messages'].append(f"  - {msg}")
-            else:
-                # 添加成功信息
-                success_msg = f"公式段落 {i + 1} 格式正确"
-                report['formula_detection']['messages'].append(success_msg)
-                for msg in para_report['messages']:
-                    if "检查通过" in msg or "正确" in msg:
-                        report['formula_detection']['messages'].append(f"  - {msg}")
-
-            # 汇总符号说明检测结果
-            if not should_skip_check('symbol_definition'):
-                if not symbol_def_ok:
-                    report['symbol_definition']['ok'] = False
+                    # 添加缺失符号错误
                     if missing_symbols:
-                        if formula_number:
-                            report['symbol_definition']['messages'].append(
-                                f"公式 {formula_number} 中符号首次出现未说明: {', '.join(missing_symbols)}"
-                            )
-                        else:
-                            report['symbol_definition']['messages'].append(
-                                f"公式段落 {i + 1} 中符号首次出现未说明: {', '.join(missing_symbols)}"
-                            )
-
-                if warnings:
-                    report['symbol_definition']['warnings'].extend(warnings)
-                    report['details']['symbol_definition']['warnings_summary'].extend(warnings)
-
-        report['details']['symbol_definition']['explained_symbols'] = sorted(explained_symbols)
-        
-        # 生成总结
-        if all_formulas_ok:
-            summary_msg = template.get('messages', {}).get('formula_complete_ok', 
-                                                         f"所有 {len(formula_paragraphs)} 个公式段落格式检查通过")
-            report['summary'].append(summary_msg)
-        else:
-            failed_count = sum(1 for para in report['details']['formula_paragraphs'] 
-                             if not para['format_check']['ok'])
-            summary_msg = f"发现 {failed_count} 个公式段落格式问题，共检查 {len(formula_paragraphs)} 个公式段落"
-            report['summary'].append(summary_msg)
-        
-        # 添加检测统计
-        stats_msg = f"检测统计：共 {report['details']['total_paragraphs']} 个段落，识别出 {len(formula_paragraphs)} 个可能的公式段落"
-        report['summary'].append(stats_msg)
+                        report['ok'] = False
+                        report['errors'].append({
+                            'type': 'error',
+                            'page_number': page_number,
+                            'description': f"{formula_prefix} - 符号首次出现未说明: {', '.join(missing_symbols)}",
+                            'suggestion': '建议：在公式前或后的段落中说明符号含义（如"where x is..."）',
+                            'text_snippet': text_preview[:150] + ('...' if len(text_preview) > 150 else '')
+                        })
+                else:
+                    report['ok'] = False
+                    report['errors'].append({
+                        'type': 'error',
+                        'page_number': page_number,
+                        'description': f"{formula_prefix} - 符号说明检测失败: {llm_result.get('message', '未知错误')}",
+                        'suggestion': '建议：检查公式格式和符号说明',
+                        'text_snippet': text_preview[:150] + ('...' if len(text_preview) > 150 else '')
+                    })
         
         # 检查公式编号连续性
         formula_numbers = []
-        for para_info in report['details']['formula_paragraphs']:
-            # 从文本预览中提取编号
-            text_preview = para_info['text_preview']
-            
-            # 查找编号模式
-            number_matches = re.findall(r'\((\d+)\)', text_preview)
+        for i, formula_para in enumerate(formula_paragraphs):
+            paragraph = formula_para['paragraph']
+            para_text = paragraph.text.strip()
+            number_matches = re.findall(r'\((\d+)\)', para_text)
             if number_matches:
                 try:
-                    formula_numbers.append(int(number_matches[-1]))  # 取最后一个匹配的编号
+                    formula_numbers.append(int(number_matches[-1]))
                 except ValueError:
                     pass
         
@@ -1270,20 +1227,24 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
             expected_numbers = list(range(1, len(formula_numbers) + 1))
             
             if formula_numbers != expected_numbers:
-                report['formula_detection']['ok'] = False
-                report['formula_detection']['messages'].append(f"公式编号不连续或不从1开始：检测到编号 {formula_numbers}，期望 {expected_numbers}")
-                
-                # 添加到总结
-                report['summary'].append(f"公式编号问题：应从(1)开始连续编号，当前为 {formula_numbers}")
-            else:
-                report['formula_detection']['messages'].append(f"公式编号连续性正确：{formula_numbers}")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'error',
+                    'page_number': 'N/A',
+                    'description': f"公式编号不连续或不从1开始：检测到编号 {formula_numbers}，期望 {expected_numbers}",
+                    'suggestion': '建议：公式编号应从(1)开始连续编号',
+                    'text_snippet': f"当前编号：{formula_numbers}"
+                })
         elif len(formula_numbers) == 1:
             if formula_numbers[0] != 1:
-                report['formula_detection']['ok'] = False
-                report['formula_detection']['messages'].append(f"单个公式编号应为(1)，实际为({formula_numbers[0]})")
-                report['summary'].append(f"公式编号问题：单个公式应编号为(1)，当前为({formula_numbers[0]})")
-            else:
-                report['formula_detection']['messages'].append("公式编号正确：(1)")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'error',
+                    'page_number': 'N/A',
+                    'description': f"单个公式编号应为(1)，实际为({formula_numbers[0]})",
+                    'suggestion': '建议：将公式编号改为(1)',
+                    'text_snippet': f"当前编号：({formula_numbers[0]})"
+                })
         
         # 检查是否有可能的公式但没有使用Word公式功能
         potential_formula_suggestions = []
@@ -1311,32 +1272,38 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
                 
                 # 如果包含数学模式但不是真正的公式段落，给出建议
                 if has_math_pattern:
+                    try:
+                        para_idx = doc.paragraphs.index(paragraph) + 1
+                    except:
+                        para_idx = 'N/A'
                     potential_formula_suggestions.append({
                         'text': text[:100] + ('...' if len(text) > 100 else ''),
-                        'paragraph_index': doc.paragraphs.index(paragraph) + 1
+                        'paragraph_index': para_idx
                     })
         
         # 添加建议到报告中
         if potential_formula_suggestions:
-            report['formula_detection']['messages'].append("\n发现可能的公式内容，建议使用Word的插入公式功能：")
             for suggestion in potential_formula_suggestions[:3]:  # 最多显示3个
-                report['formula_detection']['messages'].append(f"  - 段落{suggestion['paragraph_index']}: {suggestion['text']}")
-            
-            if len(potential_formula_suggestions) > 3:
-                report['formula_detection']['messages'].append(f"  - 还有 {len(potential_formula_suggestions) - 3} 个类似段落...")
-            
-            report['formula_detection']['messages'].append("  建议：在Word中选中这些内容，使用 插入→公式 功能重新创建")
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': f"段落{suggestion['paragraph_index']}",
+                    'description': '发现可能的公式内容，建议使用Word的插入公式功能',
+                    'suggestion': '建议：在Word中选中这些内容，使用"插入→公式"功能重新创建',
+                    'text_snippet': suggestion['text']
+                })
         
         return report
         
     except Exception as e:
         return {
-            'formula_detection': {
-                'ok': False, 
-                'messages': [f"公式检测过程中发生异常: {str(e)}"]
-            },
-            'summary': [f"检查失败: {str(e)}"],
-            'details': {}
+            'ok': False,
+            'errors': [{
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': f"公式检测过程中发生异常: {str(e)}",
+                'suggestion': '建议：检查文档格式和模板配置',
+                'text_snippet': 'N/A'
+            }]
         }
 
 def print_report(report):

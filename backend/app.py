@@ -1643,6 +1643,12 @@ def confirm_new_term():
         }), 500
 
 
-if __name__ == '__main__':
+
+# 在被 Gunicorn 等 WSGI 容器加载时也能执行初始化
+try:
     init_db()
+except Exception as e:
+    logger.error(f"初始化数据库失败: {e}")
+
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -137,15 +137,25 @@ def detect_font_for_run(run, paragraph=None):
 
     font_size = font_size if font_size is not None else 12.0
 
-    is_bold = font_source.bold if font_source.bold is not None else False
-    is_italic = font_source.italic if font_source.italic is not None else False
-    if run and run.font:
-        is_bold = run.font.bold if run.font.bold is not None else is_bold
-        is_italic = run.font.italic if run.font.italic is not None else is_italic
+    # 加粗检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.bold is not None:
+        is_bold = run.font.bold
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+        is_bold = paragraph.style.font.bold
+    else:
+        is_bold = False
     
-    # 确保返回明确的布尔值，而不是None
-    is_bold = bool(is_bold) if is_bold is not None else False
-    is_italic = bool(is_italic) if is_italic is not None else False
+    # 斜体检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.italic is not None:
+        is_italic = run.font.italic
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+        is_italic = paragraph.style.font.italic
+    else:
+        is_italic = False
+    
+    # 确保返回明确的布尔值
+    is_bold = bool(is_bold)
+    is_italic = bool(is_italic)
 
     # 行间距检测
     line_spacing = 1.0  # 默认单倍行距
@@ -608,19 +618,30 @@ def check_clc_document_structure(doc, keywords_paragraph_index, tpl):
 def check_clc_document_format(paragraph, tpl):
     """
     检查CLC number和Document code格式（字体、加粗等）
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
+    
+    # 提取文本片段
+    text_snippet = 'N/A'
+    if paragraph and paragraph.text:
+        text_snippet = paragraph.text.strip()[:150]
+        if len(paragraph.text.strip()) > 150:
+            text_snippet += '...'
     
     if not paragraph or not paragraph.runs:
         report['ok'] = False
-        report['messages'].append("CLC number和Document code段落没有文本内容")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': 'CLC number和Document code段落没有文本内容',
+            'suggestion': '建议：确保CLC和Document code段落包含有效文本',
+            'text_snippet': text_snippet
+        })
         return report
     
     # 获取格式规则
     format_rules = tpl.get('format_rules', {}).get('clc_document', {})
-    
-    issues = []
     
     # 分析段落中的所有runs，寻找CLC number和Document code部分
     clc_runs = []  # CLC number部分的runs
@@ -664,7 +685,14 @@ def check_clc_document_format(paragraph, tpl):
         if clc_bold != expected_bold_labels:
             bold_status = "加粗" if expected_bold_labels else "不加粗"
             actual_status = "加粗" if clc_bold else "不加粗"
-            issues.append(f"CLC number标签应为{bold_status}，实际为{actual_status}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"CLC number标签应为{bold_status}，实际为{actual_status}",
+                'suggestion': f"建议：将CLC number标签设置为{bold_status}",
+                'text_snippet': text_snippet
+            })
     
     # 检查Document code标签格式
     if document_runs:
@@ -676,7 +704,14 @@ def check_clc_document_format(paragraph, tpl):
         if doc_bold != expected_bold_labels:
             bold_status = "加粗" if expected_bold_labels else "不加粗"
             actual_status = "加粗" if doc_bold else "不加粗"
-            issues.append(f"Document code标签应为{bold_status}，实际为{actual_status}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"Document code标签应为{bold_status}，实际为{actual_status}",
+                'suggestion': f"建议：将Document code标签设置为{bold_status}",
+                'text_snippet': text_snippet
+            })
     
     # 统一格式检查（使用第一个run作为基准）
     if clc_runs or document_runs:
@@ -690,14 +725,28 @@ def check_clc_document_format(paragraph, tpl):
             expected_size_name = get_font_size(expected_size_pt, tpl)
             print(f"CLC/Document字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_size_pt}pt）)")
             if abs(actual_size_pt - expected_size_pt) > 0.5:
-                issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）",
+                    'suggestion': f"建议：将CLC/Document code的字体大小从{actual_size_name}（{actual_size_pt}pt）改为{expected_size_name}（{expected_size_pt}pt）",
+                    'text_snippet': text_snippet
+                })
         
         # 字体名称检查
         if not should_skip_check('font_name') and 'font_name' in format_rules:
             expected_font_name = str(format_rules['font_name'])
             print(f"CLC/Document字体名称: {actual_font_name} (期望: {expected_font_name})")
             if expected_font_name.lower() not in actual_font_name.lower():
-                issues.append(f"字体应为{expected_font_name}，实际为{actual_font_name}")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"字体应为{expected_font_name}，实际为{actual_font_name}",
+                    'suggestion': f"建议：将CLC/Document code的字体从{actual_font_name}改为{expected_font_name}",
+                    'text_snippet': text_snippet
+                })
         
         # 斜体检查
         if not should_skip_check('italic') and 'italic' in format_rules:
@@ -706,40 +755,47 @@ def check_clc_document_format(paragraph, tpl):
             if actual_italic != expected_italic:
                 italic_status = "斜体" if expected_italic else "正体"
                 actual_status = "斜体" if actual_italic else "正体"
-                issues.append(f"字体应为{italic_status}，实际为{actual_status}")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"字体应为{italic_status}，实际为{actual_status}",
+                    'suggestion': f"建议：将CLC/Document code的字体从{actual_status}改为{italic_status}",
+                    'text_snippet': text_snippet
+                })
     
-    print(f"发现 {len(issues)} 个CLC/Document格式问题")
+    print(f"发现 {len(report['errors'])} 个CLC/Document格式问题")
     print("---")
-    
-    if issues:
-        report['ok'] = False
-        header = tpl.get('messages', {}).get('clc_document_format_error')
-        if header:
-            report['messages'].append(header + "：")
-        report['messages'].extend([f"  - {i}" for i in issues])
-    else:
-        ok_msg = tpl.get('messages', {}).get('clc_document_format_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
     
     return report
 
 def check_keywords_format(paragraph, tpl, title_paragraph=None):
     """
     检查关键词格式（字体、加粗、行间距等，包括混合格式）
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
+    
+    # 提取文本片段
+    text_snippet = 'N/A'
+    if paragraph and paragraph.text:
+        text_snippet = paragraph.text.strip()[:150]
+        if len(paragraph.text.strip()) > 150:
+            text_snippet += '...'
     
     if not paragraph or not paragraph.runs:
         report['ok'] = False
-        report['messages'].append("关键词段落没有文本内容")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': '关键词段落没有文本内容',
+            'suggestion': '建议：确保关键词段落包含有效文本',
+            'text_snippet': text_snippet
+        })
         return report
     
     # 获取格式规则
     format_rules = tpl.get('format_rules', {}).get('keywords', {})
-    
-    issues = []
     
     # 分析段落中的所有runs，寻找Keywords标题和内容部分
     keywords_title_runs = []  # Keywords标题部分的runs
@@ -790,7 +846,14 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
         if title_bold != expected_bold_title:
             bold_status = "加粗" if expected_bold_title else "不加粗"
             actual_status = "加粗" if title_bold else "不加粗"
-            issues.append(f"Keywords标题应为{bold_status}，实际为{actual_status}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"Keywords标题应为{bold_status}，实际为{actual_status}",
+                'suggestion': f"建议：将Keywords标题设置为{bold_status}",
+                'text_snippet': text_snippet
+            })
     
     # 检查关键词内容部分格式
     if content_runs:
@@ -802,7 +865,14 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
         if content_bold != expected_bold_content:
             bold_status = "加粗" if expected_bold_content else "正体"
             actual_status = "加粗" if content_bold else "正体"
-            issues.append(f"关键词内容应为{bold_status}，实际为{actual_status}")
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"关键词内容应为{bold_status}，实际为{actual_status}",
+                'suggestion': f"建议：将关键词内容设置为{bold_status}",
+                'text_snippet': text_snippet
+            })
     else:
         # 如果没有内容runs，使用标题run作为整体检查
         content_run = keywords_title_runs[0] if keywords_title_runs else None
@@ -822,14 +892,28 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
             expected_size_name = get_font_size(expected_size_pt, tpl)
             print(f"字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_size_pt}pt）)")
             if abs(actual_size_pt - expected_size_pt) > 0.5:
-                issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）",
+                    'suggestion': f"建议：调整字体大小为{expected_size_name}（{expected_size_pt}pt）",
+                    'text_snippet': text_snippet
+                })
         
         # 字体名称检查
         if not should_skip_check('font_name') and 'font_name' in format_rules:
             expected_font_name = str(format_rules['font_name'])
             print(f"字体名称: {actual_font_name} (期望: {expected_font_name})")
             if expected_font_name.lower() not in actual_font_name.lower():
-                issues.append(f"字体应为{expected_font_name}，实际为{actual_font_name}")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"字体应为{expected_font_name}，实际为{actual_font_name}",
+                    'suggestion': f"建议：将字体设置为{expected_font_name}",
+                    'text_snippet': text_snippet
+                })
         
         # 斜体检查
         if not should_skip_check('italic') and 'italic' in format_rules:
@@ -838,7 +922,14 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
             if actual_italic != expected_italic:
                 italic_status = "斜体" if expected_italic else "正体"
                 actual_status = "斜体" if actual_italic else "正体"
-                issues.append(f"字体应为{italic_status}，实际为{actual_status}")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"字体应为{italic_status}，实际为{actual_status}",
+                    'suggestion': f"建议：将字体设置为{italic_status}",
+                    'text_snippet': text_snippet
+                })
         
         # 行间距检查
         if not should_skip_check('spacing') and 'line_spacing' in format_rules:
@@ -847,7 +938,14 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
             expected_spacing_name = get_line_spacing_name(expected_line_spacing, tpl)
             print(f"行间距: {actual_spacing_name}（{actual_line_spacing}倍）(期望: {expected_spacing_name}（{expected_line_spacing}倍）)")
             if abs(actual_line_spacing - expected_line_spacing) > 0.1:
-                issues.append(f"行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）",
+                    'suggestion': f"建议：调整行间距为{expected_spacing_name}（{expected_line_spacing}倍）",
+                    'text_snippet': text_snippet
+                })
         
         # 段落对齐检查
         if 'alignment' in format_rules:
@@ -860,7 +958,14 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
             expected_alignment_name = get_alignment_name(expected_alignment, tpl)
             print(f"段落对齐: {actual_alignment_name} (期望: {expected_alignment_name})")
             if actual_alignment != expected_alignment:
-                issues.append(f"段落应为{expected_alignment_name}，实际为{actual_alignment_name}")
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"段落应为{expected_alignment_name}，实际为{actual_alignment_name}",
+                    'suggestion': f"建议：将段落设置为{expected_alignment_name}",
+                    'text_snippet': text_snippet
+                })
         
         # 段落缩进检查
         if 'first_line_indent' in format_rules or 'left_indent' in format_rules or 'right_indent' in format_rules:
@@ -870,39 +975,43 @@ def check_keywords_format(paragraph, tpl, title_paragraph=None):
                 expected_first_indent = float(format_rules['first_line_indent'])
                 print(f"首行缩进: {first_line_indent:.1f}pt (期望: {expected_first_indent}pt)")
                 if abs(first_line_indent - expected_first_indent) > 1.0:
-                    issues.append(f"首行缩进应为{expected_first_indent}pt，实际为{first_line_indent:.1f}pt")
+                    report['ok'] = False
+                    report['errors'].append({
+                        'type': 'warning',
+                        'page_number': 'N/A',
+                        'description': f"首行缩进应为{expected_first_indent}pt，实际为{first_line_indent:.1f}pt",
+                        'suggestion': f"建议：调整首行缩进为{expected_first_indent}pt",
+                        'text_snippet': text_snippet
+                    })
             
             if 'left_indent' in format_rules:
                 expected_left_indent = float(format_rules['left_indent'])
                 print(f"左缩进: {left_indent:.1f}pt (期望: {expected_left_indent}pt)")
                 if abs(left_indent - expected_left_indent) > 1.0:
-                    issues.append(f"左缩进应为{expected_left_indent}pt，实际为{left_indent:.1f}pt")
+                    report['ok'] = False
+                    report['errors'].append({
+                        'type': 'warning',
+                        'page_number': 'N/A',
+                        'description': f"左缩进应为{expected_left_indent}pt，实际为{left_indent:.1f}pt",
+                        'suggestion': f"建议：调整左缩进为{expected_left_indent}pt",
+                        'text_snippet': text_snippet
+                    })
             
             if 'right_indent' in format_rules:
                 expected_right_indent = float(format_rules['right_indent'])
                 print(f"右缩进: {right_indent:.1f}pt (期望: {expected_right_indent}pt)")
                 if abs(right_indent - expected_right_indent) > 1.0:
-                    issues.append(f"右缩进应为{expected_right_indent}pt，实际为{right_indent:.1f}pt")
+                    report['ok'] = False
+                    report['errors'].append({
+                        'type': 'warning',
+                        'page_number': 'N/A',
+                        'description': f"右缩进应为{expected_right_indent}pt，实际为{right_indent:.1f}pt",
+                        'suggestion': f"建议：调整右缩进为{expected_right_indent}pt",
+                        'text_snippet': text_snippet
+                    })
     
-    print(f"发现 {len(issues)} 个格式问题")
+    print(f"发现 {len(report['errors'])} 个格式问题")
     print("---")
-    
-    if issues:
-        report['ok'] = False
-        header = tpl.get('messages', {}).get('format_keywords_issue_header')
-        if header:
-            report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
-    else:
-        ok_msg = tpl.get('messages', {}).get('format_keywords_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
-        
-        # 检查混合格式是否正确
-        if keywords_title_runs and content_runs:
-            mixed_ok_msg = tpl.get('messages', {}).get('format_mixed_ok')
-            if mixed_ok_msg:
-                report['messages'].append(mixed_ok_msg)
     
     return report
 
@@ -913,6 +1022,7 @@ def check_keywords_with_template(doc_path, template_identifier, skip_checks=None
         doc_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
+    返回 {'ok': bool, 'errors': []}
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -920,6 +1030,9 @@ def check_keywords_with_template(doc_path, template_identifier, skip_checks=None
     
     tpl = load_template(template_identifier)
     doc = Document(doc_path)
+    
+    # 初始化报告
+    report = {'ok': True, 'errors': []}
     
     # 先调用check_keywords_paragraphs来查找关键词（它能处理多种格式）
     paragraphs_report = check_keywords_paragraphs(doc, tpl)
@@ -967,61 +1080,122 @@ def check_keywords_with_template(doc_path, template_identifier, skip_checks=None
     
     # 如果完全找不到Keywords
     if not keywords_text and not paragraphs_report.get('keywords_paragraph'):
-        return {
-            'structure': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'paragraphs': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'format': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'clc_structure': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'clc_format': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'footnote_structure': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'footnote_format': {'ok': False, 'messages': ['未找到Keywords段落']},
-            'summary': ['关键词检查失败：未找到Keywords段落']
-        }
+        report['ok'] = False
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': '未找到Keywords段落',
+            'suggestion': '建议：添加Keywords段落，格式为"Keywords: 关键词1; 关键词2; 关键词3"',
+            'text_snippet': 'N/A'
+        })
+        return report
+        
+    split_keywords_format = any(
+        isinstance(msg, str) and "当前错误格式：'Keywords'单独成行" in msg
+        for msg in paragraphs_report.get('messages', [])
+    )
     
-    # 执行关键词检查
-    structure_report = check_keywords_structure(keywords_text, tpl) if keywords_text else {'ok': False, 'messages': ['无法检查关键词结构']}
+    # 执行关键词结构检查
+    if keywords_text and not split_keywords_format:
+        structure_report = check_keywords_structure(keywords_text, tpl)
+        if not structure_report['ok']:
+            report['ok'] = False
+            for msg in structure_report.get('messages', []):
+                report['errors'].append({
+                    'type': 'error',
+                    'page_number': 'N/A',
+                    'description': msg,
+                    'suggestion': '建议：按照"Keywords: 关键词1; 关键词2; 关键词3"格式调整',
+                    'text_snippet': keywords_text[:150] + ('...' if len(keywords_text) > 150 else '')
+                })
+    elif split_keywords_format:
+        report['ok'] = False
+        content_snippet = 'N/A'
+        if paragraphs_report.get('keywords_paragraph') and paragraphs_report['keywords_paragraph'].text:
+            text_val = paragraphs_report['keywords_paragraph'].text.strip()
+            content_snippet = text_val[:150] + ('...' if len(text_val) > 150 else '')
+
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': "关键词格式错误：'Keywords'应与内容在同一段落，格式为'Keywords: 关键词1; 关键词2'",
+            'suggestion': '建议：将Keywords与关键词内容合并为同一段落，格式为"Keywords: 关键词1; 关键词2; 关键词3"',
+            'text_snippet': content_snippet
+        })
     
+    # 执行关键词段落检查
+    if not paragraphs_report['ok']:
+        report['ok'] = False
+        paragraph_messages = [m for m in paragraphs_report.get('messages', []) if isinstance(m, str)]
+        if split_keywords_format:
+            paragraph_messages = []
+        else:
+            paragraph_messages = [
+                m for m in paragraph_messages
+                if not m.startswith('检测到关键词内容段落：') and '找到关键词段落' not in m
+            ]
+
+        for msg in paragraph_messages:
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': msg,
+                'suggestion': '建议：检查Keywords段落格式',
+                'text_snippet': 'N/A'
+            })
+    
+    # 执行关键词格式检查
     if paragraphs_report['keywords_paragraph']:
         title_paragraph = paragraphs_report.get('title_paragraph') or paragraphs_report['keywords_paragraph']
         format_report = check_keywords_format(paragraphs_report['keywords_paragraph'], tpl, title_paragraph=title_paragraph)
-    else:
-        format_report = {'ok': False, 'messages': ['无法检测关键词格式']}
+        if not format_report['ok']:
+            report['ok'] = False
+            # 直接合并底层函数返回的errors数组
+            report['errors'].extend(format_report.get('errors', []))
     
-    # 执行CLC和Document code检查
+    # 执行CLC和Document code结构检查
     clc_structure_report = check_clc_document_structure(doc, keywords_paragraph_index, tpl)
+    if not clc_structure_report['ok']:
+        report['ok'] = False
+        for msg in clc_structure_report.get('messages', []):
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': msg,
+                'suggestion': '建议：在关键词后一行添加"CLC number: xxx    Document code: A"',
+                'text_snippet': 'N/A'
+            })
     
+    # 执行CLC和Document code格式检查
     if clc_structure_report['clc_paragraph']:
         clc_format_report = check_clc_document_format(clc_structure_report['clc_paragraph'], tpl)
-    else:
-        clc_format_report = {'ok': False, 'messages': ['无法检测CLC和Document code格式']}
+        if not clc_format_report['ok']:
+            report['ok'] = False
+            # 直接合并底层函数返回的errors数组
+            report['errors'].extend(clc_format_report.get('errors', []))
     
-    # 执行脚注检查
+    # 执行脚注结构检查
     footnote_structure_report = check_footnote_structure(doc, tpl)
-    footnote_format_report = check_footnote_format(doc, tpl)
+    if not footnote_structure_report['ok']:
+        report['ok'] = False
+        for msg in footnote_structure_report.get('messages', []):
+            # 过滤掉正确结果的消息（以✓开头或包含"格式正确"、"匹配"等关键词）
+            if msg.startswith('✓') or '格式正确' in msg or '匹配' in msg or msg.endswith('ok'):
+                continue
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': msg,
+                'suggestion': '建议：使用Word的"插入→脚注"功能添加脚注',
+                'text_snippet': 'N/A'
+            })
     
-    # 组装报告
-    report = {
-        'structure': structure_report,
-        'paragraphs': paragraphs_report,
-        'format': format_report,
-        'clc_document_structure': clc_structure_report,
-        'clc_document_format': clc_format_report,
-        'footnote_structure': footnote_structure_report,
-        'footnote_format': footnote_format_report,
-        'summary': [],
-        'clc_content': clc_structure_report.get('clc_content', '')  # 将提取到的CLC号添加到主报告中
-    }
-
-    # 生成总结
-    all_ok = (structure_report['ok'] and paragraphs_report['ok'] and format_report['ok'] and 
-              clc_structure_report['ok'] and clc_format_report['ok'] and
-              footnote_structure_report['ok'] and footnote_format_report['ok'])
-    summary_tpl = tpl.get('messages', {}).get('summary_overall')
-    if summary_tpl:
-        try:
-            report['summary'].append(summary_tpl.format(ok=all_ok))
-        except Exception:
-            report['summary'].append(str(summary_tpl))
+    # 执行脚注格式检查
+    footnote_format_report = check_footnote_format(doc, tpl)
+    if not footnote_format_report['ok']:
+        report['ok'] = False
+        # 直接合并底层函数返回的errors数组
+        report['errors'].extend(footnote_format_report.get('errors', []))
     
     return report
 
@@ -1497,9 +1671,9 @@ def check_footnote_structure(doc, tpl):
 def check_footnote_format(doc, tpl):
     """
     检查Word脚注的格式（字体、大小、行距等）
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
     
     try:
         # 访问脚注XML
@@ -1508,7 +1682,13 @@ def check_footnote_format(doc, tpl):
         
         if not footnote_rels:
             report['ok'] = False
-            report['messages'].append("无法访问脚注进行格式检查")
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': '无法访问脚注进行格式检查',
+                'suggestion': '建议：使用Word的"插入→脚注"功能添加脚注',
+                'text_snippet': 'N/A'
+            })
             return report
         
         footnote_part = rels[footnote_rels[0]].target_part
@@ -1523,13 +1703,17 @@ def check_footnote_format(doc, tpl):
         
         # 获取格式规则
         format_rules = tpl.get('format_rules', {}).get('footnote', {})
-        issues = []
         
         # 检查实际脚注内容（跳过分隔符）
         for footnote in footnotes:
             footnote_id = footnote.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
             if footnote_id in ['-1', '0']:  # 跳过分隔符脚注
                 continue
+            
+            # 提取脚注文本片段
+            text_elements = footnote.findall('.//w:t', ns)
+            footnote_text = ''.join([t.text for t in text_elements if t.text])
+            text_snippet = footnote_text[:150] + ('...' if len(footnote_text) > 150 else '')
             
             # 检查字体大小
             sz_elements = footnote.findall('.//w:sz', ns)
@@ -1544,7 +1728,14 @@ def check_footnote_format(doc, tpl):
                         
                         print(f"脚注字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_size_pt}pt）)")
                         if abs(actual_size_pt - expected_size_pt) > 0.5:
-                            issues.append(f"脚注字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
+                            report['ok'] = False
+                            report['errors'].append({
+                                'type': 'warning',
+                                'page_number': 'N/A',
+                                'description': f"脚注字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）",
+                                'suggestion': f"建议：将脚注字体大小从{actual_size_name}（{actual_size_pt}pt）改为{expected_size_name}（{expected_size_pt}pt）",
+                                'text_snippet': text_snippet
+                            })
                         break
             
             # 检查字体名称
@@ -1556,13 +1747,17 @@ def check_footnote_format(doc, tpl):
                         expected_font_name = str(format_rules.get('font_name', 'Times New Roman'))
                         print(f"脚注字体名称: {ascii_font} (期望: {expected_font_name})")
                         if expected_font_name.lower() not in ascii_font.lower():
-                            issues.append(f"脚注字体应为{expected_font_name}，实际为{ascii_font}")
+                            report['ok'] = False
+                            report['errors'].append({
+                                'type': 'warning',
+                                'page_number': 'N/A',
+                                'description': f"脚注字体应为{expected_font_name}，实际为{ascii_font}",
+                                'suggestion': f"建议：将脚注字体从{ascii_font}改为{expected_font_name}",
+                                'text_snippet': text_snippet
+                            })
                         break
             
             # 检查是否有斜体（Journal名称应该斜体）
-            text_elements = footnote.findall('.//w:t', ns)
-            footnote_text = ''.join([t.text for t in text_elements if t.text])
-            
             if 'Journal of Donghua University (English Edition)' in footnote_text:
                 # 检查Journal部分是否为斜体
                 journal_italic = format_rules.get('journal_italic', True)
@@ -1579,22 +1774,24 @@ def check_footnote_format(doc, tpl):
                                 break
                     
                     if not journal_found_italic:
-                        issues.append("Journal of Donghua University (English Edition)应为斜体")
-        
-        if issues:
-            report['ok'] = False
-            header = tpl.get('messages', {}).get('footnote_format_error')
-            if header:
-                report['messages'].append(header + "：")
-            report['messages'].extend([f"  - {i}" for i in issues])
-        else:
-            ok_msg = tpl.get('messages', {}).get('footnote_format_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg)
+                        report['ok'] = False
+                        report['errors'].append({
+                            'type': 'warning',
+                            'page_number': 'N/A',
+                            'description': 'Journal of Donghua University (English Edition)应为斜体',
+                            'suggestion': '建议：将脚注中的"Journal of Donghua University (English Edition)"设置为斜体',
+                            'text_snippet': text_snippet
+                        })
     
     except Exception as e:
         report['ok'] = False
-        report['messages'].append(f"脚注格式检测出错: {str(e)}")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': f"脚注格式检测出错: {str(e)}",
+            'suggestion': '建议：检查脚注是否正确插入',
+            'text_snippet': 'N/A'
+        })
     
     return report
 

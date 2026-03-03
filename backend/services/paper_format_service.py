@@ -16,7 +16,7 @@ from services.paper_detect.Classification_detect import detect_classification
 
 logger = logging.getLogger(__name__)
 
-DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Chinese_section']
+DETECTION_ORDER = ['Title', 'Abstract', 'Keywords', 'Content', 'Formula', 'Figure', 'Table', 'Reference', 'Chinese_section']
 
 # 模块中文名称映射
 MODULE_NAMES_CN = {
@@ -27,6 +27,7 @@ MODULE_NAMES_CN = {
     'Formula': '公式',
     'Figure': '图',
     'Table': '表格',
+    'Reference': '参考文献',
     'Chinese_section': '中文部分',
     'Classification': '摘要分类号',
     # 中文部分内部项目
@@ -111,54 +112,44 @@ class PaperFormatService:
             return str(obj)
     
     def _normalize_report(self, report: Dict[str, Any], module_name: str) -> Dict[str, Any]:
-        """标准化检测报告格式"""
+        """
+        标准化检测报告格式，统一输出结构：
+          - ok     : bool  —— 模块是否全部通过
+          - errors : list  —— 新格式模块直接透传；旧格式为空列表
+          - checks : dict  —— 旧格式（Table/Figure/通用键值）保留；新格式为空字典
+        前端根据 errors/checks 是否有内容选择对应渲染方式。
+        """
         if not report:
-            return {
-                'module': module_name,
-                'checks': {},
-                'summary': [],
-                'extracted': {},
-                'details': {}
-            }
-        
-        # 处理错误报告
+            return {'module': module_name, 'ok': True, 'errors': [], 'checks': {}}
+
+        # 检测失败的模块（内部异常）
         if report.get('error'):
             return {
-                'module': module_name,
-                'checks': {},
-                'summary': report.get('summary', []),
-                'extracted': {},
-                'details': {},
-                'error': True,
+                'module': module_name, 'ok': False, 'errors': [],
+                'checks': {}, 'error': True,
                 'error_message': report.get('error_message', '')
             }
-        
-        # 提取summary、extracted和details
-        summary = report.pop('summary', []) if isinstance(report, dict) else []
-        extracted = report.pop('extracted', {}) if isinstance(report, dict) else {}
-        details = report.pop('details', {}) if isinstance(report, dict) else {}
-        
-        # 剩余的都是检查项
-        checks = {k: v for k, v in report.items() if isinstance(v, dict) and 'ok' in v}
-        
-        # 如果没有检查项，保留原始结构
-        if not checks and isinstance(report, dict):
-            if 'tables' in report or 'numbering' in report:
-                checks = report
-        
-        # 确保所有数据都是JSON可序列化的
-        # 这是关键步骤，防止Paragraph等对象导致序列化失败
-        serializable_checks = self._make_json_serializable(checks)
-        serializable_summary = self._make_json_serializable(summary)
-        serializable_extracted = self._make_json_serializable(extracted)
-        serializable_details = self._make_json_serializable(details)
-        
+
+        # ── 新格式：{'ok': bool, 'errors': [...]} ──
+        # 直接透传，不做任何字段拼接，让前端按结构展示
+        if 'ok' in report and 'errors' in report and isinstance(report.get('errors'), list):
+            return {
+                'module': module_name,
+                'ok': bool(report['ok']),
+                'errors': self._make_json_serializable(report['errors']),
+                'checks': {}
+            }
+
+        # ── 旧格式：通用键值结构（非破坏性读取，兜底处理） ──
+        checks = {
+            k: v for k, v in report.items()
+            if k not in ('summary', 'extracted', 'details')
+            and isinstance(v, dict) and 'ok' in v
+        }
+        ok = all(v.get('ok', False) for v in checks.values()) if checks else True
         return {
-            'module': module_name,
-            'checks': serializable_checks,
-            'summary': serializable_summary,
-            'extracted': serializable_extracted,
-            'details': serializable_details
+            'module': module_name, 'ok': ok, 'errors': [],
+            'checks': self._make_json_serializable(checks)
         }
     
     def check_all(self, docx_path: str, enable_figure_api: bool = False,
@@ -233,16 +224,19 @@ class PaperFormatService:
         # 对所有的检测报告进行处理（计算通过率）
         result = self.process_report(all_reports)
         logger.info('检测报告处理成功！')
+        with open('reports.txt', 'w') as file:
+            file.write(str(all_reports))
 
         # 开始生成检测报告
-        rint("\n正在生成综合报告...")
+        print("\n正在生成综合报告...")
         report_docx_path = docx_path if enable_page_numbers else None
         report_text = self.generate_comprehensive_report(all_reports, docx_path=report_docx_path)
         
-        # 保存报告
+        # 保存txt报告
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        report_filename = f"{timestamp}_format_report.txt"
-        # 保存文件路径
+        base_name = os.path.splitext(os.path.basename(docx_path))[0].split('_')[-1]
+        report_filename = f"{timestamp}_{base_name}_format_report.txt"
+        # 保存txt报告文件路径
         report_path = os.path.join(reports_dir, report_filename)
         try:
             output_dir = os.path.dirname(report_path)
@@ -259,6 +253,20 @@ class PaperFormatService:
                 success=False,
                 message=error_msg,
                 status_code=404)
+        
+        # 生成Word格式报告
+        print("\n正在生成Word格式报告...")
+        word_report_filename = f"{timestamp}_{base_name}_format_report.docx"
+        # 保存txt报告文件路径
+        word_report_path = os.path.join(reports_dir, word_report_filename)
+        try:
+            from services.paper_detect.word_report_generator import generate_word_report
+            word_success = generate_word_report(all_reports, word_report_path, docx_path)
+            if not word_success:
+                print("  ⚠️ Word报告生成失败，但txt报告已生成")
+        except Exception as e:
+            print(f"  ⚠️ Word报告生成出错: {e}")
+            print("  txt报告已正常生成")
         
         # 将报告信息添加到返回结果中
         result['data']['report_saved'] = True
@@ -320,26 +328,14 @@ class PaperFormatService:
             
             # 统计该模块的检测项
             if isinstance(report, dict):
-                # Table模块特殊处理
-                if module_name == 'Table':
-                    # 统计numbering
-                    numbering = report.get('numbering', {})
-                    if isinstance(numbering, dict) and 'ok' in numbering:
-                        total_checks += 1
-                        if numbering.get('ok', False):
-                            total_ok += 1
-                    
-                    # 统计每个表格的检测项
-                    tables = report.get('tables', [])
-                    for table_report in tables:
-                        for key in ['caption_format', 'table_style', 'table_alignment']:
-                            value = table_report.get(key, {})
-                            if isinstance(value, dict) and 'ok' in value:
-                                total_checks += 1
-                                if value.get('ok', False):
-                                    total_ok += 1
+                # 新格式：{'ok': bool, 'errors': []}
+                if 'ok' in report and 'errors' in report:
+                    total_checks += 1
+                    if report.get('ok', False):
+                        total_ok += 1
+                # 旧格式兼容（如Chinese_section等）
                 else:
-                    # 其他模块常规统计
+                    # 其他旧格式模块常规统计
                     for key, value in report.items():
                         if isinstance(value, dict) and 'ok' in value:
                             total_checks += 1
@@ -375,145 +371,104 @@ class PaperFormatService:
                 lines.append("")
                 continue
             
-            # Table模块需要特殊处理
-            if module_name == 'Table':
-                # 处理表格编号检查
-                numbering = report.get('numbering', {})
-                if isinstance(numbering, dict) and 'ok' in numbering:
-                    ok_status = "✓ 通过" if numbering.get('ok', False) else "✗ 失败"
-                    lines.append(f"\n  [Numbering] {ok_status}")
-                    messages = numbering.get('messages', [])
-                    if messages:
-                        for msg in messages:
-                            lines.append(f"    • {msg}")
-                
-                # 处理每个表格
-                tables = report.get('tables', [])
-                for i, table_report in enumerate(tables, 1):
-                    caption_info = table_report.get('caption', {})
-                    caption_text = caption_info.get('text', f'Table {i}')
-                    lines.append(f"\n  [表格 {i}: {caption_text[:40]}{'...' if len(caption_text) > 40 else ''}]")
-                    
-                    # 标题格式
-                    caption_format = table_report.get('caption_format', {})
-                    if isinstance(caption_format, dict) and 'ok' in caption_format:
-                        ok_status = "✓" if caption_format.get('ok', False) else "✗"
-                        lines.append(f"    标题格式: {ok_status}")
-                        messages = caption_format.get('messages', [])
-                        if messages and not caption_format.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 表格样式
-                    table_style = table_report.get('table_style', {})
-                    if isinstance(table_style, dict) and 'ok' in table_style:
-                        ok_status = "✓" if table_style.get('ok', False) else "✗"
-                        lines.append(f"    表格样式: {ok_status}")
-                        messages = table_style.get('messages', [])
-                        if messages and not table_style.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 表格对齐
-                    table_alignment = table_report.get('table_alignment', {})
-                    if isinstance(table_alignment, dict) and 'ok' in table_alignment:
-                        ok_status = "✓" if table_alignment.get('ok', False) else "✗"
-                        lines.append(f"    内容对齐: {ok_status}")
-                        messages = table_alignment.get('messages', [])
-                        if messages and not table_alignment.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-            
-            # Chinese_section模块特殊处理
+            # Chinese_section模块：现在使用新格式 {'ok': bool, 'errors': []}
             elif module_name == 'Chinese_section':
-                for section_key, section_value in report.items():
-                    if section_key == 'summary' or not isinstance(section_value, dict) or 'ok' not in section_value:
-                        continue
+                # 检查是否为新格式
+                if 'ok' in report and 'errors' in report:
+                    # 新格式处理
+                    ok_status = "✓ 通过" if report.get('ok', False) else "✗ 发现问题"
+                    error_count = len(report.get('errors', []))
+                    lines.append(f"\n  总体状态: {ok_status}")
+                    lines.append(f"  错误数量: {error_count}")
                     
-                    section_title = MODULE_NAMES_CN.get(section_key, section_key)
-                    ok_status = "✓ 通过" if section_value.get('ok') else "✗ 失败"
-                    lines.append(f"\n  [{section_title}] {ok_status}")
-                    
-                    messages = section_value.get('messages', [])
-                    if messages and not section_value.get('ok'):
-                        for msg in messages:
-                            lines.append(f"    • {msg}")
-        
-
-            # Figure模块需要特殊处理（类似Table模块）
-            elif module_name == 'Figure':
-                # 处理图片编号检查
-                numbering = report.get('numbering', {})
-                if isinstance(numbering, dict) and 'ok' in numbering:
-                    ok_status = "✓ 通过" if numbering.get('ok', False) else "✗ 失败"
-                    lines.append(f"\n  [Numbering] {ok_status}")
-                    messages = numbering.get('messages', [])
-                    if messages:
-                        for msg in messages:
-                            lines.append(f"    • {msg}")
-                
-                # 处理每张图片
-                figures = report.get('figures', [])
-                for i, fig_report in enumerate(figures, 1):
-                    caption_info = fig_report.get('caption_info', {})
-                    if fig_report.get('has_caption', False):
-                        caption_text = caption_info.get('full_text', f'Fig.{i}')
-                        lines.append(f"\n  [图片 {i}: {caption_text[:40]}{'...' if len(caption_text) > 40 else ''}]")
-                    else:
-                        lines.append(f"\n  [图片 {i}: (无标题)]")
-                    
-                    # 标题格式
-                    format_check = fig_report.get('format_check', {})
-                    if isinstance(format_check, dict) and 'ok' in format_check:
-                        ok_status = "✓" if format_check.get('ok', False) else "✗"
-                        lines.append(f"    标题格式: {ok_status}")
-                        messages = format_check.get('messages', [])
-                        if messages and not format_check.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 图片对齐
-                    picture_check = fig_report.get('picture_check', {})
-                    if isinstance(picture_check, dict) and 'ok' in picture_check:
-                        ok_status = "✓" if picture_check.get('ok', False) else "✗"
-                        lines.append(f"    图片对齐: {ok_status}")
-                        messages = picture_check.get('messages', [])
-                        if messages and not picture_check.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-
-                    # 内容检测
-                    content_check = fig_report.get('content_check', {})
-                    if isinstance(content_check, dict) and 'ok' in content_check:
-                        ok_status = "✓" if content_check.get('ok', False) else "✗"
-                        lines.append(f"    内容规范: {ok_status}")
-                        messages = content_check.get('messages', [])
-                        if messages and not content_check.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-            
-            else:
-                # 其他模块的常规处理
-                for section_key, section_value in report.items():
-                    if section_key in ['summary', 'extracted', 'details']:
-                        continue
-                    
-                    if isinstance(section_value, dict) and 'ok' in section_value:
-                        # 检测项标题
-                        # 优先从中文映射获取，否则进行转换
-                        section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
+                    # 显示所有错误
+                    if error_count > 0:
+                        lines.append(f"\n  【错误详情】")
+                        for i, error in enumerate(report.get('errors', []), 1):
+                            error_type = error.get('type', 'error')
+                            type_icon = "❌" if error_type == 'error' else "⚠️"
+                            page_num = error.get('page_number', 'N/A')
+                            description = error.get('description', '')
+                            suggestion = error.get('suggestion', '')
+                            text_snippet = error.get('text_snippet', '')
+                            
+                            lines.append(f"\n  错误 {i}: {type_icon} {error_type.upper()}")
+                            lines.append(f"    页码: {page_num}")
+                            lines.append(f"    描述: {description}")
+                            if suggestion and suggestion != 'N/A':
+                                lines.append(f"    建议: {suggestion}")
+                            if text_snippet and text_snippet != 'N/A' and len(text_snippet) > 5:
+                                # 截断过长的文本片段
+                                if len(text_snippet) > 100:
+                                    text_snippet = text_snippet[:100] + '...'
+                                lines.append(f"    文本: {text_snippet}")
+                else:
+                    # 旧格式兼容（如果还有旧格式的报告）
+                    for section_key, section_value in report.items():
+                        if section_key == 'summary' or not isinstance(section_value, dict) or 'ok' not in section_value:
+                            continue
+                        
+                        section_title = MODULE_NAMES_CN.get(section_key, section_key)
                         ok_status = "✓ 通过" if section_value.get('ok') else "✗ 失败"
                         lines.append(f"\n  [{section_title}] {ok_status}")
                         
-                        # 检测项消息
                         messages = section_value.get('messages', [])
-                        if messages:
+                        if messages and not section_value.get('ok'):
                             for msg in messages:
-                                # 格式化消息（添加缩进）
-                                if msg.strip().startswith('-'):
-                                    lines.append(f"      {msg.strip()}")
-                                else:
-                                    lines.append(f"    • {msg}")
+                                lines.append(f"    • {msg}")
+            
+            else:
+                # 新格式：{'ok': bool, 'errors': []}
+                if 'ok' in report and 'errors' in report:
+                    ok_status = "✓ 通过" if report.get('ok', False) else "✗ 发现问题"
+                    error_count = len(report.get('errors', []))
+                    lines.append(f"\n  总体状态: {ok_status}")
+                    lines.append(f"  错误数量: {error_count}")
+                    
+                    # 显示所有错误
+                    if error_count > 0:
+                        lines.append(f"\n  【错误详情】")
+                        for i, error in enumerate(report.get('errors', []), 1):
+                            error_type = error.get('type', 'error')
+                            type_icon = "❌" if error_type == 'error' else "⚠️"
+                            page_num = error.get('page_number', 'N/A')
+                            description = error.get('description', '')
+                            suggestion = error.get('suggestion', '')
+                            text_snippet = error.get('text_snippet', '')
+                            
+                            lines.append(f"\n  错误 {i}: {type_icon} {error_type.upper()}")
+                            lines.append(f"    页码: {page_num}")
+                            lines.append(f"    描述: {description}")
+                            if suggestion and suggestion != 'N/A':
+                                lines.append(f"    建议: {suggestion}")
+                            if text_snippet and text_snippet != 'N/A' and len(text_snippet) > 5:
+                                # 截断过长的文本片段
+                                if len(text_snippet) > 100:
+                                    text_snippet = text_snippet[:100] + '...'
+                                lines.append(f"    文本: {text_snippet}")
+                # 旧格式兼容
+                else:
+                    # 其他模块的常规处理（旧格式）
+                    for section_key, section_value in report.items():
+                        if section_key in ['summary', 'extracted', 'details']:
+                            continue
+                        
+                        if isinstance(section_value, dict) and 'ok' in section_value:
+                            # 检测项标题
+                            # 优先从中文映射获取，否则进行转换
+                            section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
+                            ok_status = "✓ 通过" if section_value.get('ok') else "✗ 失败"
+                            lines.append(f"\n  [{section_title}] {ok_status}")
+                            
+                            # 检测项消息
+                            messages = section_value.get('messages', [])
+                            if messages:
+                                for msg in messages:
+                                    # 格式化消息（添加缩进）
+                                    if msg.strip().startswith('-'):
+                                        lines.append(f"      {msg.strip()}")
+                                    else:
+                                        lines.append(f"    • {msg}")
             
             # 添加总结
             if 'summary' in report and report['summary']:
@@ -670,55 +625,60 @@ class PaperFormatService:
     def process_report(self, all_reports):
         """对所有的检测报告进行处理"""
         try:
-            # 标准化所有结果
             all_results = {}
             for module_name, report in all_reports.items():
-                # Classification暂时跳过，其不是字典结构，不能使用_normalize_report函数处理
                 if module_name == 'Classification':
                     continue
                 all_results[module_name] = self._normalize_report(report, module_name)
-            
-            # 计算统计信息
+
             total_checks = 0
             passed_checks = 0
-            
+            failed_checks = 0
+
             for module_name, module_result in all_results.items():
                 checks = module_result.get('checks', {})
-                for check_name, check_result in checks.items():
-                    if isinstance(check_result, dict) and 'ok' in check_result:
-                        total_checks += 1
-                        if check_result.get('ok', False):
-                            passed_checks += 1
-            
-            failed_checks = total_checks - passed_checks
+                ok = module_result.get('ok', True)
+
+                if checks:
+                    # 旧格式（Table/Figure）：按每个 check 项计数
+                    for v in checks.values():
+                        if isinstance(v, dict) and 'ok' in v:
+                            total_checks += 1
+                            if v['ok']:
+                                passed_checks += 1
+                            else:
+                                failed_checks += 1
+                else:
+                    # 新格式：每个模块算一个检测单元
+                    total_checks += 1
+                    if ok:
+                        passed_checks += 1
+                    else:
+                        failed_checks += 1
+
+                print(f"模块 {module_name} - ok={ok}, errors={len(module_result.get('errors', []))}, checks={len(checks)}")
+
             pass_rate = (passed_checks / total_checks * 100) if total_checks > 0 else 0
-            
-            summary = {
-                'total_checks': total_checks,
-                'passed_checks': passed_checks,
-                'failed_checks': failed_checks,
-                'pass_rate': round(pass_rate, 2)
-            }
-            
-            message = f"格式检测完成，通过率: {pass_rate:.1f}%"
-            
+
             return self._format_response(
                 success=True,
                 data={
                     'results': all_results,
-                    'summary': summary
+                    'summary': {
+                        'total_checks': total_checks,
+                        'passed_checks': passed_checks,
+                        'failed_checks': failed_checks,
+                        'pass_rate': round(pass_rate, 2)
+                    }
                 },
-                message=message,
+                message=f"格式检测完成，通过率: {pass_rate:.1f}%",
                 status_code=200
             )
-            
+
         except Exception as e:
-            error_msg=f"对检测报告进行处理失败：{str(e)}"
+            error_msg = f"对检测报告进行处理失败：{str(e)}"
             logger.error(error_msg)
-            return self._format_response(
-                success=False,
-                message=error_msg,
-                status_code=404)
+            return self._format_response(success=False, message=error_msg, status_code=404)
     
     def generate_report(self, check_results: Dict[str, Any], 
                        output_path: Optional[str] = None) -> Dict[str, Any]:

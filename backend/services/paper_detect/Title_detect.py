@@ -342,11 +342,21 @@ def detect_font_for_run(run, paragraph=None):
     font_name_ascii = font_name_ascii if font_name_ascii else "Times New Roman"
     font_name_eastasia = font_name_eastasia if font_name_eastasia else "宋体"
     
-    # 3. 检测加粗和斜体
+    # 3. 检测加粗和斜体 - 优先直接格式，直接格式为None时使用样式格式
     try:
-        if run.font:
-            is_bold = run.font.bold if run.font.bold is not None else False
-            is_italic = run.font.italic if run.font.italic is not None else False
+        if run and run.font and run.font.bold is not None:
+            is_bold = run.font.bold
+        elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+            is_bold = paragraph.style.font.bold
+        else:
+            is_bold = False
+        
+        if run and run.font and run.font.italic is not None:
+            is_italic = run.font.italic
+        elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+            is_italic = paragraph.style.font.italic
+        else:
+            is_italic = False
         
         is_bold = bool(is_bold)
         is_italic = bool(is_italic)
@@ -499,46 +509,51 @@ def check_chicago_title_case(title, tpl=None):
 def check_title_section(extracted, tpl):
     """
     检查标题相关的所有内容
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
+    
+    title_text = extracted.get('title', '')
     
     if tpl.get('rules', {}).get('title_case', False):
         use_chicago_style = tpl.get('rules', {}).get('chicago_style', False)
         
         if use_chicago_style and SPACY_AVAILABLE and nlp:
-            is_correct, bad_tokens, corrected_title = check_chicago_title_case(extracted['title'], tpl)
+            is_correct, bad_tokens, corrected_title = check_chicago_title_case(title_text, tpl)
             if not is_correct:
                 report['ok'] = False
-                msg_prefix = tpl.get('messages', {}).get('title_bad_prefix', '标题格式问题: ')
-                report['messages'].append(f"{msg_prefix}{bad_tokens}")
-                suggest_msg = tpl.get('messages', {}).get('title_suggestion')
-                if suggest_msg:
-                    try:
-                        report['messages'].append(suggest_msg.format(corrected=corrected_title))
-                    except:
-                        report['messages'].append(f"建议修正为: {corrected_title}")
-            else:
-                ok_msg = tpl.get('messages', {}).get('title_ok')
-                if ok_msg:
-                    report['messages'].append(ok_msg)
+                description = f"标题大小写格式问题: {bad_tokens}"
+                suggestion = f"建议修正为: {corrected_title}"
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': '段落1',  # 标题通常是第1段
+                    'description': description,
+                    'suggestion': suggestion,
+                    'text_snippet': title_text[:150] + ('...' if len(title_text) > 150 else '')
+                })
         else:
             # spaCy不可用或未启用chicago_style时的提示
             report['ok'] = False
-            report['messages'].append("无法进行智能标题检查：请安装spaCy并确保模板中启用了chicago_style")
-            report['messages'].append("安装命令: pip install spacy && python -m spacy download en_core_web_sm")
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': "无法进行智能标题检查：请安装spaCy并确保模板中启用了chicago_style",
+                'suggestion': "建议：安装命令: pip install spacy && python -m spacy download en_core_web_sm",
+                'text_snippet': 'N/A'
+            })
     
     return report
 
 def check_authors_section(extracted, tpl):
     """
     检查作者相关的所有内容
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
+    
+    authors_text = extracted.get('authors_text', '')
     
     # 作者格式检查（完全由 JSON 规则驱动）
-    author_warnings = []
     author_rules = tpl.get('author_warning_rules', [])
     for a in extracted['authors_struct']:
         for rule in author_rules:
@@ -559,7 +574,7 @@ def check_authors_section(extracted, tpl):
             violation = (must_match and not matched) or ((not must_match) and matched)
             if violation:
                 try:
-                    msg = message_template.format(
+                    description = message_template.format(
                         raw=a.get('raw',''),
                         field=field,
                         value=value,
@@ -568,25 +583,29 @@ def check_authors_section(extracted, tpl):
                         given_cn=a.get('given_cn','')
                     )
                 except Exception:
-                    msg = message_template or f"作者字段 {field} 未满足规则"
-                author_warnings.append(msg)
-    
-    if author_warnings:
-        report['ok'] = False
-        report['messages'].extend(author_warnings)
-    else:
-        ok_msg = tpl.get('messages', {}).get('authors_pass')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+                    description = message_template or f"作者字段 {field} 未满足规则"
+                
+                report['ok'] = False
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': '段落2',  # 作者通常是第2段
+                    'description': description,
+                    'suggestion': '建议：按照规范调整作者格式',
+                    'text_snippet': a.get('raw', '')[:150]
+                })
     
     return report
 
 def check_affiliations_section(extracted, tpl):
     """
     检查单位相关的所有内容
-    返回 {'ok': bool, 'messages': []}
+    返回 {'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
+    
+    # 提取单位文本
+    affiliations = extracted.get('affiliations', {})
+    affiliations_text = '; '.join([f"{k}. {v}" for k, v in affiliations.items()])
     
     # 单位引用检查
     used_affs = set()
@@ -597,20 +616,21 @@ def check_affiliations_section(extracted, tpl):
         tpl_aff_keys = set(int(k) for k in tpl.get('affiliations_example', {}).keys())
     except Exception:
         tpl_aff_keys = set()
-    doc_aff_keys = set(extracted.get('affiliations', {}).keys())
+    doc_aff_keys = set(affiliations.keys())
     valid_affs = tpl_aff_keys.union(doc_aff_keys)
     missing = [x for x in used_affs if x not in valid_affs]
     if missing:
         report['ok'] = False
-        miss_prefix = tpl.get('messages', {}).get('affiliations_missing_prefix')
-        if miss_prefix:
-            report['messages'].append(f"{miss_prefix}{missing}")
-    else:
-        ok_msg = tpl.get('messages', {}).get('affiliations_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        description = f"作者引用的单位编号不存在: {missing}"
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': description,
+            'suggestion': '建议：确保所有引用的单位编号都在单位列表中定义',
+            'text_snippet': affiliations_text[:150] + ('...' if len(affiliations_text) > 150 else '')
+        })
 
-    # unique-aff detection（消息外置到 JSON）
+    # unique-aff detection
     if used_affs:
         unique_ids = sorted(list(set(used_affs)))
         if len(unique_ids) == 1:
@@ -619,75 +639,67 @@ def check_affiliations_section(extracted, tpl):
             tpl_has_numbered_aff = (single_id in tpl_aff_keys)
             if doc_has_numbered_aff or tpl_has_numbered_aff:
                 report['ok'] = False
-                msg1_tpl = tpl.get('messages', {}).get('affiliations_all_same')
-                if msg1_tpl:
-                    try:
-                        msg1 = msg1_tpl.format(id=single_id)
-                    except Exception:
-                        msg1 = msg1_tpl
-                    report['messages'].append(msg1)
-                msg2_tpl = tpl.get('messages', {}).get('affiliations_all_same_advice')
-                if msg2_tpl:
-                    report['messages'].append(msg2_tpl)
+                description = f"所有作者来自同一单位（编号{single_id}），应省略单位编号"
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': description,
+                    'suggestion': '建议：当所有作者来自同一单位时，省略单位编号，直接列出单位名称',
+                    'text_snippet': affiliations_text[:150] + ('...' if len(affiliations_text) > 150 else '')
+                })
     else:
         if len(doc_aff_keys) == 1:
             single_id = next(iter(doc_aff_keys))
             report['ok'] = False
-            msg_tpl = tpl.get('messages', {}).get('affiliations_doc_single_warning')
-            if msg_tpl:
-                try:
-                    msg = msg_tpl.format(id=single_id)
-                except Exception:
-                    msg = msg_tpl
-                report['messages'].append(msg)
+            description = f"文档中只有一个单位（编号{single_id}），但未被作者引用"
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': description,
+                'suggestion': '建议：检查作者单位引用是否正确',
+                'text_snippet': affiliations_text[:150] + ('...' if len(affiliations_text) > 150 else '')
+            })
         if len(tpl_aff_keys) == 1:
             single_tpl_id = next(iter(tpl_aff_keys))
             report['ok'] = False
-            msg_tpl2 = tpl.get('messages', {}).get('affiliations_tpl_single_warning')
-            if msg_tpl2:
-                try:
-                    msg2 = msg_tpl2.format(id=single_tpl_id)
-                except Exception:
-                    msg2 = msg_tpl2
-                report['messages'].append(msg2)
+            description = f"模板中只有一个单位（编号{single_tpl_id}），建议省略编号"
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': description,
+                'suggestion': '建议：当只有一个单位时，省略编号',
+                'text_snippet': 'N/A'
+            })
     
     return report
 
 def check_format_section(doc_path, tpl):
     """
     检查格式相关的所有内容，并处理单位段落的特殊间距要求。
+    返回结构化错误列表
     """
     report = {
         'ok': True,
-        'messages': [],
-        'title_messages': [],
-        'author_messages': [],
-        'affiliation_messages': [],
-        'other_messages': []
+        'errors': []  # 改为errors数组
     }
 
-    def add_format_message(category, message):
-        """同时写入总消息和分类消息"""
-        report['messages'].append(message)
-        if category == 'title':
-            report['title_messages'].append(message)
-        elif category == 'author':
-            report['author_messages'].append(message)
-        elif category == 'affiliation':
-            report['affiliation_messages'].append(message)
-        else:
-            report['other_messages'].append(message)
-
     doc = Document(doc_path)
-    nonempty_paragraphs = [p for p in doc.paragraphs if p.text and p.text.strip()]
+    # 保存非空段落及其python索引
+    nonempty_paragraphs = []
+    nonempty_para_indices = []
+    for i, p in enumerate(doc.paragraphs):
+        if p.text and p.text.strip():
+            nonempty_paragraphs.append(p)
+            nonempty_para_indices.append(i)
     print("=== 开始格式检查 ===")
     
     if nonempty_paragraphs:
         # --- 标题格式检查 ---
         title_paragraph = nonempty_paragraphs[0]
+        title_para_index = nonempty_para_indices[0]  # 获取实际的python索引
         tr = tpl.get('format_rules', {}).get('title')
         if tr:
-            title_format_issues = check_paragraph_format(title_paragraph,
+            title_format_errors = check_paragraph_format(title_paragraph,
                 expected_font_size_pt=float(tr.get('font_size_pt')),
                 expected_font_name=str(tr.get('font_name')),
                 expected_bold=bool(tr.get('bold')),
@@ -695,20 +707,19 @@ def check_format_section(doc_path, tpl):
                 expected_space_before=float(tr.get('space_before')),
                 expected_space_after=float(tr.get('space_after')),
                 expected_alignment=tr.get('alignment'),
-                tpl=tpl)
-            if title_format_issues:
+                tpl=tpl,
+                para_index=title_para_index)  # 使用实际的python索引
+            if title_format_errors:
                 report['ok'] = False
-                header = tpl.get('messages', {}).get('format_title_issue_header', "标题格式问题：")
-                add_format_message('title', header)
-                for i in title_format_issues:
-                    add_format_message('title', f"  - {i}")
+                report['errors'].extend(title_format_errors)
         
         # --- 作者格式检查 ---
         if len(nonempty_paragraphs) > 1:
             author_paragraph = nonempty_paragraphs[1]
+            author_para_index = nonempty_para_indices[1]  # 获取实际的python索引
             ar = tpl.get('format_rules', {}).get('authors')
             if ar:
-                author_format_issues = check_paragraph_format(author_paragraph,
+                author_format_errors = check_paragraph_format(author_paragraph,
                     expected_font_size_pt=float(ar.get('font_size_pt')),
                     expected_font_name=str(ar.get('font_name')),
                     expected_bold=bool(ar.get('bold')),
@@ -716,23 +727,11 @@ def check_format_section(doc_path, tpl):
                     expected_space_before=float(ar.get('space_before')),
                     expected_space_after=float(ar.get('space_after')),
                     expected_alignment=ar.get('alignment'),
-                    tpl=tpl)
-                if author_format_issues:
+                    tpl=tpl,
+                    para_index=author_para_index)  # 使用实际的python索引
+                if author_format_errors:
                     report['ok'] = False
-                    header = tpl.get('messages', {}).get('format_authors_issue_header', "作者格式问题：")
-                    add_format_message('author', header)
-                    for i in author_format_issues:
-                        add_format_message('author', f"  - {i}")
-                else:
-                    actual_size_pt, actual_font_name, actual_bold, actual_italic, _ = detect_font_for_run(
-                        author_paragraph.runs[0] if author_paragraph.runs else None, 
-                        paragraph=author_paragraph
-                    )
-                    add_format_message('author', f"作者格式检查通过")
-                    add_format_message('author', f"  - 字体大小: {get_font_size(actual_size_pt, tpl)} 符合要求")
-                    add_format_message('author', f"  - 字体名称: {actual_font_name} 符合要求")
-                    add_format_message('author', f"  - 加粗设置: {'是' if actual_bold else '否'} 符合要求")
-                    add_format_message('author', f"  - 斜体设置: {'是' if actual_italic else '否'} 符合要求（正体）")
+                    report['errors'].extend(author_format_errors)
 
         # --- 单位格式检查 (特殊逻辑) ---
         aff_detection_rules = tpl.get('check_rules', {}).get('affiliation_detection', {})
@@ -740,21 +739,21 @@ def check_format_section(doc_path, tpl):
         keywords = aff_detection_rules.get('institution_keywords', [])
         keyword_pattern = r'\b(' + '|'.join(re.escape(kw) for kw in keywords) + r')\b' if keywords else None
         
-        # 章节标题模式（需要排除）
-        section_pattern = re.compile(r'^\s*\d+(\s+\d+)*\s+[A-Z]')
+        # 章节标题模式（需要排除）- 更严格的匹配
+        # 匹配：1 Introduction, 1.1 Materials, 1.1.1 Subsection 等
+        section_pattern = re.compile(r'^\s*\d+(\.\d+)*\s+[A-Z]')
         
         # 停止标记（遇到这些标记时停止检测单位段落）
-        # 修改：不要求必须有冒号，因为可能是错误格式"Abstract"单独成行
         stop_markers = re.compile(r'^\s*(Abstract|Keywords|CLC|Introduction|摘要|关键词)\s*[:：]?\s*$', re.IGNORECASE)
 
         affiliation_paragraphs = []
         affiliation_para_indices = []  # 记录单位段落的实际索引
-        affiliation_numbering_errors = []  # 记录编号格式错误的单位段落
         
         # 直接在doc.paragraphs上工作，跳过前面的标题和作者段落
-        # 找到第一个非空段落（标题）和第二个非空段落（作者）的索引
         nonempty_count = 0
         start_idx = 0
+        max_affiliation_paragraphs = 10  # 限制最多检测10个单位段落，防止误检测正文
+        
         for idx, p in enumerate(doc.paragraphs):
             if p.text and p.text.strip():
                 nonempty_count += 1
@@ -764,6 +763,10 @@ def check_format_section(doc_path, tpl):
         
         if start_idx > 0:
             for idx in range(start_idx, len(doc.paragraphs)):
+                # 如果已经找到足够多的单位段落，停止检测
+                if len(affiliation_paragraphs) >= max_affiliation_paragraphs:
+                    break
+                    
                 p = doc.paragraphs[idx]
                 # 跳过空段落
                 if not p.text or not p.text.strip():
@@ -773,97 +776,91 @@ def check_format_section(doc_path, tpl):
                 # 遇到停止标记时，停止检测单位段落
                 if stop_markers.match(text):
                     break
+                
+                # 严格排除章节标题（包括多级编号如1.1, 1.1.1）
+                if section_pattern.match(text):
+                    # 这是章节标题，停止检测（因为已经进入正文部分）
+                    break
                     
                 # 检查是否是单位段落
-                is_affiliation = False
                 has_keyword = keyword_pattern and re.search(keyword_pattern, text, flags=re.IGNORECASE)
                 has_numbered = re.match(numbered_pattern, text)
                 
-                # 排除章节标题（但不排除包含单位关键词的段落）
-                if section_pattern.match(text) and not has_keyword:
-                    continue
-                
                 if has_numbered or has_keyword:
-                    is_affiliation = True
                     affiliation_paragraphs.append(p)
-                    affiliation_para_indices.append(idx)  # 保存实际索引
+                    affiliation_para_indices.append(idx)  # 保存python索引（从0开始）
                     
-                    # 同时检查单位编号格式是否错误
-                    # 检测：数字 + 空格（没有点号）
-                    wrong_format_match = re.match(r'^(\d+)\s+(?!\d)', text)  # 数字+空格，后面不是数字
+                    # 检查单位编号格式是否错误
+                    wrong_format_match = re.match(r'^(\d+)\s+(?!\d)', text)
                     if wrong_format_match:
-                        # 确认不是正确的格式（不包含点号、顿号等）
                         number = wrong_format_match.group(1)
-                        # 检查是否有正确的分隔符（点号或顿号）
                         correct_format = re.match(r'^\d+[\.\、]', text)
                         if not correct_format:
-                            # idx已经是在doc.paragraphs中的实际索引
-                            affiliation_numbering_errors.append({
-                                'paragraph': p,
-                                'number': number,
-                                'text': text,
-                                'index': idx + 1  # 报告中显示为1-based
+                            # 添加编号格式错误
+                            report['ok'] = False
+                            report['errors'].append({
+                                'type': 'error',
+                                'page_number': f"段落{idx}",  # 使用python索引
+                                'description': f"单位编号格式错误：应使用'{number}.'开头，而非'{number} '",
+                                'suggestion': f"建议：修改为'{number}. {text[len(number):].lstrip()}'",
+                                'text_snippet': text[:150] + ('...' if len(text) > 150 else '')
                             })
         
+        # 检查单位段落格式
         num_affs = len(affiliation_paragraphs)
         if num_affs > 0:
             afr = tpl.get('format_rules', {}).get('affiliations')
             if afr:
                 for i, paragraph in enumerate(affiliation_paragraphs):
                     is_last = (i == num_affs - 1)
-                    
                     expected_space_after = float(afr.get('space_after', 0)) if is_last else 0.0
+                    para_idx = affiliation_para_indices[i]
 
-                    affiliation_format_issues = check_paragraph_format(paragraph,
+                    affiliation_format_errors = check_paragraph_format(paragraph,
                         expected_font_size_pt=float(afr.get('font_size_pt')),
                         expected_font_name=str(afr.get('font_name')),
                         expected_bold=bool(afr.get('bold')),
                         expected_italic=bool(afr.get('italic')),
                         expected_space_before=float(afr.get('space_before')),
                         expected_space_after=expected_space_after,
-                        tpl=tpl)
+                        tpl=tpl,
+                        para_index=para_idx)
                     
-                    if affiliation_format_issues:
+                    if affiliation_format_errors:
                         report['ok'] = False
-                        # 使用保存的索引，而不是通过文本匹配查找
-                        # affiliation_para_indices 在收集单位段落时就已经保存了正确的索引
-                        actual_idx = affiliation_para_indices[i] if i < len(affiliation_para_indices) else 0
-                        header_tpl = tpl.get('messages', {}).get('format_affiliation_issue_header', "单位格式问题（第{index}段）：")
-                        header = header_tpl.format(index=actual_idx + 1)
-                        add_format_message('affiliation', header)
-                        for it in affiliation_format_issues:
-                            add_format_message('affiliation', f"  - {it}")
-        
-        # 报告单位编号格式错误
-        if affiliation_numbering_errors:
-            report['ok'] = False
-            error_count = len(affiliation_numbering_errors)
-            add_format_message('affiliation', f"\n单位编号格式错误（共 {error_count} 处）：")
-            add_format_message('affiliation', "单位编号应使用数字+点号的格式（如 '1. College'），而非数字+空格（如 '1 College'）")
-            for error in affiliation_numbering_errors[:5]:  # 最多显示5个
-                short_text = error['text'][:50] + '...' if len(error['text']) > 50 else error['text']
-                # 为批注系统标记段落索引
-                add_format_message('affiliation', f"  - 段落 {error['index']}: '{short_text}'")
-                add_format_message('affiliation', f"    建议修改为: '{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
-                # 添加单独的批注消息（用于单独批注）
-                add_format_message('affiliation', f"__COMMENT_PARA_{error['index']}__单位编号格式错误：应使用'{error['number']}.'开头，而非'{error['number']} '")
-                add_format_message('affiliation', f"__COMMENT_PARA_{error['index']}__建议修改为：'{error['number']}. {error['text'][len(error['number']):].lstrip()}'")
-            if error_count > 5:
-                add_format_message('affiliation', f"  ... 还有 {error_count - 5} 处类似错误")
+                        report['errors'].extend(affiliation_format_errors)
 
     print("=== 格式检查完成 ===")
     return report
 
 # ---------- 段落格式检查 ----------
 
-def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name, expected_bold, expected_italic, expected_space_before, expected_space_after, expected_alignment=None, tpl=None):
-    issues = []
+def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name, expected_bold, expected_italic, expected_space_before, expected_space_after, expected_alignment=None, tpl=None, para_index=None):
+    """
+    检查段落格式
+    返回结构化错误列表，每个错误包含：type, page_number, description, suggestion, text_snippet
+    """
+    errors = []
     print(f"检查段落: '{paragraph.text[:30]}...'")
+    
+    # 提取文本片段
+    text_snippet = paragraph.text.strip()[:150]
+    if len(paragraph.text.strip()) > 150:
+        text_snippet += '...'
+    
+    # 页码信息（使用段落索引）
+    page_number = f"段落{para_index}" if para_index is not None else 'N/A'
     
     main_run = next((r for r in paragraph.runs if r.text.strip()), None)
     if not main_run:
-        issues.append("段落没有可供检查的文本内容")
-        return issues
+        errors.append({
+            'type': 'error',
+            'page_number': page_number,
+            'description': '段落没有可供检查的文本内容',
+            'suggestion': '建议：确保段落包含有效文本',
+            'text_snippet': text_snippet
+        })
+        return errors
         
     actual_size_pt, actual_font_name, actual_bold, actual_italic, extra_info = detect_font_for_run(main_run, paragraph)
     actual_font_eastasia = extra_info.get('font_eastasia', '宋体')
@@ -874,25 +871,49 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
         expected_size_name = get_font_size(expected_font_size_pt, tpl)
         print(f"字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_font_size_pt}pt）)")
         if abs(actual_size_pt - expected_font_size_pt) > 0.5:
-            issues.append(f"字体大小应为{expected_size_name} ({expected_font_size_pt}pt)，实际为{actual_size_name} ({actual_size_pt}pt)")
+            errors.append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体大小应为{expected_size_name} ({expected_font_size_pt}pt)，实际为{actual_size_name} ({actual_size_pt}pt)",
+                'suggestion': f"建议：调整字体大小为{expected_size_name} ({expected_font_size_pt}pt)",
+                'text_snippet': text_snippet
+            })
 
     # 字体名称（英文字体）
     if not should_skip_check('font_name') and expected_font_name is not None:
         print(f"英文字体: {actual_font_name}, 中文字体: {actual_font_eastasia} (期望: {expected_font_name})")
         if actual_font_name != expected_font_name:
-            issues.append(f"英文字体应为{expected_font_name}，实际为{actual_font_name}")
+            errors.append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"英文字体应为{expected_font_name}，实际为{actual_font_name}",
+                'suggestion': f"建议：将英文字体设置为{expected_font_name}",
+                'text_snippet': text_snippet
+            })
 
     # 加粗
     if not should_skip_check('bold') and expected_bold is not None:
         print(f"加粗: {'是' if actual_bold else '否'} (期望: {'是' if expected_bold else '否'})")
         if actual_bold != bool(expected_bold):
-            issues.append(f"字体应为{'加粗' if expected_bold else '不加粗'}，实际为{'加粗' if actual_bold else '不加粗'}")
+            errors.append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体应为{'加粗' if expected_bold else '不加粗'}，实际为{'加粗' if actual_bold else '不加粗'}",
+                'suggestion': f"建议：将字体设置为{'加粗' if expected_bold else '不加粗'}",
+                'text_snippet': text_snippet
+            })
 
     # 斜体
     if not should_skip_check('italic') and expected_italic is not None:
         print(f"斜体: {'是' if actual_italic else '否'} (期望: {'是' if expected_italic else '否'})")
         if actual_italic != bool(expected_italic):
-            issues.append(f"字体应为{'斜体' if expected_italic else '正体'}，实际为{'斜体' if actual_italic else '正体'}")
+            errors.append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"字体应为{'斜体' if expected_italic else '正体'}，实际为{'斜体' if actual_italic else '正体'}",
+                'suggestion': f"建议：将字体设置为{'斜体' if expected_italic else '正体'}",
+                'text_snippet': text_snippet
+            })
 
     # 段前间距
     if expected_space_before is not None:
@@ -903,7 +924,13 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
         if expected_space_before == 1.0 and 1.0 <= actual_lines <= 1.35:
             pass  # 认为是正确的
         elif abs(actual_lines - expected_space_before) > 0.2:
-            issues.append(f"段前间距应为{expected_space_before}行，实际为{actual_lines:.1f}行")
+            errors.append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"段前间距应为{expected_space_before}行，实际为{actual_lines:.1f}行",
+                'suggestion': f"建议：调整段前间距为{expected_space_before}行",
+                'text_snippet': text_snippet
+            })
 
     # 段后间距 (增加智能容差)
     if expected_space_after is not None:
@@ -915,7 +942,13 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
         if expected_space_after == 1.0 and 1.0 <= actual_lines <= 1.35:
             pass  # 认为是正确的
         elif abs(actual_lines - expected_space_after) > 0.2:
-            issues.append(f"段后间距应为{expected_space_after}行，实际为{actual_lines:.1f}行")
+            errors.append({
+                'type': 'warning',
+                'page_number': page_number,
+                'description': f"段后间距应为{expected_space_after}行，实际为{actual_lines:.1f}行",
+                'suggestion': f"建议：调整段后间距为{expected_space_after}行",
+                'text_snippet': text_snippet
+            })
     
     # 对齐方式
     if expected_alignment is not None:
@@ -946,19 +979,37 @@ def check_paragraph_format(paragraph, expected_font_size_pt, expected_font_name,
         if expected_alignment == 'justify':
             expected_val = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
             if actual_alignment != expected_val and actual_alignment != 3:
-                issues.append(f"对齐方式应为两端对齐，实际为{actual_alignment_name}")
+                errors.append({
+                    'type': 'warning',
+                    'page_number': page_number,
+                    'description': f"对齐方式应为两端对齐，实际为{actual_alignment_name}",
+                    'suggestion': "建议：将对齐方式设置为两端对齐",
+                    'text_snippet': text_snippet
+                })
         elif expected_alignment == 'center':
             expected_val = WD_PARAGRAPH_ALIGNMENT.CENTER
             if actual_alignment != expected_val and actual_alignment != 1:
-                issues.append(f"对齐方式应为居中对齐，实际为{actual_alignment_name}")
+                errors.append({
+                    'type': 'warning',
+                    'page_number': page_number,
+                    'description': f"对齐方式应为居中对齐，实际为{actual_alignment_name}",
+                    'suggestion': "建议：将对齐方式设置为居中对齐",
+                    'text_snippet': text_snippet
+                })
         elif expected_alignment == 'left':
             expected_val = WD_PARAGRAPH_ALIGNMENT.LEFT
             if actual_alignment != expected_val and actual_alignment != 0:
-                issues.append(f"对齐方式应为左对齐，实际为{actual_alignment_name}")
+                errors.append({
+                    'type': 'warning',
+                    'page_number': page_number,
+                    'description': f"对齐方式应为左对齐，实际为{actual_alignment_name}",
+                    'suggestion': "建议：将对齐方式设置为左对齐",
+                    'text_snippet': text_snippet
+                })
             
-    print(f"发现 {len(issues)} 个格式问题")
+    print(f"发现 {len(errors)} 个格式问题")
     print("---")
-    return issues
+    return errors
 
 def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     """
@@ -967,6 +1018,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
         doc_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
+    返回包含所有errors的报告
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -981,26 +1033,25 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     affiliations_report = check_affiliations_section(extracted, tpl)
     format_report = check_format_section(doc_path, tpl)
 
+    # 合并所有errors
+    all_errors = []
+    all_errors.extend(title_report.get('errors', []))
+    all_errors.extend(authors_report.get('errors', []))
+    all_errors.extend(affiliations_report.get('errors', []))
+    all_errors.extend(format_report.get('errors', []))
+
     # 组装最终报告
     report = {
+        'ok': (title_report['ok'] and authors_report['ok'] and 
+               affiliations_report['ok'] and format_report['ok']),
+        'errors': all_errors,  # 统一的errors数组
         'title': title_report,
         'authors': authors_report,
         'affiliations': affiliations_report,
         'format': format_report,
-        'summary': []
+        'extracted': extracted
     }
-
-    # 生成总结
-    all_ok = (title_report['ok'] and authors_report['ok'] and 
-              affiliations_report['ok'] and format_report['ok'])
-    summary_tpl = tpl.get('messages', {}).get('summary_overall')
-    if summary_tpl:
-        try:
-            report['summary'].append(summary_tpl.format(ok=all_ok))
-        except Exception:
-            report['summary'].append(str(summary_tpl))
     
-    report['extracted'] = extracted
     return report
 
 # ---------- 报表与 CLI ----------

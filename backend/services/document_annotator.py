@@ -345,6 +345,165 @@ def parse_issues_from_reports(all_reports):
     """
     issues = []
     
+    # ========== 新格式到旧格式的转换层 ==========
+    # 对于新格式的报告，直接生成issues，不需要转换为旧格式
+    converted_reports = {}
+    new_format_issues = []  # 存储从新格式直接生成的issues
+    
+    for module_name, report in all_reports.items():
+        if report.get('error', False):
+            converted_reports[module_name] = report
+            continue
+
+        # Figure和Table模块有特殊的定位逻辑，不在这里处理
+        if module_name in ('Figure', 'Table'):
+            converted_reports[module_name] = report
+            continue
+        
+        
+        # 检查是否为新格式
+        if 'ok' in report and 'errors' in report and isinstance(report.get('errors'), list):
+            # 新格式：直接从errors生成issues
+            errors = report.get('errors', [])
+            
+            # 新的分组策略：
+            # 1. 对于有有效text_snippet的错误，按text_snippet分组
+            # 2. 对于没有text_snippet的错误，按page_number分组
+            # 这样可以确保每个批注都能精确定位
+            
+            errors_by_location = {}  # key: (locate_method, locate_data), value: [errors]
+            
+            for error in errors:
+                if not isinstance(error, dict):
+                    continue
+                
+                desc = error.get('description', '')
+                if not desc:
+                    continue
+                
+                page_num = error.get('page_number', 'N/A')
+                snippet = error.get('text_snippet', '')
+                
+                # 确定定位方法和数据
+                locate_method = 'index'
+                locate_data = 0
+                location_key = None
+                
+                # 新的定位优先级策略：
+                # 1. 优先使用page_number中的段落索引（最精确）
+                # 2. 其次使用text_snippet进行keyword定位
+                # 3. 最后使用默认定位
+                
+                # 优先级1：检查page_number是否包含段落索引
+                if isinstance(page_num, str):
+                    import re
+                    match = re.search(r'段落\s*(\d+)', page_num)
+                    if match:
+                        para_idx = int(match.group(1))
+                        # paragraph_index是python索引（从0开始），直接使用
+                        locate_method = 'index'
+                        locate_data = para_idx
+                        location_key = (locate_method, locate_data)
+                
+                # 优先级2：如果没有段落索引，使用text_snippet进行keyword定位
+                if location_key is None and snippet and snippet.strip() and snippet.strip().upper() != 'N/A':
+                    snippet_text = snippet.strip()
+
+                    # Figure模块中，编号统计类文本（如“发现编号：...”）并不在正文中出现，
+                    # 不适合作为关键字定位，会导致“无法定位段落”。
+                    if module_name == 'Figure' and re.search(r'发现编号|期望编号|编号不连续|连续性', snippet_text):
+                        locate_method = 'keyword'
+                        locate_data = 'Fig.'
+                    else:
+                        locate_method = 'keyword'
+                        locate_data = snippet_text[:30]
+                    location_key = (locate_method, locate_data)
+                
+                # 优先级3：如果都没有，使用默认定位
+                elif location_key is None and isinstance(page_num, str):
+                    if page_num == 'N/A':
+                        # 无法精确定位，使用模块默认关键字
+                        if module_name == 'Content':
+                            locate_method = 'keyword'
+                            locate_data = 'Introduction'
+                        elif module_name == 'Abstract':
+                            locate_method = 'keyword'
+                            locate_data = 'Abstract'
+                        elif module_name == 'Keywords':
+                            locate_method = 'keyword'
+                            locate_data = 'Keywords'
+                        else:
+                            locate_method = 'index'
+                            locate_data = 0
+                        location_key = (locate_method, locate_data)
+                    else:
+                        # 其他格式的page_number
+                        location_key = ('page', page_num)
+                
+                # 如果还是没有确定定位方法，使用默认定位
+                if location_key is None:
+                    location_key = ('index', 0)
+                
+                # 按定位信息分组
+                if location_key not in errors_by_location:
+                    errors_by_location[location_key] = []
+                errors_by_location[location_key].append(error)
+            
+            # 为每个定位创建一个issue
+            for (loc_method, loc_data), error_list in errors_by_location.items():
+                messages = []
+                for e in error_list:
+                    desc = e.get('description', '')
+                    if desc:
+                        messages.append(desc)
+                
+                if not messages:
+                    continue
+                
+                # 创建issue
+                new_issue = {
+                    'module': module_name,
+                    'section': f'location_{len(new_format_issues)}',
+                    'messages': messages,
+                    'locate_method': loc_method,
+                    'locate_data': loc_data,
+                }
+                
+                # 特殊处理Content模块的content_paragraph定位
+                if loc_method == 'content_paragraph':
+                    new_issue['extra'] = {
+                        'hierarchy_report': report.get('hierarchy', {}) if isinstance(report, dict) else {}
+                    }
+                
+                # 当使用index定位方法时，检查是否来自段落索引（python索引）
+                # 这些模块的段落索引是python索引（从0开始），不应该跳过空行
+                if loc_method == 'index':
+                    # 检查error_list中是否有任何error的page_number包含"段落"
+                    has_paragraph_index = False
+                    for e in error_list:
+                        page_num = e.get('page_number', '')
+                        if isinstance(page_num, str) and '段落' in page_num:
+                            has_paragraph_index = True
+                            break
+                    
+                    # 如果来自段落索引，添加skip_empty=False标记
+                    if has_paragraph_index:
+                        if 'extra' not in new_issue:
+                            new_issue['extra'] = {}
+                        new_issue['extra']['skip_empty'] = False
+                
+                new_format_issues.append(new_issue)
+            
+            # 标记为已处理（不需要再次处理）
+            converted_reports[module_name] = {'_processed': True}
+        else:
+            # 旧格式：直接使用
+            converted_reports[module_name] = report
+    
+    # 使用转换后的报告
+    all_reports = converted_reports
+    # ========== 转换层结束 ==========
+    
     for module_name in DETECTION_ORDER:
         if module_name not in all_reports:
             continue
@@ -353,6 +512,10 @@ def parse_issues_from_reports(all_reports):
         
         # 跳过错误报告
         if report.get('error', False):
+            continue
+        
+        # 跳过已处理的新格式报告
+        if report.get('_processed', False):
             continue
         
         # 为不同模块设计定位策略
@@ -900,58 +1063,96 @@ def parse_issues_from_reports(all_reports):
                     if caption_info_list:
                         first_caption = caption_info_list[0]
                         caption_text = first_caption.get('text', 'Table')
+                        caption_para_idx = first_caption.get('paragraph_index')
+                        if isinstance(caption_para_idx, int):
+                            locate_method = 'index_including_empty'
+                            locate_data = caption_para_idx
+                        else:
+                            locate_method = 'keyword'
+                            locate_data = caption_text[:20]
                         issues.append({
                             'module': module_name,
                             'section': 'numbering',
                             'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]  # 使用标题前20个字符
+                            'locate_method': locate_method,
+                            'locate_data': locate_data
                         })
             
             # 2. 处理每个表格的问题
             tables_report = report.get('tables', [])
-            for i, table_report in enumerate(tables_report):
-                caption_info = table_report.get('caption', {})
-                caption_text = caption_info.get('text', f'Table {i+1}')
+            
+            # Fallback: 如果tables列表为空，但有errors，则从errors中生成批注
+            if not tables_report and report.get('errors'):
+                print(f"  ! Table模块：使用fallback模式从errors生成批注")
                 
-                # 检查标题格式
-                caption_format = table_report.get('caption_format', {})
-                if isinstance(caption_format, dict) and not caption_format.get('ok', False):
-                    messages = caption_format.get('messages', [])
-                    if messages:
+                # 为每个error独立创建一个issue，以便精确定位到各个表格标题
+                for err in report.get('errors', []):
+                    desc = err.get('description', '')
+                    snippet = err.get('text_snippet', '')
+                    
+                    if desc:
+                        # 使用text_snippet前30字符精确定位标题
+                        locate_keyword = snippet[:30] if snippet and snippet != 'N/A' and snippet != '...' else 'Table '
+                        
                         issues.append({
                             'module': module_name,
-                            'section': f'table{i+1}_caption',
-                            'messages': messages,
+                            'section': f'table_error_{len(issues)}',  # 使用唯一标识避免重复
+                            'messages': [f"• {desc}"],
                             'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]
+                            'locate_data': locate_keyword
                         })
-                
-                # 检查表格样式
-                table_style = table_report.get('table_style', {})
-                if isinstance(table_style, dict) and not table_style.get('ok', False):
-                    messages = table_style.get('messages', [])
-                    if messages:
-                        issues.append({
-                            'module': module_name,
-                            'section': f'table{i+1}_style',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]
-                        })
+            else:
+                # 正常处理每个表格
+                for i, table_report in enumerate(tables_report):
+                    caption_info = table_report.get('caption', {})
+                    caption_text = caption_info.get('text', f'Table {i+1}')
+                    caption_para_idx = caption_info.get('paragraph_index')
 
-                # 检查表格对齐
-                table_alignment = table_report.get('table_alignment', {})
-                if isinstance(table_alignment, dict) and not table_alignment.get('ok', False):
-                    messages = table_alignment.get('messages', [])
-                    if messages:
-                        issues.append({
-                            'module': module_name,
-                            'section': f'table{i+1}_alignment',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]
-                        })
+                    if isinstance(caption_para_idx, int):
+                        locate_method = 'index_including_empty'
+                        locate_data = caption_para_idx
+                    else:
+                        locate_method = 'keyword'
+                        locate_data = caption_text[:20]
+                    
+                    # 检查标题格式
+                    caption_format = table_report.get('caption_format', {})
+                    if isinstance(caption_format, dict) and not caption_format.get('ok', False):
+                        messages = caption_format.get('messages', [])
+                        if messages:
+                            issues.append({
+                                'module': module_name,
+                                'section': f'table{i+1}_caption',
+                                'messages': messages,
+                                'locate_method': locate_method,
+                                'locate_data': locate_data
+                            })
+                    
+                    # 检查表格样式
+                    table_style = table_report.get('table_style', {})
+                    if isinstance(table_style, dict) and not table_style.get('ok', False):
+                        messages = table_style.get('messages', [])
+                        if messages:
+                            issues.append({
+                                'module': module_name,
+                                'section': f'table{i+1}_style',
+                                'messages': messages,
+                                'locate_method': locate_method,
+                                'locate_data': locate_data
+                            })
+
+                    # 检查表格对齐
+                    table_alignment = table_report.get('table_alignment', {})
+                    if isinstance(table_alignment, dict) and not table_alignment.get('ok', False):
+                        messages = table_alignment.get('messages', [])
+                        if messages:
+                            issues.append({
+                                'module': module_name,
+                                'section': f'table{i+1}_alignment',
+                                'messages': messages,
+                                'locate_method': locate_method,
+                                'locate_data': locate_data
+                            })
 
         elif module_name == 'Figure':
             # Figure模块：定位到图片标题段落（类似Table模块）
@@ -965,64 +1166,152 @@ def parse_issues_from_reports(all_reports):
                     if captions:
                         first_caption = captions[0]
                         caption_text = first_caption.get('full_text', 'Fig.')
+                        caption_para_idx = first_caption.get('paragraph_index')
+                        if isinstance(caption_para_idx, int):
+                            locate_method = 'index_including_empty'
+                            locate_data = caption_para_idx
+                        else:
+                            locate_method = 'keyword'
+                            locate_data = caption_text[:20]
                         issues.append({
                             'module': module_name,
                             'section': 'numbering',
                             'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]  # 使用标题前20个字符
+                            'locate_method': locate_method,
+                            'locate_data': locate_data
                         })
             
             # 2. 处理每张图片的问题（支持新的报告结构）
             figures = report.get('figures', [])
-            for fig_report in figures:
-                fig_idx = fig_report.get('figure_index', 0)
-                para_idx = fig_report.get('paragraph_index', 0)
+            
+            # Fallback: 如果figures列表为空，但有errors，则从errors中生成批注
+            if not figures and report.get('errors'):
+                print(f"  ! Figure模块：使用fallback模式从errors生成批注")
                 
-                # 获取标题信息（如果有）
-                has_caption = fig_report.get('has_caption', False)
-                caption_info = fig_report.get('caption_info') if has_caption else None
+                # 按图片编号分组errors
+                from collections import defaultdict
+                errors_by_fig = defaultdict(list)
+                general_errors = []
                 
-                # 标题相关的问题 → 批注在标题段落
-                caption_messages = []
-                format_check = fig_report.get('format_check', {})
-                if isinstance(format_check, dict) and not format_check.get('ok', False):
-                    caption_messages.extend(format_check.get('messages', []))
+                for err in report.get('errors', []):
+                    desc = err.get('description', '')
+                    snippet = err.get('text_snippet', 'N/A')
+                    
+                    # 尝试从描述中提取图片编号
+                    fig_match = re.match(r'Fig\.(\d+)', desc) or re.match(r'Fig\.(\d+)', snippet)
+                    if fig_match:
+                        fig_num = int(fig_match.group(1))
+                        errors_by_fig[fig_num].append(f"• {desc}")
+                    elif re.search(r'第(\d+)张图片', desc):
+                        fig_match = re.search(r'第(\d+)张图片', desc)
+                        fig_num = int(fig_match.group(1))
+                        errors_by_fig[fig_num].append(f"• {desc}")
+                    else:
+                        general_errors.append(f"• {desc}")
                 
-                if caption_messages and has_caption:
-                    # 批注在标题上
-                    caption_text = caption_info.get('full_text', f'Fig.{caption_info.get("number", fig_idx)}')[:30]
+                # 为每个图片编号创建批注
+                for fig_num in sorted(errors_by_fig.keys()):
+                    messages = errors_by_fig[fig_num]
+                    
+                    # 查找对应错误的text_snippet作为定位关键字
+                    # text_snippet通常包含标题文本（如"Fig. 2 Dynamic model..."）
+                    locate_keyword = None
+                    for err in report.get('errors', []):
+                        desc = err.get('description', '')
+                        snippet = err.get('text_snippet', '')
+                        if f'Fig.{fig_num}' in desc and snippet and snippet != 'N/A':
+                            # 使用标题文本的前30字符，这样能精确匹配标题段落
+                            locate_keyword = snippet[:30]
+                            break
+                    
+                    # 如果没有找到有效的snippet，回退到 'Fig. X ' （注意末尾空格，避免匹配Fig. X1）
+                    if not locate_keyword:
+                        locate_keyword = f'Fig. {fig_num} '
+                    
                     issues.append({
                         'module': module_name,
-                        'section': f'figure{fig_idx}_caption',
-                        'messages': caption_messages,
+                        'section': f'figure{fig_num}_errors',
+                        'messages': messages,
                         'locate_method': 'keyword',
-                        'locate_data': caption_text
+                        'locate_data': locate_keyword
                     })
                 
-                # 图片本身的问题 → 批注在图片段落
-                picture_messages = []
-                
-                # 图片对齐等问题
-                picture_check = fig_report.get('picture_check', {})
-                if isinstance(picture_check, dict) and not picture_check.get('ok', False):
-                    picture_messages.extend(picture_check.get('messages', []))
-                
-                # 图表内容问题
-                content_check = fig_report.get('content_check', {})
-                if isinstance(content_check, dict) and not content_check.get('ok', False):
-                    if content_check.get('is_chart', False):
-                        picture_messages.extend(content_check.get('messages', []))
-                
-                if picture_messages:
-                    # 批注在图片段落（使用段落索引）
+                # 通用错误（如编号连续性）定位到第一个图片标题
+                if general_errors:
                     issues.append({
                         'module': module_name,
-                        'section': f'figure{fig_idx}_picture',
-                        'messages': picture_messages,
-                        'locate_method': 'index',
-                        'locate_data': para_idx
+                        'section': 'figure_general_errors',
+                        'messages': general_errors,
+                        'locate_method': 'keyword',
+                        'locate_data': 'Fig. 1 '  # 定位到第一个标题（注意末尾空格）
                     })
+            else:
+                # 正常处理每张图片
+                for fig_report in figures:
+                    fig_idx = fig_report.get('figure_index', 0)
+                    para_idx = fig_report.get('paragraph_index', 0)
+                    
+                    # 获取标题信息（如果有）
+                    has_caption = fig_report.get('has_caption', False)
+                    caption_info = fig_report.get('caption_info') if has_caption else None
+                    
+                    # 标题相关的问题 → 批注在标题段落
+                    caption_messages = []
+                    format_check = fig_report.get('format_check', {})
+                    if isinstance(format_check, dict) and not format_check.get('ok', False):
+                        caption_messages.extend(format_check.get('messages', []))
+                    
+                    if caption_messages and has_caption:
+                        # 批注在标题上
+                        caption_text = caption_info.get('full_text', f'Fig.{caption_info.get("number", fig_idx)}')[:30]
+                        caption_para_idx = caption_info.get('paragraph_index') if isinstance(caption_info, dict) else None
+                        if isinstance(caption_para_idx, int):
+                            locate_method = 'index_including_empty'
+                            locate_data = caption_para_idx
+                        else:
+                            locate_method = 'keyword'
+                            locate_data = caption_text
+                        issues.append({
+                            'module': module_name,
+                            'section': f'figure{fig_idx}_caption',
+                            'messages': caption_messages,
+                            'locate_method': locate_method,
+                            'locate_data': locate_data
+                        })
+                    
+                    # 图片本身的问题 → 批注在图片段落
+                    picture_messages = []
+                    
+                    # 图片对齐等问题
+                    picture_check = fig_report.get('picture_check', {})
+                    if isinstance(picture_check, dict) and not picture_check.get('ok', False):
+                        picture_messages.extend(picture_check.get('messages', []))
+                    
+                    # 图表内容问题
+                    content_check = fig_report.get('content_check', {})
+                    if isinstance(content_check, dict) and not content_check.get('ok', False):
+                        if content_check.get('is_chart', False):
+                            picture_messages.extend(content_check.get('messages', []))
+                    
+                    if picture_messages:
+                        # 批注在图片段落（使用段落索引）
+                        if isinstance(para_idx, int) and para_idx >= 0:
+                            locate_method = 'index_including_empty'
+                            locate_data = para_idx
+                        elif isinstance(caption_info, dict) and isinstance(caption_info.get('paragraph_index'), int):
+                            locate_method = 'index_including_empty'
+                            locate_data = caption_info.get('paragraph_index')
+                        else:
+                            locate_method = 'keyword'
+                            locate_data = (caption_info.get('full_text', 'Fig.')[:20] if isinstance(caption_info, dict) else 'Fig.')
+
+                        issues.append({
+                            'module': module_name,
+                            'section': f'figure{fig_idx}_picture',
+                            'messages': picture_messages,
+                            'locate_method': locate_method,
+                            'locate_data': locate_data
+                        })
 
         elif module_name == 'Chinese_section':
             # 为中文部分的每个子项添加精确定位
@@ -1094,9 +1383,11 @@ def parse_issues_from_reports(all_reports):
                 'locate_method': 'keyword',
                 'locate_data': 'CLC number'
             })
+    
+    # 添加从新格式直接生成的issues
+    issues.extend(new_format_issues)
 
     return issues
-
 
 def add_all_comments(doc_path, copy_path, issues_list):
     """
@@ -1186,6 +1477,8 @@ def add_all_comments(doc_path, copy_path, issues_list):
                     and 'Content-format' not in f"{module_name}-{section_name}"
                     and 'Content-case' not in f"{module_name}-{section_name}"
                 )
+                if extra.get('skip_empty') is False:
+                    skip_empty = False
                 paragraph = find_paragraph_by_index(doc, locate_data, skip_empty=skip_empty)
             elif locate_method == 'text':
                 paragraph = find_paragraph_by_text(doc, locate_data)
@@ -1198,6 +1491,8 @@ def add_all_comments(doc_path, copy_path, issues_list):
             elif locate_method == 'formula_number':
                 # 通过公式编号定位（如 "(2)"）
                 paragraph = find_paragraph_by_keyword(doc, locate_data)
+            elif locate_method == 'index_including_empty':
+                paragraph = find_paragraph_by_index(doc, locate_data, skip_empty=False)
             
             if paragraph:
                 # 构建批注内容

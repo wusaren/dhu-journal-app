@@ -306,23 +306,74 @@
                 </template>
                 
                 <div class="module-checks">
-                  <div
-                    v-for="(check, checkName) in moduleResult.checks"
-                    :key="checkName"
-                    class="check-item-inline"
-                  >
-                    <div class="check-header-inline">
-                      <span :class="['check-icon', check.ok ? 'success' : 'error']">
-                        {{ check.ok ? '✓' : '✗' }}
-                      </span>
-                      <span class="check-name-text">{{ checkName }}</span>
-                    </div>
-                    <div v-if="check.messages && check.messages.length > 0" class="check-messages-inline">
-                      <div v-for="(message, index) in check.messages" :key="index" class="message-text">
-                        • {{ message }}
+                  <!-- 新格式：errors 数组（大多数检测模块） -->
+                  <template v-if="Object.keys(moduleResult.checks || {}).length === 0">
+                    <!-- 无错误：全部通过 -->
+                    <div v-if="moduleResult.ok && (!moduleResult.errors || moduleResult.errors.length === 0)" class="check-item-inline">
+                      <div class="check-header-inline">
+                        <span class="check-icon success">✓</span>
+                        <span class="check-name-text">全部检测通过</span>
                       </div>
                     </div>
-                  </div>
+                    <!-- 有错误：逐条展示结构化详情 -->
+                    <div
+                      v-for="(error, index) in (moduleResult.errors || [])"
+                      :key="error.error_id || index"
+                      class="check-item-inline"
+                    >
+                      <div class="check-header-inline">
+                        <span :class="['check-icon', error.type === 'error' ? 'error' : 'warning']">
+                          {{ error.type === 'error' ? '✗' : '⚠' }}
+                        </span>
+                        <span class="check-name-text">{{ error.error_id || `问题 ${index + 1}` }}</span>
+                        <el-tag
+                          :type="error.type === 'error' ? 'danger' : 'warning'"
+                          size="small"
+                          style="margin-left: 8px;"
+                        >
+                          {{ error.type === 'error' ? 'ERROR' : 'WARNING' }}
+                        </el-tag>
+                      </div>
+                      <div class="check-messages-inline">
+                        <div v-if="error.page_number && String(error.page_number) !== 'N/A'" class="message-text error-location">
+                          📍 页码：{{ error.page_number }}
+                        </div>
+                        <div v-if="error.description" class="message-text error-description">
+                          {{ error.description }}
+                        </div>
+                        <div v-if="error.suggestion && String(error.suggestion) !== 'N/A'" class="message-text error-suggestion">
+                          💡 {{ error.suggestion }}
+                        </div>
+                        <div
+                          v-if="error.text_snippet && String(error.text_snippet) !== 'N/A' && String(error.text_snippet).length > 3"
+                          class="message-text error-snippet"
+                        >
+                          📄 {{ String(error.text_snippet).length > 120 ? String(error.text_snippet).slice(0, 120) + '...' : error.text_snippet }}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 旧格式：checks 字典（Table / Figure 等老结构模块） -->
+                  <template v-else>
+                    <div
+                      v-for="(check, checkName) in moduleResult.checks"
+                      :key="checkName"
+                      class="check-item-inline"
+                    >
+                      <div class="check-header-inline">
+                        <span :class="['check-icon', check.ok ? 'success' : 'error']">
+                          {{ check.ok ? '✓' : '✗' }}
+                        </span>
+                        <span class="check-name-text">{{ checkName }}</span>
+                      </div>
+                      <div v-if="check.messages && check.messages.length > 0" class="check-messages-inline">
+                        <div v-for="(message, index) in check.messages" :key="index" class="message-text">
+                          • {{ message }}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </el-collapse-item>
             </el-collapse>
@@ -672,7 +723,7 @@
                 <span class="module-description">{{ module.description }}</span>
               </el-checkbox>
               <el-button
-                v-if="selectedModules.includes(module.value)"
+                v-if="selectedModules.includes(module.value) && module.skipable !== false"
                 size="small"
                 text
                 type="primary"
@@ -702,8 +753,8 @@
           </el-checkbox>
         </div>
         
-        <!-- 摘要分类号检测选项（需同时选择摘要和关键词检测才显示） -->
-        <div v-if="selectedModules.includes('Abstract') && selectedModules.includes('Keywords')" class="figure-api-option">
+        <!-- 摘要分类号检测选项（需选择摘要检测才显示） -->
+        <div v-if="selectedModules.includes('Abstract')" class="figure-api-option">
           <el-alert 
             title="分类号检测选项（使用大模型）" 
             type="warning" 
@@ -869,6 +920,7 @@ const availableModules = [
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
   { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' },
+  { value: 'Reference', label: '参考文献检测', description: '检测参考文献格式及正文引用', skipable: false },
   { value: 'Chinese_section', label: '中文部分检测', description: '检测中文标题、作者、单位、摘要和关键词格式' }
 ]
 
@@ -1543,26 +1595,34 @@ const getPassRateType = (passRate: number) => {
 
 const getModuleStatus = (moduleResult: any) => {
   const checks = moduleResult.checks || {}
-  const checkValues = Object.values(checks)
-  
-  if (checkValues.length === 0) return '未检测'
-  
-  const allPassed = checkValues.every((check: any) => check.ok === true)
+  const checkKeys = Object.keys(checks)
+
+  // 新格式：checks 为空，使用 ok 字段和 errors 数组
+  if (checkKeys.length === 0) {
+    if (typeof moduleResult.ok === 'boolean') {
+      if (moduleResult.ok) return '全部通过'
+      const errCount = (moduleResult.errors || []).length
+      return errCount > 0 ? `发现 ${errCount} 个问题` : '检测失败'
+    }
+    return '未检测'
+  }
+
+  // 旧格式：遍历 checks 统计
+  const checkValues = Object.values(checks) as any[]
+  const allPassed = checkValues.every((c: any) => c.ok === true)
   if (allPassed) return '全部通过'
-  
-  const allFailed = checkValues.every((check: any) => check.ok === false)
+  const allFailed = checkValues.every((c: any) => c.ok === false)
   if (allFailed) return '全部失败'
-  
   return '部分通过'
 }
 
 const getModuleStatusType = (moduleResult: any) => {
   const status = getModuleStatus(moduleResult)
-  
   if (status === '全部通过') return 'success'
   if (status === '全部失败') return 'danger'
-  if (status === '部分通过') return 'warning'
-  return 'info'
+  if (status === '未检测') return 'info'
+  // '部分通过' 或 '发现 N 个问题'
+  return 'warning'
 }
 
 // 删除论文
@@ -1983,9 +2043,15 @@ onMounted(() => {
   color: #f56c6c;
 }
 
+.check-icon.warning {
+  color: #e6a23c;
+}
+
 .check-name-text {
   font-weight: 500;
   color: #606266;
+  display: flex;
+  align-items: center;
 }
 
 .check-messages-inline {
@@ -1997,6 +2063,29 @@ onMounted(() => {
 .message-text {
   margin-bottom: 4px;
   line-height: 1.5;
+}
+
+.error-location {
+  color: #909399;
+  font-size: 12px;
+}
+
+.error-description {
+  color: #303133;
+  font-weight: 500;
+}
+
+.error-suggestion {
+  color: #409eff;
+}
+
+.error-snippet {
+  color: #606266;
+  font-style: italic;
+  background: #f5f7fa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  word-break: break-all;
 }
 
 .format-actions {

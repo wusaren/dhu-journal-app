@@ -1,0 +1,20 @@
+{
+  "template_name": "参考文献引用检测模板",
+  "template_version": "1.0",
+  "description": "检测参考文献的引用情况，包括引用顺序、未引用检查、不存在引用检查",
+  
+  "check_rules": {
+    "citation_order_check": true,
+    "uncited_references_check": true,
+    "nonexistent_citations_check": true
+  },
+  
+  "messages": {
+    "no_references_section": "未找到参考文献部分",
+    "empty_references": "参考文献列表为空",
+    "no_citations": "正文中未找到任何参考文献引用",
+    "citation_order_error": "引用顺序不正确",
+    "uncited_reference": "参考文献未在正文中被引用",
+    "nonexistent_citation": "引用了不存在的参考文献"
+  }
+}

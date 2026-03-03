@@ -29,6 +29,7 @@ try:
         AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
         DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
     )
+    from .error_formatter import format_error
 except ImportError as e:
     print('错误：',e)
     # 尝试绝对导入（当直接运行时）
@@ -38,6 +39,7 @@ except ImportError as e:
             AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
             DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
         )
+        from paper_detect.error_formatter import format_error
     except ImportError:
         # 最后尝试同目录导入
         from check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
@@ -45,6 +47,7 @@ except ImportError as e:
             AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
             DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
         )
+        from error_formatter import format_error
 
 # 定义直辖市列表，用于地址格式检测
 MUNICIPALITIES = ["北京", "上海", "天津", "重庆"]
@@ -162,11 +165,21 @@ def detect_font_for_run(run, paragraph=None):
     font_name_ascii = font_name_ascii if font_name_ascii else "Times New Roman"
     font_name_eastasia = font_name_eastasia if font_name_eastasia else "宋体"
     
-    # 4. 检测加粗和斜体
+    # 4. 检测加粗和斜体 - 优先直接格式，直接格式为None时使用样式格式
     try:
-        if run.font:
-            is_bold = run.font.bold if run.font.bold is not None else False
-            is_italic = run.font.italic if run.font.italic is not None else False
+        if run and run.font and run.font.bold is not None:
+            is_bold = run.font.bold
+        elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+            is_bold = paragraph.style.font.bold
+        else:
+            is_bold = False
+        
+        if run and run.font and run.font.italic is not None:
+            is_italic = run.font.italic
+        elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+            is_italic = paragraph.style.font.italic
+        else:
+            is_italic = False
         
         is_bold = bool(is_bold)
         is_italic = bool(is_italic)
@@ -1044,6 +1057,7 @@ def check_chinese_section_with_template(docx_path, template_identifier, skip_che
         docx_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表
+    返回新格式：{'ok': bool, 'errors': []}
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -1053,25 +1067,67 @@ def check_chinese_section_with_template(docx_path, template_identifier, skip_che
     tpl = load_template(template_identifier)
     doc = Document(docx_path)
     
-    all_reports = {}
+    all_errors = []
     
     # 1. 定位中文部分
     chinese_section = find_chinese_section(doc)
     if not chinese_section:
         print("文档中未找到中文部分，跳过检测")
-        return {"summary": ["未找到中文部分"]}
-
-    all_reports['details'] = dict(chinese_section)
-    try:
-        if chinese_section.get('title_index') is not None:
-            all_reports['details']['title_text'] = doc.paragraphs[chinese_section['title_index']].text.strip()
-    except Exception:
-        pass
+        return {
+            'ok': False,
+            'errors': [format_error(
+                "未找到中文部分",
+                error_type='error',
+                page_number='N/A',
+                text_snippet='N/A',
+                suggestion='建议：在参考文献后添加中文标题、作者、单位、摘要和关键词'
+            )]
+        }
     
     # 2. 依次检测各个部分
     # 检测标题
     title_report = check_chinese_title(doc, chinese_section, tpl)
-    all_reports['chinese_title_format'] = title_report
+    if not title_report['ok']:
+        for msg in title_report['messages']:
+            title_idx = chinese_section.get('title_index')
+            title_text = doc.paragraphs[title_idx].text.strip() if title_idx is not None else 'N/A'
+            
+            # 根据具体问题生成具体建议
+            if '中文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '英文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '字号' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '加粗' in msg:
+                suggestion = f'建议：{msg}'
+            elif '斜体' in msg:
+                suggestion = f'建议：{msg}'
+            elif '对齐' in msg:
+                suggestion = msg.replace('应', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '段前间距' in msg or '段后间距' in msg:
+                suggestion = msg.replace('应为', '调整为')
+                suggestion = f'建议：{suggestion}'
+            elif '行间距' in msg:
+                suggestion = msg.replace('应为', '调整为')
+                suggestion = f'建议：{suggestion}'
+            elif '缩进' in msg:
+                suggestion = msg.replace('应为', '调整为')
+                suggestion = f'建议：{suggestion}'
+            else:
+                suggestion = '建议：按照模板要求调整中文标题格式'
+            
+            all_errors.append(format_error(
+                f"[中文标题] {msg}",
+                error_type='warning',
+                page_number=f"段落{title_idx}" if title_idx is not None else 'N/A',
+                text_snippet=title_text[:150] if title_text != 'N/A' else 'N/A',
+                suggestion=suggestion
+            ))
     
     # 检测作者
     authors_data = []
@@ -1079,34 +1135,160 @@ def check_chinese_section_with_template(docx_path, template_identifier, skip_che
         author_text = doc.paragraphs[chinese_section['author_index']].text.strip()
         authors_data = parse_chinese_authors(author_text)
     author_report = check_chinese_author(doc, chinese_section, tpl)
-    all_reports['chinese_author_format'] = author_report
+    if not author_report['ok']:
+        for msg in author_report['messages']:
+            author_idx = chinese_section.get('author_index')
+            author_text = doc.paragraphs[author_idx].text.strip() if author_idx is not None else 'N/A'
+            
+            # 根据具体问题生成具体建议
+            if '中文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '英文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '字号' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '加粗' in msg:
+                suggestion = f'建议：{msg}'
+            elif '斜体' in msg:
+                suggestion = f'建议：{msg}'
+            elif '对齐' in msg:
+                suggestion = msg.replace('应', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '单位编号' in msg:
+                suggestion = f'建议：{msg}'
+            else:
+                suggestion = '建议：按照模板要求调整中文作者格式'
+            
+            all_errors.append(format_error(
+                f"[中文作者] {msg}",
+                error_type='warning',
+                page_number=f"段落{author_idx}" if author_idx is not None else 'N/A',
+                text_snippet=author_text[:150] if author_text != 'N/A' else 'N/A',
+                suggestion=suggestion
+            ))
     
     # 检测单位
     affiliation_report = check_chinese_affiliation(doc, chinese_section, authors_data, tpl)
-    all_reports['chinese_affiliation_format'] = affiliation_report
+    if not affiliation_report['ok']:
+        for msg in affiliation_report['messages']:
+            affiliation_idx = chinese_section.get('affiliation_index')
+            affiliation_text = doc.paragraphs[affiliation_idx].text.strip() if affiliation_idx is not None else 'N/A'
+            
+            # 根据具体问题生成具体建议
+            if '中文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '英文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '字号' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '对齐' in msg:
+                suggestion = msg.replace('应', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '邮编' in msg:
+                suggestion = f'建议：{msg}'
+            elif '单位名称' in msg:
+                suggestion = f'建议：{msg}'
+            elif '单位编号' in msg:
+                suggestion = f'建议：{msg}'
+            else:
+                suggestion = '建议：按照模板要求调整中文单位格式'
+            
+            all_errors.append(format_error(
+                f"[中文单位] {msg}",
+                error_type='warning',
+                page_number=f"段落{affiliation_idx}" if affiliation_idx is not None else 'N/A',
+                text_snippet=affiliation_text[:150] if affiliation_text != 'N/A' else 'N/A',
+                suggestion=suggestion
+            ))
     
     # 检测摘要
     abstract_report = check_chinese_abstract(doc, chinese_section, tpl)
-    all_reports['chinese_abstract_format'] = abstract_report
+    if not abstract_report['ok']:
+        for msg in abstract_report['messages']:
+            abstract_idx = chinese_section.get('abstract_index')
+            abstract_text = doc.paragraphs[abstract_idx].text.strip() if abstract_idx is not None else 'N/A'
+            
+            # 根据具体问题生成具体建议
+            if '中文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '英文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '字号' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '加粗' in msg:
+                suggestion = f'建议：{msg}'
+            elif '对齐' in msg:
+                suggestion = msg.replace('应', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '间距' in msg:
+                suggestion = msg.replace('应为', '调整为')
+                suggestion = f'建议：{suggestion}'
+            elif '缩进' in msg:
+                suggestion = msg.replace('应为', '调整为')
+                suggestion = f'建议：{suggestion}'
+            else:
+                suggestion = '建议：按照模板要求调整中文摘要格式'
+            
+            all_errors.append(format_error(
+                f"[中文摘要] {msg}",
+                error_type='warning',
+                page_number=f"段落{abstract_idx}" if abstract_idx is not None else 'N/A',
+                text_snippet=abstract_text[:150] if abstract_text != 'N/A' else 'N/A',
+                suggestion=suggestion
+            ))
     
     # 检测关键词
     keywords_report = check_chinese_keywords(doc, chinese_section, tpl)
-    all_reports['chinese_keywords_format'] = keywords_report
-    
-    # 3. 生成总结
-    summary = []
-    for section, report in all_reports.items():
-        if not report.get('ok', True):
-            section_name = section
-            messages = report.get('messages', [])
-            if messages:
-                summary.append(f"{section_name} 检测失败:")
-                for msg in messages:
-                    summary.append(f"  • {msg}")
-    all_reports['summary'] = summary if summary else ["中文部分格式基本符合要求"]
+    if not keywords_report['ok']:
+        for msg in keywords_report['messages']:
+            keywords_idx = chinese_section.get('keywords_index')
+            keywords_text = doc.paragraphs[keywords_idx].text.strip() if keywords_idx is not None else 'N/A'
+            
+            # 根据具体问题生成具体建议
+            if '中文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '英文字体' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '字号' in msg:
+                suggestion = msg.replace('应为', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '加粗' in msg:
+                suggestion = f'建议：{msg}'
+            elif '对齐' in msg:
+                suggestion = msg.replace('应', '改为')
+                suggestion = f'建议：{suggestion}'
+            elif '分隔符' in msg:
+                suggestion = f'建议：{msg}'
+            elif '间距' in msg:
+                suggestion = msg.replace('应为', '调整为')
+                suggestion = f'建议：{suggestion}'
+            else:
+                suggestion = '建议：按照模板要求调整中文关键词格式'
+            
+            all_errors.append(format_error(
+                f"[中文关键词] {msg}",
+                error_type='warning',
+                page_number=f"段落{keywords_idx}" if keywords_idx is not None else 'N/A',
+                text_snippet=keywords_text[:150] if keywords_text != 'N/A' else 'N/A',
+                suggestion=suggestion
+            ))
     
     print(f"--- 中文部分检测完成 ---")
-    return all_reports
+    return {
+        'ok': len(all_errors) == 0,
+        'errors': all_errors
+    }
 
 if __name__ == '__main__':
     # 用于独立测试

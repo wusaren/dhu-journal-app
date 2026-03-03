@@ -115,15 +115,25 @@ def detect_font_for_run(run, paragraph=None):
 
     font_size = font_size if font_size is not None else 12.0
 
-    is_bold = font_source.bold if font_source.bold is not None else False
-    is_italic = font_source.italic if font_source.italic is not None else False
-    if run and run.font:
-        is_bold = run.font.bold if run.font.bold is not None else is_bold
-        is_italic = run.font.italic if run.font.italic is not None else is_italic
+    # 加粗检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.bold is not None:
+        is_bold = run.font.bold
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+        is_bold = paragraph.style.font.bold
+    else:
+        is_bold = False
     
-    # 确保返回明确的布尔值，而不是None
-    is_bold = bool(is_bold) if is_bold is not None else False
-    is_italic = bool(is_italic) if is_italic is not None else False
+    # 斜体检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.italic is not None:
+        is_italic = run.font.italic
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+        is_italic = paragraph.style.font.italic
+    else:
+        is_italic = False
+    
+    # 确保返回明确的布尔值
+    is_bold = bool(is_bold)
+    is_italic = bool(is_italic)
 
     return font_size, font_name, is_bold, is_italic, {}
 
@@ -332,14 +342,23 @@ def find_picture_captions(doc, tpl):
 
 def find_picture_before_caption(doc, caption_info):
     """
-    在标题上方查找对应的图片
+    在标题上方或下方查找对应的图片
     返回：包含图片的段落对象或None
     """
     caption_idx = caption_info['paragraph_index']
-    max_distance = 2  # 最多向上查找2个段落
+    max_distance = 2  # 最多查找2个段落
     
-    # 在标题前的几个段落中查找图片
+    # 优先在标题前的几个段落中查找图片
     for i in range(caption_idx - 1, max(0, caption_idx - max_distance - 1), -1):
+        if i < 0 or i >= len(doc.paragraphs):
+            continue
+        
+        paragraph = doc.paragraphs[i]
+        if has_picture_object(paragraph):
+            return paragraph
+    
+    # 如果上方没找到，尝试在标题下方查找（如Fig.1的情况）
+    for i in range(caption_idx + 1, min(len(doc.paragraphs), caption_idx + max_distance + 1)):
         if i < 0 or i >= len(doc.paragraphs):
             continue
         
@@ -366,18 +385,25 @@ def check_picture_alignment(picture_paragraph):
 def check_caption_format(caption_info, tpl):
     """
     检查图片标题的格式
-    返回：{'ok': bool, 'messages': []}
+    返回：{'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
     
     paragraph = caption_info['paragraph']
     expected_format = tpl.get('format_rules', {}).get('caption', {})
+    caption_text = caption_info.get('full_text', '')
     
     # 获取主要的文本run
     main_run = next((r for r in paragraph.runs if r.text.strip()), None)
     if not main_run:
         report['ok'] = False
-        report['messages'].append('图片标题没有可供检查的文本内容')
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': '图片标题没有可供检查的文本内容',
+            'suggestion': '建议：检查图片标题格式',
+            'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+        })
         return report
     
     
@@ -390,7 +416,13 @@ def check_caption_format(caption_info, tpl):
             msg = tpl.get('messages', {}).get('caption_bold_error', '图片标题应为不加粗')
             if expected_bold:
                 msg = '图片标题应加粗'
-            report['messages'].append(f"{msg}（当前：{'加粗' if actual_bold else '不加粗'}）")
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"{msg}（当前：{'加粗' if actual_bold else '不加粗'}）",
+                'suggestion': f"建议：将图片标题设置为{'加粗' if expected_bold else '不加粗'}",
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
     # 检查斜体
     if not should_skip_check('italic') and 'italic' in expected_format:
@@ -401,7 +433,13 @@ def check_caption_format(caption_info, tpl):
             msg = tpl.get('messages', {}).get('caption_italic_error', '图片标题应为正体')
             if expected_italic:
                 msg = '图片标题应为斜体'
-            report['messages'].append(f"{msg}（当前：{'斜体' if actual_italic else '正体'}）")
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"{msg}（当前：{'斜体' if actual_italic else '正体'}）",
+                'suggestion': f"建议：将图片标题设置为{'斜体' if expected_italic else '正体'}",
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
     # 检查对齐方式
     if not should_skip_check('alignment') and expected_format.get('alignment') == 'center':
@@ -420,7 +458,13 @@ def check_caption_format(caption_info, tpl):
         if actual_alignment != 1:
             report['ok'] = False
             msg = tpl.get('messages', {}).get('caption_alignment_error', '图片标题应居中对齐')
-            report['messages'].append(f"{msg}（当前：{actual_alignment_name}）")
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"{msg}（当前：{actual_alignment_name}）",
+                'suggestion': '建议：将图片标题设置为居中对齐',
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
     # 检查字体大小
     if not should_skip_check('font_size'):
@@ -431,7 +475,13 @@ def check_caption_format(caption_info, tpl):
             expected_size_name = get_font_size(expected_size, tpl)
             actual_size_name = get_font_size(actual_size, tpl)
             msg = tpl.get('messages', {}).get('caption_font_size_error', '图片标题字体大小不正确')
-            report['messages'].append(f"{msg}（期望：{expected_size_name}，实际：{actual_size_name}）")
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"{msg}（期望：{expected_size_name}，实际：{actual_size_name}）",
+                'suggestion': f"建议：将字体大小调整为{expected_size_name}",
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
     # 检查字体名称
     if not should_skip_check('font_name'):
@@ -439,7 +489,13 @@ def check_caption_format(caption_info, tpl):
         actual_size, actual_font, _, _, _ = detect_font_for_run(main_run, paragraph)
         if actual_font and actual_font != expected_font:
             report['ok'] = False
-            report['messages'].append(f"图片标题字体应为{expected_font}（当前：{actual_font}）")
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"图片标题字体应为{expected_font}（当前：{actual_font}）",
+                'suggestion': f"建议：将字体设置为{expected_font}",
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
     return report
 
@@ -473,6 +529,69 @@ def check_figure_numbering(captions, tpl):
     
     return report
 
+def check_figure_reference(doc, figure_number, figure_paragraph_index, caption_paragraph=None, search_range=3):
+    """
+    检查图片是否在前文中被引用
+    
+    参数:
+        doc: Document对象
+        figure_number: 图片编号（int）
+        figure_paragraph_index: 图片所在段落的索引
+        caption_paragraph: 图片标题段落对象（用于获取标题文本）
+        search_range: 向前搜索的非空段落数量（默认3）
+    
+    返回:
+        {'ok': bool, 'errors': []}
+    """
+    # 定义引用模式（不区分大小写）
+    patterns = [
+        r'\bFig\.?\s*' + str(figure_number) + r'\b',  # Fig. 1 或 Fig.1
+        r'\bFigure\s+' + str(figure_number) + r'\b',  # Figure 1
+        r'\b图\s*' + str(figure_number) + r'\b',      # 图1 或 图 1
+    ]
+    
+    # 向前搜索非空段落
+    non_empty_count = 0
+    for i in range(figure_paragraph_index - 1, -1, -1):
+        if i < 0 or i >= len(doc.paragraphs):
+            continue
+        
+        paragraph_text = doc.paragraphs[i].text
+        
+        # 跳过空段落
+        if not paragraph_text.strip():
+            continue
+        
+        # 计数非空段落
+        non_empty_count += 1
+        
+        # 检查是否匹配任何引用模式
+        for pattern in patterns:
+            if re.search(pattern, paragraph_text, re.IGNORECASE):
+                # 找到引用，返回成功
+                return {'ok': True, 'errors': []}
+        
+        # 如果已经检查了足够的非空段落，停止搜索
+        if non_empty_count >= search_range:
+            break
+    
+    # 没有找到引用，返回错误
+    suggestion = f'建议：在图片Fig. {figure_number}出现前添加引用，如"如Fig. {figure_number}所示"或"见Fig. {figure_number}"'
+    
+    # 使用标题文本作为text_snippet，用于run_all_detections.py定位批注
+    caption_text = caption_paragraph.text.strip() if caption_paragraph else f'Fig. {figure_number}'
+    
+    return {
+        'ok': False,
+        'errors': [{
+            'type': 'warning',
+            'page_number': 'N/A',
+            'description': f'图片在文档中出现前未找到引用',
+            'suggestion': suggestion,
+            'text_snippet': caption_text[:50]  # 使用标题文本作为定位关键字
+        }]
+    }
+
 def check_doc_with_template(doc_path, template_identifier, enable_content_check=True, api_key=None, skip_checks=None):
     """
     使用指定的模板检测文档中的图片格式
@@ -485,7 +604,7 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
     
     返回:
-        检测报告字典
+        {'ok': bool, 'errors': []}
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -523,95 +642,158 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
             print("  将跳过内容检测")
     
     # 初始化报告
-    report = {
-        'overall': {'ok': True, 'messages': []},
-        'figures': [],  # 改为按图片组织
-        'numbering': {'ok': True, 'messages': []},
-        'summary': {}
-    }
+    report = {'ok': True, 'errors': []}
     
-    # 1. 找出所有包含图片的段落（按文档顺序）
+    # 0. 找到Introduction的位置，跳过之前的图片（如OSID标识等非论文图片）
+    intro_start_idx = 0
+    intro_keywords = ['introduction', '引言', '0 introduction', '1 introduction']
+    for idx, para in enumerate(doc.paragraphs):
+        text_lower = para.text.strip().lower()
+        if any(keyword in text_lower for keyword in intro_keywords):
+            intro_start_idx = idx
+            print(f"  找到Introduction在段落 {idx}")
+            break
+    
+    # 1. 找出所有包含图片的段落（按文档顺序），跳过Introduction之前的
+    # 注意：有些Fig的图片在标题段落本身（如Fig.1），有些在标题上方的空段落中
     picture_paragraphs = []
+    caption_pattern = tpl.get('figure_detection_rules', {}).get('caption_pattern', r'^\s*Fig\.?\s*(\d+)[.:\s]*(.*)$')
+    
     for idx, paragraph in enumerate(doc.paragraphs):
+        # 跳过Introduction之前的段落
+        if idx < intro_start_idx:
+            continue
+            
         if has_picture_object(paragraph):
             picture_paragraphs.append({
                 'paragraph': paragraph,
                 'paragraph_index': idx
             })
     
-    if not picture_paragraphs:
-        report['overall']['ok'] = False
-        report['overall']['messages'].append('文档中未找到任何图片')
-        report['summary']['figure_count'] = 0
-        return report
+    print(f"  识别到 {len(picture_paragraphs)} 张图片（Introduction之后）")
     
-    report['summary']['figure_count'] = len(picture_paragraphs)
+    if not picture_paragraphs:
+        report['ok'] = False
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': '文档中未找到任何图片',
+            'suggestion': '建议：确保文档中包含图片对象',
+            'text_snippet': 'N/A'
+        })
+        return report
     
     # 2. 对每张图片进行检查
     caption_pattern = tpl.get('figure_detection_rules', {}).get('caption_pattern', r'^\s*Fig\.\s+(\d+)\s+(.+)$')
     figure_numbers = []
+    checked_figure_numbers = set()  # 记录已检测的编号，避免分图重复检测
     
     for fig_idx, pic_info in enumerate(picture_paragraphs, start=1):
         picture_para = pic_info['paragraph']
         pic_index = pic_info['paragraph_index']
         
-        figure_report = {
-            'figure_index': fig_idx,
-            'paragraph_index': pic_index,
-            'has_caption': False,
-            'caption_info': None,
-            'format_check': {'ok': True, 'messages': []},
-            'position_check': {'ok': True, 'messages': []},
-            'picture_check': {'ok': True, 'messages': []}
-        }
-        
-        # 2.1 检查是否有标题（向下查找）
+        # 2.1 检查是否有标题
+        # 首先检查图片段落本身是否就是标题段落（如Fig.1的情况）
         caption_found = None
-        for i in range(pic_index + 1, min(pic_index + 3, len(doc.paragraphs))):
-            caption_para = doc.paragraphs[i]
-            match = re.match(caption_pattern, caption_para.text.strip(), re.IGNORECASE)
-            if match:
-                figure_num = int(match.group(1))
-                figure_title = match.group(2).strip()
-                caption_found = {
-                    'paragraph': caption_para,
-                    'number': figure_num,
-                    'title': figure_title,
-                    'full_text': caption_para.text.strip()
-                }
-                figure_numbers.append(figure_num)
-                break
+        pic_text = picture_para.text.strip()
+        match = re.match(caption_pattern, pic_text, re.IGNORECASE)
+        picture_and_caption_in_same_para = False  # 标记图片和标题是否在同一段落
+        
+        if match:
+            # 图片就在标题段落中 - 这是格式错误
+            figure_num = int(match.group(1))
+            
+            # 检查是否是分图（编号已被检测过），如果是则跳过
+            if figure_num in checked_figure_numbers:
+                continue
+            
+            figure_title = match.group(2).strip()
+            caption_found = {
+                'paragraph': picture_para,
+                'number': figure_num,
+                'title': figure_title,
+                'full_text': pic_text
+            }
+            figure_numbers.append(figure_num)
+            checked_figure_numbers.add(figure_num)
+            picture_and_caption_in_same_para = True
+            
+            # 报告格式错误：图片和标题应该分段
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'error',
+                'page_number': f"段落{pic_index + 1}",
+                'description': f"Fig.{figure_num} - 图片和标题在同一段落，应分为两段",
+                'suggestion': '建议：将图片段落和标题段落分开，图片单独一段，标题单独一段',
+                'text_snippet': pic_text[:60] if len(pic_text) > 60 else pic_text
+            })
+        else:
+            # 图片不在标题段落，向下查找标题（1-2个段落内）
+            for i in range(pic_index + 1, min(pic_index + 3, len(doc.paragraphs))):
+                caption_para = doc.paragraphs[i]
+                match = re.match(caption_pattern, caption_para.text.strip(), re.IGNORECASE)
+                if match:
+                    figure_num = int(match.group(1))
+                    
+                    # 检查是否是分图（编号已被检测过），如果是则跳过
+                    if figure_num in checked_figure_numbers:
+                        caption_found = None  # 重置为None，表示跳过
+                        break
+                    
+                    figure_title = match.group(2).strip()
+                    caption_found = {
+                        'paragraph': caption_para,
+                        'number': figure_num,
+                        'title': figure_title,
+                        'full_text': caption_para.text.strip()
+                    }
+                    figure_numbers.append(figure_num)
+                    checked_figure_numbers.add(figure_num)
+                    break
+        
+        # 如果是分图已被跳过，caption_found会是None，直接continue
+        if not caption_found:
+            continue
         
         if caption_found:
-            figure_report['has_caption'] = True
-            figure_report['caption_info'] = caption_found
-            
-            # 2.2 检查标题格式
-            format_result = check_caption_format(caption_found, tpl)
-            figure_report['format_check'] = format_result
-            if not format_result['ok']:
-                report['overall']['ok'] = False
+            # 2.2 检查标题格式（只在图片和标题分开时检查）
+            if not picture_and_caption_in_same_para:
+                format_result = check_caption_format(caption_found, tpl)
+                if not format_result['ok']:
+                    report['ok'] = False
+                    # 为每个error添加图片编号前缀
+                    for error in format_result['errors']:
+                        error['description'] = f"Fig.{caption_found['number']} - {error['description']}"
+                        report['errors'].append(error)
         else:
             # 没有标题
-            figure_report['has_caption'] = False
-            figure_report['format_check']['ok'] = False
-            figure_report['format_check']['messages'].append('❌ 图片缺少标题（应为：Fig. 编号 标题文字）')
-            report['overall']['ok'] = False
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'error',
+                'page_number': f"段落{pic_index + 1}",
+                'description': f"第{fig_idx}张图片缺少标题（应为：Fig. 编号 标题文字）",
+                'suggestion': '建议：在图片下方添加标题，格式为"Fig. 编号 标题文字"',
+                'text_snippet': 'N/A'
+            })
         
-        # 2.3 检查图片对齐
-        if tpl.get('check_rules', {}).get('picture_alignment_check', True):
+        # 2.3 检查图片对齐（只在图片和标题分开时检查）
+        if not picture_and_caption_in_same_para and tpl.get('check_rules', {}).get('picture_alignment_check', True):
             is_centered, alignment = check_picture_alignment(picture_para)
             if not is_centered:
                 alignment_names = {0: '左对齐', 1: '居中对齐', 2: '右对齐', 3: '两端对齐'}
                 alignment_name = alignment_names.get(alignment, f'未知({alignment})')
-                figure_report['picture_check']['ok'] = False
-                figure_report['picture_check']['messages'].append(
-                    f"图片应居中对齐（当前：{alignment_name}）"
-                )
-                report['overall']['ok'] = False
+                report['ok'] = False
+                fig_prefix = f"Fig.{caption_found['number']}" if caption_found else f"第{fig_idx}张图片"
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': f"段落{pic_index + 1}",
+                    'description': f"{fig_prefix} - 图片应居中对齐（当前：{alignment_name}）",
+                    'suggestion': '建议：将图片段落设置为居中对齐',
+                    'text_snippet': 'N/A'
+                })
         
-        # 2.4 检查图片内容（如果启用）- 不管有没有标题都检查
-        if content_detector:
+        # 2.4 检查图片内容（如果启用）- 只在图片和标题分开时检查
+        if not picture_and_caption_in_same_para and content_detector:
             print(f"  正在检测第 {fig_idx} 张图片的内容规范性...")
             fig_num = caption_found['number'] if caption_found else fig_idx
             content_result = content_detector.detect_figure_content(
@@ -619,12 +801,29 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
                 doc_path, 
                 figure_number=fig_num
             )
-            figure_report['content_check'] = content_result
             
             if not content_result['ok']:
-                report['overall']['ok'] = False
+                report['ok'] = False
+                # 为内容检测的errors添加图片编号前缀
+                for error in content_result.get('errors', []):
+                    error['description'] = f"Fig.{fig_num} - {error['description']}"
+                    report['errors'].append(error)
         
-        report['figures'].append(figure_report)
+        # 2.5 检查图片引用（新增）- 只在图片和标题分开时检查
+        if not picture_and_caption_in_same_para and caption_found and tpl.get('check_rules', {}).get('figure_reference_check', True):
+            reference_result = check_figure_reference(
+                doc, 
+                caption_found['number'],
+                pic_index,
+                caption_paragraph=caption_found['paragraph'],  # 传递标题段落用于添加批注
+                search_range=tpl.get('check_rules', {}).get('reference_search_range', 2)
+            )
+            if not reference_result['ok']:
+                report['ok'] = False
+                # 为引用检测的errors添加图片编号前缀
+                for error in reference_result.get('errors', []):
+                    error['description'] = f"Fig.{caption_found['number']} - {error['description']}"
+                    report['errors'].append(error)
     
     # 3. 检查编号连续性（只对有标题的图片）
     if figure_numbers:
@@ -632,31 +831,26 @@ def check_doc_with_template(doc_path, template_identifier, enable_content_check=
         expected_start = tpl.get('check_rules', {}).get('numbering_start', 1)
         
         if numbers_sorted[0] != expected_start:
-            report['numbering']['ok'] = False
-            report['numbering']['messages'].append(
-                f"图片编号应从{expected_start}开始，实际从{numbers_sorted[0]}开始"
-            )
-            report['overall']['ok'] = False
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': f"图片编号应从{expected_start}开始，实际从{numbers_sorted[0]}开始",
+                'suggestion': f"建议：将第一张图片的编号改为{expected_start}",
+                'text_snippet': f"发现编号：{', '.join(map(str, numbers_sorted))}"
+            })
         
-        expected_sequence = list(range(numbers_sorted[0], numbers_sorted[0] + len(numbers_sorted)))
-        if numbers_sorted != expected_sequence:
-            report['numbering']['ok'] = False
-            report['numbering']['messages'].append(
-                f"图片编号不连续，发现编号：{', '.join(map(str, numbers_sorted))}"
-            )
-            report['overall']['ok'] = False
-    
-    # 兼容处理：生成旧格式的captions列表
-    report['captions'] = []
-    for fig_report in report['figures']:
-        if fig_report['has_caption']:
-            report['captions'].append({
-                'number': fig_report['caption_info']['number'],
-                'title': fig_report['caption_info']['title'],
-                'full_text': fig_report['caption_info']['full_text'],
-                'format_check': fig_report['format_check'],
-                'position_check': fig_report.get('position_check', {'ok': True, 'messages': []}),
-                'content_check': fig_report.get('content_check')
+        # 去重后检查连续性（允许分图的情况，如Fig.13a和Fig.13b会有相同编号）
+        numbers_unique = sorted(set(numbers_sorted))
+        expected_sequence = list(range(numbers_unique[0], numbers_unique[0] + len(numbers_unique)))
+        if numbers_unique != expected_sequence:
+            report['ok'] = False
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': f"图片编号不连续，发现编号：{', '.join(map(str, numbers_unique))}",
+                'suggestion': '建议：确保图片编号连续递增',
+                'text_snippet': f"期望编号：{', '.join(map(str, expected_sequence))}"
             })
     
     return report

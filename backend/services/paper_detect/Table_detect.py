@@ -110,15 +110,25 @@ def detect_font_for_run(run, paragraph=None):
 
     font_size = font_size if font_size is not None else 12.0
 
-    is_bold = font_source.bold if font_source.bold is not None else False
-    is_italic = font_source.italic if font_source.italic is not None else False
-    if run and run.font:
-        is_bold = run.font.bold if run.font.bold is not None else is_bold
-        is_italic = run.font.italic if run.font.italic is not None else is_italic
+    # 加粗检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.bold is not None:
+        is_bold = run.font.bold
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.bold is not None:
+        is_bold = paragraph.style.font.bold
+    else:
+        is_bold = False
     
-    # 确保返回明确的布尔值，而不是None
-    is_bold = bool(is_bold) if is_bold is not None else False
-    is_italic = bool(is_italic) if is_italic is not None else False
+    # 斜体检测 - 优先直接格式，直接格式为None时使用样式格式
+    if run and run.font and run.font.italic is not None:
+        is_italic = run.font.italic
+    elif paragraph and paragraph.style and paragraph.style.font and paragraph.style.font.italic is not None:
+        is_italic = paragraph.style.font.italic
+    else:
+        is_italic = False
+    
+    # 确保返回明确的布尔值
+    is_bold = bool(is_bold)
+    is_italic = bool(is_italic)
 
     return font_size, font_name, is_bold, is_italic, {}
 
@@ -230,7 +240,8 @@ def identify_table_captions(doc, tpl):
                 'paragraph_index': idx,
                 'number': table_num,
                 'title': table_title,
-                'full_text': text
+                'full_text': text,
+                'text': text  # 添加'text'字段以兼容check_caption_format
             })
     
     return captions
@@ -516,9 +527,9 @@ def check_table_content_alignment(table, tpl):
 def check_caption_format(caption_info, tpl):
     """
     检查表格标题的格式
-    返回：{'ok': bool, 'messages': []}
+    返回：{'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
     
     paragraph = caption_info['paragraph']
     expected_format = tpl.get('format_rules', {}).get('caption', {})
@@ -530,7 +541,14 @@ def check_caption_format(caption_info, tpl):
             _, _, is_bold, _, _ = detect_font_for_run(main_run, paragraph)
             if not is_bold:
                 report['ok'] = False
-                report['messages'].append(tpl.get('messages', {}).get('caption_bold_error', '表格标题应加粗'))
+                caption_text = caption_info.get('text', '')
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': '表格标题应加粗',
+                    'suggestion': '建议：将表格标题设置为加粗',
+                    'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+                })
     
     # 检查对齐方式
     if expected_format.get('alignment') == 'center':
@@ -549,8 +567,14 @@ def check_caption_format(caption_info, tpl):
         # 居中对齐的值为1
         if actual_alignment != 1:
             report['ok'] = False
-            msg = tpl.get('messages', {}).get('caption_alignment_error', '表格标题应居中对齐')
-            report['messages'].append(f"{msg}（当前：{actual_alignment_name}）")
+            caption_text = caption_info.get('text', '')
+            report['errors'].append({
+                'type': 'warning',
+                'page_number': 'N/A',
+                'description': f"表格标题应居中对齐（当前：{actual_alignment_name}）",
+                'suggestion': '建议：将表格标题设置为居中对齐',
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
     # 检查字体大小
     if not should_skip_check('font_size'):
@@ -562,23 +586,36 @@ def check_caption_format(caption_info, tpl):
                 report['ok'] = False
                 expected_size_name = get_font_size(expected_size, tpl)
                 actual_size_name = get_font_size(actual_size, tpl)
-                msg = tpl.get('messages', {}).get('caption_font_size_error', '表格标题字体大小不正确')
-                report['messages'].append(f"{msg}（期望：{expected_size_name}，实际：{actual_size_name}）")
+                caption_text = caption_info.get('text', '')
+                report['errors'].append({
+                    'type': 'warning',
+                    'page_number': 'N/A',
+                    'description': f"表格标题字体大小不正确（期望：{expected_size_name}，实际：{actual_size_name}）",
+                    'suggestion': f"建议：将字体大小调整为{expected_size_name}",
+                    'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+                })
     
     # 检查标题大小写（首字母应大写）
     title = caption_info['title']
     if title and not title[0].isupper():
         report['ok'] = False
-        report['messages'].append(tpl.get('messages', {}).get('caption_title_case_error', '表格名称首字母应大写'))
+        caption_text = caption_info.get('text', '')
+        report['errors'].append({
+            'type': 'warning',
+            'page_number': 'N/A',
+            'description': '表格名称首字母应大写',
+            'suggestion': '建议：将表格名称首字母改为大写',
+            'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+        })
     
     return report
 
 def check_table_numbering(captions, tpl):
     """
     检查表格编号的连续性
-    返回：{'ok': bool, 'messages': []}
+    返回：{'ok': bool, 'errors': []}
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'errors': []}
     
     if not captions:
         return report
@@ -588,17 +625,90 @@ def check_table_numbering(captions, tpl):
     # 检查是否从1开始
     if numbers[0] != 1:
         report['ok'] = False
-        report['messages'].append(f"表格编号应从1开始，当前从{numbers[0]}开始")
+        report['errors'].append({
+            'type': 'error',
+            'page_number': 'N/A',
+            'description': f"表格编号应从1开始，当前从{numbers[0]}开始",
+            'suggestion': '建议：调整表格编号，从1开始连续编号',
+            'text_snippet': f"表格编号: {numbers}"
+        })
     
     # 检查是否连续
     for i in range(len(numbers) - 1):
         if numbers[i + 1] - numbers[i] != 1:
             report['ok'] = False
-            msg_template = tpl.get('messages', {}).get('caption_numbering_error', '表格编号不连续')
-            report['messages'].append(msg_template.format(numbers=numbers) if '{numbers}' in msg_template else f"表格编号不连续：{numbers}")
+            report['errors'].append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': f"表格编号不连续：{numbers}",
+                'suggestion': '建议：确保表格编号连续，不跳号',
+                'text_snippet': f"表格编号: {numbers}"
+            })
             break
     
     return report
+
+def check_table_reference(doc, table_number, table_paragraph_index, caption_paragraph=None, search_range=3):
+    """
+    检查表格是否在前文中被引用
+    
+    参数:
+        doc: Document对象
+        table_number: 表格编号（int）
+        table_paragraph_index: 表格标题所在段落的索引
+        caption_paragraph: 表格标题段落对象（用于获取标题文本）
+        search_range: 向前搜索的非空段落数量（默认3）
+    
+    返回:
+        {'ok': bool, 'errors': []}
+    """
+    # 定义引用模式（不区分大小写）
+    patterns = [
+        r'\bTable\s+' + str(table_number) + r'\b',  # Table 1
+        r'\b表\s*' + str(table_number) + r'\b',      # 表1 或 表 1
+    ]
+    
+    # 向前搜索非空段落
+    non_empty_count = 0
+    for i in range(table_paragraph_index - 1, -1, -1):
+        if i < 0 or i >= len(doc.paragraphs):
+            continue
+        
+        paragraph_text = doc.paragraphs[i].text
+        
+        # 跳过空段落
+        if not paragraph_text.strip():
+            continue
+        
+        # 计数非空段落
+        non_empty_count += 1
+        
+        # 检查是否匹配任何引用模式
+        for pattern in patterns:
+            if re.search(pattern, paragraph_text, re.IGNORECASE):
+                # 找到引用，返回成功
+                return {'ok': True, 'errors': []}
+        
+        # 如果已经检查了足够的非空段落，停止搜索
+        if non_empty_count >= search_range:
+            break
+    
+    # 没有找到引用，返回错误
+    suggestion = f'建议：在表格Table {table_number}出现前添加引用，如"如Table {table_number}所示"或"见Table {table_number}"'
+    
+    # 使用标题文本作为text_snippet，用于run_all_detections.py定位批注
+    caption_text = caption_paragraph.text.strip() if caption_paragraph else f'Table {table_number}'
+    
+    return {
+        'ok': False,
+        'errors': [{
+            'type': 'warning',
+            'page_number': 'N/A',
+            'description': f'表格在文档中出现前未找到引用',
+            'suggestion': suggestion,
+            'text_snippet': caption_text[:50]  # 使用标题文本作为定位关键字
+        }]
+    }
 
 def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     """
@@ -607,7 +717,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
         doc_path: 文档路径
         template_identifier: 模板标识符
         skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
-    返回完整的检查报告
+    返回：{'ok': bool, 'errors': []}
     """
     # 设置全局跳过检测项配置
     global _skip_checks_config
@@ -619,87 +729,93 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     # 识别所有表格标题
     captions = identify_table_captions(doc, tpl)
     
-    report = {
-        'captions': [],
-        'tables': [],
-        'numbering': {},
-        'summary': [],
-        'details': {
-            'total_captions': len(captions),
-            'caption_info': captions
-        }
-    }
+    all_errors = []
     
     # 检查表格编号
     numbering_report = check_table_numbering(captions, tpl)
-    report['numbering'] = numbering_report
+    if numbering_report['errors']:
+        all_errors.extend(numbering_report['errors'])
     
     # 检查每个表格
     for caption_info in captions:
-        table_report = {
-            'caption': caption_info,
-            'caption_format': {},
-            'table_style': {},
-            'table_alignment': {},
-            'table_object': None
-        }
+        caption_text = caption_info.get('text', '')
         
         # 检查标题格式
         caption_format_report = check_caption_format(caption_info, tpl)
-        table_report['caption_format'] = caption_format_report
+        if caption_format_report['errors']:
+            all_errors.extend(caption_format_report['errors'])
         
         # 查找对应的表格
         table = find_table_after_caption(doc, caption_info)
-        table_report['table_object'] = table is not None
         
         if table:
             # 检查三线表格式
             is_three_line, style_issues = check_table_style(table, tpl)
-            table_report['table_style'] = {
-                'ok': is_three_line,
-                'messages': style_issues if not is_three_line else [tpl.get('messages', {}).get('table_style_ok', '表格为三线表格式')]
-            }
+            if not is_three_line and style_issues:
+                # 使用表格标题的段落索引进行定位
+                table_page_number = f"段落{caption_info['paragraph_index']}"
+                
+                for issue in style_issues:
+                    # 根据具体问题生成具体建议
+                    if '左边框' in issue or '右边框' in issue or '竖线' in issue:
+                        suggestion = '建议：移除表格的左右边框和内部竖线，只保留顶线、表头底线和底线'
+                    elif '顶线宽度' in issue:
+                        # 从issue中提取期望值和实际值
+                        suggestion = f'建议：{issue.replace("应为", "改为")}'
+                    elif '底线宽度' in issue:
+                        suggestion = f'建议：{issue.replace("应为", "改为")}'
+                    elif '表头底线宽度' in issue:
+                        suggestion = f'建议：{issue.replace("应为", "改为")}'
+                    else:
+                        suggestion = '建议：调整表格边框为三线表格式（仅保留顶线、表头底线和底线）'
+                    
+                    all_errors.append({
+                        'type': 'warning',
+                        'page_number': table_page_number,  # 使用段落索引
+                        'description': issue,
+                        'suggestion': suggestion,
+                        'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+                    })
             
             # 检查内容对齐
             is_aligned, alignment_issues = check_table_content_alignment(table, tpl)
-            table_report['table_alignment'] = {
-                'ok': is_aligned,
-                'messages': alignment_issues if not is_aligned else [tpl.get('messages', {}).get('table_content_alignment_ok', '表格内容对齐方式正确')]
-            }
+            if not is_aligned and alignment_issues:
+                for issue in alignment_issues:
+                    all_errors.append({
+                        'type': 'warning',
+                        'page_number': 'N/A',
+                        'description': issue,
+                        'suggestion': '建议：调整表格内容对齐方式',
+                        'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+                    })
+            
+            # 检查表格引用（新增）
+            if tpl.get('check_rules', {}).get('table_reference_check', True):
+                reference_result = check_table_reference(
+                    doc,
+                    caption_info['number'],
+                    caption_info['paragraph_index'],
+                    caption_paragraph=caption_info['paragraph'],  # 传递标题段落用于添加批注
+                    search_range=tpl.get('check_rules', {}).get('reference_search_range', 2)
+                )
+                if not reference_result['ok']:
+                    # 为引用检测的errors添加表格编号前缀
+                    for error in reference_result.get('errors', []):
+                        error['description'] = f"Table {caption_info['number']} - {error['description']}"
+                        all_errors.append(error)
         else:
-            table_report['table_style'] = {
-                'ok': False,
-                'messages': [tpl.get('messages', {}).get('table_not_found', '未在标题下方找到表格')]
-            }
-            table_report['table_alignment'] = {
-                'ok': False,
-                'messages': []
-            }
-        
-        report['tables'].append(table_report)
+            all_errors.append({
+                'type': 'error',
+                'page_number': 'N/A',
+                'description': f"未在标题'{caption_text}'下方找到表格",
+                'suggestion': '建议：在表格标题下方插入表格',
+                'text_snippet': caption_text[:150] + ('...' if len(caption_text) > 150 else '')
+            })
     
-    # 生成总结
-    all_ok = True
-    if not numbering_report['ok']:
-        all_ok = False
-    
-    for table_report in report['tables']:
-        if not table_report['caption_format']['ok']:
-            all_ok = False
-        if not table_report['table_style']['ok']:
-            all_ok = False
-        if not table_report['table_alignment']['ok']:
-            all_ok = False
-    
-    summary_template = tpl.get('messages', {}).get('summary_overall', '表格格式检查结果: {ok}')
-    report['summary'].append(summary_template.format(ok='通过' if all_ok else '发现问题'))
-    
-    count_msg = tpl.get('messages', {}).get('table_count', '检测到 {count} 个表格')
-    report['summary'].append(count_msg.format(count=len(captions)))
-    
-    report['overall_ok'] = all_ok
-    
-    return report
+    return {
+        'ok': len(all_errors) == 0,
+        'errors': all_errors
+    }
 
 # ---------- 报表输出 ----------
 def print_report(report):
