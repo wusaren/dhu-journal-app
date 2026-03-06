@@ -759,6 +759,8 @@ def check_table_reference(table_item, doc, tpl):
     # 合并的表题正则（匹配 "Table 3-1 Title" 或 "表3-1 标题"）
     # 格式：Table/表 + 数字 + 分隔符 + 数字，忽略中间的空格
     caption_pattern = r'^\s*(Table|表)\s*\d+[-－.．]?\s*\d+'
+    # 图题正则（匹配 "Figure 3-1 Title" 或 "图3-1 标题"）
+    figure_caption_pattern = r'^\s*(Figure|Fig\.?|图)\s*\d+[-－.．]?\s*\d*'
     # 章节标题正则（匹配形如 "3.1", "第三章", "3.1.1" 等）
     chapter_title_pattern = r'^\s*\d+[\.\d]*\s*|^第[一二三四五六七八九十0-9]+[章节]'
 
@@ -772,6 +774,18 @@ def check_table_reference(table_item, doc, tpl):
                 # 检查是否是表题（英文表题如 "Table 3-1 Title" 或中文表题如 "表3-1 标题"）
                 if re.match(caption_pattern, prev_text, re.IGNORECASE):
                     # 是表题，继续向上查找
+                    prev_body_index -= 1
+                    if prev_body_index < 0:
+                        break
+                    try:
+                        prev_elem = doc.element.body[prev_body_index]
+                    except IndexError:
+                        break
+                    continue
+
+                # 检查是否是图题（英文图题如 "Figure 3-1" 或中文图题如 "图3-1"）
+                if re.match(figure_caption_pattern, prev_text, re.IGNORECASE):
+                    # 是图题，继续向上查找
                     prev_body_index -= 1
                     if prev_body_index < 0:
                         break

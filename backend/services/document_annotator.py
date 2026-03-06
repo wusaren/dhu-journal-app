@@ -1047,61 +1047,20 @@ def parse_issues_from_reports(all_reports):
             logger.info(f"parse_issues_from_reports: Content 模块总共添加了 {content_issue_count} 个问题")
         
         elif module_name == 'Formula':
-            # Formula模块：根据报告中的公式段落信息进行定位
-            for section_key, section_value in report.items():
-                if section_key in ['summary', 'extracted']:
-                    continue
-                
-                if isinstance(section_value, dict) and not section_value.get('ok', False):
-                    messages = section_value.get('messages', [])
-                    if not messages:
-                        continue
-                    
-                    # 尝试从details中获取公式段落信息
-                    details = report.get('details', {})
-                    formula_paragraphs = details.get('formula_paragraphs', [])
-                    
-                    if formula_paragraphs:
-                        # 如果有公式段落信息，使用第一个公式段落的文本片段定位
-                        first_formula = formula_paragraphs[0]
-                        text_preview = first_formula.get('text_preview', '')
-                        
-                        # 从文本中提取公式编号，如 (1)、(2) 等
-                        # 公式编号通常在文本末尾
-                        number_match = re.search(r'\((\d+)\)\s*$', text_preview)
-                        
-                        if number_match:
-                            # 使用公式编号定位
-                            formula_number = number_match.group(0).strip()  # 如 "(2)"
-                            issues.append({
-                                'module': module_name,
-                                'section': section_key,
-                                'messages': messages,
-                                'locate_method': 'formula_number',  # 新的定位方法
-                                'locate_data': formula_number,
-                                'extra': {
-                                    'text_preview': text_preview  # 保存完整预览用于备用
-                                }
-                            })
-                        else:
-                            # 如果没有公式编号，尝试使用文本末尾的部分
-                            # 只取最后的一小段（可能包含编号或特征）
-                            locate_text = text_preview[-20:].strip() if len(text_preview) > 20 else text_preview
-                            
-                            if locate_text and len(locate_text) >= 3:
-                                issues.append({
-                                    'module': module_name,
-                                    'section': section_key,
-                                    'messages': messages,
-                                    'locate_method': 'text',
-                                    'locate_data': locate_text
-                                })
-                            else:
-                                print(f"  ! Formula模块无法定位批注（文本不足）")
-                    else:
-                        # 如果没有找到公式段落，说明文档中可能没有公式
-                        # 不添加批注，因为无法准确定位
-                        print(f"  ! Formula模块未检测到公式段落，跳过批注")
+            # Formula模块：使用 chinese_annotation_engine 的 formula_adapter 处理
+            # 这样可以正确区分：单独公式问题（在对应公式处）+ 连续性问题（在章节第一个公式处）
+            from services.chinese_annotation_engine import formula_adapter
+            formula_issues = formula_adapter({'Formula': report})
+            for issue in formula_issues:
+                # 将 Issue dataclass 转换为字典
+                issues.append({
+                    'module': issue.module,
+                    'section': issue.section,
+                    'messages': issue.messages,
+                    'locate_method': issue.locate_method,
+                    'locate_data': issue.locate_data,
+                    'extra': issue.extra or {}
+                })
         
         elif module_name == 'TOC':
             # TOC模块：处理目录/图录/表录的格式问题
@@ -1201,24 +1160,60 @@ def parse_issues_from_reports(all_reports):
         
         elif module_name == 'Table':
             # Table模块：定位到表格标题段落
-            # 1. 处理numbering问题（表格编号连续性）
+            # 1. 处理numbering问题（表格编号连续性）- 按章节分别定位
             numbering_report = report.get('numbering', {})
             if isinstance(numbering_report, dict) and not numbering_report.get('ok', False):
                 messages = numbering_report.get('messages', [])
                 if messages:
-                    # 定位到第一个表格标题
-                    details = report.get('details', {})
-                    caption_info_list = details.get('caption_info', [])
-                    if caption_info_list:
-                        first_caption = caption_info_list[0]
-                        caption_text = first_caption.get('text', 'Table')
-                        issues.append({
-                            'module': module_name,
-                            'section': 'numbering',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]  # 使用标题前20个字符
-                        })
+                    # 获取所有表格及其章节信息
+                    tables_report = report.get('tables', [])
+                    chapter_first_table = {}  # 记录每个章节的第一个表格
+                    
+                    for table_item in tables_report:
+                        chapter = table_item.get('chapter')
+                        captions = table_item.get('captions', {})
+                        cn_caption = captions.get('cn', {})
+                        para_idx = cn_caption.get('paragraph_index')
+                        
+                        if chapter is not None and para_idx is not None:
+                            if chapter not in chapter_first_table:
+                                chapter_first_table[chapter] = para_idx
+                    
+                    # 按章节分别添加连续性问题
+                    import re
+                    for msg in messages:
+                        # 提取章节号：支持 "第2章" 格式
+                        ch_match = re.search(r'第(\d+)章', msg)
+                        if ch_match:
+                            ch = int(ch_match.group(1))
+                            para_idx = chapter_first_table.get(ch)
+                            
+                            if para_idx is not None:
+                                issues.append({
+                                    'module': module_name,
+                                    'section': f'第{ch}章编号连续性',
+                                    'messages': [f"[编号问题] {msg}"],
+                                    'locate_method': 'index',
+                                    'locate_data': para_idx
+                                })
+                            else:
+                                # 没找到对应章节的表格，使用关键词定位
+                                issues.append({
+                                    'module': module_name,
+                                    'section': f'第{ch}章编号连续性',
+                                    'messages': [f"[编号问题] {msg}"],
+                                    'locate_method': 'keyword',
+                                    'locate_data': '表'
+                                })
+                        else:
+                            # 无法提取章节号，默认用关键词
+                            issues.append({
+                                'module': module_name,
+                                'section': '编号连续性',
+                                'messages': [f"[编号问题] {msg}"],
+                                'locate_method': 'keyword',
+                                'locate_data': '表'
+                            })
             
             # 2. 处理每个表格的问题
             tables_report = report.get('tables', [])

@@ -3,7 +3,7 @@
   "table_detection_rules": {
     "caption_cn_pattern": "^\\s*表\\s*(\\d+)\\s*[-－]\\s*(\\d+)\\s*(.+?)(?:（续）)?\\s*$",
     "caption_en_pattern": "^\\s*Table\\s+(\\d+)\\s*[-－]\\s*(\\d+)\\s+(.+?)\\s*$",
-    "caption_cn_forbidden_punct_pattern": "[，。；：、？！……—（）【】《》“”‘’,.!?;:()\\[\\]{}]",
+    "caption_cn_forbidden_punct_pattern": "[，。；：、？！……—【】《》“”‘',.!?;:()\\[\\]{}]",
     "table_style": {
       "type": "three_line",
       "description": "三线表：不加左、右边线；不加内部竖线；仅保留必要横线",

@@ -671,7 +671,13 @@ def table_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
         # 收集所有问题（不包含编号连续性问题，因为那是全局的）
         # 每个表格独立收集问题，避免问题累积
         all_messages = []
-        
+
+        # 文本规则检查（编号一致性、中文表题标点等）
+        text_rules = table_item.get('text_rules', {})
+        if isinstance(text_rules, dict) and text_rules.get('ok') is False:
+            for msg in text_rules.get('messages', []):
+                all_messages.append(f"[表题规则] {msg}")
+
         # 中文表题格式问题
         cn_format = table_item.get('caption_cn_format', {})
         if isinstance(cn_format, dict) and cn_format.get('ok') is False:
@@ -861,17 +867,86 @@ def formula_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
                 locate_data=kw
             ))
     
-    # 处理编号连续性问题（全局）
+    # 处理编号连续性问题（按章节分别定位）
     numbering = formula_report.get('numbering', {})
     if isinstance(numbering, dict) and numbering.get('ok') is False:
+        import re
+        # 获取所有公式段落及其章节信息
+        all_formula_paragraphs = []
+        for para_item in formula_paragraphs:
+            para_idx = para_item.get('paragraph_index')
+            if para_idx is None:
+                para_idx = para_item.get('index')
+            if para_idx is None:
+                para_idx = para_item.get('w_p_index')
+            if para_idx is not None:
+                all_formula_paragraphs.append({
+                    'para_idx': para_idx,
+                    'label': para_item.get('formula_label', '')
+                })
+        
+        # 按章节号排序公式段落
+        def get_chapter_from_label(label):
+            # 从 label 如 "公式(2-1)" 提取章节号 2
+            match = re.search(r'\((\d+)-', label)
+            return int(match.group(1)) if match else 0
+        
+        all_formula_paragraphs.sort(key=lambda x: get_chapter_from_label(x['label']))
+        
+        # 记录每个章节的第一个公式段落索引
+        chapter_first_para = {}
+        for fp in all_formula_paragraphs:
+            ch = get_chapter_from_label(fp['label'])
+            if ch not in chapter_first_para:
+                chapter_first_para[ch] = fp['para_idx']
+        
+        # 处理每个连续性问题的消息（去重，避免重复添加）
+        processed_numbering_issues = set()
         for msg in numbering.get('messages', []):
-            issues.append(Issue(
-                module='Formula',
-                section='编号连续性',
-                messages=[f"[编号问题] {msg}"],
-                locate_method='keyword',
-                locate_data='公式'
-            ))
+            # 提取章节号
+            ch_match = re.search(r'第(\d+)章', msg)
+            if ch_match:
+                ch = int(ch_match.group(1))
+                # 去重键：章节号
+                dedup_key = f"ch_{ch}"
+                if dedup_key in processed_numbering_issues:
+                    logger.info(f"formula_adapter: skipping duplicate numbering issue for chapter {ch}")
+                    continue
+                processed_numbering_issues.add(dedup_key)
+                
+                para_idx = chapter_first_para.get(ch)
+                if para_idx is not None:
+                    issues.append(Issue(
+                        module='Formula',
+                        section=f'第{ch}章编号连续性',
+                        messages=[f"[编号问题] {msg}"],
+                        locate_method='index',
+                        locate_data=para_idx
+                    ))
+                else:
+                    # 没找到对应章节的公式，尝试用关键词定位
+                    issues.append(Issue(
+                        module='Formula',
+                        section=f'第{ch}章编号连续性',
+                        messages=[f"[编号问题] {msg}"],
+                        locate_method='keyword',
+                        locate_data='公式'
+                    ))
+            else:
+                # 无法提取章节号，默认用关键词（去重）
+                dedup_key = "no_chapter"
+                if dedup_key in processed_numbering_issues:
+                    logger.info(f"formula_adapter: skipping duplicate numbering issue without chapter")
+                    continue
+                processed_numbering_issues.add(dedup_key)
+                
+                issues.append(Issue(
+                    module='Formula',
+                    section='编号连续性',
+                    messages=[f"[编号问题] {msg}"],
+                    locate_method='keyword',
+                    locate_data='公式'
+                ))
     
     logger.info(f"formula_adapter: total issues generated = {len(issues)}")
     return issues
@@ -986,6 +1061,70 @@ def references_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
                 module='References',
                 section='序号连续性',
                 messages=numbering_issues,
+                locate_method='keyword',
+                locate_data='参考文献'
+            ))
+    
+    # 4. 处理引用检测问题（citation）
+    citation_report = references_report.get('citation', {})
+    if isinstance(citation_report, dict):
+        citation_messages = citation_report.get('messages', [])
+        
+        # 获取未被引用的文献详情
+        unreferenced_details = citation_report.get('unreferenced_details', [])
+        
+        # 如果有未被引用的文献详情，可以精确定位到具体文献条目
+        if unreferenced_details and content_paragraph_indices:
+            # 判断是否是自动编号
+            is_auto_numbered = all(num == -1 or num is None for num in reference_numbers)
+            
+            for detail in unreferenced_details:
+                ref_num = detail.get('number')
+                ref_content = detail.get('content', '')[:50]  # 取前50字符
+                
+                # 找到对应的段落索引
+                para_idx = None
+                if is_auto_numbered:
+                    # 自动编号：序号是虚拟的 1,2,3...
+                    ref_idx = ref_num - 1
+                    if 0 <= ref_idx < len(content_paragraph_indices):
+                        para_idx = content_paragraph_indices[ref_idx]
+                else:
+                    # 手动编号：查找实际序号的位置
+                    try:
+                        ref_idx = reference_numbers.index(ref_num)
+                        if 0 <= ref_idx < len(content_paragraph_indices):
+                            para_idx = content_paragraph_indices[ref_idx]
+                    except ValueError:
+                        pass
+                
+                if para_idx is not None:
+                    # 精确定位到具体文献条目
+                    issues.append(Issue(
+                        module='References',
+                        section=f'未被引用-[{ref_num}]',
+                        messages=[f"[{ref_num}] {ref_content}..."],
+                        locate_method='index',
+                        locate_data=para_idx
+                    ))
+                else:
+                    # 无法精确定位，添加到标题
+                    if header_idx is not None:
+                        issues.append(Issue(
+                            module='References',
+                            section='未被引用',
+                            messages=[f"[{ref_num}] {ref_content}..."],
+                            locate_method='index',
+                            locate_data=header_idx
+                        ))
+        
+        # 处理无效引用
+        invalid_citations = citation_report.get('invalid_citations', [])
+        if invalid_citations:
+            issues.append(Issue(
+                module='References',
+                section='无效引用',
+                messages=[f"正文引用了不存在的序号: {invalid_citations}"],
                 locate_method='keyword',
                 locate_data='参考文献'
             ))

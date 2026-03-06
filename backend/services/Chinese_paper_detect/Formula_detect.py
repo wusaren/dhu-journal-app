@@ -289,12 +289,13 @@ def find_formula_candidates(doc, template, debug=None):
         number_position_in_math = -1  # 编号在目标 Math 对象中的位置
 
         for elem in math_elements:
-            # 提取当前 Math 对象的文本
-            math_text = ''
-            for node in elem.iter():
-                if hasattr(node, 'text') and node.text:
-                    math_text += node.text.strip() + ' '
-            math_text = math_text.strip()
+            # 提取当前 Math 对象的文本（统一使用 XPath 方式，与 get_text_from_w_p 一致）
+            math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
+                       'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+            math_text_parts = []
+            math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
+            math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+            math_text = ''.join(math_text_parts)
 
             if not math_text:
                 continue
@@ -322,13 +323,17 @@ def find_formula_candidates(doc, template, debug=None):
 
         # ========== 3. 如果没在 Math 内找到，在段落中搜索编号 ==========
         if not parsed_number:
+            if dbg:
+                logger.info("[Formula] DEBUG w:p[%s]: 在Math内未找到编号，开始在段落中搜索. text=%r", idx, text[:150])
             for elem in math_elements:
-                # 提取当前 Math 对象的文本
-                math_text = ''
-                for node in elem.iter():
-                    if hasattr(node, 'text') and node.text:
-                        math_text += node.text.strip() + ' '
-                math_text = math_text.strip()
+                # 提取当前 Math 对象的文本（使用与 get_text_from_w_p 一致的方式）
+                # 需要处理命名空间
+                math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
+                           'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+                math_text_parts = []
+                math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
+                math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                math_text = ''.join(math_text_parts)
 
                 if not math_text:
                     continue
@@ -340,15 +345,66 @@ def find_formula_candidates(doc, template, debug=None):
                             num_text = m.group()
                             parsed = parse_formula_number(num_text)
                             if parsed:
-                                # 检查 Math 对象在段落中的位置
-                                pos_in_text = text.find(math_text)
-                                if pos_in_text >= 0 and m.start() > pos_in_text:
+                                # 彻底解决：使用和 get_text_from_w_p 一致的方式提取 math_text
+                                # 直接用 XPath 从 Math 元素中提取 w:t + m:t（需要命名空间）
+                                math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
+                                           'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+                                math_text_parts = []
+                                math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
+                                math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                                math_text_aligned = ''.join(math_text_parts)
+                                
+                                # 使用清理空格后的版本来匹配（与 get_text_from_w_p 一致）
+                                # 但允许编号和 Math 之间有空格，所以要容错搜索
+                                math_text_aligned_cleaned = ''.join(math_text_aligned.split())
+                                
+                                # 尝试精确匹配，如果失败则尝试在编号附近搜索（允许空格差异）
+                                pos_in_text = text.find(math_text_aligned_cleaned)
+                                if pos_in_text < 0:
+                                    # 在编号结束后搜索，对 search_range 也清理空格后匹配
+                                    search_start = m.end()  # 从编号结束后开始
+                                    search_end = min(len(text), search_start + len(math_text_aligned_cleaned) + 20)
+                                    search_range = text[search_start:search_end]
+                                    # 对 search_range 也清理空格后再搜索
+                                    search_range_cleaned = ''.join(search_range.split())
+                                    pos_in_text = search_range_cleaned.find(math_text_aligned_cleaned)
+                                    if pos_in_text >= 0:
+                                        pos_in_text += search_start
+                                
+                                if dbg:
+                                    logger.info("[Formula] DEBUG w:p[%s]: 编号位置=%d, Math位置=%d, text=%r, math_text_aligned=%r",
+                                                idx, m.start(), pos_in_text, text[:100], math_text_aligned_cleaned[:50])
+                                
+                                # 检查编号和 Math 之间是否只有空白字符（不能有文字）
+                                if pos_in_text >= 0 and m.start() != pos_in_text:
+                                    # 提取编号和 Math 之间的内容
+                                    if m.start() < pos_in_text:
+                                        # 编号在左侧：编号结束位置 -> Math 开始位置
+                                        between_text = text[m.end():pos_in_text]
+                                    else:
+                                        # 编号在右侧：Math 结束位置 -> 编号开始位置
+                                        between_text = text[pos_in_text + len(math_text_aligned_cleaned):m.start()]
+                                    
+                                    # 检查之间是否只有空白字符
+                                    if between_text.strip() != '':
+                                        # 中间有文字，不是直接引用，跳过
+                                        if dbg:
+                                            logger.info("[Formula] w:p[%s]：编号与Math之间有文字，跳过 num=%s", idx, num_text)
+                                        continue
+                                    
+                                    # 只有空白字符，识别为公式
                                     target_math_elem = elem
                                     parsed_number = parsed
                                     number_text = num_text
-                                    number_position_in_math = m.start() - pos_in_text  # 编号在 math_text 中的相对位置
-                                    if dbg:
-                                        logger.info("[Formula] w:p[%s]：在Math对象右侧找到编号 num=%s", idx, num_text)
+                                    number_position_in_math = m.start() - pos_in_text
+                                    if m.start() < pos_in_text:
+                                        # 编号在 Math 左侧
+                                        if dbg:
+                                            logger.info("[Formula] w:p[%s]：在Math对象左侧找到编号 num=%s", idx, num_text)
+                                    else:
+                                        # 编号在 Math 右侧
+                                        if dbg:
+                                            logger.info("[Formula] w:p[%s]：在Math对象右侧找到编号 num=%s", idx, num_text)
                                     break
                     except Exception:
                         continue
@@ -1449,11 +1505,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
 
         numbering_report = check_numbering_by_chapter(extracted_numbers)
         report['numbering'] = numbering_report
-        if not numbering_report.get('ok', True):
-            report['formula_detection']['ok'] = False
-            all_ok = False
-            for msg in numbering_report.get('messages', []):
-                report['formula_detection']['messages'].append(f"编号问题: {msg}")
+        # 注意：不要把 numbering 的 messages 复制到 formula_detection，保持报告独立
 
         summary_tpl = messages.get('summary_overall', '公式格式检查结果: {ok}')
         report['summary'].append(summary_tpl.format(ok='通过' if all_ok else '发现问题'))

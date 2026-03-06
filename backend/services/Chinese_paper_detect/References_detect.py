@@ -112,18 +112,21 @@ def load_template(identifier):
 def detect_font_for_run(run, paragraph=None):
     """
     检测run的字体信息，包括中英文字体
-    返回: (font_size, font_ascii, font_eastasia, is_bold, is_italic, line_spacing)
+    返回: (font_size, font_ascii, font_eastasia, is_bold, is_italic, line_spacing, style_based)
+    style_based: 是否有格式从样式继承（行间距等）
     """
     font_size = None
     font_name_ascii = None
     font_name_eastasia = None
     is_bold = None
     is_italic = False
+    style_based = False  # 新增：是否从样式继承
     
     if not run:
-        return 12.0, "Times New Roman", "宋体", False, False, 1.0
+        return None, None, None, False, False, None, False
     
     # 1. 检测字号
+    font_size = None
     try:
         if run.font and run.font.size and hasattr(run.font.size, 'pt'):
             font_size = float(run.font.size.pt)
@@ -154,7 +157,7 @@ def detect_font_for_run(run, paragraph=None):
     except Exception:
         pass
     
-    font_size = font_size if font_size is not None else 12.0
+    # 如果检测不到，返回 None（让调用方用模板值作为默认值）
     
     # 2. 检测英文字体和中文字体
     try:
@@ -182,8 +185,7 @@ def detect_font_for_run(run, paragraph=None):
     except Exception as e:
         logger.debug(f"  字体检测异常: {e}")
     
-    font_name_ascii = font_name_ascii if font_name_ascii else "Times New Roman"
-    font_name_eastasia = font_name_eastasia if font_name_eastasia else "宋体"
+    # 如果检测不到，返回 None（让调用方用模板值作为默认值）
     
     # 【新增】如果字体名称仍为空，尝试从段落样式中读取
     if (font_name_eastasia == "宋体" or font_name_eastasia is None) and paragraph and paragraph.style:
@@ -242,16 +244,26 @@ def detect_font_for_run(run, paragraph=None):
         pass
     
     # 4. 行间距检测
-    line_spacing = 1.0
+    line_spacing = None  # 不再用硬编码默认值
+    style_based_spacing = False
     try:
         if paragraph and paragraph.paragraph_format.line_spacing:
             line_spacing = float(paragraph.paragraph_format.line_spacing)
         elif paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
+            # 从样式中读取到行间距，标记为样式继承
             line_spacing = float(paragraph.style.paragraph_format.line_spacing)
+            style_based_spacing = True
+            style_based = True
     except Exception:
         pass
     
-    return font_size, font_name_ascii, font_name_eastasia, is_bold, is_italic, line_spacing
+    # 检查是否从样式继承（字体）
+    if paragraph and paragraph.style:
+        # 如果字体名称与默认值相同，可能是从样式继承的
+        # 需要更深入的检测，这里先简单判断
+        pass
+    
+    return font_size, font_name_ascii, font_name_eastasia, is_bold, is_italic, line_spacing, style_based or style_based_spacing
 
 def get_font_size(pt_size, tpl=None):
     """字体大小转换为中文字号"""
@@ -321,15 +333,87 @@ def detect_paragraph_alignment(paragraph):
     return WD_PARAGRAPH_ALIGNMENT.LEFT
 
 def detect_paragraph_indent(paragraph):
-    """检测段落缩进（返回pt值）"""
+    """检测段落缩进（返回pt值）
+    
+    返回: (first_line_indent, left_indent, right_indent, style_based)
+    style_based: 是否从样式继承格式
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    style_based = False
     try:
         fmt = paragraph.paragraph_format
-        first_line_indent = fmt.first_line_indent.pt if fmt.first_line_indent else 0.0
-        left_indent = fmt.left_indent.pt if fmt.left_indent else 0.0
-        right_indent = fmt.right_indent.pt if fmt.right_indent else 0.0
-        return first_line_indent, left_indent, right_indent
+        
+        # 先尝试从样式中获取缩进信息（作为后备）
+        # 注意：必须先读样式，因为用户手动清除格式后，direct formatting为None
+        # 但样式中可能还有值
+        style_first_line = None
+        style_left = None
+        style_right = None
+        try:
+            if paragraph.style:
+                style_fmt = paragraph.style.paragraph_format
+                if style_fmt:
+                    style_first_line = style_fmt.first_line_indent.pt if style_fmt.first_line_indent else None
+                    style_left = style_fmt.left_indent.pt if style_fmt.left_indent else None
+                    style_right = style_fmt.right_indent.pt if style_fmt.right_indent else None
+        except Exception:
+            pass
+        
+        # 检查段落格式的直接属性
+        direct_first_line = fmt.first_line_indent.pt if fmt.first_line_indent else None
+        direct_left = fmt.left_indent.pt if fmt.left_indent else None
+        direct_right = fmt.right_indent.pt if fmt.right_indent else None
+        
+        # 调试日志：区分"手动设0"和"提取不到"
+        style_name = paragraph.style.name if paragraph.style else "无样式"
+        logger.debug(f"[缩进调试] 段落样式: {style_name}")
+        logger.debug(f"[缩进调试] 直接格式: direct_first={direct_first_line}, direct_left={direct_left}, direct_right={direct_right}")
+        logger.debug(f"[缩进调试] 样式格式: style_first={style_first_line}, style_left={style_left}, style_right={style_right}")
+        
+        # 优先使用直接格式，如果直接格式为None但样式有值，则使用样式值
+        # 直接格式为None表示用户没有手动设置（要么用样式，要么没有设置）
+        # 注意：必须记录每个值是否来自样式，最后综合判断 style_based
+        # 如果直接格式和样式都读不到值，返回 None 而非 0.0，避免误报
+        first_from_style = False
+        left_from_style = False
+        
+        if direct_first_line is not None:
+            first_line_indent = direct_first_line
+            first_from_style = False
+        elif style_first_line is not None:
+            first_line_indent = style_first_line
+            first_from_style = True
+        else:
+            first_line_indent = None  # 读不到值，返回 None
+            first_from_style = False
+            
+        if direct_left is not None:
+            left_indent = direct_left
+            left_from_style = False
+        elif style_left is not None:
+            left_indent = style_left
+            left_from_style = True
+        else:
+            left_indent = None  # 读不到值，返回 None
+            left_from_style = False
+        
+        # 只要任何一个值来自样式，就设置 style_based = True
+        style_based = first_from_style or left_from_style
+            
+        if direct_right is not None:
+            right_indent = direct_right
+        elif style_right is not None:
+            right_indent = style_right
+        else:
+            right_indent = None  # 读不到值，返回 None
+        
+        # 调试日志
+        logger.debug(f"[缩进调试] 最终结果: first_line_indent={first_line_indent}, left_indent={left_indent}, right_indent={right_indent}, style_based={style_based}")
+        
+        return first_line_indent, left_indent, right_indent, style_based
     except Exception:
-        return 0.0, 0.0, 0.0
+        return 0.0, 0.0, 0.0, False
 
 def pt_to_chars(pt_value, font_size_pt=12):
     """将pt值转换为字符数"""
@@ -394,52 +478,32 @@ def is_chapter_title(text, debug=False):
     """
     # 跳过空行
     if not text:
-        if debug:
-            logger.debug(f"    [is_chapter_title] 空行 → False")
         return False
-    
-    # 0. 调试：显示原始文本
-    if debug:
-        logger.debug(f"    [is_chapter_title] 检查: {repr(text)[:60]}")
     
     # 1. 以 [数字] 开头的，是参考文献条目，不是章节标题
     if re.match(r'^\[\d+', text):
-        if debug:
-            logger.debug(f"    [is_chapter_title] 以'['数字'开头 → 参考文献条目 → False")
         return False
     
     # 2. 以 数字. 开头（阿拉伯数字+点+空格/文字）→ 章节标题
-    # 如: "1. 引言", "2.3 实验方法", "10 结论"
     if re.match(r'^\d+\.\s+\S', text) or re.match(r'^\d+\.\S', text):
-        if debug:
-            logger.debug(f"    [is_chapter_title] 匹配'数字.' → 章节标题 → True")
         return True
     
     # 3. 以 中文数字、 开头 → 章节标题
-    # 如: "一、概述", "二、实验"
     if re.match(r'^[一二三四五六七八九十百千]+\s*、', text):
-        if debug:
-            logger.debug(f"    [is_chapter_title] 匹配'中文数字、' → 章节标题 → True")
         return True
     
     # 4. 以 英文单词 开头且较短（可能是标题）→ 可能是章节标题
-    # 排除明显是句子的情况
     words = text.split()
     if words and len(words[0]) < 30:
-        # 检查是否全英文单词（不是参考文献的作者-年份格式）
         if re.match(r'^[A-Z][a-zA-Z]+$', words[0]):
-            # 常见英文章节标题
             english_titles = ['Introduction', 'Conclusion', 'References', 'Acknowledgements', 
                             'Abstract', 'Background', 'Methods', 'Results', 'Discussion',
                             'Experiment', 'Conclusion', 'Summary', 'Future', 'Appendix', 
                             'Bibliography', 'Acknowledgments', 'Conclusion']
             if words[0] in english_titles:
-                if debug:
-                    logger.debug(f"    [is_chapter_title] 匹配英文标题'{words[0]}' → 章节标题 → True")
                 return True
     
-    # 5. 中文特殊章节标题列表（没有数字编号的章节标题）
-    # 如: "致谢"、"作者简历"、"简历及在学期间所获得的学术成果" 等
+    # 5. 中文特殊章节标题列表
     chinese_chapter_titles = [
         '致谢', '谢辞', '感谢',
         '作者简历', '个人简历', '简历', '作者简介',
@@ -450,17 +514,12 @@ def is_chapter_title(text, debug=False):
         '参考资料', '参考文献（续）'
     ]
     
-    # 检查是否匹配任何已知的中文章节标题
     for title in chinese_chapter_titles:
         if text.strip() == title:
-            if debug:
-                logger.debug(f"    [is_chapter_title] 匹配已知中文章节标题'{title}' → 章节标题 → True")
             return True
     
-    # 6. 启发式规则：检测"简历及..."、"发表论文及..."这类复合标题
-    # 这类标题通常以"及"结尾，且包含"简历"、"论文"、"成果"等关键词
-    if re.match(r'^.{5,40}$', text):  # 标题长度在5-40字符之间
-        # 检查是否包含章节标题关键词（但不是参考文献特征）
+    # 6. 启发式规则：检测复合标题
+    if re.match(r'^.{5,40}$', text):
         chapter_keywords = ['致谢', '感谢', '简历', '成果', '论文', '发表', '附录', '后记']
         ref_keywords = ['http', 'https', '[J]', '[M]', '[D]', 'DOI', 'doi.org', 
                        '出版社', 'Journal', 'Proceedings', 'Press', 'University']
@@ -468,30 +527,20 @@ def is_chapter_title(text, debug=False):
         has_chapter_kw = any(kw in text for kw in chapter_keywords)
         has_ref_kw = any(kw in text for kw in ref_keywords)
         
-        # 如果包含章节关键词但不包含参考文献关键词，且没有数字编号，可能是章节标题
         if has_chapter_kw and not has_ref_kw:
-            # 进一步检查：不以 [数字] 开头
             if not re.match(r'^\[', text):
-                if debug:
-                    logger.debug(f"    [is_chapter_title] 短段落+章节关键词+无参考文献特征 → 可能标题 → True")
                 return True
     
-    # 7. 如果段落很短（<50字符）且没有包含典型参考文献特征，可能是标题
-    # 典型参考文献特征：包含 https://、http://、[J]、[M]、年份(2020)等
+    # 7. 短段落无参考文献特征，可能是标题
     ref_indicators = ['http://', 'https://', '[J]', '[M]', '[D]', '[EB/OL]', 
                      r'\(\d{4}\)', r'\d{4}年', '出版社', 'Journal', 'Proceedings', 
                      'Press', 'University', 'DOI', 'doi.org']
     has_ref_indicator = any(indicator in text for indicator in ref_indicators)
     
     if len(text) < 80 and not has_ref_indicator:
-        # 短段落且没有参考文献特征，可能是标题
         if re.match(r'^[A-Z0-9\s\-\']+$', text):
-            if debug:
-                logger.debug(f"    [is_chapter_title] 短段落无参考文献特征 → 可能标题 → True")
             return True
     
-    if debug:
-        logger.debug(f"    [is_chapter_title] 不匹配任何章节标题特征 → False")
     return False
 
 def check_references_structure(doc, tpl, debug=False):
@@ -511,48 +560,38 @@ def check_references_structure(doc, tpl, debug=False):
     expected_blank_lines = structure_rules.get('blank_lines_after_header', 2)
     
     # ============== 步骤1：查找"参考文献"标题 ==============
+    header_pattern = structure_rules.get('header_pattern', r'^\\s*参考文献\\s*$')
+    expected_blank_lines = structure_rules.get('blank_lines_after_header', 2)
+    
     if debug:
-        logger.debug("\n" + "=" * 80)
-        logger.debug("【参考文献定位调试 - 步骤1：查找标题】")
-        logger.debug(f"使用的正则: {repr(header_pattern)}")
-        logger.debug("-" * 80)
+        logger.debug(f"\n【参考文献检测】查找标题，正则: {repr(header_pattern)}")
     
     header_para = None
     header_idx = None
     
     # ========== 方案A：从论文中间位置开始查找，跳过目录中的条目 ==========
-    # 参考文献只可能在论文后半部分（通常在正文最后一个章节之后）
     search_start = len(doc.paragraphs) // 2
-    
-    if debug:
-        logger.debug(f"  从段落 {search_start} 开始查找（共 {len(doc.paragraphs)} 个段落）")
     
     for idx in range(search_start, len(doc.paragraphs)):
         paragraph = doc.paragraphs[idx]
         text = paragraph.text.strip()
-        if debug:
-            logger.debug(f"  [{idx}] 检查段落: {repr(text)[:50]}")
         if re.match(header_pattern, text):
             header_para = paragraph
             header_idx = idx
             if debug:
-                logger.debug(f"  ✓ 找到标题在第 {idx} 行: '{text}'")
+                logger.debug(f"  找到标题在第 {idx} 行: '{text}'")
             break
     
     # 如果后半部分没找到，再尝试从前半部分查找（容错处理）
     if not header_para:
-        if debug:
-            logger.debug(f"  ⚠ 后半部分未找到，尝试从前半部分查找...")
         for idx in range(0, search_start):
             paragraph = doc.paragraphs[idx]
             text = paragraph.text.strip()
-            if debug:
-                logger.debug(f"  [{idx}] 检查段落: {repr(text)[:50]}")
             if re.match(header_pattern, text):
                 header_para = paragraph
                 header_idx = idx
                 if debug:
-                    logger.debug(f"  ✓ 找到标题在第 {idx} 行: '{text}'")
+                    logger.debug(f"  找到标题在第 {idx} 行: '{text}'")
                 break
     
     if not header_para:
@@ -563,19 +602,14 @@ def check_references_structure(doc, tpl, debug=False):
         else:
             report['messages'].append("未找到'参考文献'标题段落")
         if debug:
-            logger.debug(f"\n❌ 未找到参考文献标题！")
+            logger.debug(f"  未找到参考文献标题")
         return report
     
     report['header_paragraph'] = header_para
     report['header_paragraph_index'] = header_idx
     
-    if debug:
-        logger.debug(f"\n【参考文献定位调试 - 步骤2：检查标题格式】")
-        logger.debug(f"  标题文本: '{header_para.text.strip()}'")
-    
     # 2. 检查标题格式（允许中间有空格，如"参 考 文 献"）
     title_text = header_para.text.strip()
-    # 使用正则匹配：匹配纯"参考文献"或中间有空格的情况
     if re.match(r'^参\s*考\s*文\s*献$', title_text):
         ok_msg = tpl.get('messages', {}).get('structure_header_ok')
         if ok_msg:
@@ -585,9 +619,6 @@ def check_references_structure(doc, tpl, debug=False):
         report['messages'].append(f"参考文献标题应为纯'参考文献'，实际为'{title_text}'")
     
     # ============== 步骤3：统计空行数 ==============
-    if debug:
-        logger.debug(f"\n【参考文献定位调试 - 步骤3：统计标题与内容之间的空行】")
-    
     blank_count = 0
     content_start_idx = header_idx + 1
     
@@ -597,27 +628,19 @@ def check_references_structure(doc, tpl, debug=False):
         
         if not text:
             blank_count += 1
-            if debug:
-                logger.debug(f"  [{idx}] 空行 ({blank_count})")
             continue
         
         # 跳过脚注、尾注等特殊内容
         if '[!' in text or 'footnote' in text.lower():
-            if debug:
-                logger.debug(f"  [{idx}] 跳过脚注/尾注: {text[:30]}")
             continue
         
-        # 找到参考文献内容开始
-        if debug:
-            logger.debug(f"  [{idx}] 开始参考文献内容: {repr(text)[:50]}")
+        # 找到第一个非空段落，开始提取参考文献
         break
     
-    report['blank_lines_after_header'] = blank_count
-    
     if debug:
-        logger.debug(f"\n【参考文献定位调试 - 步骤4：提取参考文献内容】")
-        logger.debug(f"期望空行数: {expected_blank_lines}, 实际空行数: {blank_count}")
-        logger.debug("-" * 80)
+        logger.debug(f"  标题后空行数: {blank_count}")
+    
+    report['blank_lines_after_header'] = blank_count
     
     if blank_count >= expected_blank_lines:
         ok_msg = tpl.get('messages', {}).get('structure_blank_after_ok')
@@ -634,25 +657,12 @@ def check_references_structure(doc, tpl, debug=False):
     content_paragraph_indices = []  # 新增：记录段落索引
     reference_numbers = []
     
-    # 调试信息
-    debug_info = []
-    
-    if debug:
-        logger.debug(f"\n开始扫描参考文献内容（从第 {content_start_idx} 段开始）...")
-        logger.debug(f"判断规则：")
-        logger.debug(f"  - 以 [数字] 开头 → 参考文献条目")
-        logger.debug(f"  - 以 数字. 开头 → 章节标题（停止）")
-        logger.debug(f"  - 以 中文数字、 开头 → 章节标题（停止）")
-        logger.debug(f"  - 附录/致谢 等关键词 → 停止")
-        logger.debug("-" * 80)
-    
+    # 提取参考文献
     for idx in range(content_start_idx, len(doc.paragraphs)):
         para = doc.paragraphs[idx]
         text = para.text.strip()
         
         if not text:
-            if debug:
-                logger.debug(f"  [{idx}] 跳过空行")
             continue
         
         # 停止关键词列表（附录、致谢等）
@@ -666,58 +676,28 @@ def check_references_structure(doc, tpl, debug=False):
                 break
         
         if hit_stop_keyword:
-            if debug:
-                logger.debug(f"  [{idx}] ⏹ 遇到停止关键词 '{hit_stop_keyword}'，停止提取")
-            debug_info.append(f"[{idx}] 遇到'{hit_stop_keyword}'，停止提取")
             break
         
         # 判断是否为章节标题（新的一章开始了）
-        if is_chapter_title(text, debug=debug):
-            if debug:
-                logger.debug(f"  [{idx}] ⏹ 检测到章节标题，停止提取: {text[:40]}...")
-            debug_info.append(f"[{idx}] 检测到章节标题，停止提取: {text[:30]}...")
+        if is_chapter_title(text, debug=False):
             break
         
         # 判断是否为参考文献条目（支持自动编号）
-        is_ref, ref_num = is_reference_entry(para, text, debug=debug)
+        is_ref, ref_num = is_reference_entry(para, text, debug=False)
         if is_ref:
             content_paragraphs.append(para)
-            content_paragraph_indices.append(idx)  # 新增：记录段落索引
-            reference_numbers.append(ref_num if ref_num is not None else -1)  # -1 表示自动编号
-            if debug:
-                num_str = f"[{ref_num}]" if ref_num is not None else "[自动编号]"
-                logger.debug(f"  [{idx}] ✓ 提取参考文献{num_str}: {text[:50]}...")
-            debug_info.append(f"[{idx}] 提取参考文献: {text[:40]}...")
+            content_paragraph_indices.append(idx)
+            reference_numbers.append(ref_num if ref_num is not None else -1)
         elif re.search(r'\[\d+\]', text):
             # 包含序号但不是开头（不规范格式）
             content_paragraphs.append(para)
-            content_paragraph_indices.append(idx)  # 新增：记录段落索引
+            content_paragraph_indices.append(idx)
             nums = re.findall(r'\[(\d+(?:\.\d+)?)\]', text)
             reference_numbers.extend([int(float(n)) for n in nums])
-            if debug:
-                logger.debug(f"  [{idx}] ? 提取不规范参考文献: {text[:50]}... (序号: {nums})")
-            debug_info.append(f"[{idx}] 提取不规范参考文献: {text[:40]}...")
-        else:
-            # 既不是参考文献也不是章节标题，跳过
-            if debug:
-                logger.debug(f"  [{idx}] ✗ 既不是参考文献也不是章节标题，跳过: {text[:50]}...")
     
-    # ============== 打印调试汇总 ==============
+    # 汇总结果
     if debug:
-        logger.debug("\n" + "=" * 80)
-        logger.debug("【参考文献提取调试汇总】")
-        logger.debug("=" * 80)
-        for info in debug_info:
-            logger.debug(info)
-        logger.debug(f"\n共提取 {len(content_paragraphs)} 条参考文献")
-        logger.debug(f"提取的序号: {reference_numbers}")
-        if reference_numbers:
-            if list(range(1, max(reference_numbers) + 1)) == reference_numbers:
-                logger.debug("✓ 序号连续")
-            else:
-                missing = set(range(1, max(reference_numbers) + 1)) - set(reference_numbers)
-                logger.debug(f"✗ 缺失序号: {sorted(missing)}")
-        logger.debug("=" * 80 + "\n")
+        logger.debug(f"  共提取 {len(content_paragraphs)} 条参考文献")
     
     report['content_paragraphs'] = content_paragraphs
     report['content_paragraph_indices'] = content_paragraph_indices  # 添加段落索引
@@ -823,7 +803,7 @@ def check_reference_header_format(paragraph, tpl):
         report['messages'].append("参考文献标题段落没有有效文本")
         return report
     
-    actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
+    actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing, _ = detect_font_for_run(main_run, paragraph)
     
     issues = []
     
@@ -878,6 +858,9 @@ def check_reference_header_format(paragraph, tpl):
     # 行间距检查
     if not should_skip_check('spacing') and 'line_spacing' in format_rules:
         expected_line_spacing = float(format_rules['line_spacing'])
+        # 如果检测不到，用模板值作为默认值
+        if actual_line_spacing is None:
+            actual_line_spacing = expected_line_spacing
         actual_spacing_name = get_line_spacing_name(actual_line_spacing, tpl)
         expected_spacing_name = get_line_spacing_name(expected_line_spacing, tpl)
         logger.debug(f"参考文献标题行间距: {actual_spacing_name}（{actual_line_spacing}倍）(期望: {expected_spacing_name}（{expected_line_spacing}倍）)")
@@ -988,13 +971,25 @@ def check_reference_content_format(content_paragraphs, tpl):
     issues = []
     
     # 检查每个参考文献段落
+    style_based_detected = False  # 是否检测到从样式继承的格式
+    style_based_details = []  # 记录哪些格式是从样式继承的
+    ref_format_summary = []  # 汇总所有参考文献的格式信息
+    
     for para_idx, paragraph in enumerate(content_paragraphs, 1):
         if not paragraph or not paragraph.runs:
             continue
         
+        # 获取参考文献内容（用于汇总显示）
+        para_text = paragraph.text.strip()[:80]  # 取前80字符
+        
         # 检测段落格式
-        first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
+        first_line_indent, left_indent, right_indent, indent_style_based = detect_paragraph_indent(paragraph)
         actual_alignment = detect_paragraph_alignment(paragraph)
+        
+        # 记录样式继承信息
+        if indent_style_based:
+            style_based_detected = True
+            style_based_details.append(f"第{para_idx}条（缩进）")
         
         # 检测第一个非空run的格式
         main_run = None
@@ -1006,7 +1001,49 @@ def check_reference_content_format(content_paragraphs, tpl):
         if not main_run:
             continue
         
-        actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
+        actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing, font_style_based = detect_font_for_run(main_run, paragraph)
+        
+        # 记录字体/行间距样式继承信息
+        if font_style_based:
+            style_based_detected = True
+            style_based_details.append(f"第{para_idx}条（行间距）")
+        
+        # 组合样式继承标记（任一格式来自样式就跳过检查）
+        is_style_based = indent_style_based or font_style_based
+        
+        # 获取模板中的正确值（这就是默认值）
+        expected_size_pt = float(format_rules.get('font_size_pt', 12.0))
+        expected_line_spacing = float(format_rules.get('line_spacing', 1.5))
+        expected_hanging_chars = float(format_rules.get('hanging_indent', 2))
+        
+        # 如果检测不到，用模板值作为默认值
+        if actual_size_pt is None:
+            actual_size_pt = expected_size_pt
+        if actual_line_spacing is None:
+            actual_line_spacing = expected_line_spacing
+        if actual_font_ascii is None:
+            actual_font_ascii = format_rules.get('english_font', 'Times New Roman')
+        if actual_font_eastasia is None:
+            actual_font_eastasia = format_rules.get('chinese_font', '宋体')
+        
+        # 收集格式信息用于汇总显示
+        font_size_name = get_font_size(actual_size_pt, tpl)
+        spacing_name = get_line_spacing_name(actual_line_spacing, tpl)
+        # 处理可能的 None 值
+        if left_indent is not None:
+            indent_info = f"左缩进:{left_indent:.1f}pt"
+        else:
+            indent_info = "左缩进:未检测到"
+        
+        ref_format_summary.append({
+            'idx': para_idx,
+            'content': para_text,
+            'font_size': font_size_name,
+            'font': actual_font_eastasia,
+            'line_spacing': spacing_name,
+            'indent': indent_info,
+            'style_based': is_style_based  # 标记是否为样式继承
+        })
         
         # 1. 字体大小检查
         if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
@@ -1047,19 +1084,45 @@ def check_reference_content_format(content_paragraphs, tpl):
         # 5. 悬挂缩进检查（首行应为0，后续行有缩进）
         if 'hanging_indent' in format_rules:
             expected_hanging_chars = float(format_rules['hanging_indent'])
+            # 如果 actual_size_pt 为 None，用默认值 10.5（五号）
+            if actual_size_pt is None:
+                actual_size_pt = 10.5
             expected_hanging_pt = expected_hanging_chars * actual_size_pt
             
-            # 悬挂缩进：首行缩进为0，左缩进等于悬挂缩进值
-            if left_indent > 1:  # 有左缩进
-                hanging_chars = pt_to_chars(left_indent, actual_size_pt)
-                if abs(left_indent - expected_hanging_pt) > actual_size_pt * 0.5:
+            # 悬挂缩进的判定：
+            # 1. left_indent > 1（整体有缩进）
+            # 2. first_line_indent < 0（首行向左突出，形成悬挂效果）
+            
+            # 先检查是否是完全检测不到缩进的情况（both None）
+            if left_indent is None and (first_line_indent is None or first_line_indent == 0):
+                # 读不到任何缩进信息，跳过检查（不报错）
+                pass
+            elif first_line_indent is not None and first_line_indent > 0:
+                # 有首行缩进（正数），这不是悬挂缩进，是错误的
+                msg = f"第{para_idx}条参考文献应使用悬挂缩进（首行无缩进，后续行缩进{expected_hanging_chars}字符），当前为首行缩进"
+                if msg not in issues:
+                    issues.append(msg)
+            elif left_indent is not None and left_indent > 1 and first_line_indent is not None and first_line_indent < 0:
+                # 正确的悬挂缩进：left_indent > 1 且 first_line_indent < 0
+                has_hanging_indent = True
+                # 计算实际悬挂缩进值（取绝对值比较）
+                actual_hanging_pt = abs(first_line_indent)
+                hanging_chars = pt_to_chars(actual_hanging_pt, actual_size_pt)
+                if abs(actual_hanging_pt - expected_hanging_pt) > actual_size_pt * 0.5:
                     msg = f"第{para_idx}条参考文献悬挂缩进应为{expected_hanging_chars}字符，实际约为{hanging_chars}字符"
                     if msg not in issues:
                         issues.append(msg)
-            else:
+            elif left_indent is not None and left_indent > 1:
+                # 有左缩进但没有悬挂缩进（首行也有缩进）
                 msg = f"第{para_idx}条参考文献应使用悬挂缩进（首行无缩进，后续行缩进{expected_hanging_chars}字符）"
                 if msg not in issues:
                     issues.append(msg)
+            elif (left_indent is None or left_indent == 0) and (first_line_indent is None or first_line_indent == 0):
+                # left_indent 为 0 或 None，且 first_line_indent 为 0 或 None，说明没有设置缩进
+                msg = f"第{para_idx}条参考文献应使用悬挂缩进（首行无缩进，后续行缩进{expected_hanging_chars}字符），当前未设置缩进"
+                if msg not in issues:
+                    issues.append(msg)
+            # else: 其他情况（如left_indent<0）不报错
         
         # 6. [标号]与作者之间空一格检查
         para_text = paragraph.text.strip()
@@ -1079,6 +1142,31 @@ def check_reference_content_format(content_paragraphs, tpl):
     
     logger.debug(f"参考文献内容格式检查发现 {len(issues)} 个问题")
     logger.debug("---")
+    
+    # 输出参考文献格式汇总
+    if ref_format_summary:
+        logger.debug("\n" + "=" * 80)
+        logger.debug("【参考文献格式汇总】")
+        logger.debug("=" * 80)
+        for ref in ref_format_summary:
+            style_tag = " [样式]" if ref['style_based'] else ""
+            logger.debug(f"[{ref['idx']:2d}]{style_tag} {ref['content'][:40]}...")
+            logger.debug(f"      字体:{ref['font_size']}/{ref['font']} | 行距:{ref['line_spacing']} | {ref['indent']}")
+        logger.debug("=" * 80)
+    
+    # 添加样式继承提醒
+    if style_based_detected:
+        # 记录样式继承信息到报告中
+        report['style_based'] = True
+        report['style_based_details'] = list(set(style_based_details))  # 去重
+        
+        # 如果没有其他格式问题，只添加提醒
+        if not issues:
+            report['ok'] = True  # 格式通过
+            report['messages'].append("注：检测到参考文献格式来自Word样式系统，格式验证通过。如需确保格式正确，请确认样式设置符合论文规范。")
+        else:
+            # 有格式问题，添加提醒
+            report['messages'].append("注：部分参考文献格式来自Word样式系统，可能与直接设置的格式检测结果不一致，建议确认样式设置是否符合论文规范。")
     
     if issues:
         report['ok'] = False
@@ -1109,27 +1197,12 @@ def extract_superscript_citations(paragraph, debug=False):
     """
     citations = set()
     
-    if debug:
-        para_text = paragraph.text.strip()[:60] if paragraph.text.strip() else "(空段落)"
-        logger.debug(f"\n--- 检查段落: {para_text}... ---")
-        logger.debug(f"    段落共有 {len(paragraph.runs)} 个 run")
-    
     for run_idx, run in enumerate(paragraph.runs):
-        if debug:
-            # 输出 run 的详细信息
-            run_text = run.text if run.text else "(空)"
-            superscript = run.font.superscript
-            subscript = run.font.subscript
-            logger.debug(f"    Run[{run_idx}]: text='{run_text[:30]}...' | superscript={superscript}, subscript={subscript}")
-        
         # 检查是否为上标
         if run.font.superscript:
             text = run.text.strip()
             if not text:
                 continue
-            
-            if debug:
-                logger.debug(f"    ★ 检测到上标文本: '{text}'")
             
             # 解析上标内容
             # 支持格式：
@@ -1152,8 +1225,6 @@ def extract_superscript_citations(paragraph, debug=False):
                             end = int(parts[1])
                             for i in range(start, end + 1):
                                 citations.add(i)
-                            if debug:
-                                logger.debug(f"    → 解析为带方括号范围: {text} -> {list(range(start, end + 1))}")
                         except ValueError:
                             pass
                     # 处理列表: "1,3,5" -> 1,3,5
@@ -1163,8 +1234,6 @@ def extract_superscript_citations(paragraph, debug=False):
                             part = part.strip()
                             if part.isdigit():
                                 citations.add(int(part))
-                        if debug:
-                            logger.debug(f"    → 解析为带方括号列表: {text} -> {list(citations)}")
                         
                 # 处理列表: "1,3,5" -> 1,3,5
                 elif ',' in cleaned_text and cleaned_text.replace(',', '').isdigit():
@@ -1173,17 +1242,10 @@ def extract_superscript_citations(paragraph, debug=False):
                         part = part.strip()
                         if part.isdigit():
                             citations.add(int(part))
-                    if debug:
-                        logger.debug(f"    → 解析为带方括号列表: {text} -> {list(citations)}")
                         
                 # 处理单个数字: "27" -> 27
                 elif cleaned_text.isdigit():
                     citations.add(int(cleaned_text))
-                    if debug:
-                        logger.debug(f"    → 解析为带方括号数字: {text} -> {cleaned_text}")
-                else:
-                    if debug:
-                        logger.debug(f"    → 无法解析的带方括号文本: '{text}'")
             
             # 处理不带方括号的格式（原有逻辑）
             else:
@@ -1196,8 +1258,6 @@ def extract_superscript_citations(paragraph, debug=False):
                             end = int(parts[1])
                             for i in range(start, end + 1):
                                 citations.add(i)
-                            if debug:
-                                logger.debug(f"    → 解析为范围: {text} -> {list(range(start, end + 1))}")
                         except ValueError:
                             pass
                             
@@ -1208,20 +1268,10 @@ def extract_superscript_citations(paragraph, debug=False):
                         part = part.strip()
                         if part.isdigit():
                             citations.add(int(part))
-                    if debug:
-                        logger.debug(f"    → 解析为列表: {text} -> {list(citations)}")
                         
                 # 处理单个数字: "1" -> 1
                 elif text.isdigit():
                     citations.add(int(text))
-                    if debug:
-                        logger.debug(f"    → 解析为单个数字: {text}")
-                else:
-                    if debug:
-                        logger.debug(f"    → 无法解析的上标文本: '{text}'")
-    
-    if debug:
-        logger.debug(f"    本段落提取到的引用: {sorted(citations) if citations else '无'}")
     
     return list(citations)
 
@@ -1238,34 +1288,16 @@ def find_body_range(doc, references_header_idx, debug=False):
     返回:
         tuple: (正文起始段落索引, 正文结束段落索引)
     """
-    if debug:
-        logger.debug("\n" + "=" * 80)
-        logger.debug("【正文范围定位】")
-        logger.debug(f"文档共有 {len(doc.paragraphs)} 个段落")
-        logger.debug("=" * 80)
-    
     # 如果没有提供参考文献标题索引，先查找
     if references_header_idx is None:
-        # 查找参考文献标题
-        if debug:
-            logger.debug("未提供参考文献标题索引，开始自动查找...")
-        
         for idx, para in enumerate(doc.paragraphs):
             text = para.text.strip()
             if re.match(r'^参\s*考\s*文\s*献\s*$', text):
                 references_header_idx = idx
-                if debug:
-                    logger.debug(f"✓ 找到参考文献标题在第 {idx} 段: '{text}'")
                 break
-        else:
-            if debug:
-                logger.debug("✗ 未找到参考文献标题")
     
     # 确定正文结束位置
     end_idx = references_header_idx if references_header_idx is not None else len(doc.paragraphs)
-    
-    if debug:
-        logger.debug(f"\n正文结束位置: 第 {end_idx - 1} 段 (参考文献标题在第 {references_header_idx} 段)")
     
     # 确定正文起始位置
     # 跳过摘要、关键词等前面的内容，从第一个章节标题开始
@@ -1280,13 +1312,6 @@ def find_body_range(doc, references_header_idx, debug=False):
         r'^Introduction$',
     ]
     
-    if debug:
-        logger.debug("\n开始查找正文起始位置...")
-        logger.debug(f"将排除的章节关键词: {EXCLUDE_SECTIONS}")
-        logger.debug("章节标题匹配模式:")
-        for p in chapter_patterns:
-            logger.debug(f"  - {p}")
-    
     scanned = 0
     for idx in range(len(doc.paragraphs)):
         text = doc.paragraphs[idx].text.strip()
@@ -1296,59 +1321,25 @@ def find_body_range(doc, references_header_idx, debug=False):
             continue
         
         scanned += 1
-        if debug and scanned <= 20:  # 只显示前20个检查的段落
-            # 检查是否在排除列表中
-            is_excluded = False
-            excluded_by = None
-            for keyword in EXCLUDE_SECTIONS:
-                if keyword in text:
-                    is_excluded = True
-                    excluded_by = keyword
-                    break
-            
-            if is_excluded:
-                logger.debug(f"  段落[{idx}] ✗ 跳过 (包含排除关键词 '{excluded_by}'): {text[:40]}...")
-            else:
-                # 检查是否匹配章节标题
-                matched = False
-                for pattern in chapter_patterns:
-                    if re.match(pattern, text):
-                        matched = True
-                        break
-                
-                if matched:
-                    logger.debug(f"  段落[{idx}] ✓ 识别为章节标题: {text[:40]}...")
-                else:
-                    logger.debug(f"  段落[{idx}] 继续检查: {text[:40]}...")
         
-        # 跳过摘要、关键词
-        is_exclude = False
+        # 检查是否在排除列表中
+        is_excluded = False
         for keyword in EXCLUDE_SECTIONS:
             if keyword in text:
-                is_exclude = True
+                is_excluded = True
                 break
         
-        if is_exclude:
+        if is_excluded:
             continue
         
-        # 检查是否为章节标题
+        # 检查是否匹配章节标题
         for pattern in chapter_patterns:
             if re.match(pattern, text):
                 start_idx = idx
-                if debug:
-                    logger.debug(f"\n✓ 正文从第 {idx} 段开始: '{text[:50]}...'")
                 break
         
         if start_idx > 0:
             break
-    else:
-        if debug:
-            logger.debug(f"\n未找到匹配的章节标题，正文从第 0 段开始")
-            logger.debug(f"已扫描 {scanned} 个非空段落")
-    
-    if debug:
-        logger.debug(f"\n最终确定正文范围: 第 {start_idx} 段 到 第 {end_idx - 1} 段")
-        logger.debug(f"正文共包含 {end_idx - start_idx} 个段落")
     
     return start_idx, end_idx
 
@@ -1382,22 +1373,14 @@ def check_citations(doc, reference_numbers, references_header_idx=None, content_
     if content_paragraphs is None:
         content_paragraphs = []
     
-    if debug:
-        logger.debug("\n" + "=" * 80)
-        logger.debug("【引用检测】开始分析...")
-        logger.debug("=" * 80)
-    
     # 1. 获取正文范围
-    body_start, body_end = find_body_range(doc, references_header_idx, debug=debug)
+    body_start, body_end = find_body_range(doc, references_header_idx, debug=False)
     
     if debug:
-        logger.debug(f"正文范围: 第 {body_start} 段 到 第 {body_end - 1} 段")
+        logger.debug(f"  正文范围: 第 {body_start} 段 到 第 {body_end - 1} 段")
     
     # 2. 提取正文中的所有上标引用
     all_citations = set()
-    
-    if debug:
-        logger.debug("\n--- 提取正文中的上标引用 ---")
     
     for idx in range(body_start, body_end):
         para = doc.paragraphs[idx]
@@ -1407,18 +1390,15 @@ def check_citations(doc, reference_numbers, references_header_idx=None, content_
             continue
         
         # 检查段落中是否有上标引用
-        para_citations = extract_superscript_citations(para, debug=debug)
+        para_citations = extract_superscript_citations(para, debug=False)
         
         if para_citations:
             all_citations.update(para_citations)
-            if debug:
-                logger.debug(f"  段落 {idx}: 检测到上标引用 {para_citations}, 内容: {text[:40]}...")
     
     report['total_citations'] = len(all_citations)
     
     if debug:
-        logger.debug(f"\n正文中共检测到 {len(all_citations)} 个上标引用")
-        logger.debug(f"引用的序号: {sorted(all_citations)}")
+        logger.debug(f"  检测到 {len(all_citations)} 个上标引用: {sorted(all_citations)}")
     
     # 3. 获取参考文献序号列表（排除自动编号-1）
     # 如果全是自动编号（-1），则生成虚拟序号 1,2,3... 用于比对
@@ -1426,17 +1406,11 @@ def check_citations(doc, reference_numbers, references_header_idx=None, content_
     if auto_count > 0 and all(num == -1 or num is None for num in reference_numbers):
         # 全是自动编号，生成虚拟序号
         valid_ref_numbers = list(range(1, len(reference_numbers) + 1))
-        if debug:
-            logger.debug(f"参考文献全部为自动编号，生成虚拟序号: {valid_ref_numbers}")
     else:
         # 过滤掉 None 和 -1（自动编号），只保留有实际数字的序号
         valid_ref_numbers = [num for num in reference_numbers if num and num > 0]
     
     report['total_references'] = len(valid_ref_numbers)
-    
-    if debug:
-        logger.debug(f"\n参考文献共 {len(valid_ref_numbers)} 条")
-        logger.debug(f"参考文献序号: {valid_ref_numbers}")
     
     # 4. 比对分析
     
@@ -1473,26 +1447,12 @@ def check_citations(doc, reference_numbers, references_header_idx=None, content_
                     'number': ref_num,
                     'content': content
                 })
-        
-        if debug:
-            if unreferenced:
-                logger.debug(f"\n未被引用的文献: {report['unreferenced']}")
-                for detail in report['unreferenced_details']:
-                    logger.debug(f"  [{detail['number']}] {detail['content']}...")
-            else:
-                logger.debug("\n所有文献都被引用了")
     
     # 找出引用了不存在的序号
     if all_citations and valid_ref_numbers:
         ref_set = set(valid_ref_numbers)
         invalid_refs = all_citations - ref_set
         report['invalid_citations'] = sorted(invalid_refs)
-        
-        if debug:
-            if invalid_refs:
-                logger.debug(f"引用了不存在的序号: {report['invalid_citations']}")
-            else:
-                logger.debug("没有引用不存在的序号")
     
     # 5. 生成报告消息
     if report['unreferenced']:
@@ -1523,10 +1483,7 @@ def check_citations(doc, reference_numbers, references_header_idx=None, content_
             report['messages'].append("未在正文中检测到任何引用")
     
     if debug:
-        logger.debug("\n--- 引用检测结果 ---")
-        logger.debug(f"状态: {'通过' if report['ok'] else '失败'}")
-        for msg in report['messages']:
-            logger.debug(f"  - {msg}")
+        logger.debug(f"  引用检测结果: {'通过' if report['ok'] else '失败'}")
     
     return report
 
