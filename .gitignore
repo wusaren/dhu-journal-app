@@ -4,3 +4,10 @@ __pycache__/
 
 .vscode/
 .idea/
+
+# Uploads and generated files
+backend/uploads/
+backend/mineru_output/
+temp_images/
+logs/
+instance/
