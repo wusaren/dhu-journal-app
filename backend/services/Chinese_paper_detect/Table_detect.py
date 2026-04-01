@@ -481,12 +481,12 @@ def check_caption_text_rules(table_item, tpl):
     cn_para = table_item.get('caption_cn_paragraph')
     en_para = table_item.get('caption_en_paragraph')
     is_continuation = table_item.get('is_continuation', False)
+    en_check = tpl.get('check_rules', {}).get('caption_en_check', True)
 
     # 续表允许没有英文表题
     if cn_para is None:
         report['ok'] = False
-        report['messages'].append(messages.get('caption_missing_cn', '未找到中文表题'))
-    if en_para is None and not is_continuation:
+    if en_check and en_para is None and not is_continuation:
         report['ok'] = False
         report['messages'].append(messages.get('caption_missing_en', '未找到英文表题'))
 

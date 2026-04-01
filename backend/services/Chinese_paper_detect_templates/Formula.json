@@ -1,7 +1,7 @@
 {
   "formula_rule": "中文论文公式：公式单独成段，公式编号为半角括号(章-序)，编号右端对齐；编号Times New Roman无特殊颜色；公式内容为Office Math对象（通常为Cambria Math）。",
   "formula_detection_rules": {
-    "number_pattern": "[#＃]\\s*(?P<chapter>\\d+)\\s*[-－–]\\s*(?P<seq>\\d+)",
+    "number_pattern": "[#＃]?\\s*(?P<chapter>\\d+)\\s*[-－–]\\s*(?P<seq>\\d+)",
     "tab_stops": [
       {
         "position_chars": 20,
@@ -41,22 +41,13 @@
     "debug": true,
     "tab_stops_check": false,
     "tab_position_tolerance": 5,
-    "font_size_mapping": {
-      "9": "小五",
-      "10.5": "五号",
-      "12": "小四",
-      "14": "四号",
-      "16": "三号",
-      "18": "小二",
-      "22": "二号",
-      "24": "小一",
-      "26": "一号"
-    },
     "caption_numbering_check": true,
     "caption_sequential_check": true,
     "formula_content_italic": true,
+    "formula_content_italic_check": false,
     "formula_content_bold": false,
     "formula_number_italic": true,
+    "formula_number_italic_check": false,
     "formula_number_bold": false,
     "number_color_check": true,
     "formula_reference_check": false
@@ -68,14 +59,17 @@
     "caption_numbering_check": "是否检查编号连续性",
     "caption_sequential_check": "是否检查编号顺序",
     "formula_content_italic": "公式内容是否应为斜体（true=斜体，false=正体）",
+    "formula_content_italic_check": "是否检查公式内容斜体设置（true=检查，false=跳过）",
     "formula_content_bold": "公式内容是否应为加粗（true=加粗，false=正常）",
     "formula_number_italic": "公式编号是否应为斜体（true=斜体，false=正体）",
+    "formula_number_italic_check": "是否检查公式编号斜体设置（true=检查，false=跳过）",
     "formula_number_bold": "公式编号是否应为加粗（true=加粗，false=正常）",
     "number_color_check": "是否检查公式编号颜色（是否使用默认颜色）"
   },
   "messages": {
     "formula_detection_ok": "公式格式检查通过",
     "formula_detection_error": "公式格式检查发现问题",
+    "formula_detection_issue_header": "公式格式检查发现问题：",
     "tab_stops_ok": "制表位设置正确",
     "tab_stops_error": "制表位设置不正确",
     "tab_stops_missing": "未检测到制表位设置",

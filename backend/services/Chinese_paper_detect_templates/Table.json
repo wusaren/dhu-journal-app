@@ -45,7 +45,8 @@
     "alignment_check": true,
     "alignment_length_threshold": 20,
     "table_content_alignment_check": false,
-    "table_reference_check": true
+    "table_reference_check": true,
+    "caption_en_check": false
   },
   "messages": {
     "table_detection_ok": "表格格式检查通过",

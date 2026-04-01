@@ -1,5 +1,5 @@
 {
-  "figure_rule": "图片标题格式：中文为\"图X-Y 标题(来源于xxxxxx)\"，英文为\"FigX-Y Title (Origin from xxxx)\"，五号字（10.5pt），单倍行距，居中；图的编号和图题应置于图下方的居中位置，图题与正文之间空一行",
+  "figure_rule": "图片标题格式：中文为「图X-Y 标题(来源于xxxxxx)」，英文为「FigX-Y Title (Origin from xxxx)」，五号字（10.5pt），单倍行距，居中；图的编号和图题应置于图下方的居中位置，图题与正文之间空一行",
   "figure_detection_rules": {
     "caption_pattern_chinese": "^\\s*图\\s(\\d+)-(\\d+)\\s+(.+)$",
     "caption_pattern_english": "^\\s*Fig\\s(\\d+)-(\\d+)\\s+(.+)$",
@@ -37,6 +37,7 @@
     "font_size_mapping": {
       "9": "小五",
       "10.5": "五号",
+      "11": "小五强",
       "12": "小四",
       "14": "四号",
       "16": "三号",
@@ -51,6 +52,12 @@
       "1.25": "1.25倍行距",
       "1.5": "1.5倍行距",
       "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
     },
     "caption_numbering_check": true,
     "caption_sequential_check": true,
@@ -93,5 +100,3 @@
   ],
   "generated_from": "用户要求：图片标题格式为图X-Y 标题(来源于xxxxxx)或FigX-Y Title (Origin from xxxx)，五号字（10.5pt），单倍行距，居中，图片居中，标题在图片下方，图题与正文之间空一行，编号从1开始连续递增"
 }
-
-

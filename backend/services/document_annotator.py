@@ -388,17 +388,6 @@ def group_messages_by_paragraph(messages):
 
 
 def group_messages_by_title(messages, titles):
-    """
-    将标题格式/大小写消息按标题文本分组
-    
-    参数：
-        messages: 消息列表
-        titles: 标题信息列表
-    
-    返回：
-        {标题文本: [消息列表]}
-    """
-    import re
     grouped = {}
     
     for msg in messages:
@@ -1180,7 +1169,6 @@ def parse_issues_from_reports(all_reports):
                                 chapter_first_table[chapter] = para_idx
                     
                     # 按章节分别添加连续性问题
-                    import re
                     for msg in messages:
                         # 提取章节号：支持 "第2章" 格式
                         ch_match = re.search(r'第(\d+)章', msg)
