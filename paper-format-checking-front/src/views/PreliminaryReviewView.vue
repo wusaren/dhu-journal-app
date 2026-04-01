@@ -205,7 +205,7 @@
               >
                 <template #title>
                   <div class="module-title">
-                    <span class="module-name">{{ moduleName }}</span>
+                    <span class="module-name">{{ moduleNamesCN[moduleName] || moduleName }}</span>
                     <el-tag
                       :type="getModuleStatusType(moduleResult)"
                       size="small"
@@ -226,7 +226,7 @@
                       <span :class="['check-icon', check.ok ? 'success' : 'error']">
                         {{ check.ok ? '✓' : '✗' }}
                       </span>
-                      <span class="check-name-text">{{ checkName }}</span>
+                      <span class="check-name-text">{{ checkNamesCN[checkName] || checkName }}</span>
                     </div>
                     <div v-if="check.messages && check.messages.length > 0" class="check-messages-inline">
                       <div v-for="(message, index) in check.messages" :key="index" class="message-text">
@@ -1518,25 +1518,71 @@ const getPassRateType = (passRate: number) => {
   return 'danger'
 }
 
+// 检查项 key → 中文标签映射（key 必须与后端 CHECK_NAMES_CN 返回的 key 一致）
+const checkNamesCN: Record<string, string> = {
+  // 通用
+  '[结构]': '结构',
+  '[格式]': '格式',
+  '[标题格式]': '标题格式',
+  '[内容格式]': '内容格式',
+  // Formula
+  '[公式检测]': '公式检测',
+  '[编号]': '编号',
+  // TOC
+  '[图录格式]': '图录格式',
+  '[目录格式]': '目录格式',
+  '[表录格式]': '表录格式',
+  // Figure
+  '[图检测]': '图检测',
+  // Table
+  '[表格检测]': '表格检测',
+  // References
+  '[结构]': '结构',
+  '[格式]': '格式',
+  '[标题格式]': '标题格式',
+  // Chinese_section
+  '[中文标题格式]': '中文标题格式',
+  '[中文作者格式]': '中文作者格式',
+  '[中文单位格式]': '中文单位格式',
+  '[中文摘要格式]': '中文摘要格式',
+  '[中文关键词格式]': '中文关键词格式',
+}
+
+// 模块名 → 中文标签映射
+const moduleNamesCN: Record<string, string> = {
+  'Title': '标题',
+  'Abstract': '摘要',
+  'English_Abstract': '英文摘要',
+  'Keywords': '关键词',
+  'Content': '正文',
+  'Formula': '公式',
+  'TOC': '目录/图录/表录',
+  'Figure': '图',
+  'Table': '表格',
+  'References': '参考文献',
+  'Chinese_section': '中文部分',
+  'Classification': '摘要分类号',
+}
+
 const getModuleStatus = (moduleResult: any) => {
   const checks = moduleResult.checks || {}
   const checkValues = Object.values(checks)
-  
+
   if (checkValues.length === 0) return '未检测'
-  
+
   const allPassed = checkValues.every((check: any) => check.ok === true)
-  if (allPassed) return '全部通过'
-  
+  if (allPassed) return '符合规范'
+
   const allFailed = checkValues.every((check: any) => check.ok === false)
   if (allFailed) return '全部失败'
-  
+
   return '部分通过'
 }
 
 const getModuleStatusType = (moduleResult: any) => {
   const status = getModuleStatus(moduleResult)
-  
-  if (status === '全部通过') return 'success'
+
+  if (status === '符合规范') return 'success'
   if (status === '全部失败') return 'danger'
   if (status === '部分通过') return 'warning'
   return 'info'
@@ -1963,6 +2009,20 @@ onMounted(() => {
 .check-name-text {
   font-weight: 500;
   color: #606266;
+}
+
+.pass-text {
+  color: #67c23a;
+  font-weight: normal;
+  margin-left: 6px;
+  font-size: 13px;
+}
+
+.fail-text {
+  color: #f56c6c;
+  font-weight: normal;
+  margin-left: 6px;
+  font-size: 13px;
 }
 
 .check-messages-inline {

@@ -2925,12 +2925,15 @@ def check_references_with_template(doc_path, template_identifier, skip_checks=No
             debug=debug
         )
     
-    # 组装报告
+    # 组装报告（调整后）
+    # - references_header：参考文献"参考文献"标题的格式检查结果（独立分段）
+    # - content_format：参考文献条目的内容格式检查结果
+    # - citation：正文引用检查结果（不纳入前端报告，由 service 层合并到 content_format）
     report = {
         'structure': structure_report,
-        'header_format': header_format_report,
+        'references_header': header_format_report,  # 独立分段 → 前端显示为 [标题格式]
         'content_format': content_format_report,
-        'citation': citation_report,  # 添加引用检测结果
+        'citation': citation_report,                 # 内部保留，不在前端独立成段
         'summary': []
     }
     

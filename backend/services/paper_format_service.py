@@ -19,7 +19,7 @@ from services.paper_detect.Classification_detect import detect_classification
 
 logger = logging.getLogger(__name__)
 
-DETECTION_ORDER = ['Title', 'Abstract', 'English_Abstract', 'Keywords', 'Content', 'Formula', 'TOC', 'Figure', 'Table', 'Chinese_section']
+DETECTION_ORDER = ['Title', 'Abstract', 'English_Abstract', 'Keywords', 'Content', 'Formula', 'TOC', 'Figure', 'Table', 'References', 'Chinese_section']
 
 # 模块中文名称映射
 MODULE_NAMES_CN = {
@@ -32,6 +32,7 @@ MODULE_NAMES_CN = {
     'TOC': '目录/图录/表录',
     'Figure': '图',
     'Table': '表格',
+    'References': '参考文献',
     'Chinese_section': '中文部分',
     'Classification': '摘要分类号',
     # 中文部分内部项目
@@ -40,6 +41,58 @@ MODULE_NAMES_CN = {
     'chinese_affiliation_format': '中文单位',
     'chinese_abstract_format': '中文摘要',
     'chinese_keywords_format': '中文关键词',
+}
+
+# 检查项 key → 中文标签映射（用于前端折叠栏和文本报告）
+CHECK_NAMES_CN = {
+    # === 通用 ===
+    'structure': '[结构]',
+    'format': '[格式]',
+
+    # === Title / Abstract / English_Abstract / Keywords ===
+    'title_format': '[标题格式]',
+    'content_format': '[内容格式]',
+
+    # === Formula ===
+    'formula_detection': '[公式检测]',
+    'numbering': '[编号]',
+
+    # === TOC ===
+    'toc_format': '[目录格式]',
+    'figure_list_format': '[图录格式]',
+    'table_list_format': '[表录格式]',
+    # TOC format 分段（title_type: 图录/目录/表录）
+    'format_图录': '[图录格式]',
+    'format_目录': '[目录格式]',
+    'format_表录': '[表录格式]',
+
+    # === Figure ===
+    'figure_detection': '[图检测]',
+
+    # === Table ===
+    'table_detection': '[表格检测]',
+
+    # === References ===
+    'references_structure': '[结构]',
+    'references_content': '[格式]',
+    'references_header': '[标题格式]',
+
+    # === 双语模块前缀（Keywords / Title） ===
+    'chinese_structure': '[结构]',
+    'chinese_format': '[格式]',
+    'chinese_title_format': '[标题格式]',
+    'chinese_content_format': '[内容格式]',
+    'english_structure': '[结构]',
+    'english_format': '[格式]',
+    'english_title_format': '[标题格式]',
+    'english_content_format': '[内容格式]',
+
+    # === Chinese_section ===
+    'chinese_title_format': '[中文标题格式]',
+    'chinese_author_format': '[中文作者格式]',
+    'chinese_affiliation_format': '[中文单位格式]',
+    'chinese_abstract_format': '[中文摘要格式]',
+    'chinese_keywords_format': '[中文关键词格式]',
 }
 
 # class PaperFormatService:
@@ -810,15 +863,13 @@ class ChinesePaperFormatService:
                 'error_message': report.get('error_message', '')
             }
         
-            # TOC模块特殊处理
+            # TOC模块特殊处理：三段（结构 + 三个格式分段）
         if module_name == 'TOC' and isinstance(report, dict):
             checks = {}
-            # 处理 structure
             structure = report.get('structure', {})
             if isinstance(structure, dict) and 'ok' in structure:
                 checks['structure'] = structure
-            
-            # 处理 format（是一个列表）
+
             format_reports = report.get('format', [])
             if isinstance(format_reports, list):
                 for fr in format_reports:
@@ -826,46 +877,41 @@ class ChinesePaperFormatService:
                     format_report = fr.get('report', {})
                     if isinstance(format_report, dict) and 'ok' in format_report:
                         checks[f'format_{title_type}'] = format_report
-            
-            # 提取总结信息
+
             summary = report.get('summary', [])
             extracted = {}
             details = {}
-        
+
         # Keywords和Title模块特殊处理（双语检测）
         elif module_name in ['Keywords', 'Title'] and isinstance(report, dict) and 'chinese' in report and 'english' in report:
-            # 提取双语关键词的检查项
             checks = {}
             chinese_report = report.get('chinese', {})
             english_report = report.get('english', {})
-            
-            # 处理中文检查项
+
             if isinstance(chinese_report, dict):
                 exclude_keys = ['summary', 'extracted', 'details', 'language']
                 if module_name == 'Keywords':
                     exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
                 elif module_name == 'Title':
                     exclude_keys.extend(['title_paragraph', 'title_text'])
-                
+
                 for key, value in chinese_report.items():
                     if key not in exclude_keys:
                         if isinstance(value, dict) and 'ok' in value:
                             checks[f'chinese_{key}'] = value
-            
-            # 处理英文检查项
+
             if isinstance(english_report, dict):
                 exclude_keys = ['summary', 'extracted', 'details', 'language']
                 if module_name == 'Keywords':
                     exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
                 elif module_name == 'Title':
                     exclude_keys.extend(['title_paragraph', 'title_text'])
-                
+
                 for key, value in english_report.items():
                     if key not in exclude_keys:
                         if isinstance(value, dict) and 'ok' in value:
                             checks[f'english_{key}'] = value
-            
-            # 提取总结信息
+
             summary = []
             if 'summary' in report:
                 summary.extend(report.get('summary', []))
@@ -873,46 +919,167 @@ class ChinesePaperFormatService:
                 summary.extend(chinese_report.get('summary', []))
             if isinstance(english_report, dict) and 'summary' in english_report:
                 summary.extend(english_report.get('summary', []))
-            
+
             extracted = {}
             details = {}
+
+        # References 模块特殊处理：三段（结构/格式/标题格式），引用消息并入格式分段
+        elif module_name == 'References' and isinstance(report, dict):
+            checks = {}
+
+            structure = report.get('structure', {})
+            if isinstance(structure, dict) and 'ok' in structure:
+                checks['references_structure'] = structure
+
+            references_header = report.get('references_header', {})
+            if isinstance(references_header, dict) and 'ok' in references_header:
+                checks['references_header'] = references_header
+
+            content_format = report.get('content_format', {})
+            citation = report.get('citation', {})
+            if isinstance(content_format, dict) and isinstance(citation, dict):
+                merged_ok = content_format.get('ok', True) and citation.get('ok', True)
+                merged_messages = content_format.get('messages', []) + citation.get('messages', [])
+                checks['references_content'] = {'ok': merged_ok, 'messages': merged_messages}
+
+            summary = report.get('summary', [])
+            extracted = {}
+            details = {}
+
+        # Figure 模块特殊处理：只保留 [图检测] 和 [编号] 两个分段
+        elif module_name == 'Figure' and isinstance(report, dict):
+            checks = {}
+
+            numbering = report.get('numbering', {})
+            if isinstance(numbering, dict) and 'ok' in numbering:
+                checks['numbering'] = numbering
+
+            figures = report.get('figures', [])
+            total = len(figures)
+            failed = 0
+            all_messages = []
+            for idx, fr in enumerate(figures, 1):
+                if isinstance(fr, dict):
+                    fc = fr.get('format_check', {})
+                    pc = fr.get('picture_check', {})
+                    rc = fr.get('reference_check', {})
+                    cc = fr.get('content_check', {})
+                    if not (fc.get('ok', True) and pc.get('ok', True)
+                            and rc.get('ok', True) and cc.get('ok', True)):
+                        failed += 1
+                        caption_info = fr.get('caption_info', {})
+                        if fr.get('has_caption'):
+                            fig_label = caption_info.get('full_text', f'图{idx}')
+                        else:
+                            fig_label = f'图{idx}（无标题）'
+                        for check_key, check_label in [
+                            ('format_check', '标题格式'),
+                            ('picture_check', '图片对齐'),
+                            ('reference_check', '引用检查'),
+                        ]:
+                            cv = fr.get(check_key, {})
+                            if isinstance(cv, dict) and not cv.get('ok', False):
+                                msgs = cv.get('messages', [])
+                                if msgs:
+                                    all_messages.append(f"{fig_label}：{check_label}——{msgs[0]}")
+                        is_chart = fr.get('content_check', {}).get('is_chart', False)
+                        cc_val = fr.get('content_check', {})
+                        if is_chart and not cc_val.get('ok', False):
+                            cc_msgs = cc_val.get('messages', [])
+                            if cc_msgs:
+                                all_messages.append(f"{fig_label}：内容检测——{cc_msgs[0]}")
+            checks['figure_detection'] = {'ok': failed == 0, 'messages': all_messages, 'total': total, 'failed': failed}
+
+            summary = report.get('summary', [])
+            extracted = {}
+            details = {'figure_count': total}
+
+        # Table 模块特殊处理：只保留 [表格检测] 和 [编号] 两个分段
+        elif module_name == 'Table' and isinstance(report, dict):
+            checks = {}
+
+            numbering = report.get('numbering', {})
+            if isinstance(numbering, dict) and 'ok' in numbering:
+                checks['numbering'] = numbering
+
+            tables = report.get('tables', [])
+            total = len(tables)
+            failed = 0
+            all_messages = []
+            for tr in tables:
+                if isinstance(tr, dict):
+                    # 表题格式：caption_cn_format / caption_en_format / text_rules
+                    cn_fmt = tr.get('caption_cn_format', {})
+                    en_fmt = tr.get('caption_en_format', {})
+                    txt_rules = tr.get('text_rules', {})
+                    ts = tr.get('table_style', {})
+                    ta = tr.get('table_content_alignment', {})
+                    tr2 = tr.get('table_reference', {})
+                    if not (cn_fmt.get('ok', True) and en_fmt.get('ok', True)
+                            and txt_rules.get('ok', True) and ts.get('ok', True)
+                            and ta.get('ok', True) and tr2.get('ok', True)):
+                        failed += 1
+                        tbl_desc = tr.get('table_desc', f'表格{failed}')
+                        for check_key, check_label in [
+                            ('caption_cn_format', '中文表题格式'),
+                            ('caption_en_format', '英文表题格式'),
+                            ('text_rules', '表题文字规则'),
+                            ('table_style', '表格样式'),
+                            ('table_content_alignment', '内容对齐'),
+                            ('table_reference', '表格引用'),
+                        ]:
+                            cv = tr.get(check_key, {})
+                            if isinstance(cv, dict) and not cv.get('ok', False):
+                                msgs = cv.get('messages', [])
+                                if msgs:
+                                    all_messages.append(f"{tbl_desc}：{check_label}——{msgs[0]}")
+            checks['table_detection'] = {'ok': failed == 0, 'messages': all_messages, 'total': total, 'failed': failed}
+
+            summary = report.get('summary', [])
+            extracted = {}
+            details = {'table_count': total}
+
+        # References 模块特殊处理：只保留结构、格式、标题格式三个分段
+        # 注意：References_detect 返回的 key 是 structure/content_format/references_header
+        elif module_name == 'References' and isinstance(report, dict):
+            checks = {}
+            # structure_report → [结构]
+            structure_report = report.get('structure', {})
+            if isinstance(structure_report, dict) and 'ok' in structure_report:
+                checks['references_structure'] = structure_report
+            # content_format_report → [格式]
+            content_report = report.get('content_format', {})
+            if isinstance(content_report, dict) and 'ok' in content_report:
+                checks['references_content'] = content_report
+            # references_header → [标题格式]
+            header_report = report.get('references_header', {})
+            if isinstance(header_report, dict) and 'ok' in header_report:
+                checks['references_header'] = header_report
+            summary = report.get('summary', [])
+            extracted = report.get('extracted', {})
+            details = {}
+
         else:
-            # 提取summary、extracted和details（使用get而不是pop，避免修改原始报告）
             summary = report.get('summary', []) if isinstance(report, dict) else []
             extracted = report.get('extracted', {}) if isinstance(report, dict) else {}
             details = report.get('details', {}) if isinstance(report, dict) else {}
-            
-            # 剩余的都是检查项（排除已提取的键）
             exclude_keys = ['summary', 'extracted', 'details']
             checks = {k: v for k, v in report.items() if k not in exclude_keys and isinstance(v, dict) and 'ok' in v}
-            
-            # Figure 模块特殊处理：将 figures 列表中的检测结果转换为 checks 格式
-            if module_name == 'Figure' and isinstance(report, dict) and 'figures' in report:
-                figures = report.get('figures', [])
-                for i, fig_report in enumerate(figures, 1):
-                    # 为每张图片创建检查项
-                    if isinstance(fig_report, dict):
-                        if 'format_check' in fig_report and isinstance(fig_report['format_check'], dict) and 'ok' in fig_report['format_check']:
-                            checks[f'figure{i}_format'] = fig_report['format_check']
-                        if 'picture_check' in fig_report and isinstance(fig_report['picture_check'], dict) and 'ok' in fig_report['picture_check']:
-                            checks[f'figure{i}_picture'] = fig_report['picture_check']
-                        if 'reference_check' in fig_report and isinstance(fig_report['reference_check'], dict) and 'ok' in fig_report['reference_check']:
-                            checks[f'figure{i}_reference'] = fig_report['reference_check']
-                        if 'content_check' in fig_report and isinstance(fig_report['content_check'], dict) and 'ok' in fig_report['content_check']:
-                            checks[f'figure{i}_content'] = fig_report['content_check']
-            
-            # 如果没有检查项，保留原始结构（Table 模块特殊处理）
-            if not checks and isinstance(report, dict):
-                if 'tables' in report or 'numbering' in report:
-                    checks = {k: v for k, v in report.items() if k not in exclude_keys}
-        
+
         # 确保所有数据都是JSON可序列化的
         # 这是关键步骤，防止Paragraph等对象导致序列化失败
         serializable_checks = self._make_json_serializable(checks)
         serializable_summary = self._make_json_serializable(summary)
         serializable_extracted = self._make_json_serializable(extracted)
         serializable_details = self._make_json_serializable(details)
-        
+
+        # 将检查项 key 替换为中文标签（CHECK_NAMES_CN 映射）
+        cn_checks = {}
+        for k, v in serializable_checks.items():
+            cn_key = CHECK_NAMES_CN.get(k, k)
+            cn_checks[cn_key] = v
+        serializable_checks = cn_checks
+
         return {
             'module': module_name,
             'checks': serializable_checks,
@@ -1222,310 +1389,269 @@ class ChinesePaperFormatService:
                 lines.append("")
                 continue
             
-            # Table模块需要特殊处理
+            # Table模块：[表格检测] 和 [编号] 始终显示，失败时追加详细表格信息
             if module_name == 'Table':
-                # 处理表格编号检查
+                table_det = report.get('table_detection', {})
+                if isinstance(table_det, dict) and 'ok' in table_det:
+                    total = table_det.get('total', 0)
+                    failed = table_det.get('failed', 0)
+                    if table_det.get('ok', False):
+                        lines.append(f"\n  [表格检测] ✓ 符合规范（共检测 {total} 张表格）")
+                    else:
+                        lines.append(f"\n  [表格检测] ✗ 发现 {failed} 项问题（共检测 {total} 张表格）")
+
                 numbering = report.get('numbering', {})
                 if isinstance(numbering, dict) and 'ok' in numbering:
-                    ok_status = "✓ 通过" if numbering.get('ok', False) else "✗ 失败"
-                    lines.append(f"\n  [Numbering] {ok_status}")
-                    messages = numbering.get('messages', [])
-                    if messages:
-                        for msg in messages:
-                            lines.append(f"    • {msg}")
-                
-                # 处理每个表格
+                    if numbering.get('ok', False):
+                        lines.append(f"  [编号] ✓ 符合规范")
+                    else:
+                        msgs = numbering.get('messages', [])
+                        if msgs:
+                            lines.append(f"  [编号] ✗ 发现 {len(msgs)} 项问题")
+                            for msg in msgs:
+                                lines.append(f"    • {msg}")
+
                 tables = report.get('tables', [])
                 for i, table_report in enumerate(tables, 1):
-                    # 优先使用 table_desc（包含续表标记），否则使用 captions.cn.title
-                    table_desc = table_report.get('table_desc', '')
-                    cn_title = table_report.get('captions', {}).get('cn', {}).get('title', '')
-                    caption_text = table_desc or cn_title or f'表格 {i}'
-                    lines.append(f"\n  [{caption_text}]")
-                    
-                    # 标题格式
-                    caption_format = table_report.get('caption_format', {})
-                    if isinstance(caption_format, dict) and 'ok' in caption_format:
-                        ok_status = "✓" if caption_format.get('ok', False) else "✗"
-                        lines.append(f"    标题格式: {ok_status}")
-                        messages = caption_format.get('messages', [])
-                        if messages and not caption_format.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 表格样式
-                    table_style = table_report.get('table_style', {})
-                    if isinstance(table_style, dict) and 'ok' in table_style:
-                        ok_status = "✓" if table_style.get('ok', False) else "✗"
-                        lines.append(f"    表格样式: {ok_status}")
-                        messages = table_style.get('messages', [])
-                        if messages and not table_style.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 表格对齐
-                    table_alignment = table_report.get('table_alignment', {})
-                    if isinstance(table_alignment, dict) and 'ok' in table_alignment:
-                        ok_status = "✓" if table_alignment.get('ok', False) else "✗"
-                        lines.append(f"    内容对齐: {ok_status}")
-                        messages = table_alignment.get('messages', [])
-                        if messages and not table_alignment.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-
-                    # 表格内容对齐
-                    table_content_alignment = table_report.get('table_content_alignment', {})
-                    if isinstance(table_content_alignment, dict):
-                        if table_content_alignment.get('skipped'):
-                            lines.append(f"    内容对齐: ⊘ 跳过")
-                        else:
-                            ok_status = "✓" if table_content_alignment.get('ok', False) else "✗"
-                            lines.append(f"    内容对齐: {ok_status}")
-                            messages = table_content_alignment.get('messages', [])
-                            if messages and not table_content_alignment.get('ok', False):
-                                for msg in messages:
-                                    lines.append(f"      • {msg}")
-
-                    # 表格引用检查
-                    table_reference = table_report.get('table_reference', {})
-                    if isinstance(table_reference, dict):
-                        ok_status = "✓" if table_reference.get('ok', False) else "✗"
-                        lines.append(f"    表格引用: {ok_status}")
-                        messages = table_reference.get('messages', [])
-                        if messages and not table_reference.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
+                    failed_checks = []
+                    for check_key, check_label in [
+                        ('caption_format', '表题格式'),
+                        ('table_style', '表格样式'),
+                        ('table_alignment', '内容对齐'),
+                        ('table_content_alignment', '内容对齐'),
+                        ('table_reference', '表格引用'),
+                    ]:
+                        cv = table_report.get(check_key, {})
+                        if isinstance(cv, dict) and not cv.get('ok', False):
+                            msgs = cv.get('messages', [])
+                            if msgs:
+                                failed_checks.append((check_label, msgs))
+                    if failed_checks:
+                        table_desc = table_report.get('table_desc', '')
+                        cn_title = table_report.get('captions', {}).get('cn', {}).get('title', '')
+                        caption_text = table_desc or cn_title or f'表格 {i}'
+                        lines.append(f"\n  [{caption_text}]")
+                        for check_label, msgs in failed_checks:
+                            lines.append(f"    • [{check_label}] {msgs[0]}")
+                            for msg in msgs[1:]:
+                                lines.append(f"    • {msg}")
             
-            # Chinese_section模块特殊处理
+            # Chinese_section模块：每个检查项始终显示，通过时✓符合规范，失败时✗发现N项问题
             elif module_name == 'Chinese_section':
                 for section_key, section_value in report.items():
-                    if section_key == 'summary' or not isinstance(section_value, dict) or 'ok' not in section_value:
+                    if section_key in ['summary', 'extracted', 'details']:
                         continue
-                    
-                    section_title = MODULE_NAMES_CN.get(section_key, section_key)
-                    ok_status = "✓ 通过" if section_value.get('ok') else "✗ 失败"
-                    lines.append(f"\n  [{section_title}] {ok_status}")
-                    
-                    messages = section_value.get('messages', [])
-                    if messages and not section_value.get('ok'):
-                        for msg in messages:
+                    if not isinstance(section_value, dict) or 'ok' not in section_value:
+                        continue
+                    section_title = CHECK_NAMES_CN.get(section_key, section_key)
+                    msgs = section_value.get('messages', [])
+                    if section_value.get('ok', False):
+                        lines.append(f"  [{section_title}] ✓ 符合规范")
+                    elif msgs:
+                        lines.append(f"\n  [{section_title}] ✗ 发现 {len(msgs)} 项问题")
+                        for msg in msgs:
                             lines.append(f"    • {msg}")
+
+            # References模块：三段始终显示，通过时✓符合规范，失败时✗发现问题
+            elif module_name == 'References':
+                for check_key, check_label in [
+                    ('references_structure', '结构'),
+                    ('references_content', '格式'),
+                    ('references_header', '标题格式'),
+                ]:
+                    check_val = report.get(check_key, {})
+                    if isinstance(check_val, dict) and 'ok' in check_val:
+                        if check_val.get('ok', False):
+                            lines.append(f"\n  [{check_label}] ✓ 符合规范")
+                        else:
+                            messages = check_val.get('messages', [])
+                            if messages:
+                                lines.append(f"\n  [{check_label}] ✗ 发现 {len(messages)} 项问题")
+                                for msg in messages:
+                                    lines.append(f"    • {msg}")
         
 
-            # Figure模块需要特殊处理（类似Table模块）
+            # Figure模块：[图检测] 和 [编号] 始终显示，失败时追加详细图片信息
             elif module_name == 'Figure':
-                # 处理图片编号检查
+                figure_det = report.get('figure_detection', {})
+                if isinstance(figure_det, dict) and 'ok' in figure_det:
+                    total = figure_det.get('total', 0)
+                    failed = figure_det.get('failed', 0)
+                    if figure_det.get('ok', False):
+                        lines.append(f"\n  [图检测] ✓ 符合规范（共检测 {total} 张图片）")
+                    else:
+                        lines.append(f"\n  [图检测] ✗ 发现 {failed} 项问题（共检测 {total} 张图片）")
+
                 numbering = report.get('numbering', {})
                 if isinstance(numbering, dict) and 'ok' in numbering:
-                    ok_status = "✓ 通过" if numbering.get('ok', False) else "✗ 失败"
-                    lines.append(f"\n  [Numbering] {ok_status}")
-                    messages = numbering.get('messages', [])
-                    if messages:
-                        for msg in messages:
-                            lines.append(f"    • {msg}")
-                
-                # 处理每张图片
+                    if numbering.get('ok', False):
+                        lines.append(f"  [编号] ✓ 符合规范")
+                    else:
+                        msgs = numbering.get('messages', [])
+                        if msgs:
+                            lines.append(f"  [编号] ✗ 发现 {len(msgs)} 项问题")
+                            for msg in msgs:
+                                lines.append(f"    • {msg}")
+
                 figures = report.get('figures', [])
                 for i, fig_report in enumerate(figures, 1):
-                    caption_info = fig_report.get('caption_info', {})
-                    if fig_report.get('has_caption', False):
-                        caption_text = caption_info.get('full_text', f'Fig.{i}')
-                        lines.append(f"\n  [图片 {i}: {caption_text[:40]}{'...' if len(caption_text) > 40 else ''}]")
-                    else:
-                        lines.append(f"\n  [图片 {i}: (无标题)]")
-                    
-                    # 标题格式
-                    format_check = fig_report.get('format_check', {})
-                    if isinstance(format_check, dict) and 'ok' in format_check:
-                        ok_status = "✓" if format_check.get('ok', False) else "✗"
-                        lines.append(f"    标题格式: {ok_status}")
-                        messages = format_check.get('messages', [])
-                        if messages and not format_check.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 图片对齐
-                    picture_check = fig_report.get('picture_check', {})
-                    if isinstance(picture_check, dict) and 'ok' in picture_check:
-                        ok_status = "✓" if picture_check.get('ok', False) else "✗"
-                        lines.append(f"    图片对齐: {ok_status}")
-                        messages = picture_check.get('messages', [])
-                        if messages and not picture_check.get('ok', False):
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                    
-                    # 引用检测
-                    reference_check = fig_report.get('reference_check', {})
-                    if isinstance(reference_check, dict) and 'ok' in reference_check:
-                        ok_status = "✓" if reference_check.get('ok', False) else "✗"
-                        lines.append(f"    引用检查: {ok_status}")
-                        messages = reference_check.get('messages', [])
-                        if messages:
-                            # 显示所有消息（包括成功和失败）
-                            for msg in messages:
-                                lines.append(f"      • {msg}")
-                        # 如果找到引用，也显示引用文本
-                        if reference_check.get('reference_found', False) and reference_check.get('reference_text'):
-                            lines.append(f"      • 找到引用：{reference_check['reference_text']}")
+                    failed_checks = []
+                    for check_key, check_label in [
+                        ('format_check', '标题格式'),
+                        ('picture_check', '图片对齐'),
+                        ('reference_check', '引用检查'),
+                    ]:
+                        cv = fig_report.get(check_key, {})
+                        if isinstance(cv, dict) and not cv.get('ok', False):
+                            msgs = cv.get('messages', [])
+                            if msgs:
+                                failed_checks.append((check_label, msgs))
+                    is_chart = fig_report.get('content_check', {}).get('is_chart', False)
+                    cc = fig_report.get('content_check', {})
+                    if is_chart and not cc.get('ok', False):
+                        msgs = cc.get('messages', [])
+                        if msgs:
+                            failed_checks.append(('内容检测', msgs))
 
-                    # 内容检测
-                    content_check = fig_report.get('content_check', {})
-                    if isinstance(content_check, dict) and ('ok' in content_check or 'is_chart' in content_check):
-                        is_chart = content_check.get('is_chart', False)
-                        if is_chart:
-                            # 是图表，显示检测结果
-                            ok_status = "✓" if content_check.get('ok', False) else "✗"
-                            lines.append(f"    内容规范: {ok_status}")
-                            messages = content_check.get('messages', [])
-                            if messages:
-                                # 显示所有消息（包括成功和失败）
-                                for msg in messages:
-                                    lines.append(f"      • {msg}")
+                    if failed_checks:
+                        caption_info = fig_report.get('caption_info', {})
+                        if fig_report.get('has_caption', False):
+                            ct = caption_info.get('full_text', f'Fig.{i}')
+                            lines.append(f"\n  [图片 {i}: {ct[:40]}{'...' if len(ct) > 40 else ''}]")
                         else:
-                            # 不是图表，显示类型信息
-                            chart_type = content_check.get('details', {}).get('is_chart_check', {}).get('chart_type', '非图表')
-                            lines.append(f"    内容检测: 图片类型为 {chart_type}，跳过图表规范检测")
-            
-            # TOC模块特殊处理
+                            lines.append(f"\n  [图片 {i}: (无标题)]")
+                        for check_label, msgs in failed_checks:
+                            lines.append(f"    • [{check_label}] {msgs[0]}")
+                            for msg in msgs[1:]:
+                                lines.append(f"    • {msg}")
+
+            # TOC模块：[结构] 和三格式分段始终显示
             elif module_name == 'TOC':
-                # 处理结构检测
                 structure = report.get('structure', {})
                 if isinstance(structure, dict) and 'ok' in structure:
-                    ok_status = "✓ 通过" if structure.get('ok', False) else "✗ 失败"
-                    lines.append(f"\n  [Structure] {ok_status}")
-                    messages = structure.get('messages', [])
-                    if messages:
-                        for msg in messages:
+                    msgs = structure.get('messages', [])
+                    if structure.get('ok', False):
+                        lines.append(f"  [结构] ✓ 符合规范")
+                    elif msgs:
+                        lines.append(f"\n  [结构] ✗ 发现 {len(msgs)} 项问题")
+                        for msg in msgs:
                             lines.append(f"    • {msg}")
-                
-                # 处理格式检测（format 是一个列表）
+
                 format_reports = report.get('format', [])
+                title_type_map = {'图录': '图录格式', '目录': '目录格式', '表录': '表录格式'}
                 if isinstance(format_reports, list):
                     for fr in format_reports:
                         title_type = fr.get('title_type', '未知')
+                        check_label = title_type_map.get(title_type, f'{title_type}格式')
                         format_report = fr.get('report', {})
                         if isinstance(format_report, dict) and 'ok' in format_report:
-                            ok_status = "✓ 通过" if format_report.get('ok', False) else "✗ 失败"
-                            lines.append(f"\n  [{title_type} Format] {ok_status}")
-                            messages = format_report.get('messages', [])
-                            if messages:
-                                for msg in messages:
-                                    if msg.strip().startswith('-'):
-                                        lines.append(f"      {msg.strip()}")
-                                    else:
+                            if format_report.get('ok', False):
+                                lines.append(f"  [{check_label}] ✓ 符合规范")
+                            else:
+                                msgs = format_report.get('messages', [])
+                                if msgs:
+                                    lines.append(f"  [{check_label}] ✗ 发现 {len(msgs)} 项问题")
+                                    for msg in msgs:
                                         lines.append(f"    • {msg}")
             
-            # Keywords和Title模块特殊处理（双语检测）
+            # Formula模块：[公式检测] 和 [编号] 始终显示
+            elif module_name == 'Formula':
+                formula_det = report.get('formula_detection', {})
+                if isinstance(formula_det, dict) and 'ok' in formula_det:
+                    if formula_det.get('ok', False):
+                        lines.append(f"\n  [公式检测] ✓ 符合规范")
+                    else:
+                        msgs = formula_det.get('messages', [])
+                        if msgs:
+                            lines.append(f"\n  [公式检测] ✗ 发现 {len(msgs)} 项问题")
+                            for msg in msgs:
+                                lines.append(f"    • {msg}")
+
+                numbering = report.get('numbering', {})
+                if isinstance(numbering, dict) and 'ok' in numbering:
+                    if numbering.get('ok', False):
+                        lines.append(f"  [编号] ✓ 符合规范")
+                    else:
+                        msgs = numbering.get('messages', [])
+                        if msgs:
+                            lines.append(f"  [编号] ✗ 发现 {len(msgs)} 项问题")
+                            for msg in msgs:
+                                lines.append(f"    • {msg}")
+
+            # Title/Keywords双语模块：每个检查项始终显示，通过时✓符合规范，失败时✗发现N项问题
             elif module_name in ['Keywords', 'Title'] and 'chinese' in report and 'english' in report:
-                # 处理中文部分
                 chinese_report = report.get('chinese', {})
                 if chinese_report and not chinese_report.get('error'):
                     if module_name == 'Keywords':
                         lines.append("\n  【中文关键词】")
                     elif module_name == 'Title':
                         lines.append("\n  【中文标题】")
-                    
+
                     exclude_keys = ['summary', 'extracted', 'details', 'language']
                     if module_name == 'Keywords':
                         exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
                     elif module_name == 'Title':
                         exclude_keys.extend(['title_paragraph', 'title_text'])
-                    
+
                     for section_key, section_value in chinese_report.items():
                         if section_key in exclude_keys:
                             continue
-                        
+
                         if isinstance(section_value, dict) and 'ok' in section_value:
-                            section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
-                            ok_status = "✓ 通过" if section_value.get('ok', False) else "✗ 失败"
-                            lines.append(f"    [{section_title}] {ok_status}")
-                            
+                            section_title = CHECK_NAMES_CN.get(f'chinese_{section_key}',
+                                CHECK_NAMES_CN.get(section_key, section_key.replace('_', ' ').title()))
                             messages = section_value.get('messages', [])
-                            if messages:
+                            if section_value.get('ok', False):
+                                lines.append(f"    [{section_title}] ✓ 符合规范")
+                            elif messages:
+                                lines.append(f"    [{section_title}] ✗ 发现 {len(messages)} 项问题")
                                 for msg in messages:
-                                    if msg.strip().startswith('-'):
-                                        lines.append(f"        {msg.strip()}")
-                                    else:
-                                        lines.append(f"      • {msg}")
-                    
-                    # 中文部分总结
-                    if 'summary' in chinese_report and chinese_report['summary']:
-                        lines.append("\n    【总结】")
-                        for summary_item in chinese_report['summary']:
-                            lines.append(f"      {summary_item}")
-                
-                # 处理英文部分
+                                    lines.append(f"      • {msg}")
+
                 english_report = report.get('english', {})
                 if english_report and not english_report.get('error'):
                     if module_name == 'Keywords':
                         lines.append("\n  【英文关键词】")
                     elif module_name == 'Title':
                         lines.append("\n  【英文标题】")
-                    
+
                     exclude_keys = ['summary', 'extracted', 'details', 'language']
                     if module_name == 'Keywords':
                         exclude_keys.extend(['keywords_paragraph', 'keywords_text', 'keywords_list'])
                     elif module_name == 'Title':
                         exclude_keys.extend(['title_paragraph', 'title_text'])
-                    
+
                     for section_key, section_value in english_report.items():
                         if section_key in exclude_keys:
                             continue
-                        
+
                         if isinstance(section_value, dict) and 'ok' in section_value:
-                            section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
-                            ok_status = "✓ 通过" if section_value.get('ok', False) else "✗ 失败"
-                            lines.append(f"    [{section_title}] {ok_status}")
-                            
+                            section_title = CHECK_NAMES_CN.get(f'english_{section_key}',
+                                CHECK_NAMES_CN.get(section_key, section_key.replace('_', ' ').title()))
                             messages = section_value.get('messages', [])
-                            if messages:
+                            if section_value.get('ok', False):
+                                lines.append(f"    [{section_title}] ✓ 符合规范")
+                            elif messages:
+                                lines.append(f"    [{section_title}] ✗ 发现 {len(messages)} 项问题")
                                 for msg in messages:
-                                    if msg.strip().startswith('-'):
-                                        lines.append(f"        {msg.strip()}")
-                                    else:
-                                        lines.append(f"      • {msg}")
-                    
-                    # 英文部分总结
-                    if 'summary' in english_report and english_report['summary']:
-                        lines.append("\n    【总结】")
-                        for summary_item in english_report['summary']:
-                            lines.append(f"      {summary_item}")
-                
-                # 双语综合总结
-                if 'summary' in report and report['summary']:
-                    lines.append("\n  【综合总结】")
-                    for summary_item in report['summary']:
-                        lines.append(f"    {summary_item}")
-            
+                                    lines.append(f"      • {msg}")
+
             else:
-                # 其他模块的常规处理
+                # 其他模块的常规处理（Abstract、English_Abstract、Content等）：每个检查项始终显示
                 for section_key, section_value in report.items():
                     if section_key in ['summary', 'extracted', 'details']:
                         continue
-                    
+
                     if isinstance(section_value, dict) and 'ok' in section_value:
-                        # 检测项标题
-                        # 优先从中文映射获取，否则进行转换
-                        section_title = MODULE_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
-                        ok_status = "✓ 通过" if section_value.get('ok', False) else "✗ 失败"
-                        lines.append(f"\n  [{section_title}] {ok_status}")
-                        
-                        # 检测项消息
+                        section_title = CHECK_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
                         messages = section_value.get('messages', [])
-                        if messages:
+                        if section_value.get('ok', False):
+                            lines.append(f"  [{section_title}] ✓ 符合规范")
+                        elif messages:
+                            lines.append(f"\n  [{section_title}] ✗ 发现 {len(messages)} 项问题")
                             for msg in messages:
-                                # 格式化消息（添加缩进）
-                                if msg.strip().startswith('-'):
-                                    lines.append(f"      {msg.strip()}")
-                                else:
-                                    lines.append(f"    • {msg}")
-            
-            # 添加总结
-            if 'summary' in report and report['summary']:
-                lines.append("\n  【总结】")
-                for summary_item in report['summary']:
-                    lines.append(f"    {summary_item}")
-            
+                                lines.append(f"    • {msg}")
+
             lines.append("")
         
         # 单独处理分类号报告

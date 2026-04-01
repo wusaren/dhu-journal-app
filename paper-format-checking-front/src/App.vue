@@ -42,8 +42,11 @@
           <el-menu-item index="/">
             <span>首页</span>
           </el-menu-item>
-          <el-menu-item index="/preliminary-review">
-            <span>论文规范性检测系统</span>
+          <el-menu-item index="/bachelor-paper-review">
+            <span>本科论文规范性检测系统</span>
+          </el-menu-item>
+          <el-menu-item index="/master-paper-review">
+            <span>硕士论文规范性检测系统</span>
           </el-menu-item>
           <!-- <el-menu-item index="/paper-management">
             <span>论文管理</span>
