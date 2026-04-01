@@ -70,8 +70,94 @@ def load_template(identifier):
 
 
 
-def detect_font_for_run(run, paragraph=None):
-    """检测 run 的字号、英文字体(ASCII/hAnsi)、中文字体(EastAsia)、加粗"""
+def get_document_default_fonts(doc):
+    """
+    从文档的默认字符格式中获取字体设置
+    
+    返回: {'ascii': str, 'east_asia': str} 或 None
+    """
+    try:
+        doc_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:rPrDefault/w:rPr/w:rFonts'
+        )
+        if doc_defaults:
+            rfonts = doc_defaults[0]
+            result = {}
+            
+            ascii_font = rfonts.get(qn('w:ascii'))
+            hansi_font = rfonts.get(qn('w:hAnsi'))
+            east_asia_font = rfonts.get(qn('w:eastAsia'))
+            
+            if ascii_font:
+                result['ascii'] = ascii_font
+            if hansi_font:
+                result['hAnsi'] = hansi_font
+            if east_asia_font:
+                result['east_asia'] = east_asia_font
+            
+            if result:
+                return result
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_inherited_style_properties(style, doc, visited_styles=None):
+    """
+    递归获取样式及其继承链的所有属性
+    
+    参数:
+        style: 当前样式对象
+        doc: 文档对象
+        visited_styles: 已访问的样式ID集合（防止循环继承）
+    
+    返回: dict 包含继承属性
+    """
+    if visited_styles is None:
+        visited_styles = set()
+    
+    if style and hasattr(style, 'style_id') and style.style_id in visited_styles:
+        return {}
+    
+    if style and hasattr(style, 'style_id'):
+        visited_styles.add(style.style_id)
+    
+    properties = {}
+    
+    if not style:
+        return properties
+    
+    try:
+        if hasattr(style, 'element') and style.element is not None:
+            # 字体
+            rfonts_nodes = style.element.xpath('.//w:rFonts')
+            if rfonts_nodes:
+                rfonts = rfonts_nodes[0]
+                ascii_font = rfonts.get(qn('w:ascii'))
+                eastasia_font = rfonts.get(qn('w:eastAsia'))
+                hansi_font = rfonts.get(qn('w:hAnsi'))
+                if ascii_font:
+                    properties.setdefault('font_ascii', ascii_font)
+                if eastasia_font:
+                    properties.setdefault('font_east_asia', eastasia_font)
+                elif hansi_font:
+                    properties.setdefault('font_name', hansi_font)
+    except Exception:
+        pass
+    
+    if hasattr(style, 'base_style') and style.base_style:
+        parent_properties = get_inherited_style_properties(style.base_style, doc, visited_styles)
+        parent_properties.update(properties)
+        properties = parent_properties
+    
+    return properties
+
+
+def detect_font_for_run(run, paragraph=None, doc=None):
+    """检测 run 的字号、英文字体(ASCII/hAnsi)、中文字体(EastAsia)、加粗
+    支持样式继承链和docDefaults
+    """
     font_size = None
     font_ascii = None
     font_eastasia = None
@@ -127,6 +213,50 @@ def detect_font_for_run(run, paragraph=None):
                         font_eastasia = xml_eastasia
                     elif xml_hansi and font_eastasia is None:
                         font_eastasia = xml_hansi
+        
+        # 从段落样式XML读取字体
+        if not font_ascii or not font_eastasia:
+            if paragraph and paragraph.style and hasattr(paragraph.style, 'element'):
+                rfonts_list = paragraph.style.element.xpath('.//w:rFonts')
+                if rfonts_list:
+                    rfonts = rfonts_list[0]
+                    xml_ascii_s = rfonts.get(qn('w:ascii'))
+                    xml_hansi_s = rfonts.get(qn('w:hAnsi'))
+                    xml_eastasia_s = rfonts.get(qn('w:eastAsia'))
+                    if not font_ascii:
+                        if xml_ascii_s:
+                            font_ascii = xml_ascii_s
+                        elif xml_hansi_s:
+                            font_ascii = xml_hansi_s
+                    if not font_eastasia:
+                        if xml_eastasia_s:
+                            font_eastasia = xml_eastasia_s
+                        elif xml_hansi_s:
+                            font_eastasia = xml_hansi_s
+        
+        # 样式继承链追溯
+        if (not font_ascii or not font_eastasia) and paragraph and paragraph.style and doc:
+            try:
+                inherited_props = get_inherited_style_properties(paragraph.style, doc)
+                if not font_ascii and 'font_ascii' in inherited_props:
+                    font_ascii = inherited_props['font_ascii']
+                if not font_eastasia:
+                    if 'font_east_asia' in inherited_props:
+                        font_eastasia = inherited_props['font_east_asia']
+                    elif 'font_name' in inherited_props:
+                        font_eastasia = inherited_props['font_name']
+            except Exception:
+                pass
+        
+        # docDefaults 兜底
+        if not font_ascii or not font_eastasia:
+            if doc:
+                doc_defaults = get_document_default_fonts(doc)
+                if doc_defaults:
+                    if not font_ascii:
+                        font_ascii = doc_defaults.get('ascii') or doc_defaults.get('hAnsi')
+                    if not font_eastasia:
+                        font_eastasia = doc_defaults.get('east_asia') or doc_defaults.get('hAnsi')
     except Exception:
         pass
 
@@ -486,7 +616,8 @@ def check_caption_text_rules(table_item, tpl):
     # 续表允许没有英文表题
     if cn_para is None:
         report['ok'] = False
-    if en_check and en_para is None and not is_continuation:
+        report['messages'].append(messages.get('caption_missing_cn', '未找到中文表题'))
+    if en_para is None and not is_continuation and en_check:
         report['ok'] = False
         report['messages'].append(messages.get('caption_missing_en', '未找到英文表题'))
 
@@ -526,8 +657,16 @@ def check_caption_text_rules(table_item, tpl):
     return report
 
 
-def check_caption_format(paragraph, expected, tpl, language='cn'):
-    
+def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
+    """
+    检查表格标题格式
+    参数:
+        paragraph: 标题段落
+        expected: 期望格式
+        tpl: 模板对象
+        language: 'cn' 或 'en'
+        doc: docx文档对象（用于读取样式继承链和docDefaults）
+    """
     report = {'ok': True, 'messages': []}
 
     messages = tpl.get('messages', {})
@@ -539,7 +678,7 @@ def check_caption_format(paragraph, expected, tpl, language='cn'):
         report['messages'].append("表题段落没有有效文本")
         return report
 
-    size_pt, font_ascii, font_eastasia, is_bold = detect_font_for_run(main_run, paragraph)
+    size_pt, font_ascii, font_eastasia, is_bold = detect_font_for_run(main_run, paragraph, doc)
     logger.info(
         "[DBG_FONT] lang=%s para=%r | main_run=%r | eastAsia=%r ascii=%r",
         language,
@@ -1062,6 +1201,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
     # 逐表检查
     expected_cn = tpl.get('format_rules', {}).get('caption_cn', {})
     expected_en = tpl.get('format_rules', {}).get('caption_en', {})
+    check_rules = tpl.get('check_rules', {})
 
     for item in table_items:
         cn_para = item.get('caption_cn_paragraph')
@@ -1073,12 +1213,15 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
         if cn_para is None:
             cn_format = {'ok': False, 'messages': [messages.get('caption_missing_cn', '未找到中文表题')]}
         else:
-            cn_format = check_caption_format(cn_para, expected_cn, tpl, language='cn')
+            cn_format = check_caption_format(cn_para, expected_cn, tpl, language='cn', doc=doc)
 
-        if en_para is None:
-            en_format = {'ok': False, 'messages': []}
+        en_check = check_rules.get('caption_en_check', True)
+        if en_check and en_para is not None:
+            en_format = check_caption_format(en_para, expected_en, tpl, language='en', doc=doc)
+        elif en_check and en_para is None:
+            en_format = {'ok': False, 'messages': [messages.get('caption_missing', '未找到英文表题')]}
         else:
-            en_format = check_caption_format(en_para, expected_en, tpl, language='en')
+            en_format = {'ok': True, 'messages': []}
 
         table = item.get('table')
         has_table = table is not None
@@ -1088,17 +1231,20 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
         else:
             style_ok, style_issues = check_table_style_three_line(table, tpl)
 
-        table_item_ok = text_rules['ok'] and cn_format['ok'] and en_format['ok'] and has_table and style_ok
+        en_check = check_rules.get('caption_en_check', True)
+        en_ok = en_format['ok'] if en_check else True
+        table_item_ok = text_rules['ok'] and cn_format['ok'] and en_ok and has_table and style_ok
         if not table_item_ok:
             report['table_detection']['ok'] = False
 
         # 组织输出（你可以按需要改字段）
         table_desc = None
         if item.get('chapter') is not None and item.get('seq') is not None:
+            cn_title = item.get('cn_title', '')
             if item.get('is_continuation', False):
-                table_desc = f"表{item.get('chapter')}-{item.get('seq')}（续）"
+                table_desc = f"表{item.get('chapter')}-{item.get('seq')}{cn_title}（续）"
             else:
-                table_desc = f"表{item.get('chapter')}-{item.get('seq')}"
+                table_desc = f"表{item.get('chapter')}-{item.get('seq')}{cn_title}"
         else:
             table_desc = f"表格(table_index={item.get('table_index')})"
 

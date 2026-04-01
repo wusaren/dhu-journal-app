@@ -90,6 +90,139 @@ def load_template(identifier):
         tpl = json.load(f)
     return tpl
 
+
+# ---------- 文档默认设置提取函数 ----------
+
+def get_document_default_fonts(doc):
+    """
+    从文档的默认字符格式中获取字体设置
+    
+    返回: {'ascii': str, 'east_asia': str} 或 None
+    """
+    try:
+        doc_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:rPrDefault/w:rPr/w:rFonts'
+        )
+        if doc_defaults:
+            rfonts = doc_defaults[0]
+            result = {}
+            
+            ascii_font = rfonts.get(qn('w:ascii'))
+            hansi_font = rfonts.get(qn('w:hAnsi'))
+            east_asia_font = rfonts.get(qn('w:eastAsia'))
+            
+            if ascii_font:
+                result['ascii'] = ascii_font
+            if hansi_font:
+                result['hAnsi'] = hansi_font
+            if east_asia_font:
+                result['east_asia'] = east_asia_font
+            
+            if result:
+                return result
+    except Exception:
+        pass
+    
+    return None
+
+def get_document_default_line_spacing(doc):
+    """从文档的默认段落格式中获取行距设置"""
+    try:
+        pPr_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:pPrDefault/w:pPr'
+        )
+        if pPr_defaults:
+            pPr = pPr_defaults[0]
+            spacing_nodes = pPr.xpath(
+                './/w:spacing',
+                namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+            )
+            if spacing_nodes:
+                spacing = spacing_nodes[0]
+                if spacing.get(qn('w:line')):
+                    line_val = int(spacing.get(qn('w:line')))
+                    return line_val / 240.0
+    except Exception:
+        pass
+    return None
+
+
+def get_normal_style_line_spacing(doc):
+    """从Normal样式中获取行距设置"""
+    try:
+        try:
+            normal_style = doc.styles['Normal']
+            if normal_style and hasattr(normal_style, 'element'):
+                spacing_nodes = normal_style.element.xpath('.//w:spacing')
+                if spacing_nodes:
+                    spacing = spacing_nodes[0]
+                    if spacing.get(qn('w:line')):
+                        line_val = int(spacing.get(qn('w:line')))
+                        return line_val / 240.0
+        except Exception:
+            pass
+
+        normal_styles = doc.styles._element.xpath('//w:style[@w:styleId="Normal"]//w:spacing')
+        if normal_styles:
+            spacing = normal_styles[0]
+            if spacing.get(qn('w:line')):
+                line_val = int(spacing.get(qn('w:line')))
+                return line_val / 240.0
+    except Exception:
+        pass
+    return None
+
+
+def get_inherited_style_properties(style, doc, visited_styles=None):
+    """
+    递归获取样式及其继承链的所有属性
+    
+    参数:
+        style: 当前样式对象
+        doc: 文档对象
+        visited_styles: 已访问的样式ID集合（防止循环继承）
+    
+    返回: dict 包含继承属性
+    """
+    if visited_styles is None:
+        visited_styles = set()
+    
+    if style and hasattr(style, 'style_id') and style.style_id in visited_styles:
+        return {}
+    
+    if style and hasattr(style, 'style_id'):
+        visited_styles.add(style.style_id)
+    
+    properties = {}
+    
+    if not style:
+        return properties
+    
+    try:
+        if hasattr(style, 'element') and style.element is not None:
+            rfonts_nodes = style.element.xpath('.//w:rFonts')
+            if rfonts_nodes:
+                rfonts = rfonts_nodes[0]
+                ascii_font = rfonts.get(qn('w:ascii'))
+                eastasia_font = rfonts.get(qn('w:eastAsia'))
+                hansi_font = rfonts.get(qn('w:hAnsi'))
+                if ascii_font:
+                    properties.setdefault('font_ascii', ascii_font)
+                if eastasia_font:
+                    properties.setdefault('font_east_asia', eastasia_font)
+                elif hansi_font:
+                    properties.setdefault('font_name', hansi_font)
+    except Exception:
+        pass
+    
+    if hasattr(style, 'base_style') and style.base_style:
+        parent_properties = get_inherited_style_properties(style.base_style, doc, visited_styles)
+        parent_properties.update(properties)
+        properties = parent_properties
+    
+    return properties
+
+
 def detect_keywords_language(tpl):
     """
     检测关键词模板的语言类型
@@ -121,13 +254,14 @@ def detect_keywords_language(tpl):
     return 'chinese'
 
 # ---------- 字体检测函数（支持中英文字体分别检测）----------
-def detect_font_for_run(run, paragraph=None, detect_chinese_font=True):
+def detect_font_for_run(run, paragraph=None, detect_chinese_font=True, doc=None):
     """
     检测run的字体信息，包括中英文字体
     参数:
         run: docx run对象
         paragraph: docx paragraph对象
         detect_chinese_font: 是否检测中文字体（英文关键词可以设为False以提高性能）
+        doc: docx文档对象（用于读取docDefaults）
     返回: (font_size, font_ascii, font_eastasia, is_bold, is_italic, line_spacing)
           如果detect_chinese_font=False，font_eastasia可能为None
     """
@@ -197,6 +331,50 @@ def detect_font_for_run(run, paragraph=None, detect_chinese_font=True):
                             font_name_eastasia = xml_eastasia
                         elif xml_hansi and font_name_eastasia is None:
                             font_name_eastasia = xml_hansi
+        
+        # 从段落样式XML读取字体
+        if not font_name_ascii or not font_name_eastasia:
+            if paragraph and paragraph.style and hasattr(paragraph.style, 'element'):
+                rfonts_list = paragraph.style.element.xpath('.//w:rFonts')
+                if rfonts_list:
+                    rfonts = rfonts_list[0]
+                    xml_ascii_s = rfonts.get(qn('w:ascii'))
+                    xml_hansi_s = rfonts.get(qn('w:hAnsi'))
+                    xml_eastasia_s = rfonts.get(qn('w:eastAsia'))
+                    if not font_name_ascii:
+                        if xml_ascii_s:
+                            font_name_ascii = xml_ascii_s
+                        elif xml_hansi_s:
+                            font_name_ascii = xml_hansi_s
+                    if detect_chinese_font and not font_name_eastasia:
+                        if xml_eastasia_s:
+                            font_name_eastasia = xml_eastasia_s
+                        elif xml_hansi_s:
+                            font_name_eastasia = xml_hansi_s
+        
+        # 样式继承链追溯
+        if (not font_name_ascii or not font_name_eastasia) and paragraph and paragraph.style and doc:
+            try:
+                inherited_props = get_inherited_style_properties(paragraph.style, doc)
+                if not font_name_ascii and 'font_ascii' in inherited_props:
+                    font_name_ascii = inherited_props['font_ascii']
+                if detect_chinese_font and not font_name_eastasia:
+                    if 'font_east_asia' in inherited_props:
+                        font_name_eastasia = inherited_props['font_east_asia']
+                    elif 'font_name' in inherited_props:
+                        font_name_eastasia = inherited_props['font_name']
+            except Exception:
+                pass
+        
+        # docDefaults 兜底
+        if not font_name_ascii or not font_name_eastasia:
+            if doc:
+                doc_defaults = get_document_default_fonts(doc)
+                if doc_defaults:
+                    if not font_name_ascii:
+                        font_name_ascii = doc_defaults.get('ascii') or doc_defaults.get('hAnsi')
+                    if detect_chinese_font and not font_name_eastasia:
+                        font_name_eastasia = doc_defaults.get('east_asia') or doc_defaults.get('hAnsi')
     except Exception as e:
         print(f"  字体检测异常: {e}")
     
@@ -239,16 +417,31 @@ def detect_font_for_run(run, paragraph=None, detect_chinese_font=True):
     except Exception:
         pass
     
-    # 4. 行间距检测
+    # 4. 行间距检测（支持 Normal 样式和 docDefaults 兜底）
     line_spacing = 1.0
+    line_spacing_set = False
     try:
+        # 优先级1: 段落直接格式
         if paragraph and paragraph.paragraph_format.line_spacing:
             line_spacing = float(paragraph.paragraph_format.line_spacing)
-        elif paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
+            line_spacing_set = True
+        # 优先级2: 段落样式
+        if not line_spacing_set and paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
             line_spacing = float(paragraph.style.paragraph_format.line_spacing)
+            line_spacing_set = True
+        # 优先级3: Normal样式和docDefaults — 仅在段落无样式时兜底
+        if not line_spacing_set and doc:
+            normal_ls = get_normal_style_line_spacing(doc)
+            if normal_ls is not None:
+                line_spacing = normal_ls
+                line_spacing_set = True
+            else:
+                doc_ls = get_document_default_line_spacing(doc)
+                if doc_ls is not None:
+                    line_spacing = doc_ls
     except Exception:
         pass
-    
+
     return font_size, font_name_ascii, font_name_eastasia, is_bold, is_italic, line_spacing
 
 def get_font_size(pt_size, tpl=None):
@@ -541,10 +734,15 @@ def check_keywords_structure(doc, tpl, language=None):
     
     return report
 
-def check_keywords_format(paragraph, tpl, language=None):
+def check_keywords_format(paragraph, tpl, language=None, doc=None):
     """
     检查关键词格式（统一函数，支持中文和英文）
-    返回 {'ok': bool, 'messages': []}
+    参数:
+        paragraph: 关键词段落
+        tpl: 模板对象
+        language: 'chinese' 或 'english'
+        doc: docx文档对象（用于读取样式继承链和docDefaults）
+    返回: {'ok': bool, 'messages': []}
     """
     if language is None:
         language = detect_keywords_language(tpl)
@@ -573,7 +771,7 @@ def check_keywords_format(paragraph, tpl, language=None):
     
     # 检测实际格式（中文关键词需要检测中文字体，英文关键词不需要）
     detect_chinese = (language == 'chinese')
-    font_result = detect_font_for_run(main_run, paragraph, detect_chinese_font=detect_chinese)
+    font_result = detect_font_for_run(main_run, paragraph, detect_chinese_font=detect_chinese, doc=doc)
     
     if detect_chinese:
         actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = font_result
@@ -655,7 +853,7 @@ def check_keywords_format(paragraph, tpl, language=None):
         header = tpl.get('messages', {}).get('format_keywords_issue_header')
         if header:
             report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
+        report['messages'].extend(issues)
     else:
         ok_msg = tpl.get('messages', {}).get('format_keywords_ok')
         if ok_msg:
@@ -760,7 +958,7 @@ def check_bilingual_keywords(doc_path, chinese_template=None, english_template=N
         result['summary'].append("英文关键词检测通过，中文关键词检测失败")
     else:
         result['summary'].append("中文和英文关键词检测均失败")
-    
+
     return result
 
 # ---------- 报告输出 ----------

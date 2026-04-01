@@ -94,10 +94,289 @@ def load_template(identifier):
         tpl = json.load(f)
     return tpl
 
+# ---------- 文档默认设置提取函数 ----------
+
+def get_document_default_fonts(doc):
+    """
+    从文档的默认字符格式中获取字体设置
+    
+    Word文档的默认字体存储在 styles.xml 的 docDefaults 中
+    当用户在文档中未显式设置字体时，会使用这些默认值
+    
+    返回: {'ascii': str, 'east_asia': str} 或 None
+    """
+    try:
+        doc_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:rPrDefault/w:rPr/w:rFonts'
+        )
+        if doc_defaults:
+            rfonts = doc_defaults[0]
+            result = {}
+            
+            ascii_font = rfonts.get(qn('w:ascii'))
+            hansi_font = rfonts.get(qn('w:hAnsi'))
+            east_asia_font = rfonts.get(qn('w:eastAsia'))
+            
+            if ascii_font:
+                result['ascii'] = ascii_font
+            if hansi_font:
+                result['hAnsi'] = hansi_font
+            if east_asia_font:
+                result['east_asia'] = east_asia_font
+            
+            if result:
+                return result
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_document_default_line_spacing(doc):
+    """
+    从文档的默认段落格式中获取行距设置
+    
+    Word文档的默认段落格式存储在 styles.xml 的 docDefaults 中
+    
+    返回: float (行距倍数) 或 None
+    """
+    try:
+        pPr_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:pPrDefault/w:pPr'
+        )
+        if pPr_defaults:
+            pPr = pPr_defaults[0]
+            spacing_nodes = pPr.xpath(
+                './/w:spacing',
+                namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+            )
+            if spacing_nodes:
+                spacing = spacing_nodes[0]
+                line_rule = spacing.get(qn('w:lineRule'))
+                if spacing.get(qn('w:line')):
+                    line_val = int(spacing.get(qn('w:line')))
+                    if line_rule == 'auto':
+                        return line_val / 240.0
+                    else:
+                        return line_val / 240.0
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_document_default_indent(doc):
+    """
+    从文档的默认段落格式中获取缩进设置
+    
+    Word文档的默认段落格式存储在 styles.xml 的 docDefaults 中
+    
+    返回: {'first_line_indent': float(pt)} 或 None
+    """
+    try:
+        pPr_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:pPrDefault/w:pPr'
+        )
+        if pPr_defaults:
+            pPr = pPr_defaults[0]
+            ind_nodes = pPr.xpath(
+                './/w:ind',
+                namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+            )
+            if ind_nodes:
+                ind = ind_nodes[0]
+                result = {}
+                
+                if ind.get(qn('w:hanging')):
+                    result['first_line_indent'] = -int(ind.get(qn('w:hanging'))) / 20.0
+                elif ind.get(qn('w:firstLine')):
+                    result['first_line_indent'] = int(ind.get(qn('w:firstLine'))) / 20.0
+                
+                return result if result else None
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_normal_style_indent(doc):
+    """
+    从Normal（正文）样式中获取缩进设置
+    
+    返回: {'first_line_indent': float(pt)} 或 None
+    """
+    try:
+        try:
+            normal_style = doc.styles['Normal']
+            if normal_style and hasattr(normal_style, 'element'):
+                ind_nodes = normal_style.element.xpath('.//w:ind')
+                if ind_nodes:
+                    ind = ind_nodes[0]
+                    result = {}
+                    
+                    if ind.get(qn('w:hanging')):
+                        result['first_line_indent'] = -int(ind.get(qn('w:hanging'))) / 20.0
+                    elif ind.get(qn('w:firstLine')):
+                        result['first_line_indent'] = int(ind.get(qn('w:firstLine'))) / 20.0
+                    
+                    return result if result else None
+        except Exception:
+            pass
+        
+        normal_styles = doc.styles._element.xpath(
+            '//w:style[@w:styleId="Normal"]//w:ind'
+        )
+        if normal_styles:
+            ind = normal_styles[0]
+            result = {}
+            
+            if ind.get(qn('w:hanging')):
+                result['first_line_indent'] = -int(ind.get(qn('w:hanging'))) / 20.0
+            elif ind.get(qn('w:firstLine')):
+                result['first_line_indent'] = int(ind.get(qn('w:firstLine'))) / 20.0
+            
+            return result if result else None
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_normal_style_line_spacing(doc):
+    """
+    从Normal（正文）样式中获取行距设置
+    
+    返回: float (行距倍数) 或 None
+    """
+    try:
+        try:
+            normal_style = doc.styles['Normal']
+            if normal_style and hasattr(normal_style, 'element'):
+                spacing_nodes = normal_style.element.xpath('.//w:spacing')
+                if spacing_nodes:
+                    spacing = spacing_nodes[0]
+                    line_rule = spacing.get(qn('w:lineRule'))
+                    if spacing.get(qn('w:line')):
+                        line_val = int(spacing.get(qn('w:line')))
+                        if line_rule == 'auto':
+                            return line_val / 240.0
+                        else:
+                            return line_val / 240.0
+        except Exception:
+            pass
+        
+        normal_styles = doc.styles._element.xpath('//w:style[@w:styleId="Normal"]//w:spacing')
+        if normal_styles:
+            spacing = normal_styles[0]
+            line_rule = spacing.get(qn('w:lineRule'))
+            if spacing.get(qn('w:line')):
+                line_val = int(spacing.get(qn('w:line')))
+                if line_rule == 'auto':
+                    return line_val / 240.0
+                else:
+                    return line_val / 240.0
+    except Exception:
+        pass
+    
+    return None
+
+
+# ---------- 样式继承属性提取函数 ----------
+
+def get_inherited_style_properties(style, doc, visited_styles=None):
+    """
+    递归获取样式及其继承链的所有属性
+    
+    参数:
+        style: 当前样式对象
+        doc: 文档对象
+        visited_styles: 已访问的样式ID集合（防止循环继承）
+    
+    返回: dict 包含继承属性
+    """
+    if visited_styles is None:
+        visited_styles = set()
+    
+    if style and hasattr(style, 'style_id') and style.style_id in visited_styles:
+        return {}
+    
+    if style and hasattr(style, 'style_id'):
+        visited_styles.add(style.style_id)
+    
+    properties = {}
+    
+    if not style:
+        return properties
+    
+    try:
+        # 1. 段落属性（行距、缩进等）
+        if hasattr(style, 'paragraph_format'):
+            para_fmt = style.paragraph_format
+            if hasattr(para_fmt, 'line_spacing') and para_fmt.line_spacing:
+                properties['line_spacing'] = float(para_fmt.line_spacing)
+            if hasattr(para_fmt, 'first_line_indent') and para_fmt.first_line_indent:
+                properties['first_line_indent'] = para_fmt.first_line_indent.pt
+            if hasattr(para_fmt, 'left_indent') and para_fmt.left_indent:
+                properties['left_indent'] = para_fmt.left_indent.pt
+        
+        # 2. 从样式XML中提取属性
+        if hasattr(style, 'element') and style.element is not None:
+            # 缩进
+            ind_nodes = style.element.xpath('.//w:ind')
+            if ind_nodes:
+                ind = ind_nodes[0]
+                if ind.get(qn('w:left')):
+                    properties.setdefault('left_indent', int(ind.get(qn('w:left'))) / 20.0)
+                if ind.get(qn('w:hanging')):
+                    properties.setdefault('first_line_indent', -int(ind.get(qn('w:hanging'))) / 20.0)
+                elif ind.get(qn('w:firstLine')):
+                    properties.setdefault('first_line_indent', int(ind.get(qn('w:firstLine'))) / 20.0)
+            
+            # 行距
+            spacing_nodes = style.element.xpath('.//w:spacing')
+            if spacing_nodes:
+                spacing = spacing_nodes[0]
+                line_rule = spacing.get(qn('w:lineRule'))
+                if spacing.get(qn('w:line')):
+                    line_val = int(spacing.get(qn('w:line')))
+                    if line_rule == 'auto':
+                        properties.setdefault('line_spacing', line_val / 240.0)
+                    else:
+                        properties.setdefault('line_spacing', line_val / 240.0)
+            
+            # 字体
+            rfonts_nodes = style.element.xpath('.//w:rFonts')
+            if rfonts_nodes:
+                rfonts = rfonts_nodes[0]
+                ascii_font = rfonts.get(qn('w:ascii'))
+                eastasia_font = rfonts.get(qn('w:eastAsia'))
+                hansi_font = rfonts.get(qn('w:hAnsi'))
+                if ascii_font:
+                    properties.setdefault('font_ascii', ascii_font)
+                if eastasia_font:
+                    properties.setdefault('font_east_asia', eastasia_font)
+                elif hansi_font:
+                    properties.setdefault('font_name', hansi_font)
+    except Exception:
+        pass
+    
+    # 3. 递归处理父样式
+    if hasattr(style, 'base_style') and style.base_style:
+        parent_properties = get_inherited_style_properties(style.base_style, doc, visited_styles)
+        parent_properties.update(properties)
+        properties = parent_properties
+    
+    return properties
+
+
 # ---------- 字体检测函数（支持中英文字体分别检测）----------
-def detect_font_for_run(run, paragraph=None):
+def detect_font_for_run(run, paragraph=None, doc=None):
     """
     检测run的字体信息，包括中英文字体
+    参数:
+        run: docx run对象
+        paragraph: docx paragraph对象
+        doc: docx文档对象（用于读取docDefaults）
     返回: (font_size, font_ascii, font_eastasia, is_bold, is_italic, line_spacing)
     """
     font_size = None
@@ -159,24 +438,65 @@ def detect_font_for_run(run, paragraph=None):
             if rpr is not None:
                 rfonts = rpr.find(qn('w:rFonts'))
                 if rfonts is not None:
-                    # 读取各种字体属性
                     xml_ascii = rfonts.get(qn('w:ascii'))
                     xml_hansi = rfonts.get(qn('w:hAnsi'))
                     xml_eastasia = rfonts.get(qn('w:eastAsia'))
                     
-                    # ASCII字体（英文）
                     if xml_ascii:
                         font_name_ascii = xml_ascii
                     elif xml_hansi and font_name_ascii is None:
                         font_name_ascii = xml_hansi
                     
-                    # EastAsia字体（中文）
                     if xml_eastasia:
                         font_name_eastasia = xml_eastasia
                     elif xml_hansi and font_name_eastasia is None:
                         font_name_eastasia = xml_hansi
+        
+        # 从段落样式的XML中读取字体
+        if not font_name_ascii or not font_name_eastasia:
+            if paragraph and paragraph.style and hasattr(paragraph.style, 'element'):
+                rfonts_list = paragraph.style.element.xpath('.//w:rFonts')
+                if rfonts_list:
+                    rfonts = rfonts_list[0]
+                    xml_ascii = rfonts.get(qn('w:ascii'))
+                    xml_hansi = rfonts.get(qn('w:hAnsi'))
+                    xml_eastasia_style = rfonts.get(qn('w:eastAsia'))
+                    if not font_name_ascii:
+                        if xml_ascii:
+                            font_name_ascii = xml_ascii
+                        elif xml_hansi:
+                            font_name_ascii = xml_hansi
+                    if not font_name_eastasia:
+                        if xml_eastasia_style:
+                            font_name_eastasia = xml_eastasia_style
+                        elif xml_hansi:
+                            font_name_eastasia = xml_hansi
+        
+        # 样式继承链追溯：沿 basedOn 链向上读取字体
+        if (not font_name_ascii or not font_name_eastasia) and paragraph and paragraph.style and doc:
+            try:
+                inherited_props = get_inherited_style_properties(paragraph.style, doc)
+                if not font_name_ascii and 'font_ascii' in inherited_props:
+                    font_name_ascii = inherited_props['font_ascii']
+                if not font_name_eastasia:
+                    if 'font_east_asia' in inherited_props:
+                        font_name_eastasia = inherited_props['font_east_asia']
+                    elif 'font_name' in inherited_props:
+                        font_name_eastasia = inherited_props['font_name']
+            except Exception:
+                pass
+        
+        # 最后兜底：从 docDefaults 读取
+        if not font_name_ascii or not font_name_eastasia:
+            if doc:
+                doc_defaults = get_document_default_fonts(doc)
+                if doc_defaults:
+                    if not font_name_ascii:
+                        font_name_ascii = doc_defaults.get('ascii') or doc_defaults.get('hAnsi')
+                    if not font_name_eastasia:
+                        font_name_eastasia = doc_defaults.get('east_asia') or doc_defaults.get('hAnsi')
     except Exception as e:
-        print(f"  字体检测异常: {e}")
+        pass  # 字体检测失败，使用默认值
     
     font_name_ascii = font_name_ascii if font_name_ascii else "Times New Roman"
     font_name_eastasia = font_name_eastasia if font_name_eastasia else "宋体"
@@ -219,15 +539,48 @@ def detect_font_for_run(run, paragraph=None):
     except Exception:
         pass
     
-    # 4. 行间距检测
-    line_spacing = 1.0  # 默认单倍行距
+    # 4. 行间距检测（支持 docDefaults 和样式继承）
+    # 注意：Normal样式和docDefaults仅作为最后兜底，
+    # 只有当段落完全没有样式时才使用。
+    line_spacing = 1.0
+    line_spacing_set = False
     try:
-        # 优先级1: 检查段落直接格式的行距
+        # 优先级1: 直接格式
         if paragraph and paragraph.paragraph_format.line_spacing:
             line_spacing = float(paragraph.paragraph_format.line_spacing)
-        # 优先级2: 检查段落样式的行距
-        elif paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
+            line_spacing_set = True
+        # 优先级2: 段落样式
+        if not line_spacing_set and paragraph and paragraph.style and paragraph.style.paragraph_format.line_spacing:
             line_spacing = float(paragraph.style.paragraph_format.line_spacing)
+            line_spacing_set = True
+        # 优先级3: 段落样式XML
+        if not line_spacing_set and paragraph and paragraph.style and hasattr(paragraph.style, 'element'):
+            spacing_nodes = paragraph.style.element.xpath('.//w:spacing')
+            if spacing_nodes:
+                spacing = spacing_nodes[0]
+                if spacing.get(qn('w:line')):
+                    line_val = int(spacing.get(qn('w:line')))
+                    line_spacing = line_val / 240.0
+                    line_spacing_set = True
+        # 优先级4: 样式继承链
+        if not line_spacing_set and paragraph and paragraph.style and doc:
+            try:
+                inherited_props = get_inherited_style_properties(paragraph.style, doc)
+                if 'line_spacing' in inherited_props:
+                    line_spacing = float(inherited_props['line_spacing'])
+                    line_spacing_set = True
+            except Exception:
+                pass
+        # 优先级5+6: Normal样式和docDefaults — 仅在段落无样式时兜底
+        if not line_spacing_set and doc:
+            normal_ls = get_normal_style_line_spacing(doc)
+            if normal_ls is not None:
+                line_spacing = normal_ls
+                line_spacing_set = True
+            else:
+                doc_ls = get_document_default_line_spacing(doc)
+                if doc_ls is not None:
+                    line_spacing = doc_ls
     except Exception:
         pass
     
@@ -329,14 +682,70 @@ def detect_paragraph_alignment(paragraph):
     # 默认值: 左对齐
     return WD_PARAGRAPH_ALIGNMENT.LEFT
 
-def detect_paragraph_indent(paragraph):
-    """检测段落缩进（返回pt值）"""
+def detect_paragraph_indent(paragraph, doc=None):
+    """
+    检测段落缩进（返回pt值），支持样式继承链和docDefaults
+
+    注意：Normal样式和docDefaults仅作为最后兜底，
+    只有当段落完全没有设置任何缩进时才使用。
+    """
+    first_line_indent = None
+    left_indent = None
+    right_indent = None
+    fli_from_para = False   # 来自段落直接格式
+    fli_from_style = False   # 来自样式（包括继承链）
+
     try:
         fmt = paragraph.paragraph_format
-        first_line_indent = fmt.first_line_indent.pt if fmt.first_line_indent else 0.0
-        left_indent = fmt.left_indent.pt if fmt.left_indent else 0.0
-        right_indent = fmt.right_indent.pt if fmt.right_indent else 0.0
-        return first_line_indent, left_indent, right_indent
+
+        # 优先级1: 直接格式
+        if fmt.first_line_indent:
+            first_line_indent = fmt.first_line_indent.pt
+            fli_from_para = True
+        if fmt.left_indent:
+            left_indent = fmt.left_indent.pt
+        if fmt.right_indent:
+            right_indent = fmt.right_indent.pt
+
+        # 优先级2: 段落样式XML
+        if (first_line_indent is None or left_indent is None) and paragraph.style and hasattr(paragraph.style, 'element'):
+            ind_nodes = paragraph.style.element.xpath('.//w:ind')
+            if ind_nodes:
+                ind = ind_nodes[0]
+                if first_line_indent is None:
+                    if ind.get(qn('w:hanging')):
+                        first_line_indent = -int(ind.get(qn('w:hanging'))) / 20.0
+                        fli_from_style = True
+                    elif ind.get(qn('w:firstLine')):
+                        first_line_indent = int(ind.get(qn('w:firstLine'))) / 20.0
+                        fli_from_style = True
+                if left_indent is None and ind.get(qn('w:left')):
+                    left_indent = int(ind.get(qn('w:left'))) / 20.0
+
+        # 优先级3: 样式继承链
+        if (first_line_indent is None or left_indent is None) and paragraph.style and doc:
+            try:
+                inherited_props = get_inherited_style_properties(paragraph.style, doc)
+                if first_line_indent is None and 'first_line_indent' in inherited_props:
+                    first_line_indent = inherited_props['first_line_indent']
+                    fli_from_style = True
+                if left_indent is None and 'left_indent' in inherited_props:
+                    left_indent = inherited_props['left_indent']
+            except Exception:
+                pass
+
+        # 优先级4+5: Normal样式和docDefaults
+        # 仅在段落完全没有样式信息时才用docDefaults兜底
+        if first_line_indent is None and doc and not fli_from_para and not fli_from_style:
+            doc_indent = get_document_default_indent(doc)
+            if doc_indent and 'first_line_indent' in doc_indent:
+                first_line_indent = doc_indent['first_line_indent']
+
+        return (
+            first_line_indent if first_line_indent is not None else 0.0,
+            left_indent if left_indent is not None else 0.0,
+            right_indent if right_indent is not None else 0.0
+        )
     except Exception:
         return 0.0, 0.0, 0.0
 
@@ -493,10 +902,14 @@ def check_abstract_structure(doc, tpl):
     
     return report
 
-def check_abstract_title_format(paragraph, tpl):
+def check_abstract_title_format(paragraph, tpl, doc=None):
     """
     检查摘要标题格式（"摘 要"）
-    返回 {'ok': bool, 'messages': []}
+    参数:
+        paragraph: 摘要标题段落
+        tpl: 模板对象
+        doc: docx文档对象（用于读取样式继承链和docDefaults）
+    返回: {'ok': bool, 'messages': []}
     """
     report = {'ok': True, 'messages': []}
     
@@ -520,7 +933,7 @@ def check_abstract_title_format(paragraph, tpl):
         return report
     
     # 检测实际格式
-    actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
+    actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph, doc)
     
     issues = []
     
@@ -529,21 +942,18 @@ def check_abstract_title_format(paragraph, tpl):
         expected_size_pt = float(format_rules['font_size_pt'])
         actual_size_name = get_font_size(actual_size_pt, tpl)
         expected_size_name = get_font_size(expected_size_pt, tpl)
-        print(f"标题字体大小: {actual_size_name}（{actual_size_pt}pt）(期望: {expected_size_name}（{expected_size_pt}pt）)")
         if abs(actual_size_pt - expected_size_pt) > 0.5:
             issues.append(f"标题字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
     
     # 中文字体检查（标题应为黑体）
     if not should_skip_check('font_name') and 'font_name' in format_rules:
         expected_font_name = str(format_rules['font_name'])
-        print(f"标题中文字体: {actual_font_eastasia} (期望: {expected_font_name})")
         if expected_font_name.lower() not in actual_font_eastasia.lower():
             issues.append(f"标题中文字体应为{expected_font_name}，实际为{actual_font_eastasia}")
     
     # 加粗检查
     if not should_skip_check('bold') and 'bold' in format_rules:
         expected_bold = bool(format_rules['bold'])
-        print(f"标题加粗: {'是' if actual_bold else '否'} (期望: {'是' if expected_bold else '否'})")
         if actual_bold != expected_bold:
             bold_status = "加粗" if expected_bold else "不加粗"
             actual_status = "加粗" if actual_bold else "不加粗"
@@ -554,7 +964,6 @@ def check_abstract_title_format(paragraph, tpl):
         expected_line_spacing = float(format_rules['line_spacing'])
         actual_spacing_name = get_line_spacing_name(actual_line_spacing, tpl)
         expected_spacing_name = get_line_spacing_name(expected_line_spacing, tpl)
-        print(f"标题行间距: {actual_spacing_name}（{actual_line_spacing}倍）(期望: {expected_spacing_name}（{expected_line_spacing}倍）)")
         if abs(actual_line_spacing - expected_line_spacing) > 0.1:
             issues.append(f"标题行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）")
     
@@ -567,35 +976,29 @@ def check_abstract_title_format(paragraph, tpl):
         actual_alignment = detect_paragraph_alignment(paragraph)
         actual_alignment_name = get_alignment_name(actual_alignment, tpl)
         expected_alignment_name = get_alignment_name(expected_alignment, tpl)
-        print(f"标题对齐: {actual_alignment_name} (期望: {expected_alignment_name})")
         if actual_alignment != expected_alignment:
             issues.append(f"标题应为{expected_alignment_name}，实际为{actual_alignment_name}")
     
     # 段落缩进检查（标题应无缩进）
     if 'first_line_indent' in format_rules or 'left_indent' in format_rules:
-        first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
+        first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph, doc)
         
         if 'first_line_indent' in format_rules:
             expected_first_indent = float(format_rules['first_line_indent'])
-            print(f"标题首行缩进: {first_line_indent:.1f}pt (期望: {expected_first_indent}pt)")
             if abs(first_line_indent - expected_first_indent) > 1.0:
                 issues.append(f"标题首行缩进应为{expected_first_indent}pt，实际为{first_line_indent:.1f}pt")
         
         if 'left_indent' in format_rules:
             expected_left_indent = float(format_rules['left_indent'])
-            print(f"标题左缩进: {left_indent:.1f}pt (期望: {expected_left_indent}pt)")
             if abs(left_indent - expected_left_indent) > 1.0:
                 issues.append(f"标题左缩进应为{expected_left_indent}pt，实际为{left_indent:.1f}pt")
-    
-    print(f"标题格式检查发现 {len(issues)} 个问题")
-    print("---")
     
     if issues:
         report['ok'] = False
         header = tpl.get('messages', {}).get('format_abstract_issue_header')
         if header:
             report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
+        report['messages'].extend(issues)
     else:
         ok_msg = tpl.get('messages', {}).get('format_abstract_ok')
         if ok_msg:
@@ -603,10 +1006,14 @@ def check_abstract_title_format(paragraph, tpl):
     
     return report
 
-def check_abstract_content_format(content_paragraphs, tpl):
+def check_abstract_content_format(content_paragraphs, tpl, doc=None):
     """
     检查摘要正文格式
-    返回 {'ok': bool, 'messages': []}
+    参数:
+        content_paragraphs: 正文段落列表
+        tpl: 模板对象
+        doc: docx文档对象（用于读取样式继承链和docDefaults）
+    返回: {'ok': bool, 'messages': []}
     """
     report = {'ok': True, 'messages': []}
     
@@ -634,7 +1041,7 @@ def check_abstract_content_format(content_paragraphs, tpl):
             continue
         
         # 检测实际格式
-        actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph)
+        actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(main_run, paragraph, doc)
         
         # 字体大小检查
         if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
@@ -698,7 +1105,7 @@ def check_abstract_content_format(content_paragraphs, tpl):
         
         # 首行缩进检查（转换为字符数）
         if 'first_line_indent' in format_rules:
-            first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph)
+            first_line_indent, left_indent, right_indent = detect_paragraph_indent(paragraph, doc)
             expected_indent_chars = float(format_rules['first_line_indent'])  # 期望的字符数
             expected_indent_pt = expected_indent_chars * actual_size_pt  # 转换为pt
             actual_indent_chars = pt_to_chars(first_line_indent, actual_size_pt)
@@ -708,15 +1115,12 @@ def check_abstract_content_format(content_paragraphs, tpl):
                 if msg not in issues:
                     issues.append(msg)
     
-    print(f"正文格式检查发现 {len(issues)} 个问题")
-    print("---")
-    
     if issues:
         report['ok'] = False
         header = tpl.get('messages', {}).get('format_abstract_issue_header')
         if header:
             report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
+        report['messages'].extend(issues)
     else:
         ok_msg = tpl.get('messages', {}).get('format_content_ok')
         if ok_msg:

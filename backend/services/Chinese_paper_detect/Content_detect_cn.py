@@ -138,6 +138,131 @@ def get_style_inheritance_chain(style, doc=None):
     
     return chain
 
+
+# ---------- 文档默认设置提取函数 ----------
+
+def get_document_default_line_spacing(doc):
+    """
+    从文档的默认段落格式中获取行距设置
+    
+    返回: float (行距倍数) 或 None
+    """
+    try:
+        pPr_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:pPrDefault/w:pPr'
+        )
+        if pPr_defaults:
+            pPr = pPr_defaults[0]
+            spacing_nodes = pPr.xpath(
+                './/w:spacing',
+                namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+            )
+            if spacing_nodes:
+                spacing = spacing_nodes[0]
+                line_rule = spacing.get(qn('w:lineRule'))
+                if spacing.get(qn('w:line')):
+                    line_val = int(spacing.get(qn('w:line')))
+                    return line_val / 240.0
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_document_default_indent(doc):
+    """
+    从文档的默认段落格式中获取缩进设置
+    
+    返回: {'first_line_indent': float(pt)} 或 None
+    """
+    try:
+        pPr_defaults = doc.styles._element.xpath(
+            '//w:docDefaults/w:pPrDefault/w:pPr'
+        )
+        if pPr_defaults:
+            pPr = pPr_defaults[0]
+            ind_nodes = pPr.xpath(
+                './/w:ind',
+                namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+            )
+            if ind_nodes:
+                ind = ind_nodes[0]
+                result = {}
+                
+                if ind.get(qn('w:hanging')):
+                    result['first_line_indent'] = -int(ind.get(qn('w:hanging'))) / 20.0
+                elif ind.get(qn('w:firstLine')):
+                    result['first_line_indent'] = int(ind.get(qn('w:firstLine'))) / 20.0
+                
+                return result if result else None
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_normal_style_line_spacing(doc):
+    """从Normal样式中获取行距设置"""
+    try:
+        try:
+            normal_style = doc.styles['Normal']
+            if normal_style and hasattr(normal_style, 'element'):
+                spacing_nodes = normal_style.element.xpath('.//w:spacing')
+                if spacing_nodes:
+                    spacing = spacing_nodes[0]
+                    line_rule = spacing.get(qn('w:lineRule'))
+                    if spacing.get(qn('w:line')):
+                        line_val = int(spacing.get(qn('w:line')))
+                        return line_val / 240.0
+        except Exception:
+            pass
+        
+        normal_styles = doc.styles._element.xpath('//w:style[@w:styleId="Normal"]//w:spacing')
+        if normal_styles:
+            spacing = normal_styles[0]
+            line_rule = spacing.get(qn('w:lineRule'))
+            if spacing.get(qn('w:line')):
+                line_val = int(spacing.get(qn('w:line')))
+                return line_val / 240.0
+    except Exception:
+        pass
+    
+    return None
+
+
+def get_normal_style_indent(doc):
+    """从Normal样式中获取缩进设置"""
+    try:
+        try:
+            normal_style = doc.styles['Normal']
+            if normal_style and hasattr(normal_style, 'element'):
+                ind_nodes = normal_style.element.xpath('.//w:ind')
+                if ind_nodes:
+                    ind = ind_nodes[0]
+                    result = {}
+                    if ind.get(qn('w:hanging')):
+                        result['first_line_indent'] = -int(ind.get(qn('w:hanging'))) / 20.0
+                    elif ind.get(qn('w:firstLine')):
+                        result['first_line_indent'] = int(ind.get(qn('w:firstLine'))) / 20.0
+                    return result if result else None
+        except Exception:
+            pass
+        
+        normal_styles = doc.styles._element.xpath('//w:style[@w:styleId="Normal"]//w:ind')
+        if normal_styles:
+            ind = normal_styles[0]
+            result = {}
+            if ind.get(qn('w:hanging')):
+                result['first_line_indent'] = -int(ind.get(qn('w:hanging'))) / 20.0
+            elif ind.get(qn('w:firstLine')):
+                result['first_line_indent'] = int(ind.get(qn('w:firstLine'))) / 20.0
+            return result if result else None
+    except Exception:
+        pass
+    
+    return None
+
+
 def detect_font_for_run(run, paragraph=None, doc=None, debug=False):
     """
     检测run的字体、字号、加粗、斜体、行距
@@ -676,11 +801,18 @@ def detect_font_for_run(run, paragraph=None, doc=None, debug=False):
                     for pPr in pPr_nodes:
                         spacing_nodes = pPr.xpath('.//w:spacing')
                         if spacing_nodes:
-                            line_attr = spacing_nodes[0].get(qn('w:line'))
+                            spacing = spacing_nodes[0]
+                            line_attr = spacing.get(qn('w:line'))
+                            line_rule = spacing.get(qn('w:lineRule'))
                             if line_attr:
                                 # w:line 值是以240为单位，例如240=单倍行距，360=1.5倍行距
                                 line_val = float(line_attr)
-                                line_spacing = line_val / 240.0
+                                if line_rule == 'auto':
+                                    # 自动行间距：line值通常是字体大小的120%作为基准
+                                    line_spacing = line_val / 240.0
+                                else:
+                                    # 固定行间距：240 twips = 1.0倍
+                                    line_spacing = line_val / 240.0
                                 break
                 except Exception:
                     pass
@@ -698,10 +830,17 @@ def detect_font_for_run(run, paragraph=None, doc=None, debug=False):
                             for pPr in pPr_nodes:
                                 spacing_nodes = pPr.xpath('.//w:spacing')
                                 if spacing_nodes:
-                                    line_attr = spacing_nodes[0].get(qn('w:line'))
+                                    spacing = spacing_nodes[0]
+                                    line_attr = spacing.get(qn('w:line'))
+                                    line_rule = spacing.get(qn('w:lineRule'))
                                     if line_attr:
                                         line_val = float(line_attr)
-                                        line_spacing = line_val / 240.0
+                                        if line_rule == 'auto':
+                                            # 自动行间距：line值通常是字体大小的120%作为基准
+                                            line_spacing = line_val / 240.0
+                                        else:
+                                            # 固定行间距：240 twips = 1.0倍
+                                            line_spacing = line_val / 240.0
                                         break
                                 if line_spacing:
                                     break
@@ -717,14 +856,33 @@ def detect_font_for_run(run, paragraph=None, doc=None, debug=False):
                 if pPr is not None:
                     spacing_nodes = pPr.xpath('.//w:spacing')
                     if spacing_nodes:
-                        line_attr = spacing_nodes[0].get(qn('w:line'))
+                        spacing = spacing_nodes[0]
+                        line_attr = spacing.get(qn('w:line'))
+                        line_rule = spacing.get(qn('w:lineRule'))
                         if line_attr:
                             line_val = float(line_attr)
-                            line_spacing = line_val / 240.0
+                            if line_rule == 'auto':
+                                # 自动行间距：line值通常是字体大小的120%作为基准
+                                line_spacing = line_val / 240.0
+                            else:
+                                # 固定行间距：240 twips = 1.0倍
+                                line_spacing = line_val / 240.0
             except Exception:
                 pass
     except Exception:
         pass
+    
+    # 6) 从 Normal 样式读取行距
+    if line_spacing is None and doc:
+        normal_ls = get_normal_style_line_spacing(doc)
+        if normal_ls is not None:
+            line_spacing = normal_ls
+    
+    # 7) 从 docDefaults 读取行距
+    if line_spacing is None and doc:
+        doc_ls = get_document_default_line_spacing(doc)
+        if doc_ls is not None:
+            line_spacing = doc_ls
     
     line_spacing = line_spacing if line_spacing is not None else 1.0
 
@@ -1204,8 +1362,8 @@ def check_format(titles, tpl, doc=None):
         # 添加格式问题header，与标题检测报告格式一致
         header = tpl.get('messages', {}).get('format_content_issue_header', '正文标题格式问题：')
         report['messages'].append(header)
-        # 每个错误信息前面加上 "  - " 前缀，与标题检测报告格式一致
-        report['messages'].extend([f"  - {i}" for i in issues])
+        # 每个错误信息不加前缀，由报告生成器添加
+        report['messages'].extend(issues)
     else:
         msg = tpl.get('messages', {}).get('format_level1_ok')
         if msg:
