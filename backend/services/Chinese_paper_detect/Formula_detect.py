@@ -180,14 +180,60 @@ def _debug_enabled(tpl, debug=None):
 
 def iter_all_w_p_elements(doc):
     """
-    返回所有 w:p 段落节点（包含正文流 + 文本框/形状中的段落）。
+    返回所有 w:p 段落节点（包含正文流 + 文本框/形状 + 表格单元格中的段落）。
     """
     try:
         body_ps = doc.element.body.xpath('./w:p')
         tbx_ps = doc.element.xpath('.//w:txbxContent//w:p')
-        return body_ps + tbx_ps
+        tbl_ps = doc.element.body.xpath('.//w:tbl//w:p')
+        return body_ps + tbx_ps + tbl_ps
     except Exception:
         return []
+
+
+def get_paragraph_location(p):
+    """
+    返回段落 p 所在的单元格位置信息。
+    返回: dict {'in_table': bool, 'table_idx': int, 'row': int, 'col': int} 或 None
+    仅用于调试/报告，不影响检测逻辑。
+    """
+    try:
+        # 向上找 tc (单元格)
+        tc = p.xpath('ancestor::w:tc[1]')
+        if not tc:
+            return None
+        tc = tc[0]
+
+        # 找所在行
+        tr = tc.xpath('ancestor::w:tr[1]')
+        if not tr:
+            return None
+        tr = tr[0]
+
+        # 找所在表格
+        tbl = tr.xpath('ancestor::w:tbl[1]')
+        if not tbl:
+            return None
+        tbl = tbl[0]
+
+        # 找表格在 body 中的索引
+        body = p.xpath('/w:body')
+        if body:
+            all_tbls = body[0].xpath('./w:tbl')
+            table_idx = next((i for i, t in enumerate(all_tbls) if t is tbl), -1)
+        else:
+            table_idx = -1
+
+        # 找行列索引
+        all_rows = tbl.xpath('./w:tr')
+        row_idx = next((i for i, r in enumerate(all_rows) if r is tr), -1)
+
+        all_cells = tr.xpath('./w:tc')
+        col_idx = next((i for i, c in enumerate(all_cells) if c is tc), -1)
+
+        return {'in_table': True, 'table_idx': table_idx, 'row': row_idx, 'col': col_idx}
+    except Exception:
+        return None
 
 def get_text_from_w_p(p):
     """
@@ -202,6 +248,79 @@ def get_text_from_w_p(p):
         return (text or '').strip()
     except Exception:
         return ''
+
+
+def build_math_spans_map(p, text):
+    """
+    建立段落中所有 Math 对象的文本位置索引。
+
+    返回: dict  {start_pos: (end_pos, math_text)}
+    用于判断编号和公式 Math 对象之间是否只隔着其他 Math 对象的文本。
+    """
+    math_ns = {
+        'm': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
+        'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    }
+    math_paths = ['.//w:oMath', './/m:oMath', './/oMath', './/m:math']
+    spans = {}  # start_pos -> (end_pos, math_text)
+
+    for path in math_paths:
+        try:
+            for elem in p.xpath(path, namespaces=math_ns):
+                parts = []
+                parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
+                parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                math_text = ''.join(parts)
+                if not math_text:
+                    continue
+                pos = text.find(math_text)
+                if pos >= 0:
+                    spans[pos] = (pos + len(math_text), math_text)
+        except Exception:
+            continue
+
+    return spans
+
+
+def is_adjacent_to_formula(number_start, number_end, text, math_spans, formula_text):
+    """
+    判断编号是否与公式 Math 对象相邻（中间只有空白字符，不含正文内容）。
+
+    - number_start / number_end: 编号在 text 中的起止位置
+    - text: 段落完整文本
+    - math_spans: build_math_spans_map 返回的索引
+    - formula_text: 公式 Math 对象的文本内容
+
+    返回: True 表示编号与公式 Math 相邻（视为有效公式候选）
+    """
+    formula_pos = text.find(formula_text)
+    if formula_pos < 0:
+        return False
+
+    formula_start = formula_pos
+    formula_end = formula_pos + len(formula_text)
+
+    # 关键修复：如果编号落在公式文本范围内，说明编号是公式内容的一部分（如 L*=116(YY0)13-16 中的 13-16）
+    if formula_start < number_start < formula_end:
+        return False   # 编号在公式文本内部，拒绝
+
+    # 编号在公式左侧
+    if number_end <= formula_start:
+        between = text[number_end:formula_start]
+    # 编号在公式右侧
+    elif number_start >= formula_end:
+        between = text[formula_end:number_start]
+    else:
+        return False  # 编号与公式重叠，不合理
+
+    # 检查中间内容：允许空白 + 其他 Math 对象的文本，不允许正文
+    cleaned = between
+    for span_start, (span_end, _) in sorted(math_spans.items()):
+        cleaned = cleaned.replace(text[span_start:span_end], '')
+
+    if cleaned.strip():
+        return False
+    return True
 
 def detect_paragraph_alignment(paragraph):
     direct_alignment = paragraph.paragraph_format.alignment
@@ -218,6 +337,36 @@ def detect_paragraph_alignment(paragraph):
 
     return 0
 
+
+def build_paragraph_location_map(all_ps):
+    """
+    构建段落位置索引：w_p -> (table_idx, row, col)
+    用于跨段落（表格内）公式-编号匹配。
+    """
+    loc_map = {}  # id(p) -> {'table_idx': int, 'row': int, 'col': int} 或 None
+    for p in all_ps:
+        loc_map[id(p)] = get_paragraph_location(p)
+    return loc_map
+
+
+def is_in_same_table_context(loc1, loc2, max_row_gap=0):
+    """
+    判断两个段落是否在"表格内相邻"的上下文中。
+    - loc1/loc2: get_paragraph_location() 的返回值
+    - max_row_gap: 允许的行号差距（默认0表示同一行）
+    返回 True 表示两个段落属于同一表格行或相邻行，可以匹配。
+    """
+    if loc1 is None or loc2 is None:
+        return False
+    if not loc1.get('in_table') or not loc2.get('in_table'):
+        return False
+    # table_idx=-1 表示无法确定表格索引，此时跳过表格一致性检查
+    if loc1.get('table_idx', -1) >= 0 and loc2.get('table_idx', -1) >= 0:
+        if loc1.get('table_idx') != loc2.get('table_idx'):
+            return False
+    row_gap = abs(loc1.get('row', -1) - loc2.get('row', -1))
+    return row_gap <= max_row_gap
+
 def find_formula_candidates(doc, template, debug=None):
     """
     找出所有可能是公式的段落（简化版）
@@ -226,6 +375,7 @@ def find_formula_candidates(doc, template, debug=None):
     1. 找到包含 Math 对象的段落
     2. 提取 Math 对象内的文本作为公式内容
     3. 在段落中搜索编号（#3-3, (1-1) 等）
+    4. 支持跨段落匹配：编号在独立 w:p 中（如同行表格单元格）
     """
     dbg = _debug_enabled(template, debug)
 
@@ -236,9 +386,20 @@ def find_formula_candidates(doc, template, debug=None):
 
     candidates = []
     all_ps = list(iter_all_w_p_elements(doc))
+    para_loc_map = build_paragraph_location_map(all_ps)
+    used_as_number = set()  # 已作为编号匹配过的段落（避免重复）
 
     if dbg:
-        logger.info("[Formula] 扫描到 w:p 节点总数=%s", len(all_ps))
+        tbl_ps_count = sum(1 for p in all_ps if (para_loc_map.get(id(p)) or {}).get('in_table'))
+        logger.info("[Formula] 扫描到 w:p 节点总数=%s，其中表格段落=%s", len(all_ps), tbl_ps_count)
+        # 打印 w:p[951] 和 w:p[952] 的 loc 情况（如果有的话）
+        for p in all_ps:
+            loc = para_loc_map.get(id(p))
+            if loc and loc.get('in_table'):
+                text_sample = get_text_from_w_p(p)[:30]
+                idx_sample = all_ps.index(p)
+                if text_sample in ('ci=Tokenizerzi', '3-1', 'xi=Embeddingci', '3-2', 'vCLS=BERTX1', '3-3'):
+                    logger.info("[Formula] 表格段落 idx=%s text=%r loc=%s", idx_sample, text_sample, loc)
 
     # 编号模式列表
     number_patterns = [
@@ -262,12 +423,16 @@ def find_formula_candidates(doc, template, debug=None):
             return (1, int(num_m.group()))
         return None
 
+    def _build_math_spans(p, text):
+        """局部包装，避免在 stage 1 重复调用"""
+        return build_math_spans_map(p, text)
+
     for idx, p in enumerate(all_ps):
         text = get_text_from_w_p(p)
         if not text:
             continue
 
-        # ========== 1. 检测 Math 对象 ==========
+        # ========== 0. 没有 Math 对象？检查是否是纯编号段落（跨段落匹配） ==========
         math_elements = []
         math_paths = ['.//w:oMath', './/m:oMath', './/oMath', './/m:math']
         for path in math_paths:
@@ -278,11 +443,95 @@ def find_formula_candidates(doc, template, debug=None):
             except Exception:
                 continue
 
+        # 段落中没有 Math 对象 → 可能是纯编号段落（编号在独立 w:p 中）
         if not math_elements:
-            # 没有 Math 对象，跳过
+            # 检查是否只包含编号（去掉空白后匹配编号正则）
+            stripped = text.strip()
+            is_number_only = False
+            matched_num_text = None
+            matched_parsed = None
+            for pat in number_patterns:
+                m = re.match(pat + r'\s*$', stripped)
+                if m:
+                    is_number_only = True
+                    matched_num_text = m.group()
+                    matched_parsed = parse_formula_number(matched_num_text)
+                    break
+
+            if not is_number_only:
+                continue
+
+            if id(p) in used_as_number:
+                continue
+
+            # 找相邻段落中包含 Math 的段落（同一表格行或相邻行）
+            loc_p = para_loc_map.get(id(p))
+            for other_idx, other_p in enumerate(all_ps):
+                if other_p is p:
+                    continue
+                if id(other_p) in used_as_number:
+                    continue
+
+                loc_other = para_loc_map.get(id(other_p))
+                if not is_in_same_table_context(loc_p, loc_other, max_row_gap=0):
+                    continue
+
+                other_text = get_text_from_w_p(other_p)
+                if not other_text:
+                    continue
+
+                other_math = []
+                for path in math_paths:
+                    try:
+                        elems = other_p.xpath(path)
+                        if elems:
+                            other_math.extend(elems)
+                    except Exception:
+                        continue
+
+                if not other_math:
+                    continue
+
+                # 找到了相邻的公式段落 → 跨段落匹配成功
+                for elem in other_math:
+                    math_ns = {
+                        'm': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
+                        'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+                    }
+                    math_text_parts = []
+                    math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
+                    math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                    formula_text = ''.join(math_text_parts)
+                    if not formula_text:
+                        continue
+
+                    used_as_number.add(id(p))
+                    used_as_number.add(id(other_p))
+
+                    if dbg:
+                        logger.info(
+                            "[Formula] 跨段落匹配: 编号 %s (idx=%s) ←→ 公式 %r (idx=%s, 同表格行)",
+                            matched_num_text, idx, formula_text[:50], other_idx
+                        )
+
+                    candidates.append({
+                        'w_p_index': other_idx,
+                        'w_p': other_p,
+                        'number_w_p_index': idx,
+                        'number_w_p': p,
+                        'text': other_text,
+                        'number': matched_parsed,
+                        'number_text': matched_num_text,
+                        'formula_content': formula_text,
+                        'formula_font': 'Cambria Math',
+                        'math_object_detected': True,
+                        'target_math_elem': elem,
+                        'cross_paragraph': True,
+                    })
+                    break
             continue
 
-        # ========== 2. 逐个 Math 对象检查，找到包含编号的那个 ==========
+        # ========== 1. 检测 Math 对象（重命名为 stage1_var 避免遮盖） ==========
         target_math_elem = None
         parsed_number = None
         number_text = None
@@ -307,6 +556,10 @@ def find_formula_candidates(doc, template, debug=None):
                         num_text = m.group()
                         parsed = parse_formula_number(num_text)
                         if parsed:
+                            # 关键修复：在 Math 内匹配到编号时，过滤掉公式内容中的数字（如 13-16）
+                            # 有括号(如(2-1))或有#前缀(如#3-3)才视为编号；纯数字(如13-16)很可能是公式下标
+                            if not (num_text.startswith('#') or num_text.startswith('(')):
+                                continue
                             target_math_elem = elem
                             parsed_number = parsed
                             number_text = num_text
@@ -322,89 +575,40 @@ def find_formula_candidates(doc, template, debug=None):
                 break
 
         # ========== 3. 如果没在 Math 内找到，在段落中搜索编号 ==========
+        # 先建立所有 Math 对象的文本位置索引（用于处理编号是独立 Math 对象的情况）
+        math_spans = build_math_spans_map(p, text)
+
         if not parsed_number:
             if dbg:
-                logger.info("[Formula] DEBUG w:p[%s]: 在Math内未找到编号，开始在段落中搜索. text=%r", idx, text[:150])
+                logger.info("[Formula] DEBUG w:p[%s]: 在Math内未找到编号，开始在段落中搜索. text=%r, math_spans=%s",
+                            idx, text[:150], {k: v[1][:30] for k, v in math_spans.items()})
             for elem in math_elements:
-                # 提取当前 Math 对象的文本（使用与 get_text_from_w_p 一致的方式）
-                # 需要处理命名空间
+                # 提取当前 Math 对象的文本（与 get_text_from_w_p 一致）
                 math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
                            'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
                 math_text_parts = []
                 math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
                 math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
-                math_text = ''.join(math_text_parts)
+                formula_text = ''.join(math_text_parts)
 
-                if not math_text:
+                if not formula_text:
                     continue
 
-                # 在段落中搜索编号，看是否在 Math 对象之后
+                # 在段落中搜索编号
                 for pat in number_patterns:
                     try:
                         for m in re.finditer(pat, text):
                             num_text = m.group()
                             parsed = parse_formula_number(num_text)
                             if parsed:
-                                # 彻底解决：使用和 get_text_from_w_p 一致的方式提取 math_text
-                                # 直接用 XPath 从 Math 元素中提取 w:t + m:t（需要命名空间）
-                                math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
-                                           'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
-                                math_text_parts = []
-                                math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
-                                math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
-                                math_text_aligned = ''.join(math_text_parts)
-                                
-                                # 使用清理空格后的版本来匹配（与 get_text_from_w_p 一致）
-                                # 但允许编号和 Math 之间有空格，所以要容错搜索
-                                math_text_aligned_cleaned = ''.join(math_text_aligned.split())
-                                
-                                # 尝试精确匹配，如果失败则尝试在编号附近搜索（允许空格差异）
-                                pos_in_text = text.find(math_text_aligned_cleaned)
-                                if pos_in_text < 0:
-                                    # 在编号结束后搜索，对 search_range 也清理空格后匹配
-                                    search_start = m.end()  # 从编号结束后开始
-                                    search_end = min(len(text), search_start + len(math_text_aligned_cleaned) + 20)
-                                    search_range = text[search_start:search_end]
-                                    # 对 search_range 也清理空格后再搜索
-                                    search_range_cleaned = ''.join(search_range.split())
-                                    pos_in_text = search_range_cleaned.find(math_text_aligned_cleaned)
-                                    if pos_in_text >= 0:
-                                        pos_in_text += search_start
-                                
-                                if dbg:
-                                    logger.info("[Formula] DEBUG w:p[%s]: 编号位置=%d, Math位置=%d, text=%r, math_text_aligned=%r",
-                                                idx, m.start(), pos_in_text, text[:100], math_text_aligned_cleaned[:50])
-                                
-                                # 检查编号和 Math 之间是否只有空白字符（不能有文字）
-                                if pos_in_text >= 0 and m.start() != pos_in_text:
-                                    # 提取编号和 Math 之间的内容
-                                    if m.start() < pos_in_text:
-                                        # 编号在左侧：编号结束位置 -> Math 开始位置
-                                        between_text = text[m.end():pos_in_text]
-                                    else:
-                                        # 编号在右侧：Math 结束位置 -> 编号开始位置
-                                        between_text = text[pos_in_text + len(math_text_aligned_cleaned):m.start()]
-                                    
-                                    # 检查之间是否只有空白字符
-                                    if between_text.strip() != '':
-                                        # 中间有文字，不是直接引用，跳过
-                                        if dbg:
-                                            logger.info("[Formula] w:p[%s]：编号与Math之间有文字，跳过 num=%s", idx, num_text)
-                                        continue
-                                    
-                                    # 只有空白字符，识别为公式
+                                # 用新逻辑判断编号是否与公式 Math 相邻
+                                if is_adjacent_to_formula(m.start(), m.end(), text, math_spans, formula_text):
                                     target_math_elem = elem
                                     parsed_number = parsed
                                     number_text = num_text
-                                    number_position_in_math = m.start() - pos_in_text
-                                    if m.start() < pos_in_text:
-                                        # 编号在 Math 左侧
-                                        if dbg:
-                                            logger.info("[Formula] w:p[%s]：在Math对象左侧找到编号 num=%s", idx, num_text)
-                                    else:
-                                        # 编号在 Math 右侧
-                                        if dbg:
-                                            logger.info("[Formula] w:p[%s]：在Math对象右侧找到编号 num=%s", idx, num_text)
+                                    if dbg:
+                                        logger.info("[Formula] w:p[%s]：编号 %s 与公式 %r 相邻（via is_adjacent_to_formula）",
+                                                    idx, num_text, formula_text[:50])
                                     break
                     except Exception:
                         continue
@@ -414,23 +618,184 @@ def find_formula_candidates(doc, template, debug=None):
                     break
 
         if not parsed_number:
+            # ========== Stage 3（补充）：有 Math 但无编号 → 在同表格行找纯编号段落 ==========
+            # 对应场景：公式在单元格 A，编号在同行单元格 B（编号在前）
+            loc_p = para_loc_map.get(id(p))
             if dbg:
+                logger.info("[Formula] Stage3 loc check: idx=%s text=%r loc=%s", idx, text[:50], loc_p)
+            if loc_p and loc_p.get('in_table'):
+                for num_idx, num_p in enumerate(all_ps):
+                    if num_p is p or id(num_p) in used_as_number:
+                        continue
+                    loc_num = para_loc_map.get(id(num_p))
+                    # 精确调试：w:p[951] 配对候选（仅在找到匹配时打一行汇总）
+                    if dbg and text[:20] == 'ci=Tokenizerzi':
+                        ntxt = get_text_from_w_p(num_p)[:20]
+                        num_id = id(num_p)
+                        ctx = is_in_same_table_context(loc_p, loc_num, max_row_gap=0)
+                        num_in_map = id(num_p) in {id(p2) for p2 in all_ps}
+                        # 只在可能匹配时打日志：同行同表格 且文本含数字
+                        if ctx and any(c.isdigit() for c in ntxt):
+                            stripped = ntxt.strip()
+                            is_num = any(re.match(pat + r'\s*$', stripped) for pat in number_patterns)
+                            logger.info(
+                                "[Formula] Stage3-TRY: 公式idx=%s(col=%s) num_idx=%s text=%r same_table=%s is_number=%s",
+                                idx, loc_p.get('col'), num_idx, ntxt, ctx, is_num
+                            )
+                    if not is_in_same_table_context(loc_p, loc_num, max_row_gap=0):
+                        continue
+                    num_text_full = get_text_from_w_p(num_p)
+                    if not num_text_full:
+                        continue
+                    # 检查编号段落是否只含编号（纯编号）
+                    stripped = num_text_full.strip()
+                    is_number_only = False
+                    for pat in number_patterns:
+                        if re.match(pat + r'\s*$', stripped):
+                            is_number_only = True
+                            break
+                    if not is_number_only:
+                        # 精确调试：w:p[951] 配对候选
+                        if dbg and text[:20] == 'ci=Tokenizerzi':
+                            logger.info(
+                                "[Formula] Stage3-REJECT: num_idx=%s text=%r 不是纯编号 (is_number_only=False)",
+                                num_idx, stripped[:30]
+                            )
+                        continue
+                    parsed = parse_formula_number(stripped)
+                    if not parsed:
+                        if dbg and text[:20] == 'ci=Tokenizerzi':
+                            logger.info(
+                                "[Formula] Stage3-REJECT: num_idx=%s text=%r 无法解析编号",
+                                num_idx, stripped[:30]
+                            )
+                        continue
+
+                    # 找该编号段落中包含 Math 的段落（第一个有 Math 的）
+                    num_math = []
+                    for path in math_paths:
+                        try:
+                            elems = num_p.xpath(path)
+                            if elems:
+                                num_math.extend(elems)
+                        except Exception:
+                            continue
+                    if num_math:
+                        # 编号段落自身有 Math，说明是表格中"编号与公式分列存放"的情况：
+                        # - num_p (col=2) 的 Math 内容 = 编号
+                        # - p (col=1) 的 math_elements = 公式内容
+                        # 将两者配对：p 的 Math 作为公式内容，num_p 的 Math 作为编号
+                        if dbg and text[:20] == 'ci=Tokenizerzi':
+                            logger.info(
+                                "[Formula] Stage3-MATCH-TABLE: 公式idx=%s(num_idx=%s) 表格编号段落含Math，编号=%s",
+                                idx, num_idx, parsed
+                            )
+                        # 直接构造候选：公式内容来自 p，编号来自 num_p
+                        candidates.append({
+                            'w_p_index': idx,
+                            'w_p': p,
+                            'number_w_p_index': num_idx,
+                            'number_w_p': num_p,
+                            'text': text,
+                            'number': parsed,
+                            'number_text': stripped,
+                            'formula_content': text,
+                            'location': loc_p,
+                            'source': 'stage3_table_math'
+                        })
+                        used_as_number.add(id(num_p))
+                        used_as_number.add(id(p))
+                        # 注意：当前 for 循环不再需要继续，因为 p 已找到配对
+                        break
+
+                    # 更新外层变量，确保后续逻辑能识别到编号
+                    target_math_elem = math_elements[0]
+                    parsed_number = parsed
+                    number_text = stripped
+
+                    used_as_number.add(id(num_p))
+                    used_as_number.add(id(p))
+                    if dbg and text[:20] == 'ci=Tokenizerzi':
+                        logger.info(
+                            "[Formula] Stage3-MATCH! 公式idx=%s(num_idx=%s) 编号=%s math_elem=%s",
+                            idx, num_idx, parsed, target_math_elem
+                        )
+
+                    if dbg:
+                        logger.info(
+                            "[Formula] 跨段落匹配（公式在前）: 公式 idx=%s ←→ 编号 %s idx=%s（%s行/%s列 ←→ %s行/%s列）",
+                            idx, stripped, num_idx,
+                            loc_p.get('row'), loc_p.get('col'),
+                            loc_num.get('row'), loc_num.get('col')
+                        )
+                    candidates.append({
+                        'w_p_index': idx,
+                        'w_p': p,
+                        'number_w_p_index': num_idx,
+                        'number_w_p': num_p,
+                        'text': text,
+                        'number': parsed,
+                        'number_text': stripped,
+                        'formula_content': text,
+                        'formula_font': 'Cambria Math',
+                        'math_object_detected': True,
+                        'target_math_elem': math_elements[0],
+                        'cross_paragraph': True,
+                    })
+                    break
+
+            if dbg and parsed_number is None:
                 logger.info("[Formula] w:p[%s]：有Math对象但未找到编号 preview=%r", idx, text[:80])
-            continue
+            if parsed_number is None:
+                continue
 
         # ========== 4. 提取目标 Math 对象的文本作为公式内容 ==========
-        formula_content = ''
+        # 分两种情况：
+        # A. 编号在公式 Math 对象内部  → 从公式 Math 对象提取（去掉编号部分）
+        # B. 编号是独立 Math 对象     → 从段落全文提取（完整保留）
+        formula_text_for_check = ''
         if target_math_elem is not None:
             for node in target_math_elem.iter():
                 if hasattr(node, 'text') and node.text:
-                    # 如果当前节点包含编号，只取编号之前的部分
+                    formula_text_for_check += node.text
+
+        number_pos_in_text = text.find(number_text)
+        formula_pos_in_text = text.find(formula_text_for_check)
+
+        # 判断编号是否真正在公式 Math 对象的文本范围内
+        number_inside_formula_math = (
+            formula_text_for_check
+            and formula_pos_in_text >= 0
+            and formula_pos_in_text <= number_pos_in_text < formula_pos_in_text + len(formula_text_for_check)
+        )
+
+        formula_content = ''
+
+        if target_math_elem is not None:
+            for node in target_math_elem.iter():
+                if hasattr(node, 'text') and node.text:
                     node_text = node.text.strip()
                     if number_text in node_text:
-                        # 编号在这个节点的文本中
                         pos = node_text.find(number_text)
                         formula_content += node_text[:pos]
                     else:
                         formula_content += node_text
+
+        # 仅当编号确实在公式 Math 内部、且提取结果非空时，才认为 A 情况成功
+        if not formula_content and number_inside_formula_math:
+            # 备用：从全段提取并去掉编号
+            fc = text
+            if number_text in fc:
+                pos = fc.find(number_text)
+                fc = fc[:pos] + fc[pos + len(number_text):]
+            formula_content = fc.strip()
+        elif not formula_content:
+            # 纯备用：从全段提取（保留全部）
+            fc = text
+            if number_text in fc:
+                pos = fc.find(number_text)
+                fc = fc[:pos] + fc[pos + len(number_text):]
+            formula_content = fc.strip()
 
         formula_content = formula_content.strip()
 
@@ -595,6 +960,8 @@ def detect_math_objects(paragraph):
     }
 
     try:
+        if paragraph is None:
+            return False, [], info
         para_xml = paragraph._element
 
         math_elements = []
@@ -740,6 +1107,8 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
     expected_content_bold = check_rules.get('formula_content_bold', False)
     expected_number_italic = check_rules.get('formula_number_italic', False)
     expected_number_bold = check_rules.get('formula_number_bold', False)
+    check_content_italic = check_rules.get('formula_content_italic_check', True)
+    check_number_italic = check_rules.get('formula_number_italic_check', True)
     check_number_color = check_rules.get('number_color_check', True)
 
     # ========== 0. 提取 Math 对象中的属性信息 ==========
@@ -978,7 +1347,7 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
             logger.info("[Formula] 公式内容：无法从Math对象提取字号信息")
 
     # ========== 1c. 检查公式内容是否斜体 ==========
-    if expected_content_italic is not None:
+    if check_content_italic and expected_content_italic is not None:
         if math_font_info.get('is_italic') is not None:
             if math_font_info.get('is_italic') != expected_content_italic:
                 issues.append(f"公式内容斜体设置不正确，期望{'斜体' if expected_content_italic else '正体'}")
@@ -1034,8 +1403,8 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                             continue
                     num_font = 'Unknown'
                     num_size = None
-                    num_italic = False
-                    num_bold = False
+                    num_italic = None
+                    num_bold = None
 
                     if rpr is not None:
                         # 查找 rFonts (使用 XPath)
@@ -1076,7 +1445,7 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                             if val:
                                 num_size = float(val) / 2.0
 
-                        # 斜体 (使用 XPath)
+                        # 斜体：只用 XPath 检查显式 <i> 元素，找不到则静默跳过（与公式内容一致）
                         i_elem = None
                         for i_xpath in ['.//{http://schemas.openxmlformats.org/officeDocument/2006/math}i',
                                         './/m:i',
@@ -1112,16 +1481,16 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                                 val = b_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
                             num_bold = val != '0'
 
-                    # 检查字号
+                    # 检查字号（只在成功提取到字号时才比较）
                     if num_size is not None and abs(num_size - expected_size_pt) > 0.5:
                         issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(num_size, template)}（{num_size}pt）")
 
-                    # 检查斜体
-                    if expected_number_italic is not None and num_italic != expected_number_italic:
+                    # 检查斜体（由 formula_number_italic_check 控制开关）
+                    if check_number_italic and num_italic is not None and expected_number_italic is not None and num_italic != expected_number_italic:
                         issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
 
-                    # 检查加粗
-                    if expected_number_bold is not None and num_bold != expected_number_bold:
+                    # 检查加粗（只在成功提取到加粗值时才比较）
+                    if num_bold is not None and expected_number_bold is not None and num_bold != expected_number_bold:
                         issues.append(f"公式编号加粗设置不正确，期望{'加粗' if expected_number_bold else '正常'}")
 
                     # 检查字体名称
@@ -1136,9 +1505,9 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
             except Exception:
                 continue
 
-    # 备选：从 paragraph runs 检测编号
-    if not issues or paragraph is not None:
-        for run in paragraph.runs if paragraph else []:
+    # 备选：从 paragraph runs 检测编号（编号是独立 Math 对象时不可达，静默跳过）
+    if paragraph is not None:
+        for run in paragraph.runs:
             if not run.text.strip():
                 continue
 
@@ -1148,12 +1517,12 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
             if re.search(number_pattern, t):
                 size, font, is_italic, _ = detect_font_for_run(run, paragraph)
 
-                # 检查字号
-                if abs(size - expected_size_pt) > 0.5:
+                # 检查字号（只在成功提取到字号时才比较）
+                if size is not None and abs(size - expected_size_pt) > 0.5:
                     issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(size, template)}（{size}pt）")
 
-                # 检查斜体
-                if expected_number_italic is not None and is_italic != expected_number_italic:
+                # 检查斜体（由 formula_number_italic_check 控制开关）
+                if check_number_italic and expected_number_italic is not None and is_italic != expected_number_italic:
                     issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
 
                 # 检查字体名称
@@ -1175,6 +1544,7 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
 def check_formula_reference(paragraph, parsed_number, template, tpl, doc, dbg=False):
     """
     检查公式引用：公式上一个段落必须提及该公式引用（公式{章}-{序}）
+    当 paragraph 为 None 时（表格单元格段落），跳过引用检查。
     """
     report = {'ok': True, 'messages': []}
     messages = tpl.get('messages', {})
@@ -1186,6 +1556,10 @@ def check_formula_reference(paragraph, parsed_number, template, tpl, doc, dbg=Fa
         return report
 
     if parsed_number is None:
+        return report
+
+    # 表格单元格段落无法获取 body 位置，跳过引用检查
+    if paragraph is None:
         return report
 
     chapter, seq = parsed_number
@@ -1274,6 +1648,9 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
     - target_math_elem: 目标 Math 对象（用于检测公式内容字体）
     - doc: 文档对象（用于引用检查）
     - dbg: 是否启用调试日志
+
+    注意：当段落来自表格单元格（无法映射到 python-docx Paragraph 对象）时，
+    paragraph 为 None，此时跳过制表位和 Math 对象格式检查，仅检查编号和引用。
     """
     report = {'ok': True, 'messages': [], 'details': {}}
 
@@ -1283,6 +1660,29 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
 
     number_pattern = rules.get('number_pattern')
     tab_stops_config = rules.get('tab_stops', [])
+
+    # 表格单元格段落（paragraph 为 None）不支持制表位/Math 对象 API，跳过这两项检查
+    if paragraph is None:
+        report['details']['tab_stops'] = {'skipped': True, 'reason': '表格单元格段落无 Paragraph 对象'}
+        report['details']['math_objects'] = {'skipped': True, 'reason': '表格单元格段落无 Paragraph 对象'}
+        # 编号检查
+        report['details']['number'] = {'parsed': parsed_number is not None, 'value': parsed_number}
+        if not parsed_number:
+            report['ok'] = False
+            report['messages'].append(messages.get('formula_number_missing', '未检测到公式编号'))
+        # 字体和引用检查（通过 target_math_elem 和 doc 进行）
+        report['details']['fonts'] = {'skipped': True, 'reason': '表格单元格段落无 Paragraph 对象'}
+        ref_report = check_formula_reference(None, parsed_number, template, template, doc, dbg=dbg)
+        report['details']['reference'] = {
+            'ok': ref_report['ok'],
+            'messages': ref_report['messages'] if not ref_report['ok'] else [messages.get('formula_reference_ok', '公式引用检查通过')]
+        }
+        if not ref_report['ok']:
+            report['ok'] = False
+            report['messages'].extend(ref_report['messages'])
+        if report['ok']:
+            report['messages'].append(messages.get('formula_detection_ok', '公式格式检查通过（表格段落，跳过字体/制表位检查）'))
+        return report
 
     # ========== 1. 制表位检查（根据模板配置执行） ==========
     tab_check_enabled = check_rules.get('tab_stops_check', True)
@@ -1398,10 +1798,14 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
                 continue
 
             # 把 paragraph 对象补上（用于后续格式检查）
+            # 表格单元格内的段落不在 doc.paragraphs 中，paragraph 为 None
+            item['paragraph'] = None
             try:
-                item['paragraph'] = next(p for p in doc.paragraphs if p._element is item['w_p'])
+                item['paragraph'] = next(
+                    p for p in doc.paragraphs if p._element is item['w_p']
+                )
             except StopIteration:
-                item['paragraph'] = None  # 文本框段落，无法直接用 paragraph API
+                pass  # 保持 None（表格段落等）
 
             formula_paragraphs.append(item)
 
@@ -1500,8 +1904,11 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
             if not para_report['ok']:
                 all_ok = False
                 report['formula_detection']['ok'] = False
-                for msg in para_report['messages']:
-                    report['formula_detection']['messages'].append(f"{formula_label}: {msg}")
+                # 先添加 issue header
+                issue_header = messages.get('formula_detection_issue_header', '公式格式检查发现问题：')
+                report['formula_detection']['messages'].append(issue_header)
+                # 添加具体问题（不加前缀，由报告生成器处理）
+                report['formula_detection']['messages'].extend(para_report['messages'])
 
         numbering_report = check_numbering_by_chapter(extracted_numbers)
         report['numbering'] = numbering_report

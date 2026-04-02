@@ -1393,8 +1393,18 @@ class ChinesePaperFormatService:
             if module_name == 'Table':
                 table_det = report.get('table_detection', {})
                 if isinstance(table_det, dict) and 'ok' in table_det:
-                    total = table_det.get('total', 0)
-                    failed = table_det.get('failed', 0)
+                    total = table_det.get('total', len(report.get('tables', [])))
+                    # table_detection 没有 failed 字段，直接从子项统计
+                    # 注意：Table_detect 返回的键名是 caption_cn_format / caption_en_format / text_rules，
+                    # 没有 caption_format，也没有 table_alignment；续表 table_content_alignment 为 {'skipped': True}
+                    def table_has_issues(t):
+                        for k in ('caption_cn_format', 'caption_en_format', 'text_rules',
+                                  'table_style', 'table_content_alignment', 'table_reference'):
+                            cv = t.get(k, {})
+                            if isinstance(cv, dict) and not cv.get('skipped', False) and not cv.get('ok', False):
+                                return True
+                        return False
+                    failed = sum(1 for t in report.get('tables', []) if table_has_issues(t))
                     if table_det.get('ok', False):
                         lines.append(f"\n  [表格检测] ✓ 符合规范（共检测 {total} 张表格）")
                     else:
@@ -1415,14 +1425,15 @@ class ChinesePaperFormatService:
                 for i, table_report in enumerate(tables, 1):
                     failed_checks = []
                     for check_key, check_label in [
-                        ('caption_format', '表题格式'),
+                        ('caption_cn_format', '中文表题格式'),
+                        ('caption_en_format', '英文表题格式'),
+                        ('text_rules', '表题文字规范'),
                         ('table_style', '表格样式'),
-                        ('table_alignment', '内容对齐'),
                         ('table_content_alignment', '内容对齐'),
                         ('table_reference', '表格引用'),
                     ]:
                         cv = table_report.get(check_key, {})
-                        if isinstance(cv, dict) and not cv.get('ok', False):
+                        if isinstance(cv, dict) and not cv.get('skipped', False) and not cv.get('ok', False):
                             msgs = cv.get('messages', [])
                             if msgs:
                                 failed_checks.append((check_label, msgs))
@@ -1455,8 +1466,8 @@ class ChinesePaperFormatService:
             # References模块：三段始终显示，通过时✓符合规范，失败时✗发现问题
             elif module_name == 'References':
                 for check_key, check_label in [
-                    ('references_structure', '结构'),
-                    ('references_content', '格式'),
+                    ('structure', '结构'),
+                    ('content_format', '格式'),
                     ('references_header', '标题格式'),
                 ]:
                     check_val = report.get(check_key, {})
@@ -1474,9 +1485,20 @@ class ChinesePaperFormatService:
             # Figure模块：[图检测] 和 [编号] 始终显示，失败时追加详细图片信息
             elif module_name == 'Figure':
                 figure_det = report.get('figure_detection', {})
+                if not figure_det:
+                    figure_det = report.get('overall', {})
                 if isinstance(figure_det, dict) and 'ok' in figure_det:
-                    total = figure_det.get('total', 0)
-                    failed = figure_det.get('failed', 0)
+                    total = figure_det.get('total', len(report.get('figures', [])))
+                    # overall 没有 failed 字段，直接从子项统计
+                    def figure_has_issues(fig):
+                        for k in ('format_check', 'picture_check', 'reference_check'):
+                            if not fig.get(k, {}).get('ok', False):
+                                return True
+                        if fig.get('content_check', {}).get('is_chart', False):
+                            if not fig.get('content_check', {}).get('ok', False):
+                                return True
+                        return False
+                    failed = sum(1 for f in report.get('figures', []) if figure_has_issues(f))
                     if figure_det.get('ok', False):
                         lines.append(f"\n  [图检测] ✓ 符合规范（共检测 {total} 张图片）")
                     else:
