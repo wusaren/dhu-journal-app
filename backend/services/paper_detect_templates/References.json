@@ -80,25 +80,20 @@
     }
   },
   "messages": {
-    "structure_header_ok": "参考文献标题格式正确",
     "structure_header_error": "未找到参考文献标题，或标题格式不正确（应为'参考文献'）",
-    "structure_blank_after_ok": "标题与内容之间空行正确（空2行）",
     "structure_blank_after_error": "参考文献标题与内容之间应空两行",
-    "structure_count_ok": "参考文献数量适中（{count}条）",
     "structure_count_none": "未检测到参考文献",
-    "structure_number_ok": "参考文献序号格式正确（[1]格式）",
     "structure_number_error": "参考文献序号格式错误，应使用[1]、[2]格式",
-    "structure_sequence_ok": "参考文献序号连续",
     "structure_sequence_error": "参考文献序号不连续（{missing}缺失）",
     
-    "format_header_ok": "参考文献标题格式检查通过",
+    "format_header_error": "参考文献标题格式检查发现问题",
     "format_header_font_error": "参考文献标题字体应为黑体，实际为{actual}",
     "format_header_size_error": "参考文献标题字号应为三号（16pt），实际为{actual}",
     "format_header_bold_error": "参考文献标题应加粗",
     "format_header_alignment_error": "参考文献标题应居中对齐，实际为{actual}",
     "format_header_spacing_error": "参考文献标题段前应为0.7厘米，实际为{actual}厘米",
     
-    "format_content_ok": "参考文献内容格式检查通过",
+    "format_content_error": "参考文献内容格式检查发现问题",
     "format_content_chinese_font_error": "参考文献中文内容字体应为宋体，实际为{actual}",
     "format_content_english_font_error": "参考文献英文内容字体应为Times New Roman，实际为{actual}",
     "format_content_size_error": "参考文献字号应为小四（12pt），实际为{actual}",

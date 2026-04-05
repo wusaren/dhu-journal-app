@@ -47,7 +47,8 @@
         </div>
       </template>
 
-      <el-table :data="paginatedPendingList" style="width: 100%">
+      <el-table :data="paginatedPendingList" style="width: 100%" @selection-change="handlePendingSelectionChange">
+        <el-table-column type="selection" width="55" />
         <el-table-column prop="title" label="论文标题" width="300" />
         <el-table-column prop="submitDate" label="提交日期" width="120" />
         <el-table-column label="操作" width="500">
@@ -100,9 +101,110 @@
       </div>
     </el-card>
 
-   
+    <!-- 批量审核工具栏 -->
+    <div class="batch-toolbar" v-if="selectedPendingPapers.length > 0">
+      <span class="selected-count">已选择 <strong>{{ selectedPendingPapers.length }}</strong> 篇论文</span>
+      <el-select v-model="batchReviewStatus" placeholder="设置审核状态" style="width: 140px;">
+        <el-option label="已审核" value="reviewed" />
+        <el-option label="需修改" value="needs_revision" />
+      </el-select>
+      <el-input
+        v-model="batchReviewComment"
+        type="textarea"
+        :rows="2"
+        placeholder="统一审核意见（可选）"
+        style="width: 300px;"
+      />
+      <el-button class="confirm-btn" type="primary" @click="handleBatchReview">批量提交审核</el-button>
+      <el-button @click="selectedPendingPapers = []">取消选择</el-button>
+    </div>
 
-    <!-- 添加论文对话框 -->
+    <!-- 已审核论文列表 -->
+    <el-card class="content-card reviewed-list-card">
+      <template #header>
+        <div class="card-header">
+          <div class="header-left">
+            <h3>已审核论文列表</h3>
+            <span class="total-count">共 {{ filteredReviewedList.length }} 篇论文</span>
+          </div>
+          <div class="header-right">
+            <el-button class="report-btn" type="primary" size="small" @click="openComprehensiveReport">综合报告</el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-form :model="filterForm" inline>
+        <el-form-item label="审核状态">
+          <el-select v-model="filterForm.status" placeholder="全部" clearable style="width: 120px;">
+            <el-option label="已审核" value="reviewed" />
+            <el-option label="需修改" value="need_revision" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="审核日期">
+          <el-date-picker
+            v-model="filterForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始"
+            end-placeholder="结束"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+        <el-form-item label="关键词">
+          <el-input v-model="filterForm.keyword" placeholder="输入关键词" clearable />
+        </el-form-item>
+        <el-form-item>
+          <el-button class="search-btn" type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="resetFilter">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-table :data="paginatedReviewedList" style="width: 100%">
+        <el-table-column prop="title" label="论文标题" width="300" />
+        <el-table-column prop="submitDate" label="提交日期" width="120" />
+        <el-table-column prop="reviewStatus" label="审核状态" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.reviewStatus === 'reviewed' ? 'success' : 'warning'">
+              {{ scope.row.reviewStatus === 'reviewed' ? '已审核' : '需修改' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="reviewedAt" label="审核日期" width="120" />
+        <el-table-column label="操作" width="400">
+          <template #default="scope">
+            <el-button class="view-btn" size="small" @click="openOriginalDoc(scope.row)">原文档</el-button>
+            <el-button
+              v-if="scope.row.formatCheckResult?.success"
+              class="report-btn"
+              size="small"
+              @click="openReportDoc(scope.row)"
+            >检测报告</el-button>
+            <el-button
+              v-if="scope.row.formatCheckResult?.success"
+              class="annotated-btn"
+              size="small"
+              @click="openAnnotatedDoc(scope.row)"
+            >标记文档</el-button>
+            <el-button size="small" @click="handleViewComment(scope.row)">审核意见</el-button>
+            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination">
+        <el-pagination
+          v-model:current-page="reviewedPagination.currentPage"
+          v-model:page-size="reviewedPagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :small="true"
+          :background="true"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="filteredReviewedList.length"
+          @size-change="handleReviewedPageSizeChange"
+          @current-change="handleReviewedPageChange"
+        />
+      </div>
+    </el-card>
     <el-dialog v-model="showAddDialog" title="添加论文" width="500px">
       <el-form :model="newPaper" label-width="80px">
         <el-form-item label="论文标题">
@@ -257,8 +359,8 @@
         <el-form :model="reviewForm" label-width="80px" style="margin-top: 20px;">
           <el-form-item label="审核结果">
             <el-radio-group v-model="reviewForm.status">
-              <el-radio value="已审核">已审核</el-radio>
-              <el-radio value="需修改">需修改</el-radio>
+              <el-radio value="reviewed">已审核</el-radio>
+              <el-radio value="needs_revision">需修改</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="审核意见">
@@ -713,8 +815,110 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 审核意见查看弹窗 -->
+    <el-dialog v-model="showCommentDialog" :title="isCommentEditing ? '修改审核意见' : '审核意见'" width="500px">
+      <p v-if="currentPaper"><strong>论文标题：</strong>{{ currentPaper.title }}</p>
+      <p v-if="currentPaper">
+        <strong>审核状态：</strong>
+        <el-tag :type="currentPaper.reviewStatus === 'reviewed' ? 'success' : currentPaper.reviewStatus === 'needs_revision' ? 'warning' : 'info'">
+          {{ currentPaper.reviewStatus === 'reviewed' ? '已审核' : currentPaper.reviewStatus === 'needs_revision' ? '需修改' : '待审核' }}
+        </el-tag>
+      </p>
+      <el-divider v-if="!isCommentEditing" />
+
+      <!-- 非编辑模式：只展示审核意见 -->
+      <template v-if="!isCommentEditing">
+        <div v-if="currentPaper?.reviewComment" class="comment-content">
+          <p>{{ currentPaper.reviewComment }}</p>
+        </div>
+        <el-empty v-else description="暂无审核意见" />
+      </template>
+
+      <!-- 编辑模式：显示修改表单 -->
+      <template v-else>
+        <el-form :model="editCommentForm" label-width="80px" style="margin-top: 20px;">
+          <el-form-item label="审核结果">
+            <el-radio-group v-model="editCommentForm.status">
+              <el-radio value="pending">退回待审核</el-radio>
+              <el-radio value="reviewed">已审核（通过）</el-radio>
+              <el-radio value="needs_revision">需修改</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="审核意见">
+            <el-input
+              v-model="editCommentForm.comment"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入审核意见（可选）"
+            />
+          </el-form-item>
+        </el-form>
+      </template>
+
+      <template #footer>
+        <template v-if="!isCommentEditing">
+          <el-button @click="showCommentDialog = false">关闭</el-button>
+          <el-button type="primary" @click="startEditComment">修改审核意见</el-button>
+        </template>
+        <template v-else>
+          <el-button @click="cancelEditComment">取消</el-button>
+          <el-button type="primary" @click="submitEditComment">保存</el-button>
+        </template>
+      </template>
+    </el-dialog>
+
+    <!-- 综合报告弹窗 -->
+    <el-dialog v-model="showComprehensiveReport" title="综合报告" width="700px">
+      <div v-if="comprehensiveReport" class="comprehensive-report">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="已审核论文总数">{{ comprehensiveReport.total_papers }}</el-descriptions-item>
+          <el-descriptions-item label="通过数">
+            <span style="color: #67c23a;">{{ comprehensiveReport.reviewed_count }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="需修改数">
+            <span style="color: #f56c6c;">{{ comprehensiveReport.needs_revision_count }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="平均通过率">
+            <el-progress
+              :percentage="Number(comprehensiveReport.overall_pass_rate)"
+              :color="getPassRateColor(Number(comprehensiveReport.overall_pass_rate))"
+            />
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <h4 style="margin-top: 20px;">各模块通过率</h4>
+        <el-table
+          :data="Object.entries(comprehensiveReport.module_pass_rates || {}).map(([module, stats]: [string, any]) => ({ module, ...stats }))"
+          border
+          stripe
+        >
+          <el-table-column prop="module" label="模块" />
+          <el-table-column prop="total" label="总检测数" width="100" align="center" />
+          <el-table-column prop="passed" label="通过数" width="100" align="center">
+            <template #default="scope">
+              <span style="color: #67c23a;">{{ scope.row.passed }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="failed" label="失败数" width="100" align="center">
+            <template #default="scope">
+              <span style="color: #f56c6c;">{{ scope.row.failed }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="pass_rate" label="通过率" width="200" align="center">
+            <template #default="scope">
+              <el-progress
+                :percentage="scope.row.pass_rate"
+                :color="getPassRateColor(scope.row.pass_rate)"
+              />
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <el-empty v-else description="暂无已审核论文数据" />
+    </el-dialog>
   </div>
-  </el-config-provider>   
+  </el-config-provider>
 </template>
 
 <script setup lang="ts">
@@ -736,6 +940,8 @@ interface Paper {
   reviewDate?: string
   reviewStatus?: string
   comment?: string
+  reviewComment?: string
+  reviewedAt?: string
   formatCheckResult?: ApiResponse<CheckAllResult>
 }
 
@@ -748,22 +954,7 @@ interface FilterForm {
 // 数据定义
 const pendingList = ref<Paper[]>([])
 
-const reviewedList = ref<Paper[]>([
-  {
-    id: 3,
-    title: '区块链技术在供应链管理中的研究',
-    submitDate: '2024-01-10',
-    reviewDate: '2024-01-11',
-    reviewStatus: '已审核'
-  },
-  {
-    id: 4,
-    title: '大数据分析在商业决策中的应用',
-    submitDate: '2024-01-08',
-    reviewDate: '2024-01-09',
-    reviewStatus: '需修改'
-  }
-])
+const reviewedList = ref<Paper[]>([])
 
 // 筛选表单
 const filterForm = ref<FilterForm>({
@@ -797,6 +988,10 @@ const showAddDialog = ref(false)
 const showReviewDialog = ref(false)
 const showReportDialog = ref(false)
 const showModuleSelectorDialog = ref(false)
+const showCommentDialog = ref(false)
+const isCommentEditing = ref(false)
+const editCommentForm = ref({ status: '', comment: '' })
+const showComprehensiveReport = ref(false)
 
 // 表单数据
 const newPaper = ref({
@@ -843,6 +1038,14 @@ const termDetectProgress = ref(0)
 const termDetectResult = ref<any>(null)
 const activeTermTab = ref('keywords')  // 默认显示keywords
 const isLoadingTermHistory = ref(false)  // 是否正在加载历史术语检测结果
+
+// 综合报告相关状态
+const comprehensiveReport = ref<any>(null)
+
+// 批量审核相关状态
+const selectedPendingPapers = ref<Paper[]>([])
+const batchReviewStatus = ref('')
+const batchReviewComment = ref('')
 
 // 可用的检测模块列表
 const availableModules = [
@@ -988,33 +1191,46 @@ const loadPaperList = async () => {
     const response = await paperFormatService.getFiles()
     
     if (response.success && response.data) {
-      // 将数据库记录转换为Paper对象
-      pendingList.value = response.data.map((file: any) => ({
-        id: file.id,
-        fileId: file.fileId,
-        title: file.title,
-        submitDate: file.submitDate,
-        tempFilePath: file.tempFilePath,
-        // 如果已完成检测，标记有检测结果
-        formatCheckResult: file.checkStatus === 'completed' ? {
-          success: true,
-          data: {
-            summary: {
-              total_checks: file.totalChecks || 0,
-              passed_checks: file.passedChecks || 0,
-              failed_checks: file.failedChecks || 0,
-              pass_rate: file.passRate || 0
-            },
-            report_saved: !!file.reportPath,
-            report_filename: file.reportPath ? file.reportPath.split(/[\\/]/).pop() : undefined,
-            annotated_saved: !!file.annotatedPath,
-            annotated_filename: file.annotatedPath ? file.annotatedPath.split(/[\\/]/).pop() : undefined,
-            annotated_download_url: file.annotatedPath ? `/api/paper-format/download-annotated/${file.annotatedPath.split(/[\\/]/).pop()}` : undefined
-          }
-        } : undefined
-      }))
-      
-      console.log('论文列表加载成功:', pendingList.value)
+      // 将数据库记录按审核状态分为待审核和已审核列表
+      const pending: Paper[] = []
+      const reviewed: Paper[] = []
+
+      response.data.forEach((file: any) => {
+        const paper: Paper = {
+          id: file.id,
+          fileId: file.fileId,
+          title: file.title,
+          submitDate: file.submitDate,
+          tempFilePath: file.tempFilePath,
+          reviewStatus: file.reviewStatus || 'pending',
+          reviewComment: file.reviewComment || '',
+          reviewedAt: file.reviewedAt || '',
+          formatCheckResult: file.checkStatus === 'completed' ? {
+            success: true,
+            data: {
+              summary: {
+                total_checks: file.totalChecks || 0,
+                passed_checks: file.passedChecks || 0,
+                failed_checks: file.failedChecks || 0,
+                pass_rate: file.passRate || 0
+              },
+              report_saved: !!file.reportPath,
+              report_filename: file.reportPath ? file.reportPath.split(/[\\/]/).pop() : undefined,
+              annotated_saved: !!file.annotatedPath,
+              annotated_filename: file.annotatedPath ? file.annotatedPath.split(/[\\/]/).pop() : undefined
+            }
+          } : undefined
+        }
+
+        if (paper.reviewStatus === 'pending') {
+          pending.push(paper)
+        } else {
+          reviewed.push(paper)
+        }
+      })
+
+      pendingList.value = pending
+      reviewedList.value = reviewed
     } else {
       ElMessage.error('加载论文列表失败：' + response.message)
     }
@@ -1138,35 +1354,190 @@ const handleReview = (paper: Paper) => {
 }
 
 // 确认审核
-const confirmReview = () => {
+const confirmReview = async () => {
   if (!reviewForm.value.status) {
     ElMessage.error('请选择审核结果')
     return
   }
-  
+
   if (!currentPaper.value) return
-  
-  // 从待审核列表移除
-  const index = pendingList.value.findIndex(p => p.id === currentPaper.value!.id)
-  if (index > -1) {
-    pendingList.value.splice(index, 1)
+
+  try {
+    const response = await paperFormatService.reviewPaper(
+      [currentPaper.value.id],
+      reviewForm.value.status,
+      reviewForm.value.comment
+    )
+
+    if (!response.success) {
+      ElMessage.error(response.message || '审核失败')
+      return
+    }
+
+    // 从待审核列表移除
+    const index = pendingList.value.findIndex(p => p.id === currentPaper.value!.id)
+    if (index > -1) {
+      pendingList.value.splice(index, 1)
+    }
+
+    // 获取当前日期作为审核日期
+    const reviewDate = new Date().toISOString().split('T')[0]
+
+    // 添加到已审核列表
+    const reviewedPaper: Paper = {
+      ...currentPaper.value,
+      reviewDate: reviewDate,
+      reviewStatus: reviewForm.value.status,
+      comment: reviewForm.value.comment,
+      reviewedAt: reviewDate,
+      formatCheckResult: formatCheckResult.value || undefined
+    }
+    reviewedList.value.push(reviewedPaper)
+
+    ElMessage.success(response.message || '审核完成')
+    showReviewDialog.value = false
+  } catch (error) {
+    ElMessage.error('审核失败：' + (error as Error).message)
   }
-  
-  // 获取当前日期作为审核日期
-  const reviewDate = new Date().toISOString().split('T')[0]
-  
-  // 添加到已审核列表
-  const reviewedPaper: Paper = {
-    ...currentPaper.value,
-    reviewDate: reviewDate,
-    reviewStatus: reviewForm.value.status,
-    comment: reviewForm.value.comment,
-    formatCheckResult: formatCheckResult.value || undefined
+}
+
+// 批量审核
+const handleBatchReview = async () => {
+  if (selectedPendingPapers.value.length === 0) {
+    ElMessage.warning('请先选择要审核的论文')
+    return
   }
-  reviewedList.value.push(reviewedPaper)
-  
-  ElMessage.success('审核完成')
-  showReviewDialog.value = false
+  if (!batchReviewStatus.value) {
+    ElMessage.error('请选择审核状态')
+    return
+  }
+
+  const fileIds = selectedPendingPapers.value.map(p => p.id)
+  try {
+    const response = await paperFormatService.reviewPaper(
+      fileIds,
+      batchReviewStatus.value,
+      batchReviewComment.value
+    )
+
+    if (!response.success) {
+      ElMessage.error(response.message || '批量审核失败')
+      return
+    }
+
+    const reviewDate = new Date().toISOString().split('T')[0]
+    // 将选中的论文从待审核移到已审核
+    selectedPendingPapers.value.forEach(paper => {
+      const index = pendingList.value.findIndex(p => p.id === paper.id)
+      if (index > -1) {
+        pendingList.value.splice(index, 1)
+        reviewedList.value.push({
+          ...paper,
+          reviewDate: reviewDate,
+          reviewStatus: batchReviewStatus.value,
+          comment: batchReviewComment.value,
+          reviewedAt: reviewDate
+        })
+      }
+    })
+
+    selectedPendingPapers.value = []
+    batchReviewStatus.value = ''
+    batchReviewComment.value = ''
+    ElMessage.success(response.message || '批量审核完成')
+  } catch (error) {
+    ElMessage.error('批量审核失败：' + (error as Error).message)
+  }
+}
+
+// 查看审核意见
+const handleViewComment = (paper: Paper) => {
+  currentPaper.value = paper
+  isCommentEditing.value = false
+  showCommentDialog.value = true
+}
+
+// 开始修改审核意见
+const startEditComment = () => {
+  if (!currentPaper.value) return
+  editCommentForm.value = {
+    status: currentPaper.value.reviewStatus || 'pending',
+    comment: currentPaper.value.reviewComment || ''
+  }
+  isCommentEditing.value = true
+}
+
+// 取消修改审核意见
+const cancelEditComment = () => {
+  isCommentEditing.value = false
+}
+
+// 提交修改审核意见
+const submitEditComment = async () => {
+  if (!currentPaper.value) return
+
+  try {
+    const response = await paperFormatService.reviewPaper(
+      [currentPaper.value.id],
+      editCommentForm.value.status,
+      editCommentForm.value.comment
+    )
+
+    if (!response.success) {
+      ElMessage.error(response.message || '修改审核意见失败')
+      return
+    }
+
+    // 更新当前论文数据
+    currentPaper.value.reviewStatus = editCommentForm.value.status
+    currentPaper.value.reviewComment = editCommentForm.value.comment
+    currentPaper.value.reviewDate = new Date().toISOString().split('T')[0]
+
+    // 同步更新列表中的数据
+    const index = reviewedList.value.findIndex(p => p.id === currentPaper.value!.id)
+    if (index > -1) {
+      reviewedList.value[index] = { ...currentPaper.value }
+    }
+
+    // 如果改为 pending，则移回待审核列表
+    if (editCommentForm.value.status === 'pending') {
+      const idx = reviewedList.value.findIndex(p => p.id === currentPaper.value!.id)
+      if (idx > -1) {
+        const paper = reviewedList.value.splice(idx, 1)[0]
+        paper.reviewStatus = 'pending'
+        pendingList.value.push(paper)
+      }
+    }
+
+    ElMessage.success(response.message || '修改成功')
+    isCommentEditing.value = false
+    showCommentDialog.value = false
+  } catch (error) {
+    ElMessage.error('修改审核意见失败：' + (error as Error).message)
+  }
+}
+
+// 打开综合报告
+const openComprehensiveReport = async () => {
+  showComprehensiveReport.value = true
+  try {
+    const response = await paperFormatService.getComprehensiveReport()
+    if (response.success && response.data) {
+      comprehensiveReport.value = response.data
+    } else {
+      comprehensiveReport.value = null
+      ElMessage.info(response.message || '暂无已审核论文')
+    }
+  } catch (error) {
+    ElMessage.error('获取综合报告失败：' + (error as Error).message)
+  }
+}
+
+// 获取通过率对应的进度条颜色
+const getPassRateColor = (rate: number) => {
+  if (rate >= 80) return '#67c23a'
+  if (rate >= 60) return '#e6a23c'
+  return '#f56c6c'
 }
 
 // 模块选择相关方法
@@ -1699,6 +2070,11 @@ const handlePendingSearch = () => {
   ElMessage.info('搜索完成')
 }
 
+// 待审核列表选择变化
+const handlePendingSelectionChange = (selection: Paper[]) => {
+  selectedPendingPapers.value = selection
+}
+
 // 重置待审核列表搜索
 const resetPendingSearch = () => {
   pendingSearchKeyword.value = ''
@@ -1793,6 +2169,27 @@ onMounted(() => {
 
 .reviewed-list-card {
   margin-bottom: 20px;
+}
+
+.batch-toolbar {
+  background: #f5f7fa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.batch-toolbar .selected-count {
+  font-size: 14px;
+  color: #606266;
+}
+
+.batch-toolbar .selected-count strong {
+  color: #9c0e0e;
 }
 
 

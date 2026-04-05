@@ -47,9 +47,7 @@
     "numbering_start": 1
   },
   "messages": {
-    "figure_detection_ok": "图片格式检查通过",
     "figure_detection_error": "图片格式检查发现问题",
-    "caption_format_ok": "图片标题格式正确",
     "caption_format_error": "图片标题格式不正确",
     "caption_missing": "未找到图片标题",
     "caption_pattern_error": "图片标题格式应为：Fig. 编号 标题文字（如：Fig. 1 Material structure，Fig.后必须有空格）",

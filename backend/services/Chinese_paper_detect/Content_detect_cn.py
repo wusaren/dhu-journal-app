@@ -1175,18 +1175,13 @@ def check_structure(doc, tpl):
         return report
 
     if validate_numbering(titles, tpl):
-        msg = tpl.get('messages', {}).get('structure_numbering_ok')
-        if msg:
-            report['messages'].append(msg)
+        pass  # 编号验证通过，不输出确认消息
     else:
         report['ok'] = False
         msg = tpl.get('messages', {}).get('structure_numbering_error')
         if msg:
             report['messages'].append(msg)
 
-    msg_h = tpl.get('messages', {}).get('structure_hierarchy_ok')
-    if msg_h:
-        report['messages'].append(msg_h)
     return report
 
 
@@ -1359,21 +1354,9 @@ def check_format(titles, tpl, doc=None):
 
     if issues:
         report['ok'] = False
-        # 添加格式问题header，与标题检测报告格式一致
-        header = tpl.get('messages', {}).get('format_content_issue_header', '正文标题格式问题：')
-        report['messages'].append(header)
-        # 每个错误信息不加前缀，由报告生成器添加
+        # 直接输出具体问题，不添加前缀头
         report['messages'].extend(issues)
-    else:
-        msg = tpl.get('messages', {}).get('format_level1_ok')
-        if msg:
-            report['messages'].append(msg)
-        msg2 = tpl.get('messages', {}).get('format_level2_ok')
-        if msg2:
-            report['messages'].append(msg2)
-        msg3 = tpl.get('messages', {}).get('format_level3_ok')
-        if msg3:
-            report['messages'].append(msg3)
+    # 格式检查通过，不输出确认消息
     return report
 
 

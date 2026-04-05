@@ -362,8 +362,7 @@ def check_blank_lines_after_title(doc, title_info, tpl):
     # 如果找到了内容，检查空行数
     if first_content_idx is not None:
         if blank_count == expected_blank_lines:
-            msg_tpl = tpl.get('messages', {}).get('structure_blank_lines_ok', '{title_type}标题与条目之间空行正确（空两行）')
-            return {'ok': True, 'message': msg_tpl.format(title_type=title_type)}
+            return {'ok': True, 'message': ''}  # 通过，不输出确认消息
         else:
             msg_tpl = tpl.get('messages', {}).get('structure_blank_lines_error', '{title_type}标题与条目之间应空两行，实际为空{actual}行')
             return {'ok': False, 'message': msg_tpl.format(title_type=title_type, actual=blank_count)}
@@ -398,7 +397,8 @@ def check_toc_structure(doc, tpl):
         blank_check = check_blank_lines_after_title(doc, title_info, tpl)
         if not blank_check['ok']:
             report['ok'] = False
-        report['messages'].append(blank_check['message'])
+        if blank_check.get('message'):
+            report['messages'].append(blank_check['message'])
     
     return report
 
@@ -496,13 +496,9 @@ def check_toc_format(paragraph, tpl, title_type):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_toc_issue_header', '{title_type}格式问题：')
-        report['messages'].append(header.format(title_type=title_type))
-        report['messages'].extend([f"  - {i}" for i in issues])
-    else:
-        ok_msg = tpl.get('messages', {}).get('format_toc_ok', '{title_type}格式检查通过')
-        report['messages'].append(ok_msg.format(title_type=title_type))
-    
+        # 直接输出具体问题，不添加前缀头
+        report['messages'].extend(issues)
+    # 格式检查通过，不输出确认消息
     return report
 
 # ---------- 主入口 ----------

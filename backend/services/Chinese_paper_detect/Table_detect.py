@@ -1276,7 +1276,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
             'table_object': has_table,
             'table_style': {
                 'ok': style_ok,
-                'messages': style_issues if not style_ok else [messages.get('table_style_ok', '表格为三线表格式')]
+                'messages': style_issues
             }
         }
 
@@ -1285,7 +1285,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
             content_align_ok, content_align_issues, content_align_detected = check_table_content_alignment(table, tpl)
             out_item['table_content_alignment'] = {
                 'ok': content_align_ok,
-                'messages': content_align_issues if not content_align_ok else [messages.get('table_content_alignment_ok', '表格内容对齐方式正确')],
+                'messages': content_align_issues,
                 'detected': content_align_detected
             }
             if not content_align_ok:
@@ -1297,7 +1297,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
         ref_report = check_table_reference(item, doc, tpl)
         out_item['table_reference'] = {
             'ok': ref_report['ok'],
-            'messages': ref_report['messages'] if not ref_report['ok'] else [messages.get('table_reference_ok', '表格引用检查通过')]
+            'messages': ref_report['messages'] if not ref_report['ok'] else []
         }
         if not ref_report['ok']:
             table_item_ok = False

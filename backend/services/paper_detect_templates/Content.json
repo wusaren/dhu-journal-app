@@ -98,22 +98,14 @@
     }
   },
   "messages": {
-    "structure_hierarchy_ok": "标题层级结构正确",
     "structure_hierarchy_error": "标题层级结构有问题",
-    "structure_introduction_ok": "找到Introduction标题（0 Introduction）",
     "structure_introduction_error": "未找到Introduction标题或格式不正确，应为 '0 Introduction'（0后恰好1个空格）",
-    "structure_numbering_ok": "标题编号连续性正确",
     "structure_numbering_error": "标题编号不连续或格式错误",
     "structure_spacing_error": "标题编号后空格数量错误，应为恰好1个空格",
-    "title_case_level1_ok": "一级标题大小写正确（实词首字母大写）",
     "title_case_level1_error": "一级标题大小写错误，实词应首字母大写",
-    "title_case_level23_ok": "二三级标题大小写正确（仅首词大写）", 
     "title_case_level23_error": "二三级标题大小写错误，仅首词应大写，其余小写",
-    "format_level1_ok": "一级标题格式正确（四号，段前后一行）",
     "format_level1_error": "一级标题格式问题",
-    "format_level23_ok": "二三级标题格式正确（五号）",
-    "format_level23_error": "二三级标题格式问题", 
-    "format_content_ok": "正文内容格式正确（五号，1.5倍行距）",
+    "format_level23_error": "二三级标题格式问题",
     "format_content_error": "正文内容格式问题",
     "summary_overall": "正文格式检查结果: {ok}"
   },

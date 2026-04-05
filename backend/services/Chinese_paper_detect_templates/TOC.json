@@ -51,10 +51,8 @@
   },
   "messages": {
     "structure_title_not_found": "未找到{title_type}标题",
-    "structure_blank_lines_ok": "{title_type}标题与条目之间空行正确（空两行）",
     "structure_blank_lines_error": "{title_type}标题与条目之间应空两行，实际为空{actual}行",
     "format_toc_issue_header": "{title_type}格式问题：",
-    "format_toc_ok": "{title_type}格式检查通过",
     "summary_overall": "目录/图录/表录检查结果: {ok}"
   },
   "notes": [

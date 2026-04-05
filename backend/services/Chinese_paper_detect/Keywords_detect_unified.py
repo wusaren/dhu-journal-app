@@ -642,9 +642,6 @@ def check_keywords_structure(doc, tpl, language=None):
     keywords_text = keywords_para.text.strip()
     match = re.search(header_pattern, keywords_text, match_flags)
     if match:
-        ok_msg = tpl.get('messages', {}).get('structure_header_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
         keywords_content = match.group(1).strip()
     else:
         report['ok'] = False
@@ -677,9 +674,7 @@ def check_keywords_structure(doc, tpl, language=None):
             if error_msg:
                 report['messages'].append(error_msg)
         else:
-            ok_msg = tpl.get('messages', {}).get('structure_blank_before_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg)
+            pass  # 空行检查通过，不输出确认消息
     
     # 检查分隔符和关键词数量
     if keywords_content:
@@ -700,9 +695,7 @@ def check_keywords_structure(doc, tpl, language=None):
                 if error_msg:
                     report['messages'].append(error_msg)
             else:
-                ok_msg = tpl.get('messages', {}).get('structure_separator_ok')
-                if ok_msg:
-                    report['messages'].append(ok_msg)
+                pass  # 分隔符检查通过，不输出确认消息
         
         # 检查关键词数量
         keyword_count = len(keywords_list)
@@ -723,12 +716,7 @@ def check_keywords_structure(doc, tpl, language=None):
                 except:
                     report['messages'].append(msg_tpl)
         else:
-            ok_msg = tpl.get('messages', {}).get('structure_count_ok')
-            if ok_msg:
-                try:
-                    report['messages'].append(ok_msg.format(count=keyword_count))
-                except:
-                    report['messages'].append(ok_msg)
+            pass  # 数量检查通过，不输出确认消息
         
         report['keywords_list'] = keywords_list
     
@@ -850,14 +838,10 @@ def check_keywords_format(paragraph, tpl, language=None, doc=None):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_keywords_issue_header')
-        if header:
-            report['messages'].append(header)
+        # 直接输出具体问题，不添加前缀头
         report['messages'].extend(issues)
     else:
-        ok_msg = tpl.get('messages', {}).get('format_keywords_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 格式检查通过，不输出确认消息
     
     return report
 

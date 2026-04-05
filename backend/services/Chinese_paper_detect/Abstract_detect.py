@@ -816,9 +816,7 @@ def check_abstract_structure(doc, tpl):
             report['ok'] = False
             report['messages'].append("'摘 要'标题格式错误，应为'摘 要'（中间一个空格）")
     else:
-        ok_msg = tpl.get('messages', {}).get('structure_header_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 标题格式检查通过，不输出确认消息
     
     # 查找摘要正文段落（标题后的第content_start_line行开始）
     content_paragraphs = []
@@ -896,9 +894,7 @@ def check_abstract_structure(doc, tpl):
             except:
                 report['messages'].append(msg_tpl)
     else:
-        ok_msg = tpl.get('messages', {}).get('structure_length_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 长度检查通过，不输出确认消息
     
     return report
 
@@ -995,14 +991,9 @@ def check_abstract_title_format(paragraph, tpl, doc=None):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_abstract_issue_header')
-        if header:
-            report['messages'].append(header)
         report['messages'].extend(issues)
     else:
-        ok_msg = tpl.get('messages', {}).get('format_abstract_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 格式检查通过，不输出确认消息
     
     return report
 
@@ -1117,14 +1108,9 @@ def check_abstract_content_format(content_paragraphs, tpl, doc=None):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_abstract_issue_header')
-        if header:
-            report['messages'].append(header)
         report['messages'].extend(issues)
     else:
-        ok_msg = tpl.get('messages', {}).get('format_content_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 格式检查通过，不输出确认消息
     
     return report
 

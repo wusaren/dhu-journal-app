@@ -49,15 +49,11 @@
     }
   },
   "messages": {
-    "structure_position_ok": "英文标题位置正确（位于摘要上方）",
     "structure_position_error": "未找到英文标题，或标题位置不正确（应在摘要上方）",
-    "structure_uppercase_ok": "英文标题全大写格式正确",
     "structure_uppercase_error": "英文标题应为全大写",
-    "structure_length_ok": "英文标题长度适中",
     "structure_length_short": "英文标题过短（少于{min}字符）",
     "structure_length_long": "英文标题过长（超过{max}字符）",
     "format_title_issue_header": "英文标题格式问题：",
-    "format_title_ok": "英文标题格式检查通过",
     "summary_overall": "英文标题检查结果: {ok}"
   },
   "notes": [

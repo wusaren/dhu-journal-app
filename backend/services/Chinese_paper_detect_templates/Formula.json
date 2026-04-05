@@ -67,21 +67,14 @@
     "number_color_check": "是否检查公式编号颜色（是否使用默认颜色）"
   },
   "messages": {
-    "formula_detection_ok": "公式格式检查通过",
     "formula_detection_error": "公式格式检查发现问题",
     "formula_detection_issue_header": "公式格式检查发现问题：",
-    "tab_stops_ok": "制表位设置正确",
     "tab_stops_error": "制表位设置不正确",
     "tab_stops_missing": "未检测到制表位设置",
-    "math_object_ok": "检测到数学对象",
     "math_object_missing": "未检测到Office Math对象（可能是手动输入的公式）",
-    "font_number_ok": "公式编号字体正确",
     "font_number_error": "公式编号字体应为{expected}，实际为{actual}",
     "font_number_color_error": "公式编号应为无特殊颜色",
-    "font_size_ok": "字体大小正确",
-    "formula_complete_ok": "公式格式完全正确",
     "formula_number_missing": "未检测到公式编号（要求格式为#章-序，如#2-1）",
-    "formula_reference_ok": "公式引用检查通过",
     "formula_reference_error": "公式上一段落未提及该公式引用（如：公式{ch}-{seq}）",
     "summary_overall": "公式格式检查结果: {ok}"
   },

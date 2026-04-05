@@ -47,17 +47,11 @@
     }
   },
   "messages": {
-    "structure_header_ok": "摘要标题格式正确（Abstract: 格式）",
     "structure_header_error": "摘要标题格式错误，应为 'Abstract: 内容' 格式",
-    "structure_no_paragraph_ok": "摘要内容为单一段落，符合要求",
     "structure_paragraph_error": "摘要内容不应分段，检测到多个段落",
-    "structure_length_ok": "摘要长度适中",
     "structure_length_short": "摘要内容过短（少于{min}字符）",
     "structure_length_long": "摘要内容过长（超过{max}字符）",
     "format_abstract_issue_header": "摘要格式问题：",
-    "format_abstract_ok": "摘要格式检查通过",
-    "format_alignment_ok": "摘要段落对齐正确（两端对齐）",
-    "format_indent_ok": "摘要缩进正确（顶格书写）",
     "summary_overall": "摘要检查结果: {ok}"
   },
   "notes": [

@@ -1476,9 +1476,11 @@ class ChinesePaperFormatService:
                             lines.append(f"\n  [{check_label}] ✓ 符合规范")
                         else:
                             messages = check_val.get('messages', [])
-                            if messages:
-                                lines.append(f"\n  [{check_label}] ✗ 发现 {len(messages)} 项问题")
-                                for msg in messages:
+                            # 过滤掉 "XXX格式问题：" 这类前缀头消息和以"问题"结尾的消息
+                            filtered = [m for m in messages if not m.rstrip('：').rstrip(':').endswith('格式问题') and not m.rstrip('：').rstrip(':').endswith('问题')]
+                            if filtered:
+                                lines.append(f"\n  [{check_label}] ✗ 发现 {len(filtered)} 项问题")
+                                for msg in filtered:
                                     lines.append(f"    • {msg}")
         
 
@@ -1623,11 +1625,13 @@ class ChinesePaperFormatService:
                             section_title = CHECK_NAMES_CN.get(f'chinese_{section_key}',
                                 CHECK_NAMES_CN.get(section_key, section_key.replace('_', ' ').title()))
                             messages = section_value.get('messages', [])
+                            # 过滤掉 "XXX格式问题：" 这类前缀头消息和以"问题"结尾的消息
+                            filtered = [m for m in messages if not m.rstrip('：').rstrip(':').endswith('格式问题') and not m.rstrip('：').rstrip(':').endswith('问题')]
                             if section_value.get('ok', False):
                                 lines.append(f"    [{section_title}] ✓ 符合规范")
-                            elif messages:
-                                lines.append(f"    [{section_title}] ✗ 发现 {len(messages)} 项问题")
-                                for msg in messages:
+                            elif filtered:
+                                lines.append(f"    [{section_title}] ✗ 发现 {len(filtered)} 项问题")
+                                for msg in filtered:
                                     lines.append(f"      • {msg}")
 
                 english_report = report.get('english', {})
@@ -1651,11 +1655,13 @@ class ChinesePaperFormatService:
                             section_title = CHECK_NAMES_CN.get(f'english_{section_key}',
                                 CHECK_NAMES_CN.get(section_key, section_key.replace('_', ' ').title()))
                             messages = section_value.get('messages', [])
+                            # 过滤掉 "XXX格式问题：" 这类前缀头消息和以"问题"结尾的消息
+                            filtered = [m for m in messages if not m.rstrip('：').rstrip(':').endswith('格式问题') and not m.rstrip('：').rstrip(':').endswith('问题')]
                             if section_value.get('ok', False):
                                 lines.append(f"    [{section_title}] ✓ 符合规范")
-                            elif messages:
-                                lines.append(f"    [{section_title}] ✗ 发现 {len(messages)} 项问题")
-                                for msg in messages:
+                            elif filtered:
+                                lines.append(f"    [{section_title}] ✗ 发现 {len(filtered)} 项问题")
+                                for msg in filtered:
                                     lines.append(f"      • {msg}")
 
             else:
@@ -1667,11 +1673,13 @@ class ChinesePaperFormatService:
                     if isinstance(section_value, dict) and 'ok' in section_value:
                         section_title = CHECK_NAMES_CN.get(section_key, section_key.replace('_', ' ').title())
                         messages = section_value.get('messages', [])
+                        # 过滤掉 "XXX格式问题：" 这类前缀头消息和以"问题"结尾的消息
+                        filtered = [m for m in messages if not m.rstrip('：').rstrip(':').endswith('格式问题') and not m.rstrip('：').rstrip(':').endswith('问题')]
                         if section_value.get('ok', False):
                             lines.append(f"  [{section_title}] ✓ 符合规范")
-                        elif messages:
-                            lines.append(f"\n  [{section_title}] ✗ 发现 {len(messages)} 项问题")
-                            for msg in messages:
+                        elif filtered:
+                            lines.append(f"\n  [{section_title}] ✗ 发现 {len(filtered)} 项问题")
+                            for msg in filtered:
                                 lines.append(f"    • {msg}")
 
             lines.append("")

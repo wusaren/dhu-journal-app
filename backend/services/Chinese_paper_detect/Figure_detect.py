@@ -562,8 +562,7 @@ def check_blank_line_after_caption(doc, caption_info, tpl):
     # 如果找到了内容，检查空行数
     if first_content_idx is not None:
         if blank_count == expected_blank_lines:
-            msg_tpl = tpl.get('messages', {}).get('blank_line_after_caption_ok', '图题与正文之间空行正确')
-            return {'ok': True, 'message': msg_tpl}
+            return {'ok': True}  # 通过，不输出确认消息
         else:
             msg_tpl = tpl.get('messages', {}).get('blank_line_after_caption_error', '图题与正文之间应空一行，实际为空{actual}行')
             return {'ok': False, 'message': msg_tpl.format(actual=blank_count)}
@@ -673,8 +672,6 @@ def check_figure_reference(doc, caption_info, pic_index, tpl):
                 report['reference_found'] = True
                 report['reference_text'] = match.group(0)
                 report['ok'] = True
-                msg_tpl = tpl.get('messages', {}).get('figure_reference_ok', '图片引用检测通过')
-                report['messages'].append(f"{msg_tpl}（找到引用：{match.group(0)}）")
                 return report
     
     # 未找到引用

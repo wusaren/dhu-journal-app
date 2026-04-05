@@ -51,17 +51,12 @@
     }
   },
   "messages": {
-    "structure_header_ok": "KEY WORDS 标题格式正确",
     "structure_header_error": "未找到 KEY WORDS 标题，或标题格式不正确",
-    "structure_separator_ok": "关键词分隔符正确（使用英文逗号）",
     "structure_separator_error": "关键词分隔符错误，应使用英文逗号（,）分隔，而不是分号、中文逗号或其他符号",
-    "structure_count_ok": "关键词数量适中（{count}个关键词）",
     "structure_count_few": "关键词数量过少（{count}个），应为3-5个关键词",
     "structure_count_many": "关键词数量过多（{count}个），应为3-5个关键词",
-    "structure_blank_before_ok": "摘要与关键词之间空行正确",
     "structure_blank_before_error": "摘要与关键词之间应空两行",
     "format_keywords_issue_header": "关键词格式问题：",
-    "format_keywords_ok": "关键词格式检查通过",
     "summary_overall": "关键词检查结果: {ok}"
   },
   "notes": [

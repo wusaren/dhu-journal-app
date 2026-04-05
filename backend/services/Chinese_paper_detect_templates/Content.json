@@ -74,15 +74,10 @@
     }
   },
   "messages": {
-    "structure_hierarchy_ok": "中文正文标题层级结构正确",
     "structure_hierarchy_error": "中文正文标题层级结构有问题",
-    "structure_numbering_ok": "中文标题编号连续性正确",
     "structure_numbering_error": "中文标题编号不连续或格式错误",
-    "format_level1_ok": "一级标题格式正确（黑体三号居中，不加粗）",
     "format_level1_error": "一级标题格式问题",
-    "format_level2_ok": "二级标题格式正确（黑体四号，段前后0.7厘米）",
     "format_level2_error": "二级标题格式问题",
-    "format_level3_ok": "三级标题格式正确（黑体小四，段前后0.7厘米）",
     "format_level3_error": "三级标题格式问题",
     "format_content_issue_header": "正文标题格式检查发现问题：",
     "summary_overall": "中文正文格式检查结果: {ok}"

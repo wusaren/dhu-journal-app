@@ -207,21 +207,27 @@ class FormatCheckFile(db.Model):
     
     # 检测状态
     check_status = db.Column(db.Enum('pending', 'completed', 'failed'), default='pending')  # 检测状态
-    
+
+    # 审核状态（新增）
+    review_status = db.Column(db.String(50))  # 'pending' / 'reviewed' / 'needs_revision'
+    review_comment = db.Column(db.Text)       # 审核意见
+    reviewed_at = db.Column(db.DateTime)       # 审核时间
+
     # 检测结果摘要（可选，用于快速查询）
     total_checks = db.Column(db.Integer)  # 总检测项数
     passed_checks = db.Column(db.Integer)  # 通过项数
     failed_checks = db.Column(db.Integer)  # 失败项数
     pass_rate = db.Column(db.Float)  # 通过率
-    
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # 索引
     __table_args__ = (
         db.Index('idx_title', 'title'),
         db.Index('idx_submit_date', 'submit_date'),
         db.Index('idx_check_status', 'check_status'),
+        db.Index('idx_review_status', 'review_status'),
     )
 
 class Term(db.Model):

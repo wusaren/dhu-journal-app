@@ -1,3 +1,4 @@
+import json
 from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, auth_required, roles_required, hash_password, logout_user,verify_password, current_user
@@ -128,6 +129,7 @@ FORMAT_CHECK_TEMP_FOLDER = 'uploads/format_check/temp'
 FORMAT_CHECK_REPORTS_FOLDER = 'uploads/format_check/reports'
 FORMAT_CHECK_ANNOTATE_FOLDER = 'uploads/format_check/annotate'
 FORMAT_CHECK_TERM_FOLDER = 'uploads/format_check/term'
+FORMAT_CHECK_CONTENT_FOLDER = 'uploads/format_check/content_details'
 # 新增：用户配置目录（用于用户模板、用户配置文件等，和 uploads 分离）
 USER_CONFIG_FOLDER = 'user_configs'
 
@@ -139,11 +141,12 @@ app.config['FORMAT_CHECK_TEMP_FOLDER'] = FORMAT_CHECK_TEMP_FOLDER
 app.config['FORMAT_CHECK_REPORTS_FOLDER'] = FORMAT_CHECK_REPORTS_FOLDER
 app.config['FORMAT_CHECK_ANNOTATE_FOLDER'] = FORMAT_CHECK_ANNOTATE_FOLDER
 app.config['FORMAT_CHECK_TERM_FOLDER'] = FORMAT_CHECK_TERM_FOLDER
+app.config['FORMAT_CHECK_CONTENT_FOLDER'] = FORMAT_CHECK_CONTENT_FOLDER
 app.config['USER_CONFIG_FOLDER'] = USER_CONFIG_FOLDER
 
 # 创建必要的目录
 for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER,
-    FORMAT_CHECK_ANNOTATE_FOLDER, FORMAT_CHECK_TERM_FOLDER, USER_CONFIG_FOLDER]:
+    FORMAT_CHECK_ANNOTATE_FOLDER, FORMAT_CHECK_TERM_FOLDER, FORMAT_CHECK_CONTENT_FOLDER, USER_CONFIG_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
         logger.info(f"创建目录: {folder}")
@@ -1045,7 +1048,10 @@ def get_format_check_files():
                 'passedChecks': file.passed_checks,
                 'failedChecks': file.failed_checks,
                 'passRate': file.pass_rate,
-                'createdAt': file.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                'createdAt': file.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'reviewStatus': file.review_status or 'pending',
+                'reviewComment': file.review_comment or '',
+                'reviewedAt': file.reviewed_at.strftime('%Y-%m-%d') if file.reviewed_at else ''
             })
         
         return jsonify({
@@ -1149,6 +1155,106 @@ def delete_format_check_file(file_id):
             'success': False,
             'message': f'删除失败: {str(e)}'
         }), 500
+
+
+# 审核论文（支持单篇或批量）
+@app.route('/api/paper-format/review', methods=['POST'])
+def review_paper():
+    """审核论文（支持单篇或批量）"""
+    try:
+        data = request.get_json()
+        file_ids = data.get('file_ids', [])
+        review_status = data.get('review_status')
+        review_comment = data.get('review_comment', '')
+
+        if not file_ids:
+            return jsonify({'success': False, 'message': '未指定要审核的论文'}), 400
+        if not review_status:
+            return jsonify({'success': False, 'message': '未指定审核状态'}), 400
+        # 支持三种状态：pending（退回待审核）、reviewed（通过）、needs_revision（需修改）
+        if review_status not in ['pending', 'reviewed', 'needs_revision']:
+            return jsonify({'success': False, 'message': '审核状态值无效'}), 400
+
+        updated_count = 0
+        for file_id in file_ids:
+            file = FormatCheckFile.query.get(file_id)
+            if file:
+                file.review_status = review_status
+                file.review_comment = review_comment
+                file.reviewed_at = datetime.now()
+                if review_status in ['reviewed', 'needs_revision']:
+                    file.check_status = 'completed'
+                updated_count += 1
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'审核成功，共更新 {updated_count} 篇论文'})
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"审核论文错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'审核失败: {str(e)}'}), 500
+
+
+# 获取综合报告
+@app.route('/api/paper-format/comprehensive-report', methods=['GET'])
+def get_comprehensive_report():
+    """获取已审核论文的综合报告"""
+    try:
+        files = FormatCheckFile.query.filter(
+            FormatCheckFile.review_status.in_(['reviewed', 'needs_revision'])
+        ).all()
+
+        if not files:
+            return jsonify({'success': True, 'data': None, 'message': '暂无已审核论文'})
+
+        module_stats = {}
+        for file in files:
+            if file.content_details_path and os.path.exists(file.content_details_path):
+                try:
+                    with open(file.content_details_path, 'r', encoding='utf-8') as f:
+                        details = json.load(f)
+                    for module_name, module_data in details.items():
+                        if module_name == 'module':
+                            continue
+                        if module_name not in module_stats:
+                            module_stats[module_name] = {'total': 0, 'passed': 0, 'failed': 0}
+                        checks = module_data.get('checks', {}) if isinstance(module_data, dict) else {}
+                        module_passed = 0
+                        module_failed = 0
+                        for check_result in checks.values():
+                            if isinstance(check_result, dict) and 'ok' in check_result:
+                                module_stats[module_name]['total'] += 1
+                                if check_result.get('ok'):
+                                    module_passed += 1
+                                else:
+                                    module_failed += 1
+                        module_stats[module_name]['passed'] += module_passed
+                        module_stats[module_name]['failed'] += module_failed
+                except Exception:
+                    pass
+
+        total_papers = len(files)
+        module_pass_rates = {}
+        for module, stats in module_stats.items():
+            module_pass_rates[module] = {
+                'total': stats['total'],
+                'passed': stats['passed'],
+                'failed': stats['failed'],
+                'pass_rate': round(stats['passed'] / stats['total'] * 100, 2) if stats['total'] else 0
+            }
+
+        report_data = {
+            'total_papers': total_papers,
+            'reviewed_count': sum(1 for f in files if f.review_status == 'reviewed'),
+            'needs_revision_count': sum(1 for f in files if f.review_status == 'needs_revision'),
+            'overall_pass_rate': round(sum(f.pass_rate or 0 for f in files) / total_papers, 2),
+            'module_pass_rates': module_pass_rates
+        }
+        return jsonify({'success': True, 'data': report_data})
+
+    except Exception as e:
+        logger.error(f"获取综合报告错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取综合报告失败: {str(e)}'}), 500
 
 
 # 保存临时文件
@@ -1361,19 +1467,34 @@ def check_chinese_format_all():
             try:
                 format_check_file = FormatCheckFile.query.get(file_id)
                 if format_check_file:
+                    # 保存各模块详细结果到 JSON 文件（供综合报告使用）
+                    if 'results' in result['data']:
+                        try:
+                            import json as _json
+                            content_details_dir = app.config['FORMAT_CHECK_CONTENT_FOLDER']
+                            os.makedirs(content_details_dir, exist_ok=True)
+                            content_details_filename = f"file_{file_id}_content_details.json"
+                            content_details_path = os.path.join(content_details_dir, content_details_filename)
+                            with open(content_details_path, 'w', encoding='utf-8') as f:
+                                _json.dump(result['data']['results'], f, ensure_ascii=False, indent=2)
+                            format_check_file.content_details_path = content_details_path
+                            logger.info(f"各模块详细结果已保存: {content_details_path}")
+                        except Exception as e:
+                            logger.warning(f"保存 content_details JSON 失败: {e}")
+
                     # 更新文件路径
                     if result['data'].get('report_saved'):
                         format_check_file.report_path = os.path.join(
-                            app.config['FORMAT_CHECK_REPORTS_FOLDER'], 
+                            app.config['FORMAT_CHECK_REPORTS_FOLDER'],
                             result['data']['report_filename']
                         )
-                    
+
                     if result['data'].get('annotated_saved'):
                         format_check_file.annotated_path = os.path.join(
-                            app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], 
+                            app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
                             result['data']['annotated_filename']
                         )
-                    
+
                     # 更新检测结果摘要
                     if 'summary' in result['data']:
                         summary = result['data']['summary']
@@ -1381,7 +1502,7 @@ def check_chinese_format_all():
                         format_check_file.passed_checks = summary.get('passed_checks', 0)
                         format_check_file.failed_checks = summary.get('failed_checks', 0)
                         format_check_file.pass_rate = summary.get('pass_rate', 0.0)
-                    
+
                     format_check_file.check_status = 'completed'
                     db.session.commit()
                     logger.info(f"数据库记录已更新: ID={file_id}")

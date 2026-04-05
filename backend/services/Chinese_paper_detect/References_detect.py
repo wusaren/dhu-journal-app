@@ -1970,9 +1970,7 @@ def check_references_structure(doc, tpl, debug=False):
     # 2. 检查标题格式（允许中间有空格，如"参 考 文 献"）
     title_text = header_para.text.strip()
     if re.match(r'^参\s*考\s*文\s*献$', title_text):
-        ok_msg = tpl.get('messages', {}).get('structure_header_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 标题格式检查通过，不输出确认消息
     else:
         report['ok'] = False
         report['messages'].append(f"参考文献标题应为纯'参考文献'，实际为'{title_text}'")
@@ -2002,9 +2000,7 @@ def check_references_structure(doc, tpl, debug=False):
     report['blank_lines_after_header'] = blank_count
     
     if blank_count >= expected_blank_lines:
-        ok_msg = tpl.get('messages', {}).get('structure_blank_after_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 空行检查通过，不输出确认消息
     else:
         report['ok'] = False
         error_msg = tpl.get('messages', {}).get('structure_blank_after_error')
@@ -2079,12 +2075,7 @@ def check_references_structure(doc, tpl, debug=False):
         report['ok'] = False
         report['messages'].append(f"参考文献数量过多（{ref_count}条），超过{max_count}条上限")
     else:
-        ok_msg = tpl.get('messages', {}).get('structure_count_ok')
-        if ok_msg:
-            try:
-                report['messages'].append(ok_msg.format(count=ref_count))
-            except:
-                report['messages'].append(ok_msg)
+        pass  # 数量检查通过，不输出确认消息
     
     # 6. 检测序号格式和连续性
     if reference_numbers:
@@ -2095,17 +2086,12 @@ def check_references_structure(doc, tpl, debug=False):
         # 检查序号格式
         first_ref = content_paragraphs[0].text.strip() if content_paragraphs else ""
         if re.match(r'^\[\d+\]', first_ref):
-            ok_msg = tpl.get('messages', {}).get('structure_number_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg)
+            pass  # 序号格式检查通过，不输出确认消息
         elif valid_numbers:
             # 有有效序号但文本开头不是 [数字]，可能是自动编号
-            ok_msg = tpl.get('messages', {}).get('structure_number_ok')
-            if ok_msg:
-                report['messages'].append(ok_msg + "（自动编号）")
+            pass  # 自动编号检查通过，不输出确认消息
         elif auto_numbers_count > 0:
-            # 全是自动编号，无法检查序号格式
-            report['messages'].append(f"检测到{auto_numbers_count}条自动编号参考文献")
+            pass  # 全是自动编号，无法检查序号格式，不输出确认消息
         else:
             # 没有序号
             report['messages'].append("未检测到参考文献序号")
@@ -2116,9 +2102,7 @@ def check_references_structure(doc, tpl, debug=False):
             missing = set(expected_seq) - set(valid_numbers)
             
             if not missing:
-                ok_msg = tpl.get('messages', {}).get('structure_sequence_ok')
-                if ok_msg:
-                    report['messages'].append(ok_msg)
+                pass  # 序号连续性检查通过，不输出确认消息
             else:
                 report['ok'] = False
                 missing_str = ', '.join([str(m) for m in sorted(missing)[:5]])
@@ -2302,14 +2286,10 @@ def check_reference_header_format(paragraph, tpl, doc=None):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_header_issue_header')
-        if header:
-            report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
+        # 直接输出具体问题，不添加前缀头
+        report['messages'].extend(issues)
     else:
-        ok_msg = tpl.get('messages', {}).get('format_header_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 格式检查通过，不输出确认消息
     
     return report
 
@@ -2544,24 +2524,19 @@ def check_reference_content_format(content_paragraphs, tpl, doc=None):
         report['style_based'] = True
         report['style_based_details'] = list(set(style_based_details))  # 去重
         
-        # 如果没有其他格式问题，只添加提醒
+        # 如果没有其他格式问题，格式通过
         if not issues:
-            report['ok'] = True  # 格式通过
-            report['messages'].append("注：检测到参考文献格式来自Word样式系统，格式验证通过。如需确保格式正确，请确认样式设置符合论文规范。")
+            report['ok'] = True
         else:
-            # 有格式问题，添加提醒
-            report['messages'].append("注：部分参考文献格式来自Word样式系统，可能与直接设置的格式检测结果不一致，建议确认样式设置是否符合论文规范。")
+            # 有格式问题（Word样式系统的只读属性问题不作为错误输出）
+            pass
     
     if issues:
+        # 不输出"格式问题："前缀头，直接输出具体问题
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_content_issue_header')
-        if header:
-            report['messages'].append(header)
-        report['messages'].extend([f"  - {i}" for i in issues])
+        report['messages'].extend(issues)
     else:
-        ok_msg = tpl.get('messages', {}).get('format_content_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 格式检查通过，不输出确认消息
     
     return report
 

@@ -80,7 +80,6 @@
     }
   },
   "messages": {
-    "chinese_section_ok": "中文部分格式检查通过",
     "chinese_section_error": "中文部分格式检查发现问题",
     "chinese_title_missing": "未找到中文标题",
     "chinese_abstract_missing": "未找到中文摘要",

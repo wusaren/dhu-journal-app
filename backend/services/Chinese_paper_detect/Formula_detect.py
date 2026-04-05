@@ -1675,13 +1675,12 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
         ref_report = check_formula_reference(None, parsed_number, template, template, doc, dbg=dbg)
         report['details']['reference'] = {
             'ok': ref_report['ok'],
-            'messages': ref_report['messages'] if not ref_report['ok'] else [messages.get('formula_reference_ok', '公式引用检查通过')]
+            'messages': ref_report['messages'] if not ref_report['ok'] else []
         }
         if not ref_report['ok']:
             report['ok'] = False
             report['messages'].extend(ref_report['messages'])
-        if report['ok']:
-            report['messages'].append(messages.get('formula_detection_ok', '公式格式检查通过（表格段落，跳过字体/制表位检查）'))
+        # 格式检查通过，不输出确认消息
         return report
 
     # ========== 1. 制表位检查（根据模板配置执行） ==========
@@ -1737,14 +1736,13 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
     ref_report = check_formula_reference(paragraph, parsed_number, template, template, doc, dbg=dbg)
     report['details']['reference'] = {
         'ok': ref_report['ok'],
-        'messages': ref_report['messages'] if not ref_report['ok'] else [messages.get('formula_reference_ok', '公式引用检查通过')]
+        'messages': ref_report['messages'] if not ref_report['ok'] else []
     }
     if not ref_report['ok']:
         report['ok'] = False
         report['messages'].extend(ref_report['messages'])
 
-    if report['ok']:
-        report['messages'].append(messages.get('formula_detection_ok', '公式格式检查通过'))
+    # 格式检查通过，不输出确认消息
 
     return report
 
@@ -1904,10 +1902,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
             if not para_report['ok']:
                 all_ok = False
                 report['formula_detection']['ok'] = False
-                # 先添加 issue header
-                issue_header = messages.get('formula_detection_issue_header', '公式格式检查发现问题：')
-                report['formula_detection']['messages'].append(issue_header)
-                # 添加具体问题（不加前缀，由报告生成器处理）
+                # 直接输出具体问题，不添加前缀头
                 report['formula_detection']['messages'].extend(para_report['messages'])
 
         numbering_report = check_numbering_by_chapter(extracted_numbers)

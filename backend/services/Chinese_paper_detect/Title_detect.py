@@ -616,9 +616,7 @@ def check_title_structure(doc, tpl, language=None):
     report['title_text'] = title_text
     
     # 检查位置
-    ok_msg = tpl.get('messages', {}).get('structure_position_ok')
-    if ok_msg:
-        report['messages'].append(ok_msg)
+    # 位置检查通过，不输出确认消息
     
     # 检查长度
     title_length = len(title_text)
@@ -639,9 +637,7 @@ def check_title_structure(doc, tpl, language=None):
             except:
                 report['messages'].append(msg_tpl)
     else:
-        ok_msg = tpl.get('messages', {}).get('structure_length_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 长度检查通过，不输出确认消息
     
     # 检查英文标题是否全大写
     if language == 'english':
@@ -656,9 +652,7 @@ def check_title_structure(doc, tpl, language=None):
                 if error_msg:
                     report['messages'].append(error_msg)
             else:
-                ok_msg = tpl.get('messages', {}).get('structure_uppercase_ok')
-                if ok_msg:
-                    report['messages'].append(ok_msg)
+                pass  # 全大写检查通过，不输出确认消息
     
     return report
 
@@ -823,14 +817,10 @@ def check_title_format(paragraph, tpl, language=None, doc=None):
     
     if issues:
         report['ok'] = False
-        header = tpl.get('messages', {}).get('format_title_issue_header')
-        if header:
-            report['messages'].append(header)
+        # 直接输出具体问题，不添加前缀头
         report['messages'].extend(issues)
     else:
-        ok_msg = tpl.get('messages', {}).get('format_title_ok')
-        if ok_msg:
-            report['messages'].append(ok_msg)
+        pass  # 格式检查通过，不输出确认消息
     
     return report
 

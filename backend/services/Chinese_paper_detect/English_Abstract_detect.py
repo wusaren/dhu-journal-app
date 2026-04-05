@@ -634,13 +634,9 @@ def check_english_abstract(doc, tpl):
             "content_format": content_report,
             "summary": []
         }
-    ok_msg = tpl.get("messages", {}).get("structure_header_ok")
-    if ok_msg:
-        structure_report["messages"].append(ok_msg)
-
     # 标题与正文间空行
-    blank_count = 0
     cursor = title_idx + 1
+    blank_count = 0
     while cursor < len(doc.paragraphs) and not doc.paragraphs[cursor].text.strip():
         blank_count += 1
         cursor += 1
@@ -739,10 +735,7 @@ def check_english_abstract(doc, tpl):
         except Exception:
             structure_report["messages"].append(msg)
     else:
-        ok_msg = tpl.get("messages", {}).get("structure_length_ok")
-        if ok_msg:
-            structure_report["messages"].append(ok_msg)
-
+        pass  # 长度检查通过，不输出确认消息
     # 标题格式
     title_rules = tpl.get("format_rules", {}).get("title", {})
     if report["title_paragraph"]:
@@ -780,13 +773,10 @@ def check_english_abstract(doc, tpl):
             if issues:
                 report["ok"] = False
                 title_report["ok"] = False
-                header = tpl.get("messages", {}).get("format_issue_header", "英文摘要格式问题：")
-                title_report["messages"].append(header)
-                title_report["messages"].extend([f"  - {i}" for i in issues])
+                # 直接输出具体问题，不添加前缀头
+                title_report["messages"].extend(issues)
             else:
-                ok_msg = tpl.get("messages", {}).get("format_title_ok")
-                if ok_msg:
-                    title_report["messages"].append(ok_msg)
+                pass  # 标题格式检查通过，不输出确认消息
 
     # 正文格式
     content_rules = tpl.get("format_rules", {}).get("content", {})
@@ -822,13 +812,10 @@ def check_english_abstract(doc, tpl):
     if content_issues:
         report["ok"] = False
         content_report["ok"] = False
-        header = tpl.get("messages", {}).get("format_issue_header", "英文摘要格式问题：")
-        content_report["messages"].append(header)
-        content_report["messages"].extend([f"  - {i}" for i in content_issues])
+        # 直接输出具体问题，不添加前缀头
+        content_report["messages"].extend(content_issues)
     else:
-        ok_msg = tpl.get("messages", {}).get("format_content_ok")
-        if ok_msg:
-            content_report["messages"].append(ok_msg)
+        pass  # 正文格式检查通过，不输出确认消息
 
     # 汇总
     overall_ok = structure_report["ok"] and title_report["ok"] and content_report["ok"]

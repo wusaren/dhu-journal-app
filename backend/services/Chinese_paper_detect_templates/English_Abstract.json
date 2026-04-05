@@ -28,14 +28,10 @@
     }
   },
   "messages": {
-    "structure_header_ok": "ABSTRACT 标题格式正确",
     "structure_header_error": "未找到 ABSTRACT 标题",
     "structure_blank_after_title_error": "ABSTRACT 与内容之间应空一行",
-    "structure_length_ok": "英文摘要长度适中",
     "structure_length_short": "英文摘要过短（少于 {min} 字符）",
     "structure_length_long": "英文摘要过长（超过 {max} 字符）",
-    "format_title_ok": "英文摘要标题格式通过",
-    "format_content_ok": "英文摘要正文格式通过",
     "format_issue_header": "英文摘要格式问题：",
     "summary_overall": "英文摘要检查结果: {ok}"
   }

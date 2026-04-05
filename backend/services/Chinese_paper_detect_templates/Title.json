@@ -48,13 +48,10 @@
     }
   },
   "messages": {
-    "structure_position_ok": "标题位置正确（位于摘要上方）",
     "structure_position_error": "未找到标题，或标题位置不正确（应在摘要上方）",
-    "structure_length_ok": "标题长度适中",
     "structure_length_short": "标题过短（少于{min}字符）",
     "structure_length_long": "标题过长（超过{max}字符）",
     "format_title_issue_header": "标题格式问题：",
-    "format_title_ok": "标题格式检查通过",
     "summary_overall": "标题检查结果: {ok}"
   },
   "notes": [
