@@ -7,7 +7,10 @@ __pycache__/
 node_modules/
 backend/uploads/format_check/
 backend/services/paper_detect/config_api.py
-
-start.bat
+backend/extracted_figures/
+backend/services/test/
+cs_data/
+build/
+dist/
 
 backend/logs/app.log

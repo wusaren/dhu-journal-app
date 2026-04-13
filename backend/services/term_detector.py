@@ -164,25 +164,43 @@ class TermDetector:
             [(术语, 上下文), ...] 列表
         """
         quoted_terms = []
+        # 句子分隔符：英文句点、问号、感叹号
+        sent_delim = re.compile(r'[.!?]')
         
         for para in doc.paragraphs:
             text = para.text
             
             # 只匹配英文引号格式
             patterns = [
-                r'"([^"]{2,50})"',  # 双引号
-                r"'([^']{2,50})'",  # 单引号
+                r'"([^"]{2,20})"',  # 双引号
+                r"'([^']{2,20})'",  # 单引号
             ]
             
             for pattern in patterns:
                 matches = re.finditer(pattern, text)
                 for match in matches:
                     term = match.group(1).strip()
-                    # 获取上下文（前后各50字符）
-                    start = max(0, match.start() - 50)
-                    end = min(len(text), match.end() + 50)
-                    context = text[start:end]
-                    quoted_terms.append((term, context))
+                    # 获取上下文
+                    # 查找术语所在句子的起始和结束位置
+                    start = match.start()
+                    end = match.end()
+                    # 向前找到最近的分隔符（句子开头）
+                    prev_delim = None
+                    for m in sent_delim.finditer(text[:start]):
+                        prev_delim = m
+                    if prev_delim:
+                        sent_start = prev_delim.end()  # 从分隔符后一个字符开始
+                    else:
+                        sent_start = 0
+                    # 向后找到最近的分隔符（句子结尾）
+                    next_delim = sent_delim.search(text[end:])
+                    if next_delim:
+                        sent_end = end + next_delim.start() + 1  # 包含分隔符
+                    else:
+                        sent_end = len(text)
+
+                    sentence = text[sent_start:sent_end].strip()
+                    quoted_terms.append((term, sentence))
         
         return quoted_terms
     
@@ -657,6 +675,7 @@ class TermDetector:
         tokens_with_pos = []
         for token in doc:
             # 跳过标点、空格、数字
+            """ 后续应该进行扩充，仿照中文提取去除标点符号"""
             if token.is_punct or token.is_space or token.like_num:
                 tokens_with_pos.append(None)  # 作为分隔符
                 continue

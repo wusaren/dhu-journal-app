@@ -50,7 +50,7 @@
       <el-table :data="paginatedPendingList" style="width: 100%">
         <el-table-column prop="title" label="论文标题" width="300" />
         <el-table-column prop="submitDate" label="提交日期" width="120" />
-        <el-table-column label="操作" width="500">
+        <el-table-column label="操作" width="600">
           <template #default="scope">
             <el-button class="view-btn" size="small" @click="openOriginalDoc(scope.row)">
               原文档
@@ -61,11 +61,19 @@
             <el-button class="term-detect-btn" size="small" @click="handleTermDetect(scope.row)">
               术语检测
             </el-button>
-            <el-button 
+            <!-- <el-button 
               v-if="scope.row.formatCheckResult?.success"
               class="report-btn" 
               size="small" 
               @click="openReportDoc(scope.row)"
+            >
+              txt检测报告
+            </el-button> -->
+            <el-button 
+              v-if="scope.row.formatCheckResult?.data?.word_report_saved"
+              class="report-btn" 
+              size="small" 
+              @click="openWordReportDoc(scope.row)"
             >
               检测报告
             </el-button>
@@ -381,6 +389,14 @@
            <div class="format-actions">
              <el-button size="small" @click="resetFormatCheck">重新检测</el-button>
              <el-button class="view-report-btn" size="small" @click="viewDetailReport">查看检测报告</el-button>
+             <el-button
+               v-if="formatCheckResult?.data?.word_report_saved"
+               class="download-annotated-btn"
+               size="small"
+               @click="downloadWordReport"
+             >
+               下载检测报告
+             </el-button>
              <el-button 
                v-if="formatCheckResult?.data?.annotated_saved"
                class="download-annotated-btn" 
@@ -424,7 +440,7 @@
       </div>
       <template #footer>
         <el-button @click="showReportDialog = false">关闭</el-button>
-        <el-button class="download-report-btn" type="primary" @click="downloadReport">下载报告</el-button>
+        <el-button class="download-report-btn" type="primary" @click="downloadReport">下载txt报告</el-button>
       </template>
     </el-dialog>
     
@@ -1080,6 +1096,9 @@ const loadPaperList = async () => {
             },
             report_saved: !!file.reportPath,
             report_filename: file.reportPath ? file.reportPath.split(/[\\/]/).pop() : undefined,
+            word_report_saved: !!file.reportWordPath,
+            word_report_filename: file.reportWordPath ? file.reportWordPath.split(/[\\/]/).pop() : undefined,
+            word_report_download_url: file.reportWordPath ? `/api/paper-format/open-word-report/${file.fileId}` : undefined,
             annotated_saved: !!file.annotatedPath,
             annotated_filename: file.annotatedPath ? file.annotatedPath.split(/[\\/]/).pop() : undefined,
             annotated_download_url: file.annotatedPath ? `/api/paper-format/download-annotated/${file.annotatedPath.split(/[\\/]/).pop()}` : undefined
@@ -1686,7 +1705,7 @@ const openOriginalDoc = (paper: Paper) => {
   }
 }
 
-// 打开检测报告
+// 打开检测报告（txt）
 const openReportDoc = (paper: Paper) => {
   if (!paper.fileId) {
     ElMessage.error('文件记录不存在')
@@ -1702,6 +1721,38 @@ const openReportDoc = (paper: Paper) => {
     window.open(`/api/paper-format/open-report/${paper.fileId}`, '_blank')
   } catch (error) {
     ElMessage.error('打开报告失败：' + (error as Error).message)
+  }
+}
+
+// 打开 Word 检测报告（列表行按钮）
+const openWordReportDoc = (paper: Paper) => {
+  if (!paper.fileId) {
+    ElMessage.error('文件记录不存在')
+    return
+  }
+  try {
+    window.open(`/api/paper-format/open-word-report/${paper.fileId}`, '_blank')
+  } catch (error) {
+    ElMessage.error('打开Word报告失败：' + (error as Error).message)
+  }
+}
+
+// 下载 Word 检测报告（检测完成后的操作栏）
+const downloadWordReport = () => {
+  if (!formatCheckResult.value?.data?.word_report_download_url) {
+    ElMessage.error('Word检测报告不可用')
+    return
+  }
+  try {
+    const link = document.createElement('a')
+    link.href = formatCheckResult.value.data.word_report_download_url
+    link.download = formatCheckResult.value.data.word_report_filename || 'format_report.docx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('Word报告下载成功')
+  } catch (error) {
+    ElMessage.error('下载Word报告失败：' + (error as Error).message)
   }
 }
 

@@ -1038,6 +1038,7 @@ def get_format_check_files():
                 'submitDate': file.submit_date.strftime('%Y-%m-%d'),
                 'tempFilePath': file.temp_file_path,
                 'reportPath': file.report_path,
+                'reportWordPath': file.report_word_path,
                 'annotatedPath': file.annotated_path,
                 'checkStatus': file.check_status,
                 'totalChecks': file.total_checks,
@@ -1125,6 +1126,8 @@ def delete_format_check_file(file_id):
                 os.remove(format_check_file.temp_file_path)
             if format_check_file.report_path and os.path.exists(format_check_file.report_path):
                 os.remove(format_check_file.report_path)
+            if format_check_file.report_word_path and os.path.exists(format_check_file.report_word_path):
+                os.remove(format_check_file.report_word_path)
             if format_check_file.annotated_path and os.path.exists(format_check_file.annotated_path):
                 os.remove(format_check_file.annotated_path)
         except Exception as e:
@@ -1277,6 +1280,12 @@ def check_format_all():
                             result['data']['report_filename']
                         )
                     
+                    if result['data'].get('word_report_saved'):
+                        format_check_file.report_word_path = os.path.join(
+                            app.config['FORMAT_CHECK_REPORTS_FOLDER'],
+                            result['data']['word_report_filename']
+                        )
+
                     if result['data'].get('annotated_saved'):
                         format_check_file.annotated_path = os.path.join(
                             app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], 
@@ -1334,6 +1343,48 @@ def download_annotated_document(filename):
             'success': False,
             'message': f'下载失败: {str(e)}'
         }), 500
+
+
+# 下载 Word 格式检测报告（按文件名，检测完成后直接下载）
+@app.route('/api/paper-format/download-word-report/<filename>')
+def download_word_report(filename):
+    """下载 Word 格式检测报告"""
+    try:
+        word_path = os.path.join(app.config['FORMAT_CHECK_REPORTS_FOLDER'], filename)
+        if not os.path.exists(word_path):
+            return jsonify({'success': False, 'message': 'Word报告文件不存在'}), 404
+        logger.info(f"下载Word检测报告: {word_path}")
+        return send_file(
+            word_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        logger.error(f"下载Word报告错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'下载失败: {str(e)}'}), 500
+
+
+# 通过 file_id 下载 Word 格式检测报告（已保存到数据库的历史记录）
+@app.route('/api/paper-format/open-word-report/<int:file_id>')
+def open_word_report_by_id(file_id):
+    """通过 file_id 下载 Word 格式检测报告"""
+    try:
+        format_check_file = FormatCheckFile.query.get(file_id)
+        if not format_check_file:
+            return jsonify({'success': False, 'message': '文件记录不存在'}), 404
+        if not format_check_file.report_word_path or not os.path.exists(format_check_file.report_word_path):
+            return jsonify({'success': False, 'message': 'Word检测报告不存在'}), 404
+        logger.info(f"打开Word检测报告: {format_check_file.report_word_path}")
+        return send_file(
+            format_check_file.report_word_path,
+            as_attachment=True,
+            download_name=f"{format_check_file.title}_report.docx",
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        logger.error(f"打开Word报告错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'打开失败: {str(e)}'}), 500
 
 
 # 通过file_id打开原始文档

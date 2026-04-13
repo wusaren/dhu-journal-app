@@ -224,8 +224,6 @@ class PaperFormatService:
         # 对所有的检测报告进行处理（计算通过率）
         result = self.process_report(all_reports)
         logger.info('检测报告处理成功！')
-        with open('reports.txt', 'w') as file:
-            file.write(str(all_reports))
 
         # 开始生成检测报告
         print("\n正在生成综合报告...")
@@ -262,7 +260,11 @@ class PaperFormatService:
         try:
             from services.paper_detect.word_report_generator import generate_word_report
             word_success = generate_word_report(all_reports, word_report_path, docx_path)
-            if not word_success:
+            if word_success:
+                result['data']['word_report_saved'] = True
+                result['data']['word_report_filename'] = word_report_filename
+                result['data']['word_report_download_url'] = f'/api/paper-format/download-word-report/{word_report_filename}'
+            else:
                 print("  ⚠️ Word报告生成失败，但txt报告已生成")
         except Exception as e:
             print(f"  ⚠️ Word报告生成出错: {e}")

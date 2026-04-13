@@ -38,14 +38,16 @@ try:
         try:
             nlp = spacy.load("en_core_web_lg")
             SPACY_AVAILABLE = True
-        except OSError:
+        except OSError as e:
             nlp = None
             SPACY_AVAILABLE = False
             print("警告: 未找到spaCy英文模型，将使用简化的Title Case检查")
-except ImportError:
+            print(e)
+except ImportError as e:
     nlp = None
     SPACY_AVAILABLE = False
     print("警告: 未安装spaCy，将使用简化的Title Case检查")
+    print(e)
 
 
 """

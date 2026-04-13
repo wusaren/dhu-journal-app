@@ -200,7 +200,8 @@ class FormatCheckFile(db.Model):
     
     # 文件路径
     temp_file_path = db.Column(db.String(500), nullable=False)  # 临时文件路径（原始文档）
-    report_path = db.Column(db.String(500))  # 检测报告路径
+    report_path = db.Column(db.String(500))  # 检测报告路径（txt）
+    report_word_path = db.Column(db.String(500))  # 检测报告路径（Word）
     annotated_path = db.Column(db.String(500))  # 批注文档路径
     content_details_path = db.Column(db.String(500))  # content_details文件路径
     term_result_path = db.Column(db.String(500))  # 术语检测结果JSON文件路径
