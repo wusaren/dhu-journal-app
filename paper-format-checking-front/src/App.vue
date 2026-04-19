@@ -57,6 +57,9 @@
           <el-menu-item index="/personality-center">
             <span>个人中心</span>
           </el-menu-item>
+          <el-menu-item index="/operator">
+            <span>业务员工作台</span>
+          </el-menu-item>
           <el-menu-item v-if="isAdmin" index="/admin">
             <span>用户管理</span>
           </el-menu-item>

@@ -15,7 +15,7 @@ from sqlalchemy import text
 
 # 导入配置和模型
 from config.config import current_config
-from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore, FormatCheckFile
+from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore, FormatCheckFile, BatchJob, PaperCheckResult
 
 # 导入封装后的模块
 from services.journal_service import JournalService
@@ -30,6 +30,7 @@ from services.tuiwen_template_service import TuiwenTemplateService
 
 # 导入管理蓝图
 from blueprints.admin import admin_bp
+from blueprints.operator import operator_bp
 
 app = Flask(__name__)
 
@@ -145,8 +146,9 @@ app.config['FORMAT_CHECK_CONTENT_FOLDER'] = FORMAT_CHECK_CONTENT_FOLDER
 app.config['USER_CONFIG_FOLDER'] = USER_CONFIG_FOLDER
 
 # 创建必要的目录
+BATCH_CHECK_FOLDER = 'uploads/batch_check'
 for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER,
-    FORMAT_CHECK_ANNOTATE_FOLDER, FORMAT_CHECK_TERM_FOLDER, FORMAT_CHECK_CONTENT_FOLDER, USER_CONFIG_FOLDER]:
+    FORMAT_CHECK_ANNOTATE_FOLDER, FORMAT_CHECK_TERM_FOLDER, FORMAT_CHECK_CONTENT_FOLDER, USER_CONFIG_FOLDER, BATCH_CHECK_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
         logger.info(f"创建目录: {folder}")
@@ -154,6 +156,7 @@ for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FOR
 # 设置 Flask-Security
 security = Security(app, user_datastore)
 app.register_blueprint(admin_bp)
+app.register_blueprint(operator_bp)
 from utils.config_loader import UserConfig
 
 def create_default_users():

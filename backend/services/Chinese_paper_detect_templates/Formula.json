@@ -17,7 +17,7 @@
     "font_requirements": {
       "formula_content": "Cambria Math",
       "formula_number": "Times New Roman",
-      "font_size_pt": 12
+      "font_size_pt": 10.5
     },
     "math_object_detection": {
       "required": true,

@@ -63,6 +63,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Admin',
     component: () => import('@/views/AdminView.vue')
   },
+  {
+    path: '/operator',
+    name: 'Operator',
+    component: () => import('@/views/OperatorView.vue')
+  },
   // 可以继续添加更多路由...
 ]
 

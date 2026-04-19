@@ -258,3 +258,62 @@ class Term(db.Model):
         db.Index('idx_label', 'label'),
         db.Index('idx_is_original_dataset', 'is_original_dataset'),
     )
+
+
+class BatchJob(db.Model):
+    """批量任务表 - 用于业务员批量检测论文"""
+    __tablename__ = 'batch_jobs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    operator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    directory_path = db.Column(db.String(500))  # 源论文目录
+    output_path = db.Column(db.String(500))  # 输出目录
+    total_papers = db.Column(db.Integer, default=0)  # 总论文数
+    processed = db.Column(db.Integer, default=0)  # 已处理数
+    passed = db.Column(db.Integer, default=0)  # 通过数
+    failed = db.Column(db.Integer, default=0)  # 失败数
+    status = db.Column(db.String(20), default='pending')  # pending/running/completed/failed/cancelled
+    pass_threshold = db.Column(db.Float, default=85.0)  # 自动通过阈值
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 关系
+    operator = db.relationship('User', backref='batch_jobs')
+    papers = db.relationship('PaperCheckResult', backref='batch_job', lazy='dynamic', cascade='all, delete-orphan')
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_operator_id', 'operator_id'),
+        db.Index('idx_batch_status', 'status'),
+        db.Index('idx_batch_created_at', 'created_at'),
+    )
+
+
+class PaperCheckResult(db.Model):
+    """论文检测结果表 - 存储批量检测的论文结果"""
+    __tablename__ = 'paper_check_results'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    batch_job_id = db.Column(db.Integer, db.ForeignKey('batch_jobs.id'))
+    student_id = db.Column(db.String(50))  # 学号
+    student_name = db.Column(db.String(100))  # 姓名
+    original_filename = db.Column(db.String(500))  # 原始文件名
+    original_path = db.Column(db.String(500))  # 原始文件路径
+    annotated_path = db.Column(db.String(500))  # 批注文档路径
+    report_path = db.Column(db.String(500))  # 检测报告路径
+    details_json = db.Column(db.JSON)  # 详细检测结果
+    check_status = db.Column(db.String(20), default='pending')  # pending/completed/failed
+    review_status = db.Column(db.String(20), default='pending')  # pending/reviewed/needs_revision
+    pass_rate = db.Column(db.Float)  # 通过率
+    error_message = db.Column(db.Text)  # 错误信息
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)  # 完成时间
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_pcr_batch_id', 'batch_job_id'),
+        db.Index('idx_pcr_student_id', 'student_id'),
+        db.Index('idx_pcr_check_status', 'check_status'),
+        db.Index('idx_pcr_review_status', 'review_status'),
+    )
