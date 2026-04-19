@@ -239,17 +239,31 @@ def locate_formula_paragraph(doc: Document, data: Any, extra: Optional[Dict[str,
 @register_locator('formula_with_fallback')
 def locate_formula_with_fallback(doc: Document, data: Any, extra: Optional[Dict[str, Any]] = None) -> Optional[int]:
     """
-    定位公式段落：如果公式段落无法添加批注（公式在文本框中），
-    则尝试在右边的段落添加批注
+    定位公式段落，优先级顺序：
+    1. extra['paragraph_index'] — 公式内容段落索引（同行场景，优先）
+    2. extra['number_w_p_index'] — 编号所在段落索引（跨段落场景）
+
+    原则：直接使用公式内容段落，即使段落文本为空（公式内容为 Math 对象时文本为空是正常现象），
+    不做向前搜索以避免跑到旁边的描述段落。
     """
-    if not isinstance(data, int):
+    formula_para_idx = None
+    if isinstance(extra, dict):
+        formula_para_idx = extra.get('paragraph_index')
+        if not isinstance(formula_para_idx, int):
+            formula_para_idx = extra.get('number_w_p_index')
+    if not isinstance(formula_para_idx, int):
+        formula_para_idx = data
+
+    if not isinstance(formula_para_idx, int):
         return None
-    
-    # 优先返回公式段落本身
-    if 0 <= data < len(doc.paragraphs):
-        return data
-    
-    return None
+
+    if not (0 <= formula_para_idx < len(doc.paragraphs)):
+        return None
+
+    # 直接返回公式内容段落（Math 对象在此段落内）
+    # 不搜索邻居段落，避免跑到公式旁边的描述段落
+    logger.info(f"locate_formula_with_fallback: using para {formula_para_idx}, text='{(doc.paragraphs[formula_para_idx].text or '')[:40]}'")
+    return formula_para_idx
 
 
 class Commenter:
@@ -279,6 +293,56 @@ class Commenter:
             except Exception as e:
                 logger.warning(f"add_comment failed for para {idx}: {e}")
                 return False
+
+    def add_comment_to_math_run(self, para_idx: int, math_elem, text: str, author: str = "论文检测系统", initials: str = "PDS") -> bool:
+        """
+        将批注锚定到包含 Math 对象的段落中的第一个 Run（公式本体），
+        而不是整个段落。
+
+        math_elem 参数来自原始文档的检测结果，在副本中需要通过段落索引重新查找 Math 元素。
+        """
+        if not (0 <= para_idx < len(self.doc.paragraphs)):
+            return False
+        para = self.doc.paragraphs[para_idx]
+
+        run_to_anchor = None
+        try:
+            from lxml import etree
+            para_xml = para._element
+            # 在段落 XML 中查找 w:oMath 元素（MathML/OMML 公式对象）
+            math_ns = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+            w_ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+            omath_elems = para_xml.xpath(
+                f'.//*[local-name()="oMath" and namespace-uri()="{math_ns}"]',
+            )
+            if not omath_elems:
+                # 也尝试不带命名空间的写法
+                omath_elems = para_xml.xpath('.//*[local-name()="oMath"]')
+            if omath_elems:
+                math_lxml = omath_elems[0]
+                # 在段落中找到第一个 run，其祖先链包含 oMath 元素
+                for run in para.runs:
+                    run_lxml = run._element
+                    for ancestor in run_lxml.iterancestors():
+                        if ancestor is math_lxml:
+                            run_to_anchor = run
+                            break
+                    if run_to_anchor:
+                        break
+        except Exception as e:
+            logger.warning(f"Failed to find math run in para {para_idx}: {e}")
+
+        if run_to_anchor is None:
+            return self.add_comment_to_para_idx(para_idx, text, author, initials)
+
+        try:
+            self.doc.add_comment(runs=run_to_anchor, text=text, author=author, initials=initials)
+            self.count += 1
+            logger.info(f"Comment anchored to math run at para {para_idx}")
+            return True
+        except Exception as e:
+            logger.warning(f"add_comment to math run failed: {e}, falling back to para method")
+            return self.add_comment_to_para_idx(para_idx, text, author, initials)
 
     def save(self, path: Optional[str] = None):
         out = path or self.copy_path
@@ -622,18 +686,18 @@ def keywords_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
 def table_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
     """表格检测结果适配器"""
     issues: List[Issue] = []
-    
+
     table_report = all_reports.get('Table')
     if not isinstance(table_report, dict):
         logger.info("table_adapter: Table report is not a dict or missing")
         return issues
-    
+
     logger.info(f"table_adapter: found Table report with {len(table_report.get('tables', []))} tables")
-    
+
     tables = table_report.get('tables', [])
     if not isinstance(tables, list):
         tables = []
-    
+
     # 首先处理编号连续性问题（全局，只添加一次）
     numbering = table_report.get('numbering', {})
     if isinstance(numbering, dict) and numbering.get('ok') is False:
@@ -645,107 +709,92 @@ def table_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
                 locate_method='keyword',
                 locate_data='表'
             ))
-    
-    # 用于去重：记录已处理过的表格编号（基于 table_desc）
-    processed_tables = set()
-    
+
+    # 用于去重：记录已处理过的 (table_desc, para_idx) 组合
+    # 优先用 cn_idx，fallback 到 en_idx，再 fallback 到 table_body_index
+    processed_table_keys = set()
+
     # 遍历每个表格
     for idx, table_item in enumerate(tables):
         if not isinstance(table_item, dict):
             continue
 
         table_desc = table_item.get('table_desc', f"表格")
-        cn_idx = table_item.get('captions', {}).get('cn', {}).get('paragraph_index')
-        en_idx = table_item.get('captions', {}).get('en', {}).get('paragraph_index')
-
-        logger.info(f"table_adapter: processing table {idx}: {table_desc}, cn_para_idx={cn_idx}, en_para_idx={en_idx}")
-        
-        # 去重：检查是否已经处理过相同的表格编号
-        # 使用 table_desc 作为去重键，同时考虑中文表题段落索引
-        dedup_key = (table_desc, cn_idx)
-        if dedup_key in processed_tables:
-            logger.info(f"table_adapter: skipping duplicate table {table_desc} at cn_para_idx={cn_idx}")
-            continue
-        processed_tables.add(dedup_key)
-        
-        # 收集所有问题（不包含编号连续性问题，因为那是全局的）
-        # 每个表格独立收集问题，避免问题累积
-        all_messages = []
-
-        # 文本规则检查（编号一致性、中文表题标点等）
-        text_rules = table_item.get('text_rules', {})
-        if isinstance(text_rules, dict) and text_rules.get('ok') is False:
-            for msg in text_rules.get('messages', []):
-                all_messages.append(f"[表题规则] {msg}")
-
-        # 中文表题格式问题
-        cn_format = table_item.get('caption_cn_format', {})
-        if isinstance(cn_format, dict) and cn_format.get('ok') is False:
-            for msg in cn_format.get('messages', []):
-                all_messages.append(f"[中文表题] {msg}")
-        
-        # 英文表题格式问题
-        en_format = table_item.get('caption_en_format', {})
-        if isinstance(en_format, dict) and en_format.get('ok') is False:
-            for msg in en_format.get('messages', []):
-                all_messages.append(f"[英文表题] {msg}")
-        
-        # 表格样式问题
-        table_style = table_item.get('table_style', {})
-        if isinstance(table_style, dict) and table_style.get('ok') is False:
-            for msg in table_style.get('messages', []):
-                all_messages.append(f"[表格样式] {msg}")
-        
-        # 内容对齐问题
-        content_align = table_item.get('table_content_alignment', {})
-        if isinstance(content_align, dict) and content_align.get('ok') is False:
-            for msg in content_align.get('messages', []):
-                all_messages.append(f"[内容对齐] {msg}")
-        
-        # 引用检查问题
-        table_ref = table_item.get('table_reference', {})
-        if isinstance(table_ref, dict) and table_ref.get('ok') is False:
-            for msg in table_ref.get('messages', []):
-                all_messages.append(f"[表格引用] {msg}")
-        
-        if not all_messages:
-            continue
-        
-        # 获取定位信息
-        para_idx = None
         captions = table_item.get('captions', {})
         cn_caption = captions.get('cn', {})
         en_caption = captions.get('en', {})
-        
-        # 优先使用中文表题段落（用户要求定位到中文表题）
-        para_idx = cn_caption.get('paragraph_index')
+
+        # 获取段落索引：优先 cn，再 en，最后 table_body_index
+        cn_idx = cn_caption.get('paragraph_index') if isinstance(cn_caption, dict) else None
+        en_idx = en_caption.get('paragraph_index') if isinstance(en_caption, dict) else None
+        body_idx = table_item.get('table_body_index')
+
+        para_idx = cn_idx if cn_idx is not None else (en_idx if en_idx is not None else body_idx)
+
+        logger.info(f"table_adapter: processing table {idx}: {table_desc}, cn_idx={cn_idx}, en_idx={en_idx}, body_idx={body_idx}")
+
+        # 去重键：table_desc + 实际使用的段落索引（三个都 None 时才只用 table_desc）
+        dedup_key = (table_desc, para_idx)
         if para_idx is None:
-            para_idx = en_caption.get('paragraph_index')
-        if para_idx is None:
-            para_idx = table_item.get('table_body_index')
-        
-        logger.info(f"table_adapter: adding issue for {table_desc} at para_idx={para_idx} with {len(all_messages)} messages")
-        
-        if isinstance(para_idx, int) and 0 <= para_idx < 100000:  # 合理的段落索引范围
+            dedup_key = table_desc  # 所有索引都是 None 时，只用描述去重
+        if dedup_key in processed_table_keys:
+            logger.info(f"table_adapter: skipping duplicate table {table_desc} at para_idx={para_idx}")
+            continue
+        processed_table_keys.add(dedup_key)
+
+        # 获取各类问题的消息列表（不再合并到一个 Issue）
+        text_rules = table_item.get('text_rules', {})
+        cn_format = table_item.get('caption_cn_format', {})
+        en_format = table_item.get('caption_en_format', {})
+        table_style = table_item.get('table_style', {})
+        content_align = table_item.get('table_content_alignment', {})
+        table_ref = table_item.get('table_reference', {})
+
+        def collect_messages(report_dict):
+            if isinstance(report_dict, dict) and report_dict.get('ok') is False:
+                return report_dict.get('messages', [])
+            return []
+
+        text_msgs = collect_messages(text_rules)  # 文本规则消息本身已包含上下文，不加前缀
+        cn_msgs = [f"[中文表题] {m}" for m in collect_messages(cn_format)]
+        en_msgs = [f"[英文表题] {m}" for m in collect_messages(en_format)]
+        style_msgs = [f"[表格样式] {m}" for m in collect_messages(table_style)]
+        align_msgs = [f"[内容对齐] {m}" for m in collect_messages(content_align)]
+        ref_msgs = [f"[表格引用] {m}" for m in collect_messages(table_ref)]
+
+        # 如果段落索引无效，尝试用关键词定位
+        locate_method = 'index'
+        locate_data = para_idx
+        if not isinstance(para_idx, int) or not (0 <= para_idx < 100000):
+            locate_method = 'keyword'
+            locate_data = table_desc[:30] if table_desc else '表'
+
+        # 收集所有问题的消息，分类标签作为前缀
+        all_issue_messages = []
+        for bucket_name, bucket_msgs in [
+            ('caption_cn', cn_msgs),
+            ('caption_en', en_msgs),
+            ('style', style_msgs),
+            ('alignment', align_msgs),
+            ('reference', ref_msgs),
+        ]:
+            for m in bucket_msgs:
+                all_issue_messages.append(m)
+
+        # text_rules 消息不带分类前缀（消息本身已有上下文）
+        for m in collect_messages(text_rules):
+            all_issue_messages.append(m)
+
+        if all_issue_messages:
             issues.append(Issue(
                 module='Table',
                 section=table_desc,
-                messages=all_messages,
-                locate_method='index',
-                locate_data=para_idx
-            ))
-        else:
-            # 尝试通过表题关键词定位
-            locate_method = 'table_caption_en'
-            locate_data = table_item
-            issues.append(Issue(
-                module='Table',
-                section=table_desc,
-                messages=all_messages,
+                messages=all_issue_messages,
                 locate_method=locate_method,
                 locate_data=locate_data
             ))
-    
+            logger.info(f"table_adapter: added issue for {table_desc} at {locate_data} with msgs: {all_issue_messages}")
+
     logger.info(f"table_adapter: total issues generated = {len(issues)}")
     return issues
 
@@ -805,64 +854,95 @@ def formula_adapter(all_reports: Dict[str, Any]) -> List[Issue]:
     for para_item in formula_paragraphs:
         if not isinstance(para_item, dict):
             continue
-        
+
         format_check = para_item.get('format_check', {})
         if not isinstance(format_check, dict):
             continue
-        
-        # 只处理有问题的公式
-        is_ok = format_check.get('ok', True)
+
         formula_label = para_item.get('formula_label', '公式')
-        logger.info(f"formula_adapter: processing {formula_label}, ok={is_ok}")
-        
-        if is_ok:
+
+        # 检测是否为文本框公式（检测器跳过了格式检查）
+        skipped_msgs = format_check.get('messages', [])
+        is_textbox = any('文本框' in m or '跳过' in m or 'skipped' in str(m).lower() for m in skipped_msgs)
+
+        # 只处理有问题的公式（文本框公式如果检测器跳过了检查，不视为"问题"）
+        is_ok = format_check.get('ok', True)
+        if is_ok and not (is_textbox and skipped_msgs):
             continue
-        
+
         all_messages = []
-        
+
         # 收集所有问题消息
         for msg in format_check.get('messages', []):
             all_messages.append(msg)
-        
+
         # 引用检查问题
         reference = format_check.get('details', {}).get('reference', {})
         if isinstance(reference, dict) and reference.get('ok') is False:
             for msg in reference.get('messages', []):
                 all_messages.append(f"[引用检查] {msg}")
-        
+
         if not all_messages:
             continue
-        
-        # 获取段落索引
-        para_idx = para_item.get('paragraph_index')
-        if para_idx is None:
-            para_idx = para_item.get('index')
-        if para_idx is None:
-            para_idx = para_item.get('w_p_index')
-        
-        logger.info(f"formula_adapter: adding issue for {formula_label} at para_idx={para_idx}")
-        
-        if isinstance(para_idx, int) and 0 <= para_idx < 100000:
-            # 尝试在公式段落添加批注，如果失败则在右边段落添加
-            # 使用 special 定位方式，Commenter 会处理
-            issues.append(Issue(
-                module='Formula',
-                section=formula_label,
-                messages=all_messages,
-                locate_method='formula_with_fallback',
-                locate_data=para_idx
-            ))
-        else:
+
+        # 获取段落索引（优先 number_w_p_index，即编号所在段落）
+        raw_para_idx = para_item.get('number_w_p_index')
+        if not isinstance(raw_para_idx, int):
+            raw_para_idx = para_item.get('paragraph_index')
+        if not isinstance(raw_para_idx, int):
+            raw_para_idx = para_item.get('index')
+        if not isinstance(raw_para_idx, int):
+            raw_para_idx = para_item.get('w_p_index')
+
+        logger.info(f"formula_adapter: adding issue for {formula_label} at raw_para_idx={raw_para_idx}, is_textbox={is_textbox}")
+
+        # 去掉消息中已有的公式标签前缀（section 头已包含，避免重复）
+        clean_messages = []
+        for m in all_messages:
+            prefix = f"{formula_label}: "
+            if m.startswith(prefix):
+                clean_messages.append(m[len(prefix):])
+            else:
+                clean_messages.append(m)
+
+        if is_textbox:
+            # 文本框公式：无法直接定位，用关键词搜索
             import re
             kw_match = re.search(r'公式?[\s#]*(\d+[-\uFF0D]\d+)', formula_label)
-            if kw_match:
-                kw = f"公式{kw_match.group(1)}"
-            else:
-                kw = '公式'
+            kw = f"公式{kw_match.group(1)}" if kw_match else '公式'
             issues.append(Issue(
                 module='Formula',
                 section=formula_label,
-                messages=all_messages,
+                messages=clean_messages,
+                locate_method='keyword',
+                locate_data=kw
+            ))
+        elif isinstance(raw_para_idx, int) and 0 <= raw_para_idx < 100000:
+            # 正文公式：传入原始索引和文本框标记，由 locator 做验证
+            math_elem = para_item.get('target_math_elem')
+            issues.append(Issue(
+                module='Formula',
+                section=formula_label,
+                messages=clean_messages,
+                locate_method='formula_with_fallback',
+                locate_data=raw_para_idx,
+                extra={
+                    'is_textbox': False,
+                    'formula_label': formula_label,
+                    'target_math_elem': math_elem,
+                    'paragraph_index': para_item.get('paragraph_index'),
+                    'number_w_p_index': para_item.get('number_w_p_index'),
+                }
+            ))
+        else:
+            # 索引无效，用关键词
+            import re
+            kw_match = re.search(r'公式?[\s#]*(\d+[-\uFF0D]\d+)', formula_label)
+            kw = f"公式{kw_match.group(1)}" if kw_match else '公式'
+            issues.append(Issue(
+                module='Formula',
+                section=formula_label,
+                messages=clean_messages,
                 locate_method='keyword',
                 locate_data=kw
             ))
@@ -1173,19 +1253,19 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
                 except Exception as e:
                     logger.warning(f"locator {issue.locate_method} error: {e}")
             
-            # 对于 formula_with_fallback，如果定位失败或添加失败，尝试右边段落
-            if para_idx is None and issue.locate_method == 'formula_with_fallback':
-                # 直接使用传入的段落索引
-                original_idx = issue.locate_data
-                if isinstance(original_idx, int) and 0 <= original_idx < len(doc.paragraphs):
-                    para_idx = original_idx
-            
             # fallback: keyword search across paragraphs
             if para_idx is None and issue.locate_data:
                 kw = str(issue.locate_data).lower()
-                # search for paragraph that contains kw and matches language expectation
+
+                # Helper: check if a paragraph contains a formula label pattern
+                import re as _re
+                FORMULA_PAT = _re.compile(
+                    r'公式\s*[\(（]?\s*\d+(?:[-\uFF0D]\d+)?\s*[\)）]?'
+                    r'|'
+                    r'^\s*\(?\s*\d+(?:[-\uFF0D]\d+)?\s*\)?\s*$'
+                )
+
                 def para_matches_language(text: str, section_name: str) -> bool:
-                    # if english section, require ascii letters or 'keywords'
                     s = (text or "").strip().lower()
                     if 'english' in section_name.lower():
                         if any(c.isalpha() for c in s):
@@ -1193,15 +1273,20 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
                         if 'keywords' in s or 'abstract' in s:
                             return True
                         return False
-                    # if chinese section, require CJK characters
                     if 'chinese' in section_name.lower():
                         return any('\u4e00' <= ch <= '\u9fff' for ch in s)
-                    # otherwise accept any match
                     return True
+
+                # For formula issues, verify the matched paragraph actually contains a formula pattern
+                is_formula_issue = issue.module == 'Formula'
 
                 found_idx = None
                 for i, text in para_texts:
                     if kw in text and para_matches_language(text, issue.section):
+                        if is_formula_issue:
+                            # Skip paragraphs that don't contain a formula label pattern
+                            if not FORMULA_PAT.search(text):
+                                continue
                         found_idx = i
                         break
                 para_idx = found_idx
@@ -1216,17 +1301,19 @@ def annotate_chinese_abstract_and_keywords(docx_path: str, all_reports: Dict[str
             for m in issue.messages:
                 comment_text += f"• {m}\n"
 
-            added = commenter.add_comment_to_para_idx(para_idx, comment_text.strip())
-            
-            # 如果公式段落添加失败，尝试在右边的段落添加
-            if not added and issue.locate_method == 'formula_with_fallback':
-                # 尝试右边的段落
-                right_idx = para_idx + 1
-                if right_idx < len(doc.paragraphs):
-                    added = commenter.add_comment_to_para_idx(right_idx, comment_text.strip())
+            # 公式批注优先锚定到 Math 元素内部，而非整个段落
+            if issue.module == 'Formula' and issue.extra:
+                math_elem = issue.extra.get('target_math_elem')
+                if math_elem is not None:
+                    added = commenter.add_comment_to_math_run(para_idx, math_elem, comment_text.strip())
                     if added:
-                        logger.info(f"Added comment at right para {right_idx} for {issue.module}-{issue.section}")
-            
+                        logger.info(f"Added comment (math-anchored) at para {para_idx} for {issue.module}-{issue.section}")
+                    else:
+                        logger.warning(f"Failed to add math-anchored comment at para {para_idx}")
+                    continue
+
+            added = commenter.add_comment_to_para_idx(para_idx, comment_text.strip())
+
             if added:
                 logger.info(f"Added comment at para {para_idx} for {issue.module}-{issue.section}")
             else:

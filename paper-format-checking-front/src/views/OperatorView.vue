@@ -3,7 +3,7 @@
     <div class="operator-view">
       <!-- 页面标题 -->
       <div class="page-header">
-        <h2>业务员工作台</h2>
+        <h2>教务员工作台</h2>
         <p class="subtitle">批量检测论文目录，一键生成批注文档和检测报告</p>
       </div>
 
@@ -172,36 +172,6 @@
         </div>
       </el-card>
 
-      <!-- 批量任务进度 -->
-      <el-card v-if="currentBatchId && isChecking" class="progress-card">
-        <template #header>
-          <div class="card-header">
-            <span>批量检测进度</span>
-            <el-tag type="primary">任务 #{{ currentBatchId }}</el-tag>
-          </div>
-        </template>
-        <div class="progress-content">
-          <el-progress
-            :percentage="progressPercent"
-            :status="progressStatus"
-            :stroke-width="20"
-          />
-          <div class="progress-info">
-            <span>已处理: {{ progressData.processed }} / {{ progressData.total_papers }} 篇</span>
-            <span>通过: {{ progressData.passed }} 篇</span>
-            <span>失败: {{ progressData.failed }} 篇</span>
-          </div>
-          <div v-if="progressData.current_paper" class="current-paper">
-            当前处理: {{ progressData.current_paper }}
-          </div>
-        </div>
-        <div class="progress-actions">
-          <el-button type="danger" @click="handleCancelBatch">
-            取消任务
-          </el-button>
-        </div>
-      </el-card>
-
       <!-- 历史批次任务列表 -->
       <el-card class="history-card">
         <template #header>
@@ -234,7 +204,7 @@
               {{ formatDateTime(scope.row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" align="center">
+          <el-table-column label="操作" width="280" align="center">
             <template #default="scope">
               <el-button size="small" @click="handleViewBatchDetail(scope.row)">
                 查看详情
@@ -246,6 +216,13 @@
                 @click="handleExportBatchExcel(scope.row.id)"
               >
                 导出
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                @click="handleDeleteBatch(scope.row)"
+              >
+                删除
               </el-button>
             </template>
           </el-table-column>
@@ -355,7 +332,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { FolderOpened, Setting, Warning, VideoPlay, Download, Refresh, FolderAdd } from '@element-plus/icons-vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { operatorService, type FileInfo, type BatchJob, type BatchJobDetail } from '@/api/operatorService'
@@ -400,6 +377,7 @@ const progressData = ref({
   current_paper: null as string | null
 })
 let progressInterval: number | null = null
+let batchStartNotification: ReturnType<typeof ElNotification> | null = null
 
 // 历史任务
 const batchJobs = ref<BatchJob[]>([])
@@ -417,18 +395,6 @@ const canStartCheck = computed(() => {
 
 const isIndeterminate = computed(() => {
   return selectedModules.value.length > 0 && selectedModules.value.length < availableModules.length
-})
-
-const progressPercent = computed(() => {
-  if (progressData.value.total_papers === 0) return 0
-  return Math.round((progressData.value.processed / progressData.value.total_papers) * 100)
-})
-
-const progressStatus = computed(() => {
-  if (progressData.value.processed === progressData.value.total_papers) {
-    return 'success'
-  }
-  return undefined
 })
 
 // 方法
@@ -553,6 +519,12 @@ const handleStartBatchCheck = async () => {
       }
 
       ElMessage.success(response.data.message || '批量检测任务已启动')
+      batchStartNotification = ElNotification({
+        title: '批量检测已启动',
+        message: `正在检测 ${response.data.total_papers} 篇论文，请稍候...`,
+        type: 'info',
+        duration: 0,
+      })
       startProgressPolling()
     } else if (response.success && !response.data) {
       // 直接返回 success: true 的情况（如 start-from-upload）
@@ -567,6 +539,12 @@ const handleStartBatchCheck = async () => {
       }
 
       ElMessage.success(response.message || '批量检测任务已启动')
+      batchStartNotification = ElNotification({
+        title: '批量检测已启动',
+        message: `正在检测 ${response.total_papers} 篇论文，请稍候...`,
+        type: 'info',
+        duration: 0,
+      })
       startProgressPolling()
     } else {
       ElMessage.error(response.message || '启动批量检测失败')
@@ -601,8 +579,17 @@ const startProgressPolling = () => {
         if (response.progress.status === 'completed' || response.progress.status === 'failed' || response.progress.status === 'cancelled') {
           stopProgressPolling()
           isChecking.value = false
-          ElMessage.info(`批量检测任务已${response.progress.status === 'completed' ? '完成' : response.progress.status === 'cancelled' ? '取消' : '失败'}`)
-          // 检测完成后清除上传状态，允许重新上传
+          if (batchStartNotification) {
+            batchStartNotification.close()
+            batchStartNotification = null
+          }
+          const statusMap: Record<string, { title: string; message: string; type: 'success' | 'warning' | 'error' }> = {
+            completed: { title: '批量检测完成', message: `已处理 ${response.progress.processed} 篇论文，通过 ${response.progress.passed} 篇，失败 ${response.progress.failed} 篇`, type: 'success' },
+            cancelled: { title: '批量检测已取消', message: '任务已被手动取消', type: 'warning' },
+            failed: { title: '批量检测失败', message: '批量检测过程中出现错误，请查看历史任务了解详情', type: 'error' },
+          }
+          const notify = statusMap[response.progress.status]
+          ElNotification(notify)
           uploadedFiles.value = []
           uploadedTempDir.value = ''
           handleLoadHistory()
@@ -701,6 +688,26 @@ const handleOpenReport = (paper: any) => {
 
 const handleOpenAnnotated = (paper: any) => {
   window.open(`/api/operator/batch/papers/${paper.id}/open-annotated`, '_blank')
+}
+
+const handleDeleteBatch = async (job: BatchJob) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该批次任务吗？删除后将无法恢复。', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    const response = await operatorService.deleteBatchJob(job.id)
+    if (response.success) {
+      ElMessage.success('批次任务已删除')
+      handleLoadHistory()
+    } else {
+      ElMessage.error(response.message || '删除失败')
+    }
+  } catch {
+    // 用户取消
+  }
 }
 
 // 工具方法
@@ -928,34 +935,6 @@ onUnmounted(() => {
 .action-buttons .el-button--primary:hover {
   background-color: #7a0b0b !important;
   border-color: #7a0b0b !important;
-}
-
-.progress-card {
-  margin-bottom: 20px;
-}
-
-.progress-content {
-  padding: 10px 0;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-  color: #666;
-  font-size: 14px;
-}
-
-.current-paper {
-  text-align: center;
-  margin-top: 10px;
-  color: #409eff;
-  font-size: 13px;
-}
-
-.progress-actions {
-  margin-top: 15px;
-  text-align: center;
 }
 
 .history-card {

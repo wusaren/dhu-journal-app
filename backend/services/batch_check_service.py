@@ -632,6 +632,32 @@ class BatchCheckService:
         except Exception as e:
             logger.error(f"取消批次任务失败: {e}")
             return {'success': False, 'message': f'取消失败: {str(e)}'}
+
+    def delete_batch_job(self, batch_id: int) -> Dict[str, Any]:
+        """删除批次任务及其关联数据"""
+        try:
+            batch_job = BatchJob.query.get(batch_id)
+            if not batch_job:
+                return {'success': False, 'message': '批次任务不存在'}
+
+            output_path = batch_job.output_path
+
+            PaperCheckResult.query.filter_by(batch_job_id=batch_id).delete()
+            db.session.delete(batch_job)
+            db.session.commit()
+
+            if output_path and os.path.exists(output_path):
+                try:
+                    shutil.rmtree(output_path)
+                except Exception as e:
+                    logger.warning(f"删除输出目录失败: {output_path}, {e}")
+
+            return {'success': True, 'message': '批次任务已删除'}
+
+        except Exception as e:
+            logger.error(f"删除批次任务失败: {e}")
+            db.session.rollback()
+            return {'success': False, 'message': f'删除失败: {str(e)}'}
     
     def _job_to_dict(self, job: BatchJob) -> Dict[str, Any]:
         """转换批次任务为字典"""

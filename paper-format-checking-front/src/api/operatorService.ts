@@ -183,6 +183,14 @@ export const operatorService = {
   },
 
   /**
+   * 删除批次任务
+   * @param jobId 批次ID
+   */
+  async deleteBatchJob(jobId: number): Promise<ApiResponse<void>> {
+    return await apiClient.delete(`/operator/batch/jobs/${jobId}`)
+  },
+
+  /**
    * 上传论文文件夹（仅上传，不自动检测）
    * @param files FileList 或 File[]
    */

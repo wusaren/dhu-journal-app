@@ -1036,20 +1036,9 @@ def parse_issues_from_reports(all_reports):
             logger.info(f"parse_issues_from_reports: Content 模块总共添加了 {content_issue_count} 个问题")
         
         elif module_name == 'Formula':
-            # Formula模块：使用 chinese_annotation_engine 的 formula_adapter 处理
-            # 这样可以正确区分：单独公式问题（在对应公式处）+ 连续性问题（在章节第一个公式处）
-            from services.chinese_annotation_engine import formula_adapter
-            formula_issues = formula_adapter({'Formula': report})
-            for issue in formula_issues:
-                # 将 Issue dataclass 转换为字典
-                issues.append({
-                    'module': issue.module,
-                    'section': issue.section,
-                    'messages': issue.messages,
-                    'locate_method': issue.locate_method,
-                    'locate_data': issue.locate_data,
-                    'extra': issue.extra or {}
-                })
+            # Formula模块已由 chinese_annotation_engine 统一处理（在 annotate_chinese_abstract_and_keywords 中），
+            # 此处不再重复处理，避免 locate_method='formula_with_fallback' 在 document_annotator 中无法识别导致批注失败
+            pass
         
         elif module_name == 'TOC':
             # TOC模块：处理目录/图录/表录的格式问题
@@ -1148,106 +1137,10 @@ def parse_issues_from_reports(all_reports):
                                 logger.info(f"parse_issues_from_reports: TOC 模块添加格式问题（关键字定位，未找到标题） - title_type: {title_type}, 消息数: {len(filtered_messages)}")
         
         elif module_name == 'Table':
-            # Table模块：定位到表格标题段落
-            # 1. 处理numbering问题（表格编号连续性）- 按章节分别定位
-            numbering_report = report.get('numbering', {})
-            if isinstance(numbering_report, dict) and not numbering_report.get('ok', False):
-                messages = numbering_report.get('messages', [])
-                if messages:
-                    # 获取所有表格及其章节信息
-                    tables_report = report.get('tables', [])
-                    chapter_first_table = {}  # 记录每个章节的第一个表格
-                    
-                    for table_item in tables_report:
-                        chapter = table_item.get('chapter')
-                        captions = table_item.get('captions', {})
-                        cn_caption = captions.get('cn', {})
-                        para_idx = cn_caption.get('paragraph_index')
-                        
-                        if chapter is not None and para_idx is not None:
-                            if chapter not in chapter_first_table:
-                                chapter_first_table[chapter] = para_idx
-                    
-                    # 按章节分别添加连续性问题
-                    for msg in messages:
-                        # 提取章节号：支持 "第2章" 格式
-                        ch_match = re.search(r'第(\d+)章', msg)
-                        if ch_match:
-                            ch = int(ch_match.group(1))
-                            para_idx = chapter_first_table.get(ch)
-                            
-                            if para_idx is not None:
-                                issues.append({
-                                    'module': module_name,
-                                    'section': f'第{ch}章编号连续性',
-                                    'messages': [f"[编号问题] {msg}"],
-                                    'locate_method': 'index',
-                                    'locate_data': para_idx
-                                })
-                            else:
-                                # 没找到对应章节的表格，使用关键词定位
-                                issues.append({
-                                    'module': module_name,
-                                    'section': f'第{ch}章编号连续性',
-                                    'messages': [f"[编号问题] {msg}"],
-                                    'locate_method': 'keyword',
-                                    'locate_data': '表'
-                                })
-                        else:
-                            # 无法提取章节号，默认用关键词
-                            issues.append({
-                                'module': module_name,
-                                'section': '编号连续性',
-                                'messages': [f"[编号问题] {msg}"],
-                                'locate_method': 'keyword',
-                                'locate_data': '表'
-                            })
-            
-            # 2. 处理每个表格的问题
-            tables_report = report.get('tables', [])
-            for i, table_report in enumerate(tables_report):
-                caption_info = table_report.get('caption', {})
-                caption_text = caption_info.get('text', f'Table {i+1}')
-                
-                # 检查标题格式
-                caption_format = table_report.get('caption_format', {})
-                if isinstance(caption_format, dict) and not caption_format.get('ok', False):
-                    messages = caption_format.get('messages', [])
-                    if messages:
-                        issues.append({
-                            'module': module_name,
-                            'section': f'table{i+1}_caption',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]
-                        })
-                
-                # 检查表格样式
-                table_style = table_report.get('table_style', {})
-                if isinstance(table_style, dict) and not table_style.get('ok', False):
-                    messages = table_style.get('messages', [])
-                    if messages:
-                        issues.append({
-                            'module': module_name,
-                            'section': f'table{i+1}_style',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]
-                        })
-                
-                # 检查表格对齐
-                table_alignment = table_report.get('table_alignment', {})
-                if isinstance(table_alignment, dict) and not table_alignment.get('ok', False):
-                    messages = table_alignment.get('messages', [])
-                    if messages:
-                        issues.append({
-                            'module': module_name,
-                            'section': f'table{i+1}_alignment',
-                            'messages': messages,
-                            'locate_method': 'keyword',
-                            'locate_data': caption_text[:20]
-                        })
-        
+            # Table模块已由 chinese_annotation_engine 统一处理（在 annotate_chinese_abstract_and_keywords 中），
+            # 此处不再重复处理，避免生成重复的批注
+            pass
+
         elif module_name == 'Figure':
             # Figure模块：定位到图片标题段落（类似Table模块）
             # 1. 处理numbering问题（图片编号连续性）

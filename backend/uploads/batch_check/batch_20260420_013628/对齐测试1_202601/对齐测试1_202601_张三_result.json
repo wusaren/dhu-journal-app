@@ -1,0 +1,2114 @@
+{
+  "Title": {
+    "module": "Title",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "DESIGN AND OPTIMIZATION OF NLU MODEL FOR POWER INDEX Q&A",
+        "title_text": "DESIGN AND OPTIMIZATION OF NLU MODEL FOR POWER INDEX Q&A"
+      },
+      "[格式]": {
+        "ok": true,
+        "messages": []
+      }
+    },
+    "summary": [
+      "标题检查结果: 失败",
+      "英文标题检查结果: 通过"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Abstract": {
+    "module": "Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "摘 要",
+        "content_paragraphs": [
+          "近年来，智能问答系统在电力领域的应用日益广泛，其核心目标是根据用户输入的问题高效地提供准确答案。自然语言理解（Natural Language Understanding，NLU）作为关键组成部分，其性能直接决定了整体问答效果。然而，随着电力领域术语复杂化，传统以字为基本单位的编码方式在处理专业术语时，易导致专业术语识别错误，引发语义理解的偏差。此外，现有模型虽然在经过训练的指标项上表现出较高的预测性能，但在面对复杂句式或存在未见指标项的问题时，常出现槽填充错误以及意图与意图专属槽位不匹配的现象。这些问题严重制约了模型在实际应用中的表现。 ",
+          "针对发现的问题，本文系统探索了不同编码方式在电力领域数据集上的性能表现，提出了基于字词融合编码的NLU模型，提升了模型在训练指标项上的语义准确率。此外，进一步提出了面向未见指标项的自然语言理解模型，通过引入外部语法知识提高模型对未见指标项边界的识别能力，并利用意图信息指导槽填充任务。同时，结合大语言模型的强大生成能力，采用迭代式数据增强策略，为基座模型提供多样化且高质量的训练样本，从而显著提升了模型在未见指标项上的语义解析准确率。",
+          "本文的主要贡献如下：",
+          "（1）从编码方式、模型结构两个方面对涉及已训练指标项的NLU模型进行优化。构造了基于电力领域词典的预训练词模型，并进一步提出了基于字词融合编码的NLU模型。该模型通过字词信息融合和序列连续一致性损失等方法，在不过度依赖分词结果的前提下，更好地融入词汇信息，有效减少了预测标签时的断层现象。实验结果表明，所提出的词编码模型、编码层字词融合模型以及解码层字词融合模型在六大电力领域专业数据集上，分别实现了0.8%、1.1%和1.8%的语义准确率的提升，并在实际应用中验证了模型优化的有效性。",
+          "（2）针对现有模型在处理未见指标项和复杂句式时性能不足的问题，本文提出了基于Spacy句法分析树的意图-槽联合模型和大语言模型迭代数据增强的NLU模型。通过引入句法分析树，实现字级模型对外部文法知识的引入。同时，将意图与槽信息联合建模，解决了意图与专属槽位不匹配的问题。此外，通过多阶段迭代训练策略，利用大语言模型进行数据增强，显著提升了基座模型在单一训练样本条件下对复杂句式的识别准确率。实验结果显示，相较于基线模型与编码方式优化模型，基于Spacy句法分析树的意图-槽联合模型在处理未见指标项问题时，性能更为优异，提升幅度约10%。经大模型数据增强后，该模型性能进一步提升约7%。",
+          "（3）构建可持续迭代的自动化语义解析系统。实现将定期收集的Bad-Case自动录入问题模板集与测试样本集，借助用户反馈持续优化模型性能；同时，实现训练全流程自动化，显著提高了模型的迭代效率；此外，建立了模型版本管理体系，记录每一版本具体信息，追踪模型演化过程并评估改进效果，支持按需选择版本，保障智能问答系统稳定运行。"
+        ],
+        "content_text": "近年来，智能问答系统在电力领域的应用日益广泛，其核心目标是根据用户输入的问题高效地提供准确答案。自然语言理解（Natural Language Understanding，NLU）作为关键组成部分，其性能直接决定了整体问答效果。然而，随着电力领域术语复杂化，传统以字为基本单位的编码方式在处理专业术语时，易导致专业术语识别错误，引发语义理解的偏差。此外，现有模型虽然在经过训练的指标项上表现出较高的预测性能，但在面对复杂句式或存在未见指标项的问题时，常出现槽填充错误以及意图与意图专属槽位不匹配的现象。这些问题严重制约了模型在实际应用中的表现。 针对发现的问题，本文系统探索了不同编码方式在电力领域数据集上的性能表现，提出了基于字词融合编码的NLU模型，提升了模型在训练指标项上的语义准确率。此外，进一步提出了面向未见指标项的自然语言理解模型，通过引入外部语法知识提高模型对未见指标项边界的识别能力，并利用意图信息指导槽填充任务。同时，结合大语言模型的强大生成能力，采用迭代式数据增强策略，为基座模型提供多样化且高质量的训练样本，从而显著提升了模型在未见指标项上的语义解析准确率。 本文的主要贡献如下： （1）从编码方式、模型结构两个方面对涉及已训练指标项的NLU模型进行优化。构造了基于电力领域词典的预训练词模型，并进一步提出了基于字词融合编码的NLU模型。该模型通过字词信息融合和序列连续一致性损失等方法，在不过度依赖分词结果的前提下，更好地融入词汇信息，有效减少了预测标签时的断层现象。实验结果表明，所提出的词编码模型、编码层字词融合模型以及解码层字词融合模型在六大电力领域专业数据集上，分别实现了0.8%、1.1%和1.8%的语义准确率的提升，并在实际应用中验证了模型优化的有效性。 （2）针对现有模型在处理未见指标项和复杂句式时性能不足的问题，本文提出了基于Spacy句法分析树的意图-槽联合模型和大语言模型迭代数据增强的NLU模型。通过引入句法分析树，实现字级模型对外部文法知识的引入。同时，将意图与槽信息联合建模，解决了意图与专属槽位不匹配的问题。此外，通过多阶段迭代训练策略，利用大语言模型进行数据增强，显著提升了基座模型在单一训练样本条件下对复杂句式的识别准确率。实验结果显示，相较于基线模型与编码方式优化模型，基于Spacy句法分析树的意图-槽联合模型在处理未见指标项问题时，性能更为优异，提升幅度约10%。经大模型数据增强后，该模型性能进一步提升约7%。 （3）构建可持续迭代的自动化语义解析系统。实现将定期收集的Bad-Case自动录入问题模板集与测试样本集，借助用户反馈持续优化模型性能；同时，实现训练全流程自动化，显著提高了模型的迭代效率；此外，建立了模型版本管理体系，记录每一版本具体信息，追踪模型演化过程并评估改进效果，支持按需选择版本，保障智能问答系统稳定运行。",
+        "title_paragraph_index": 67,
+        "content_paragraphs_indices": [],
+        "content_paragraph_indexes": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": true,
+        "messages": []
+      }
+    },
+    "summary": [
+      "摘要检查结果: 通过"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "English_Abstract": {
+    "module": "English_Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": []
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "标题段前应为0，当前12.0",
+          "标题段后应为0，当前3.0"
+        ]
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段行距应为1.25倍，当前1.0",
+          "第1段首行缩进应为4.0字符，当前约2.0字符",
+          "第2段行距应为1.25倍，当前1.0",
+          "第2段首行缩进应为4.0字符，当前约2.0字符",
+          "第3段行距应为1.25倍，当前1.0",
+          "第3段首行缩进应为4.0字符，当前约2.0字符",
+          "第4段行距应为1.25倍，当前1.0",
+          "第4段首行缩进应为4.0字符，当前约2.0字符",
+          "第5段行距应为1.25倍，当前1.0",
+          "第5段首行缩进应为4.0字符，当前约2.0字符",
+          "第6段行距应为1.25倍，当前1.0",
+          "第6段首行缩进应为4.0字符，当前约2.0字符"
+        ]
+      }
+    },
+    "summary": [
+      "英文摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Keywords": {
+    "module": "Keywords",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "keywords_paragraph": "KEY WORDS: nature language understanding, word-phrase fusion, syntactic analysis tree, intent-slot joint, large language model",
+        "keywords_text": "nature language understanding, word-phrase fusion, syntactic analysis tree, intent-slot joint, large language model",
+        "keywords_list": [
+          "nature language understanding",
+          "word-phrase fusion",
+          "syntactic analysis tree",
+          "intent-slot joint",
+          "large language model"
+        ],
+        "keywords_paragraph_index": 110
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "首行缩进应为0.0pt，实际为-90.0pt",
+          "左缩进应为0.0pt，实际为90.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "中文关键词检测通过，英文关键词检测失败",
+      "关键词检查结果: 通过",
+      "关键词检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Content": {
+    "module": "Content",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "level": 2,
+            "number": "1.1",
+            "text": "选题背景与研究意义",
+            "paragraph_index": 268,
+            "full_text": "1.1选题背景与研究意义"
+          },
+          {
+            "level": 2,
+            "number": "1.2",
+            "text": "研究现状",
+            "paragraph_index": 276,
+            "full_text": "1.2研究现状"
+          },
+          {
+            "level": 3,
+            "number": "1.2.1",
+            "text": "智能问答系统研究现状",
+            "paragraph_index": 278,
+            "full_text": "1.2.1智能问答系统研究现状"
+          },
+          {
+            "level": 3,
+            "number": "1.2.2",
+            "text": "自然语言理解研究现状",
+            "paragraph_index": 281,
+            "full_text": "1.2.2自然语言理解研究现状"
+          },
+          {
+            "level": 2,
+            "number": "1.3",
+            "text": "论文研究内容",
+            "paragraph_index": 290,
+            "full_text": "1.3论文研究内容"
+          },
+          {
+            "level": 2,
+            "number": "1.4",
+            "text": "论文组织结构",
+            "paragraph_index": 295,
+            "full_text": "1.4论文组织结构"
+          },
+          {
+            "level": 2,
+            "number": "2.1",
+            "text": "自然语言理解技术",
+            "paragraph_index": 311,
+            "full_text": "2.1自然语言理解技术"
+          },
+          {
+            "level": 3,
+            "number": "2.1.1",
+            "text": "基于规则的传统方法",
+            "paragraph_index": 314,
+            "full_text": "2.1.1基于规则的传统方法"
+          },
+          {
+            "level": 3,
+            "number": "2.1.2",
+            "text": "基于统计机器学习的方法",
+            "paragraph_index": 316,
+            "full_text": "2.1.2基于统计机器学习的方法"
+          },
+          {
+            "level": 3,
+            "number": "2.1.3",
+            "text": "基于深度学习的方法",
+            "paragraph_index": 319,
+            "full_text": "2.1.3基于深度学习的方法"
+          },
+          {
+            "level": 3,
+            "number": "2.1.4",
+            "text": "序列标注任务",
+            "paragraph_index": 330,
+            "full_text": "2.1.4序列标注任务"
+          },
+          {
+            "level": 3,
+            "number": "2.1.5",
+            "text": "Self-Attention机制",
+            "paragraph_index": 332,
+            "full_text": "2.1.5 Self-Attention机制"
+          },
+          {
+            "level": 2,
+            "number": "2.2",
+            "text": "常见编码方式",
+            "paragraph_index": 335,
+            "full_text": "2.2常见编码方式"
+          },
+          {
+            "level": 3,
+            "number": "2.2.1",
+            "text": "字编码",
+            "paragraph_index": 336,
+            "full_text": "2.2.1字编码"
+          },
+          {
+            "level": 3,
+            "number": "2.2.2",
+            "text": "词编码",
+            "paragraph_index": 338,
+            "full_text": "2.2.2词编码"
+          },
+          {
+            "level": 2,
+            "number": "2.3",
+            "text": "依存句法分析",
+            "paragraph_index": 341,
+            "full_text": "2.3依存句法分析"
+          },
+          {
+            "level": 2,
+            "number": "2.4",
+            "text": "提示工程",
+            "paragraph_index": 346,
+            "full_text": "2.4提示工程"
+          },
+          {
+            "level": 2,
+            "number": "2.5",
+            "text": "本章小结",
+            "paragraph_index": 349,
+            "full_text": "2.5本章小结"
+          },
+          {
+            "level": 2,
+            "number": "3.1",
+            "text": "面向电力指标问答NLU模型",
+            "paragraph_index": 358,
+            "full_text": "3.1面向电力指标问答NLU模型"
+          },
+          {
+            "level": 3,
+            "number": "3.1.1",
+            "text": "任务定义",
+            "paragraph_index": 359,
+            "full_text": "3.1.1任务定义"
+          },
+          {
+            "level": 3,
+            "number": "3.1.2",
+            "text": "基础模型架构",
+            "paragraph_index": 374,
+            "full_text": "3.1.2基础模型架构"
+          },
+          {
+            "level": 2,
+            "number": "3.2",
+            "text": "基于词编码的NLU模型",
+            "paragraph_index": 389,
+            "full_text": "3.2基于词编码的NLU模型"
+          },
+          {
+            "level": 3,
+            "number": "3.2.1",
+            "text": "整体架构",
+            "paragraph_index": 390,
+            "full_text": "3.2.1整体架构"
+          },
+          {
+            "level": 3,
+            "number": "3.2.2",
+            "text": "输入层",
+            "paragraph_index": 399,
+            "full_text": "3.2.2输入层"
+          },
+          {
+            "level": 3,
+            "number": "3.2.3",
+            "text": "编码层",
+            "paragraph_index": 410,
+            "full_text": "3.2.3编码层"
+          },
+          {
+            "level": 3,
+            "number": "3.2.4",
+            "text": "解码层",
+            "paragraph_index": 420,
+            "full_text": "3.2.4解码层"
+          },
+          {
+            "level": 2,
+            "number": "3.3",
+            "text": "基于编码层字词融合的NLU模型",
+            "paragraph_index": 426,
+            "full_text": "3.3基于编码层字词融合的NLU模型"
+          },
+          {
+            "level": 3,
+            "number": "3.3.1",
+            "text": "整体架构",
+            "paragraph_index": 427,
+            "full_text": "3.3.1整体架构"
+          },
+          {
+            "level": 3,
+            "number": "3.3.2",
+            "text": "输入层",
+            "paragraph_index": 432,
+            "full_text": "3.3.2输入层"
+          },
+          {
+            "level": 3,
+            "number": "3.3.3",
+            "text": "编码层",
+            "paragraph_index": 435,
+            "full_text": "3.3.3编码层"
+          },
+          {
+            "level": 3,
+            "number": "3.3.4",
+            "text": "解码层",
+            "paragraph_index": 450,
+            "full_text": "3.3.4解码层"
+          },
+          {
+            "level": 2,
+            "number": "3.4",
+            "text": "基于解码层字词融合的NLU模型",
+            "paragraph_index": 461,
+            "full_text": "3.4基于解码层字词融合的NLU模型"
+          },
+          {
+            "level": 2,
+            "number": "3.5",
+            "text": "实验结果与分析",
+            "paragraph_index": 468,
+            "full_text": "3.5实验结果与分析"
+          },
+          {
+            "level": 3,
+            "number": "3.5.1",
+            "text": "实验环境与参数配置",
+            "paragraph_index": 469,
+            "full_text": "3.5.1实验环境与参数配置"
+          },
+          {
+            "level": 3,
+            "number": "3.5.2",
+            "text": "数据集",
+            "paragraph_index": 472,
+            "full_text": "3.5.2数据集"
+          },
+          {
+            "level": 3,
+            "number": "3.5.3",
+            "text": "评估指标",
+            "paragraph_index": 476,
+            "full_text": "3.5.3评估指标"
+          },
+          {
+            "level": 3,
+            "number": "3.5.4",
+            "text": "实验结果与分析",
+            "paragraph_index": 480,
+            "full_text": "3.5.4实验结果与分析"
+          },
+          {
+            "level": 2,
+            "number": "3.6",
+            "text": "本章小结",
+            "paragraph_index": 491,
+            "full_text": "3.6本章小结"
+          },
+          {
+            "level": 2,
+            "number": "4.1",
+            "text": "面向未见指标项的问题分析",
+            "paragraph_index": 496,
+            "full_text": "4.1面向未见指标项的问题分析"
+          },
+          {
+            "level": 2,
+            "number": "4.2",
+            "text": "基于Spacy分析树的意图-槽联合模型",
+            "paragraph_index": 499,
+            "full_text": "4.2基于Spacy分析树的意图-槽联合模型"
+          },
+          {
+            "level": 3,
+            "number": "4.2.1",
+            "text": "整体架构",
+            "paragraph_index": 501,
+            "full_text": "4.2.1整体架构"
+          },
+          {
+            "level": 3,
+            "number": "4.2.2",
+            "text": "输入层",
+            "paragraph_index": 507,
+            "full_text": "4.2.2输入层"
+          },
+          {
+            "level": 3,
+            "number": "4.2.3",
+            "text": "解码层",
+            "paragraph_index": 523,
+            "full_text": "4.2.3解码层"
+          },
+          {
+            "level": 2,
+            "number": "4.3",
+            "text": "基于大语言模型迭代数据增强的NLU模型",
+            "paragraph_index": 532,
+            "full_text": "4.3基于大语言模型迭代数据增强的NLU模型"
+          },
+          {
+            "level": 3,
+            "number": "4.3.1",
+            "text": "整体框架",
+            "paragraph_index": 533,
+            "full_text": "4.3.1整体框架"
+          },
+          {
+            "level": 3,
+            "number": "4.3.2",
+            "text": "大语言模型二段式数据增强",
+            "paragraph_index": 540,
+            "full_text": "4.3.2大语言模型二段式数据增强"
+          },
+          {
+            "level": 3,
+            "number": "4.3.3",
+            "text": "动态适配性样本筛选",
+            "paragraph_index": 551,
+            "full_text": "4.3.3动态适配性样本筛选"
+          },
+          {
+            "level": 3,
+            "number": "4.3.4",
+            "text": "模型微调",
+            "paragraph_index": 557,
+            "full_text": "4.3.4模型微调"
+          },
+          {
+            "level": 2,
+            "number": "4.4",
+            "text": "实验结果与分析",
+            "paragraph_index": 561,
+            "full_text": "4.4实验结果与分析"
+          },
+          {
+            "level": 3,
+            "number": "4.4.1",
+            "text": "实验环境与参数配置",
+            "paragraph_index": 562,
+            "full_text": "4.4.1实验环境与参数配置"
+          },
+          {
+            "level": 3,
+            "number": "4.4.2",
+            "text": "数据集",
+            "paragraph_index": 565,
+            "full_text": "4.4.2数据集"
+          },
+          {
+            "level": 3,
+            "number": "4.4.3",
+            "text": "评估指标",
+            "paragraph_index": 570,
+            "full_text": "4.4.3评估指标"
+          },
+          {
+            "level": 3,
+            "number": "4.4.4",
+            "text": "实验结果与分析",
+            "paragraph_index": 581,
+            "full_text": "4.4.4实验结果与分析"
+          },
+          {
+            "level": 2,
+            "number": "4.5",
+            "text": "本章总结",
+            "paragraph_index": 596,
+            "full_text": "4.5本章总结"
+          },
+          {
+            "level": 2,
+            "number": "5.1",
+            "text": "总体设计",
+            "paragraph_index": 601,
+            "full_text": "5.1总体设计"
+          },
+          {
+            "level": 3,
+            "number": "5.1.1",
+            "text": "设计目标",
+            "paragraph_index": 602,
+            "full_text": "5.1.1设计目标"
+          },
+          {
+            "level": 3,
+            "number": "5.1.2",
+            "text": "总体架构",
+            "paragraph_index": 610,
+            "full_text": "5.1.2总体架构"
+          },
+          {
+            "level": 2,
+            "number": "5.2",
+            "text": "问题模板管理",
+            "paragraph_index": 622,
+            "full_text": "5.2问题模板管理"
+          },
+          {
+            "level": 3,
+            "number": "5.2.1",
+            "text": "优化样本标注规则模块",
+            "paragraph_index": 627,
+            "full_text": "5.2.1优化样本标注规则模块"
+          },
+          {
+            "level": 3,
+            "number": "5.2.2",
+            "text": "问题模板展示模块",
+            "paragraph_index": 630,
+            "full_text": "5.2.2问题模板展示模块"
+          },
+          {
+            "level": 3,
+            "number": "5.2.3",
+            "text": "Bad-Case集成模块",
+            "paragraph_index": 635,
+            "full_text": "5.2.3 Bad-Case集成模块"
+          },
+          {
+            "level": 3,
+            "number": "5.2.4",
+            "text": "问题模板交互模块",
+            "paragraph_index": 641,
+            "full_text": "5.2.4问题模板交互模块"
+          },
+          {
+            "level": 2,
+            "number": "5.3",
+            "text": "测试样本管理",
+            "paragraph_index": 651,
+            "full_text": "5.3测试样本管理"
+          },
+          {
+            "level": 3,
+            "number": "5.3.1",
+            "text": "测试样本展示模块",
+            "paragraph_index": 656,
+            "full_text": "5.3.1 测试样本展示模块"
+          },
+          {
+            "level": 3,
+            "number": "5.3.2",
+            "text": "测试样本集成模块",
+            "paragraph_index": 662,
+            "full_text": "5.3.2测试样本集成模块"
+          },
+          {
+            "level": 3,
+            "number": "5.3.3",
+            "text": "测试样本交互操作",
+            "paragraph_index": 664,
+            "full_text": "5.3.3测试样本交互操作"
+          },
+          {
+            "level": 2,
+            "number": "5.4",
+            "text": "模型管理",
+            "paragraph_index": 671,
+            "full_text": "5.4模型管理"
+          },
+          {
+            "level": 3,
+            "number": "5.4.1",
+            "text": "模型训练",
+            "paragraph_index": 681,
+            "full_text": "5.4.1模型训练"
+          },
+          {
+            "level": 3,
+            "number": "5.4.2",
+            "text": "模型版本管理",
+            "paragraph_index": 687,
+            "full_text": "5.4.2模型版本管理"
+          },
+          {
+            "level": 2,
+            "number": "5.5",
+            "text": "本章小结",
+            "paragraph_index": 698,
+            "full_text": "5.5本章小结"
+          },
+          {
+            "level": 2,
+            "number": "6.1",
+            "text": "本文工作总结",
+            "paragraph_index": 702,
+            "full_text": "6.1本文工作总结"
+          },
+          {
+            "level": 2,
+            "number": "6.2",
+            "text": "未来工作展望",
+            "paragraph_index": 709,
+            "full_text": "6.2未来工作展望"
+          }
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "标题“智能问答系统研究现状”段前应为19.8pt，实际为8.5pt",
+          "标题“智能问答系统研究现状”段后应为19.8pt，实际为8.5pt",
+          "标题“自然语言理解研究现状”段前应为19.8pt，实际为8.5pt",
+          "标题“自然语言理解研究现状”段后应为19.8pt，实际为8.5pt",
+          "标题“基于规则的传统方法”段前应为19.8pt，实际为8.5pt",
+          "标题“基于规则的传统方法”段后应为19.8pt，实际为8.5pt",
+          "标题“基于统计机器学习的方法”段前应为19.8pt，实际为8.5pt",
+          "标题“基于统计机器学习的方法”段后应为19.8pt，实际为8.5pt",
+          "标题“基于深度学习的方法”段前应为19.8pt，实际为8.5pt",
+          "标题“基于深度学习的方法”段后应为19.8pt，实际为8.5pt",
+          "标题“序列标注任务”段前应为19.8pt，实际为8.5pt",
+          "标题“序列标注任务”段后应为19.8pt，实际为8.5pt",
+          "标题“Self-Attention机制”段前应为19.8pt，实际为8.5pt",
+          "标题“Self-Attention机制”段后应为19.8pt，实际为8.5pt",
+          "标题“字编码”段前应为19.8pt，实际为8.5pt",
+          "标题“字编码”段后应为19.8pt，实际为8.5pt",
+          "标题“词编码”段前应为19.8pt，实际为8.5pt",
+          "标题“词编码”段后应为19.8pt，实际为8.5pt",
+          "标题“任务定义”段前应为19.8pt，实际为8.5pt",
+          "标题“任务定义”段后应为19.8pt，实际为8.5pt",
+          "标题“基础模型架构”段前应为19.8pt，实际为8.5pt",
+          "标题“基础模型架构”段后应为19.8pt，实际为8.5pt",
+          "标题“整体架构”段前应为19.8pt，实际为8.5pt",
+          "标题“整体架构”段后应为19.8pt，实际为8.5pt",
+          "标题“输入层”段前应为19.8pt，实际为8.5pt",
+          "标题“输入层”段后应为19.8pt，实际为8.5pt",
+          "标题“编码层”段前应为19.8pt，实际为8.5pt",
+          "标题“编码层”段后应为19.8pt，实际为8.5pt",
+          "标题“解码层”段前应为19.8pt，实际为8.5pt",
+          "标题“解码层”段后应为19.8pt，实际为8.5pt",
+          "标题“整体架构”段前应为19.8pt，实际为8.5pt",
+          "标题“整体架构”段后应为19.8pt，实际为8.5pt",
+          "标题“输入层”段前应为19.8pt，实际为8.5pt",
+          "标题“输入层”段后应为19.8pt，实际为8.5pt",
+          "标题“编码层”段前应为19.8pt，实际为8.5pt",
+          "标题“编码层”段后应为19.8pt，实际为8.5pt",
+          "标题“解码层”段前应为19.8pt，实际为8.5pt",
+          "标题“解码层”段后应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数配置”段前应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数配置”段后应为19.8pt，实际为8.5pt",
+          "标题“数据集”段前应为19.8pt，实际为8.5pt",
+          "标题“数据集”段后应为19.8pt，实际为8.5pt",
+          "标题“评估指标”段前应为19.8pt，实际为8.5pt",
+          "标题“评估指标”段后应为19.8pt，实际为8.5pt",
+          "标题“实验结果与分析”段前应为19.8pt，实际为8.5pt",
+          "标题“实验结果与分析”段后应为19.8pt，实际为8.5pt",
+          "标题“整体架构”段前应为19.8pt，实际为8.5pt",
+          "标题“整体架构”段后应为19.8pt，实际为8.5pt",
+          "标题“输入层”段前应为19.8pt，实际为8.5pt",
+          "标题“输入层”段后应为19.8pt，实际为8.5pt",
+          "标题“解码层”段前应为19.8pt，实际为8.5pt",
+          "标题“解码层”段后应为19.8pt，实际为8.5pt",
+          "标题“整体框架”段前应为19.8pt，实际为8.5pt",
+          "标题“整体框架”段后应为19.8pt，实际为8.5pt",
+          "标题“大语言模型二段式数据增强”段前应为19.8pt，实际为8.5pt",
+          "标题“大语言模型二段式数据增强”段后应为19.8pt，实际为8.5pt",
+          "标题“动态适配性样本筛选”段前应为19.8pt，实际为8.5pt",
+          "标题“动态适配性样本筛选”段后应为19.8pt，实际为8.5pt",
+          "标题“模型微调”段前应为19.8pt，实际为8.5pt",
+          "标题“模型微调”段后应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数配置”段前应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数配置”段后应为19.8pt，实际为8.5pt",
+          "标题“数据集”段前应为19.8pt，实际为8.5pt",
+          "标题“数据集”段后应为19.8pt，实际为8.5pt",
+          "标题“评估指标”段前应为19.8pt，实际为8.5pt",
+          "标题“评估指标”段后应为19.8pt，实际为8.5pt",
+          "标题“实验结果与分析”段前应为19.8pt，实际为8.5pt",
+          "标题“实验结果与分析”段后应为19.8pt，实际为8.5pt",
+          "标题“设计目标”段前应为19.8pt，实际为8.5pt",
+          "标题“设计目标”段后应为19.8pt，实际为8.5pt",
+          "标题“总体架构”段前应为19.8pt，实际为8.5pt",
+          "标题“总体架构”段后应为19.8pt，实际为8.5pt",
+          "标题“优化样本标注规则模块”段前应为19.8pt，实际为8.5pt",
+          "标题“优化样本标注规则模块”段后应为19.8pt，实际为8.5pt",
+          "标题“问题模板展示模块”段前应为19.8pt，实际为8.5pt",
+          "标题“问题模板展示模块”段后应为19.8pt，实际为8.5pt",
+          "标题“Bad-Case集成模块”段前应为19.8pt，实际为8.5pt",
+          "标题“Bad-Case集成模块”段后应为19.8pt，实际为8.5pt",
+          "标题“问题模板交互模块”段前应为19.8pt，实际为8.5pt",
+          "标题“问题模板交互模块”段后应为19.8pt，实际为8.5pt",
+          "标题“测试样本展示模块”段前应为19.8pt，实际为8.5pt",
+          "标题“测试样本展示模块”段后应为19.8pt，实际为8.5pt",
+          "标题“测试样本集成模块”段前应为19.8pt，实际为8.5pt",
+          "标题“测试样本集成模块”段后应为19.8pt，实际为8.5pt",
+          "标题“测试样本交互操作”段前应为19.8pt，实际为8.5pt",
+          "标题“测试样本交互操作”段后应为19.8pt，实际为8.5pt",
+          "标题“模型训练”段前应为19.8pt，实际为8.5pt",
+          "标题“模型训练”段后应为19.8pt，实际为8.5pt",
+          "标题“模型版本管理”段前应为19.8pt，实际为8.5pt",
+          "标题“模型版本管理”段后应为19.8pt，实际为8.5pt"
+        ]
+      }
+    },
+    "summary": [],
+    "extracted": {},
+    "details": {}
+  },
+  "Formula": {
+    "module": "Formula",
+    "checks": {
+      "[公式检测]": {
+        "ok": false,
+        "messages": [
+          "字体问题: 公式内容字号应为五号（10.5pt），实际为一号（26.0pt）",
+          "字体问题: 公式内容字号应为五号（10.5pt），实际为小一（24.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式内容字号应为五号（10.5pt），实际为三号（16.0pt）"
+        ]
+      },
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      }
+    },
+    "summary": [
+      "公式格式检查结果: 发现问题",
+      "检测统计：共 793 个段落，识别出 24 个带编号的公式段落"
+    ],
+    "extracted": {},
+    "details": {
+      "total_paragraphs": 793,
+      "formula_paragraphs_count": 24,
+      "formula_paragraphs": [
+        {
+          "index": 1,
+          "paragraph_index": 379,
+          "text_preview": "WBert基线模型的输入层以字为基本语义单位，将文本中的每个字符映射为一个独立的嵌入向量，从而能够更细粒度地捕捉语言特征。输入文本编码表示为，其计算方式可用公式3-1所示，其中是单个字符表示，是Bert-Base-Chinese预训练模型分词器，是模型使用的字符表。",
+          "formula_label": "公式#3-1",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 5,
+                "types": [
+                  "office_math",
+                  "office_math",
+                  "office_math",
+                  "office_math",
+                  "office_math"
+                ],
+                "preview": [
+                  "C = c 1 , c 2 ,…, c n ∈ V c",
+                  "z i",
+                  "T okenizer",
+                  "V c",
+                  "c i =Tokenizer z i # 3-1"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 1)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 2,
+          "paragraph_index": 381,
+          "text_preview": "",
+          "formula_label": "公式#3-2",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "x i =Embedding c i # 3-2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 2)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 3,
+          "paragraph_index": 383,
+          "text_preview": "解码层集成了domain分类器、intent分类器以及基于CRF的槽填充任务分类器。基于最后一层的隐藏层向量对业务场景、意图进行分类，计算方法如公式3-3所示，其中BERT是编码层使用的Bert-Base-Chinese预训练模型。",
+          "formula_label": "公式#3-3",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 2,
+                "types": [
+                  "office_math",
+                  "office_math"
+                ],
+                "preview": [
+                  "v CLS",
+                  "v CLS =BERT X 1 # 3-3"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 3)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 4,
+          "paragraph_index": 385,
+          "text_preview": "",
+          "formula_label": "公式#3-4",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式内容字号应为五号（10.5pt），实际为一号（26.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "v i =BERT X [0]# 3-4"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 4)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式内容字号应为五号（10.5pt），实际为一号（26.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 5,
+          "paragraph_index": 387,
+          "text_preview": "",
+          "formula_label": "公式#3-5",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "Softmax y i = exp y j k=1 N exp y k # 3-5"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 5)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 6,
+          "paragraph_index": 388,
+          "text_preview": "在获得每个类别的概率后，选择概率最大的类别作为最终的分类结果。用数学语言表示，最终的分类结果可以通过公式3-6得到：",
+          "formula_label": "公式#3-6",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式内容字号应为五号（10.5pt），实际为小一（24.0pt）",
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 2,
+                "types": [
+                  "office_math",
+                  "office_math"
+                ],
+                "preview": [
+                  "z",
+                  "z=argma x j=1,2,…,n Softmax y j # 3-6"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 6)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式内容字号应为五号（10.5pt），实际为小一（24.0pt）",
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 7,
+          "paragraph_index": 415,
+          "text_preview": "",
+          "formula_label": "公式#3-7",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "W i,j = L                      , &i=j L-|i=j|     ..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 7)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 8,
+          "paragraph_index": 417,
+          "text_preview": "",
+          "formula_label": "公式#3-8",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "W i,j = W i,j 1 L j=1 L W i,j # 3-8"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 8)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 9,
+          "paragraph_index": 422,
+          "text_preview": "",
+          "formula_label": "公式#3-9",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式内容字号应为五号（10.5pt），实际为三号（16.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "v CLS =CPBert X 1 # 3-9"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 9)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式内容字号应为五号（10.5pt），实际为三号（16.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 10,
+          "paragraph_index": 424,
+          "text_preview": "",
+          "formula_label": "公式#3-10",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "v i = CP B ert X 0 # 3-10"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 10)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 11,
+          "paragraph_index": 446,
+          "text_preview": "",
+          "formula_label": "公式#3-11",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "v i v i ' =Concat v i , v i ' # 3-11"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 11)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 12,
+          "paragraph_index": 457,
+          "text_preview": "",
+          "formula_label": "公式#3-12",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "num_zeros i = &0    &&, j=1 N re s ij =0 & 1 j=1 N..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 12)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 13,
+          "paragraph_index": 459,
+          "text_preview": "",
+          "formula_label": "公式#3-13",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "token _ loss _ non e i (x,y)=-log exp x y i j N ex..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 13)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 14,
+          "paragraph_index": 478,
+          "text_preview": "",
+          "formula_label": "公式#3-14",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "SA= N correct N *100%# 3-14"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 14)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 15,
+          "paragraph_index": 517,
+          "text_preview": "",
+          "formula_label": "公式#4-1",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "E p = Embed p p t # 4-1"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 1)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 16,
+          "paragraph_index": 518,
+          "text_preview": "",
+          "formula_label": "公式#4-2",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "E r = Embed r r t # 4-2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 2)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 17,
+          "paragraph_index": 531,
+          "text_preview": "",
+          "formula_label": "公式#4-3",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "s i =argsort y i # 4-3"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 3)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 18,
+          "paragraph_index": 549,
+          "text_preview": "",
+          "formula_label": "公式#4-4",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "{ y i t }= { … sample i t ， intent:Intent } # 4-4"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 4)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 19,
+          "paragraph_index": 554,
+          "text_preview": "",
+          "formula_label": "公式#4-5",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "{ p i }= f t-1 ( { x i })# 4-5"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 5)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 20,
+          "paragraph_index": 559,
+          "text_preview": "",
+          "formula_label": "公式#4-6",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "{ Train i t }={ T rain i t-1 }+ { Adapt i t }# 4-6"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 6)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 21,
+          "paragraph_index": 573,
+          "text_preview": "",
+          "formula_label": "公式#4-7",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "WSCR = N correct _ seg N total _ test *100%# 4-7"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 7)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 22,
+          "paragraph_index": 575,
+          "text_preview": "",
+          "formula_label": "公式#4-8",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "SVDR = N correct _ depend N total _ test *100%# 4-..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 8)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 23,
+          "paragraph_index": 577,
+          "text_preview": "",
+          "formula_label": "公式#4-9",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "ICR = N correct _ intent N total _ test *100%# 4-9"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 9)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 24,
+          "paragraph_index": 579,
+          "text_preview": "",
+          "formula_label": "公式#4-10",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "ISMR = N intent _ slot _ match N total _ test *100..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 10)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        }
+      ],
+      "debug": true
+    }
+  },
+  "TOC": {
+    "module": "TOC",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "title_type": "目录",
+            "paragraph": "目录",
+            "index": 114,
+            "text": "目录"
+          },
+          {
+            "title_type": "图录",
+            "paragraph": "图录",
+            "index": 209,
+            "text": "图录"
+          },
+          {
+            "title_type": "表录",
+            "paragraph": "表录",
+            "index": 244,
+            "text": "表录"
+          }
+        ]
+      },
+      "[目录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）"
+        ]
+      },
+      "[图录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）"
+        ]
+      },
+      "[表录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗"
+        ]
+      }
+    },
+    "summary": [
+      "目录/图录/表录检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Figure": {
+    "module": "Figure",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[图检测]": {
+        "ok": false,
+        "messages": [
+          "图 3-3 UER-py自定义预训练流程图：图片对齐——图片应居中对齐（当前：两端对齐）"
+        ],
+        "total": 30,
+        "failed": 1
+      }
+    },
+    "summary": {
+      "figure_count": 30
+    },
+    "extracted": {},
+    "details": {
+      "figure_count": 30
+    }
+  },
+  "Table": {
+    "module": "Table",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[表格检测]": {
+        "ok": false,
+        "messages": [
+          "表1-1中文自然语言理解模型现状对比：表格样式——表头底线宽度应为0.5磅，实际为6.0磅",
+          "表1-1中文自然语言理解模型现状对比：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表3-3常用槽位设计及槽值示例：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表3-3常用槽位设计及槽值示例：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表3-4字编码模型错误问题示例：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表3-6不同编码方式语义准确率：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表4-1生成多样化样本的提示：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表4-3不同模型在未见指标项测试集评估结果：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表5-4模型管理模块数据存储表：表格样式——表头底线宽度应为0.5磅，实际为0.75磅"
+        ],
+        "total": 18,
+        "failed": 8
+      }
+    },
+    "summary": [
+      "表格格式检查结果: 发现问题",
+      "检测到 18 个表格"
+    ],
+    "extracted": {},
+    "details": {
+      "table_count": 18
+    }
+  },
+  "References": {
+    "module": "References",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "参考文献标题与内容之间应空两行"
+        ],
+        "header_paragraph": "参 考 文 献",
+        "content_paragraphs": [
+          "Gao M, Li M, Ji T, et al. Key technologies of intelligent question-answering system for power system rules and regulations based on improved BERTserini algorithm[J]. Processes, 2023, 12(1): 58.",
+          "Feifei H, Shibo Z, Danke H, et al. Intelligent question and answer analysis model of power ICT based on BI-LSTM-CRF[J]. International Journal of Modeling, Simulation, and Scientific Computing, 2023, 14(02): 2341010.",
+          "王子岳.基于深度学习的自然语言理解模型[D].南京邮电大学,2021.",
+          "Devlin J , Chang M W , Lee K ,et al.BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding[C]//Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, vol. 6. long and short papers: Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (NAACL HLT 2019), 2-7 June 2019, Minneapolis, Minnesota, USA.2019.DOI:10.48550/arXiv.1810.04805.",
+          "Sutton C .An Introduction to Conditional Random Fields[M]. 2012.",
+          "Jiang G , Ma Z , Zhang L ,et al.Prompt Engineering to Inform Large Language Model in Automated Building Energy Modeling[J]. Energy[2025-02-28].DOI:10.1016/j.energy.2025.134548.    ",
+          "王学文.面向在线商城的客服问答系统的设计与实现[D].哈尔滨工业大学[2025-02-28].",
+          "闫悦,郭晓然,王铁君,等.问答系统研究综述[J].计算机系统应用,2023,32(08):1-18.DOI:10.15888/j.cnki.csa.009208.",
+          "黄晓辉,乔立升,余文涛,等.中文分词与命名实体识别的联合学习[J].国防科技大学学报, 2021, 43(1):9.DOI:10.11887/j.cn.202101012. ",
+          "Liu Z , Zhu C , Zhao T .Chinese Named Entity Recognition with a Sequence Labeling Approach: Based on Phrases, or Based on Words?[J].Springer-Verlag, 2010.DOI:10.1007/978-3-642-14932-0_78.",
+          "罗辉,卢玲.面向中文命名实体识别的中文字符表示方法[J].小型微型计算机系统, 2023, 44(7):1434-1440.",
+          "Ma X , Hovy E .End-to-end Sequence Labeling via Bi-directional LSTM-CNNs-CRF[C]//2016.DOI:10.13140/RG.2.1.2182.5685.",
+          "魏晓聪,段懿桐,刘思含.中文预设识别语料库的构建与预设识别[J].大连工业大学学报, 2023, 42(4):299-305. ",
+          "Zhang Y , Yang J .Chinese NER Using Lattice LSTM[J]. 2018. DOI: 10.48550/arXiv.1805.02023.",
+          "甘晨阳,软件工程.融合多级别特征的医学命名实体识别研究[D].重庆工商大学[2025-02-28].",
+          "孙璐冰,康怡琳,王俊,等.基于BERT的多特征融合中文命名实体识别[J].中南民族大学学报(自然科学版), 2025(1).",
+          "陈军号.基于字符融合多粒度特征的中文命名实体识别方法研究[D].哈尔滨工程大学,2024.",
+          "丁海博.基于特征融合的中文命名实体识别研究[D].湖南工业大学,2024.DOI:10.27730/d.cnki.ghngy.2024.000666.",
+          "李文桂.融合词性信息的英文命名实体识别算法研究与应用[D].湘潭大学,2023.DOI:10.27426/d.cnki.gxtdu.2023.001848.",
+          "Xu Y , Chen Y .Attention-based interactive multi-level feature fusion for named entity recognition[J].Scientific Reports[2025-02-28].DOI:10.1038/s41598-025-86718-0.",
+          "陈海斌.面向长尾问题的自然语言理解模型研究[D].华南理工大学,2023.DOI:10.27151/d.cnki.ghnlu.2023.000790.",
+          "Jie Z , Lu W .Dependency-Guided LSTM-CRF for Named Entity Recognition[C]//2019 Conference on Empirical Methods in Natural Language Processing.2019.DOI:10.18653/v1/D19-1399.",
+          "高国忠,李宇,华远鹏,等.基于BERT-BiLSTM-CRF模型的油气领域命名实体识别[J].长江大学学报(自然科学版), 2024, 21(1):57-65.",
+          "乔波,袁铨,周子濠.基于BERT-CRF的中药材属性抽取方法研究[J].黑龙江科学,2024,15(24):84-88.",
+          "王婷,王娜,崔运鹏,等.基于人工智能大模型技术的果蔬农技知识智能问答系统[J].智慧农业(中英文),2023,5(04):105-116.",
+          "张乐,荆晓远,任娟.基于半自动提示工程人工智能任务代码生成方法[J].信息技术与信息化,2024,(12):205-210.",
+          "蒋雷,汤海林,陈瑜瑾.基于Transformer模型的自然语言处理研究综述[J].现代计算机,2024,30(14):31-35.",
+          "Roumeliotis K I , Tselikas N D , Nasiopoulos D K .Leveraging Large Language Models in Tourism: A Comparative Study of the Latest GPT Omni Models and BERT NLP for Customer Review Classification and Sentiment Analysis[J]. 2024. ",
+          "Zhou G , Su J .Named entity recognition using an HMM-based chunk tagger[C]//Proceedings of the 40th Annual Meeting of the Association for Computational Linguistics, July 6-12, 2002, Philadelphia, PA, USA. 2002.DOI:10.3115/1073083.1073163.",
+          "NG H T, KWONG O Y. Proceedings of the Fifth SIGHAN Workshop on Chinese Language Processing[C]//Proceedings of the Fifth SIGHAN Workshop on Chinese Language Processing. Sydney, Australia, July 22-23, 2006. Morristown, NJ, USA: Association for Computational Linguistics, 2006: 1-8.  ",
+          "FRESKO M, ROSENFELD B, FELDMAN R. A hybrid approach to NER by MEMM and manual rules[C]//Proceedings of the 14th ACM international conference on Information and knowledge management. Bremen, Germany, October 31-November 5, 2005. New York, NY, USA: ACM, 2005: 361-362.",
+          "Isozaki H, Kazawa H. Efficient support vector classifiers for named entity recognition[C]//COLING 2002: The 19th International Conference on Computational Linguistics. 2002.",
+          "徐健,张婧,宋玲钰,等.基于RoBERTa-BiLSTM-CRF融合模型的在线评论细粒度情感分析[J].系统工程理论与实践, 2023, 43(12):3519-3535.DOI:10.12011/SETP2022-2001. ",
+          "Lafferty J, McCallum A, Pereira F. Conditional random fields: Probabilistic models for segmenting and labeling sequence data[C]//Icml. 2001, 1(2): 3.",
+          "胡德洲,李贯峰.命名实体识别研究综述[J].软件导刊,2024,23(09):1-9.",
+          "陈赛.基于BERT的中文命名实体识别方法研究[D].南京邮电大学,2023. ",
+          "曾泽凡,胡星辰,成清,等.基于预训练语言模型的知识图谱研究综述[J].计算机科学,2025,52(01):1-33.",
+          "Deng H , Ergu D , Liu F ,et al.Text sentiment analysis of fusion model based on attention mechanism[J].Procedia Computer Science, 2022, 199:741-748.DOI:10.1016/j.procs.2022.01.092. ",
+          "Vaswani A , Shazeer N , Parmar N ,et al.Attention Is All You Need[J].arXiv, 2017.DOI:10.48550/arXiv.1706.03762. ",
+          "Jin Y ,Sun L ,He S .Convergence of polarized self-attention with consistent rank Chinese text classification[C]//Al Ain University.Proceedings of the 3rd International Conference on Computing Innovation and Applied Physics.School of Computing and Artificial Intelligence, Southwest Jiaotong University;Sichuan Provincial Key Laboratory of Manufacturing Industry Chain Collaboration and Information Support Technology, Southwest Jiaotong University;,2024:6.DOI:10.26914/c.cnkihy.2024.060495.",
+          "胡虹,李学俊,廖竞. 多样性引导的深度多视图聚类算法[J]. 计算机系统应用,2024,33(7):161-169. DOI:10.15888/j.cnki.csa.009553.",
+          "王腾科,朱广丽,李瀚臣,等.基于字词融合和多头注意力的专利实体识别[J].计算机工程与设计, 2023, 44(12):3778-3783.",
+          "范昊,何灏.融合上下文特征和BERT词嵌入的新闻标题分类研究[J].情报科学,2022,40(06):90-97.DOI:10.13833/j.issn.1007-7634.2022.06.012.",
+          "范晓明.面向中文的混合嵌入文本表征方法研究[D].中国人民公安大学,2023.",
+          "李伟康,李炜,吴云芳.深度学习中汉语字向量和词向量结合方式探究[J].中文信息学报, 2017, 31(6):7.DOI:10.3969/j.issn.1003-0077.2017.06.019.",
+          "赵铁军,许木璠,陈安东.自然语言处理研究综述[J/OL].新疆师范大学学报(哲学社会科学版):1-23[2023-12-15].https://doi.org/10.14100/j.cnki.65-1039/g4.20230804.001.",
+          "黄峻,林飞,杨静,等. 生成式AI的大模型提示工程:方法、现状与展望[J]. 智能科学与技术学报,2024,6(2):115-133. DOI:10.11959/j.issn.2096-6652.202424.",
+          "Gu J , Han Z , Chen S ,et al.A Systematic Survey of Prompt Engineering on Vision-Language Foundation Models[J]. 2023. ",
+          "Lester B , Al-Rfou R , Constant N .The Power of Scale for Parameter-Efficient Prompt Tuning[J]. 2021.DOI:10.48550/arXiv.2104.08691.",
+          "Yu F Y , Pan K J .The Effects of Student Question-Generation with Online Prompts on Learning.[J].Journal of Educational Technology & Society, 2014.",
+          "Sun H. Offline prompt evaluation and optimization with inverse reinforcement learning[J]. arXiv preprint arXiv:2309.06553, 2023, 3."
+        ],
+        "blank_lines_after_header": 1,
+        "header_paragraph_index": 716,
+        "content_paragraph_indices": [
+          718,
+          719,
+          720,
+          721,
+          722,
+          723,
+          724,
+          725,
+          726,
+          727,
+          728,
+          729,
+          730,
+          731,
+          732,
+          733,
+          734,
+          735,
+          736,
+          737,
+          738,
+          739,
+          740,
+          741,
+          742,
+          743,
+          744,
+          745,
+          746,
+          747,
+          748,
+          749,
+          750,
+          751,
+          752,
+          753,
+          754,
+          755,
+          756,
+          757,
+          758,
+          759,
+          760,
+          761,
+          762,
+          763,
+          764,
+          765,
+          766,
+          767,
+          768
+        ],
+        "reference_numbers": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ]
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "标题字体应为加粗，实际为不加粗",
+          "标题行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "标题段后间距应为0.0厘米，实际约为0.70厘米"
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "第23条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前为首行缩进",
+          "第25条参考文献字体大小应为小四（12.0pt），实际为小五（9.0pt）",
+          "第25条参考文献行间距应为1.5倍行距（1.5倍），实际为单倍行距（1.0倍）",
+          "检测到 1 条文献未被正文引用:\n  [9] 黄晓辉,乔立升,余文涛,等.中文分词与命名实体识别的联合学习[J].国防科技大学学报, 2021, 43(1):9.DOI:10.11887/j.cn.2021..."
+        ]
+      }
+    },
+    "summary": [
+      "参考文献检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  }
+}

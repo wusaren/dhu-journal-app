@@ -14,6 +14,16 @@ from docx.oxml.ns import qn
 logger = logging.getLogger(__name__)
 
 
+def _get_font_size_name(pt_size):
+    """将磅值转换为中文字号名称"""
+    size_map = {
+        9: "小五", 10.5: "五号", 12: "小四", 14: "四号",
+        16: "三号", 18: "小二", 22: "二号", 24: "小一", 26: "一号"
+    }
+    closest_size = min(size_map.keys(), key=lambda x: abs(x - pt_size))
+    return size_map[closest_size]
+
+
 
 # 添加项目根目录到 sys.path 以支持独立运行（与 Title_detect.py 保持一致）
 if __name__ == "__main__" and __package__ is None:
@@ -284,23 +294,30 @@ def detect_font_for_run(run, paragraph=None, doc=None):
     return font_size, font_ascii, font_eastasia, is_bold
 
 
-def detect_run_color_is_default(run):
-    """返回 True 表示未设置颜色或为自动/默认颜色。"""
+def get_run_actual_color(run):
+    """返回实际颜色值字符串，若无特殊颜色则返回 None"""
     try:
         if not hasattr(run, '_element'):
-            return True
+            return None
         rpr = run._element.rPr
         if rpr is None:
-            return True
+            return None
         color = rpr.find(qn('w:color'))
         if color is None:
-            return True
+            return None
         val = color.get(qn('w:val'))
         if val is None:
-            return True
-        return str(val).lower() in ['auto', '000000']
+            return None
+        if str(val).lower() in ['auto', '000000']:
+            return None
+        return str(val)
     except Exception:
-        return True
+        return None
+
+
+def detect_run_color_is_default(run):
+    """返回 True 表示未设置颜色或为自动/默认颜色。"""
+    return get_run_actual_color(run) is None
 
 
 def _debug_enabled(tpl, debug=None):
@@ -692,9 +709,9 @@ def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
         if abs(size_pt - expected_size) > 0.5:
             report['ok'] = False
             if language == 'cn':
-                report['messages'].append(messages.get('caption_cn_font_size_error', '中文表题字号应为五号(10.5pt)'))
+                report['messages'].append(f'中文表题字号应为{_get_font_size_name(expected_size)}({expected_size}pt)，实际为{_get_font_size_name(size_pt)}({size_pt}pt)')
             else:
-                report['messages'].append(messages.get('caption_en_font_size_error', '英文表题字号应为五号(10.5pt)'))
+                report['messages'].append(f'英文表题字号应为{_get_font_size_name(expected_size)}({expected_size}pt)，实际为{_get_font_size_name(size_pt)}({size_pt}pt)')
 
     if not should_skip_check('font_name'):
         if language == 'cn':
@@ -708,31 +725,30 @@ def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
                 else:
                     if expected_cn_font.lower() not in (font_eastasia or '').lower():
                         report['ok'] = False
-                        report['messages'].append(
-                            messages.get('caption_cn_font_name_error', f"中文表题字体应为{expected_cn_font}")
-                        )
+                        report['messages'].append(f"中文表题字体应为{expected_cn_font}，实际为{font_eastasia or '未设置'}")
         else:
             expected_en_font = expected.get('font_name_ascii')
             if expected_en_font and expected_en_font.lower() not in (font_ascii or '').lower():
                 report['ok'] = False
-                report['messages'].append(messages.get('caption_en_font_name_error', f"英文表题字体应为{expected_en_font}"))
+                report['messages'].append(f"英文表题字体应为{expected_en_font}，实际为{font_ascii or '未设置'}")
 
     if not should_skip_check('bold') and 'bold' in expected:
         expected_bold = bool(expected.get('bold'))
         if is_bold != expected_bold:
             report['ok'] = False
             if language == 'cn':
-                report['messages'].append(messages.get('caption_cn_bold_error', '中文表题不应加粗'))
+                report['messages'].append(f"中文表题{'应加粗' if expected_bold else '应不加粗'}，实际为{'加粗' if is_bold else '不加粗'}")
             else:
-                report['messages'].append(messages.get('caption_en_bold_error', '英文表题不应加粗'))
+                report['messages'].append(f"英文表题{'应加粗' if expected_bold else '应不加粗'}，实际为{'加粗' if is_bold else '不加粗'}")
 
     if not should_skip_check('color') and expected.get('no_special_color', True):
         if not detect_run_color_is_default(main_run):
             report['ok'] = False
+            actual_color = get_run_actual_color(main_run)
             if language == 'cn':
-                report['messages'].append(messages.get('caption_cn_color_error', '中文表题应为无特殊颜色'))
+                report['messages'].append(f"中文表题应为无特殊颜色，实际为{'#' + actual_color if actual_color else '默认/无特殊颜色'}")
             else:
-                report['messages'].append(messages.get('caption_en_color_error', '英文表题应为无特殊颜色'))
+                report['messages'].append(f"英文表题应为无特殊颜色，实际为{'#' + actual_color if actual_color else '默认/无特殊颜色'}")
 
     if not should_skip_check('alignment') and expected.get('alignment'):
         alignment_map = {"left": 0, "center": 1, "right": 2, "justify": 3}
@@ -741,7 +757,12 @@ def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
             actual = detect_paragraph_alignment(paragraph)
             if actual != exp:
                 report['ok'] = False
-                report['messages'].append(messages.get('caption_alignment_error', '表题段落对齐方式不符合要求'))
+                alignment_name_map = {0: "左对齐", 1: "居中对齐", 2: "右对齐", 3: "两端对齐"}
+                alignment_int_map = {"left": 0, "center": 1, "right": 2, "justify": 3}
+                exp_raw = alignment_int_map.get(str(expected.get('alignment')).lower() if expected.get('alignment') else '', None)
+                exp = alignment_name_map.get(exp_raw, '未知') if exp_raw is not None else '未知'
+                act = alignment_name_map.get(actual, '未知')
+                report['messages'].append(f'表题对齐应为{exp}，实际为{act}')
 
     return report
 

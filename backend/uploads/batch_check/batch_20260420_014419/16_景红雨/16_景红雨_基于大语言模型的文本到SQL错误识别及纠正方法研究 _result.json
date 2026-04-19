@@ -1,0 +1,1207 @@
+{
+  "Title": {
+    "module": "Title",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "关键字：文本转SQL；大语言模型；SQL 错误识别与纠正；细粒度错误分类",
+        "title_text": "关键字：文本转SQL；大语言模型；SQL 错误识别与纠正；细粒度错误分类"
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体大小应为三号（16.0pt），实际为四号（14.0pt）",
+          "字体应为Times New Roman，实际为黑体",
+          "字体应为加粗，实际为不加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.25倍行距（1.25倍）",
+          "段落应为居中对齐，实际为两端对齐",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt",
+          "段后间距应为0.7厘米（约19.8pt），实际为0.0pt",
+          "首行缩进应为0.0pt，实际为-56.0pt",
+          "左缩进应为0.0pt，实际为56.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "标题检查结果: 失败",
+      "英文标题检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Abstract": {
+    "module": "Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "摘 要",
+        "content_paragraphs": [
+          "随着大数据时代的到来，数据规模与数据复杂度持续增长，对数据库查询的准确性与稳定性提出了更高要求。为降低数据库访问门槛，使用户能够通过自然语言完成结构化查询，Text-to-SQL 技术逐渐成为研究热点。然而，在实际应用场景中，大语言模型在 Text-to-SQL 任务中仍不可避免地受到“幻觉”现象的影响，生成的 SQL 查询在语法层面或语义层面存在缺陷。尤其在多表连接、隐含约束条件推理以及复杂逻辑组合等场景下，错误更为频发，严重影响系统的可靠性与执行稳定性。",
+          "现有研究通常将 Text-to-SQL 错误划分为语法错误与语义错误两类。语法错误会导致 SQL 查询无法通过数据库管理系统的解析与执行；语义错误则表现为查询在语法上合法但执行结果与用户真实意图不一致，具有更强的隐蔽性与复杂性。近年来，尽管已有工作引入自纠正机制、执行反馈增强以及一致性验证等方法以缓解错误问题，但在实际应用中仍面临以下关键挑战：（1）在 SQL 语法错误处理方面，现有方法高度依赖数据库系统返回的粗粒度执行反馈，难以对错误根因进行精确定位，同时缺乏基于相似错误的上下文样例指导，导致大语言模型难以学习并生成针对多样化错误类型的修复策略。（2）在 SQL 错误整体处理方面，现有方法通常采用统一的纠正范式来处理语法错误与语义错误，缺乏对错误类型的细粒度建模与差异化修复机制。由于两类错误在成因与表现形式上存在本质差异，统一处理策略容易引入级联误差，甚至破坏原有正确结构，从而降低系统整体可靠性。",
+          "针对上述问题，本文开展了系统研究，主要研究内容与贡献如下：",
+          "（1）针对 SQL 语法错误纠正粒度不足且缺乏上下文指导的挑战，本文提出了一种基于执行反馈与案例推理的 SQL 语法错误识别与纠正方法。该方法首先基于执行反馈对含语法错误的 SQL 查询进行细粒度解析与错误分类，并在离线阶段构建语法错误纠正案例库；在在线阶段，结合当前错误 SQL 的结构骨架进行相似案例检索，通过案例推理生成针对性的修复方案，从而提升语法错误的纠正成功率。",
+          "（2）针对 SQL 整体错误难以精确识别与修复的挑战，本文提出了一种基于多智能体的 SQL 双重错误识别与纠正方法。该方法构建多阶段诊断流程，在错误识别阶段将错误划分为语法错误、值错误与逻辑错误，并结合执行反馈验证与双掩码一致性判别进行联合诊断；在纠正阶段，针对不同错误类型进行细粒度分析与根因追踪，结合数据库交互信息与大语言模型生成差异化修复提示，实现对语法错误与语义错误的针对性纠正，从而提升生成 SQL 查询的整体正确性。",
+          "（3）本文在两个主流 Text-to-SQL 基准数据集上进行了系统性的实验评估。针对基于执行反馈与案例推理的 SQL 语法错误识别与纠正方法，实验结果表明，该方法可作为插件模块有效提升多种现有方法的性能；消融与对比实验进一步验证了细粒度错误识别、相似案例检索以及基于案例推理模块的有效性，能够更准确、高效地完成语法错误修复；针对基于多智能体的 SQL 双重错误识别与纠正方法，实验结果表明，该方法在降低大语言模型词元消耗的同时，显著提升了错误识别与修复的准确性；进一步分析表明，执行反馈验证与双掩码一致性判别的联合诊断机制能够有效提高错误识别性能，并在语法错误、值错误与逻辑错误三类任务上均取得稳定提升，同时将粗粒度执行反馈转化为细粒度错误诊断信号，并结合错误类型感知的差异化修复策略，能够显著提升大语言模型在复杂 Text-to-SQL 场景下的整体纠错能力与稳定性。"
+        ],
+        "content_text": "随着大数据时代的到来，数据规模与数据复杂度持续增长，对数据库查询的准确性与稳定性提出了更高要求。为降低数据库访问门槛，使用户能够通过自然语言完成结构化查询，Text-to-SQL 技术逐渐成为研究热点。然而，在实际应用场景中，大语言模型在 Text-to-SQL 任务中仍不可避免地受到“幻觉”现象的影响，生成的 SQL 查询在语法层面或语义层面存在缺陷。尤其在多表连接、隐含约束条件推理以及复杂逻辑组合等场景下，错误更为频发，严重影响系统的可靠性与执行稳定性。 现有研究通常将 Text-to-SQL 错误划分为语法错误与语义错误两类。语法错误会导致 SQL 查询无法通过数据库管理系统的解析与执行；语义错误则表现为查询在语法上合法但执行结果与用户真实意图不一致，具有更强的隐蔽性与复杂性。近年来，尽管已有工作引入自纠正机制、执行反馈增强以及一致性验证等方法以缓解错误问题，但在实际应用中仍面临以下关键挑战：（1）在 SQL 语法错误处理方面，现有方法高度依赖数据库系统返回的粗粒度执行反馈，难以对错误根因进行精确定位，同时缺乏基于相似错误的上下文样例指导，导致大语言模型难以学习并生成针对多样化错误类型的修复策略。（2）在 SQL 错误整体处理方面，现有方法通常采用统一的纠正范式来处理语法错误与语义错误，缺乏对错误类型的细粒度建模与差异化修复机制。由于两类错误在成因与表现形式上存在本质差异，统一处理策略容易引入级联误差，甚至破坏原有正确结构，从而降低系统整体可靠性。 针对上述问题，本文开展了系统研究，主要研究内容与贡献如下： （1）针对 SQL 语法错误纠正粒度不足且缺乏上下文指导的挑战，本文提出了一种基于执行反馈与案例推理的 SQL 语法错误识别与纠正方法。该方法首先基于执行反馈对含语法错误的 SQL 查询进行细粒度解析与错误分类，并在离线阶段构建语法错误纠正案例库；在在线阶段，结合当前错误 SQL 的结构骨架进行相似案例检索，通过案例推理生成针对性的修复方案，从而提升语法错误的纠正成功率。 （2）针对 SQL 整体错误难以精确识别与修复的挑战，本文提出了一种基于多智能体的 SQL 双重错误识别与纠正方法。该方法构建多阶段诊断流程，在错误识别阶段将错误划分为语法错误、值错误与逻辑错误，并结合执行反馈验证与双掩码一致性判别进行联合诊断；在纠正阶段，针对不同错误类型进行细粒度分析与根因追踪，结合数据库交互信息与大语言模型生成差异化修复提示，实现对语法错误与语义错误的针对性纠正，从而提升生成 SQL 查询的整体正确性。 （3）本文在两个主流 Text-to-SQL 基准数据集上进行了系统性的实验评估。针对基于执行反馈与案例推理的 SQL 语法错误识别与纠正方法，实验结果表明，该方法可作为插件模块有效提升多种现有方法的性能；消融与对比实验进一步验证了细粒度错误识别、相似案例检索以及基于案例推理模块的有效性，能够更准确、高效地完成语法错误修复；针对基于多智能体的 SQL 双重错误识别与纠正方法，实验结果表明，该方法在降低大语言模型词元消耗的同时，显著提升了错误识别与修复的准确性；进一步分析表明，执行反馈验证与双掩码一致性判别的联合诊断机制能够有效提高错误识别性能，并在语法错误、值错误与逻辑错误三类任务上均取得稳定提升，同时将粗粒度执行反馈转化为细粒度错误诊断信号，并结合错误类型感知的差异化修复策略，能够显著提升大语言模型在复杂 Text-to-SQL 场景下的整体纠错能力与稳定性。",
+        "title_paragraph_index": 49,
+        "content_paragraphs_indices": [],
+        "content_paragraph_indexes": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段正文应为左对齐，实际为两端对齐",
+          "第2段正文应为左对齐，实际为两端对齐",
+          "第3段正文应为左对齐，实际为两端对齐",
+          "第4段正文应为左对齐，实际为两端对齐",
+          "第5段正文应为左对齐，实际为两端对齐",
+          "第6段正文应为左对齐，实际为两端对齐"
+        ]
+      }
+    },
+    "summary": [
+      "摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "English_Abstract": {
+    "module": "English_Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段首行缩进应为4.0字符，当前约2.0字符",
+          "第2段首行缩进应为4.0字符，当前约2.0字符",
+          "第3段首行缩进应为4.0字符，当前约2.0字符",
+          "第4段首行缩进应为4.0字符，当前约2.0字符",
+          "第5段首行缩进应为4.0字符，当前约2.0字符",
+          "第6段首行缩进应为4.0字符，当前约2.0字符",
+          "第7段行距应为1.25倍，当前1.5",
+          "第7段应左对齐",
+          "第7段首行缩进应为4.0字符，当前约2.0字符"
+        ]
+      }
+    },
+    "summary": [
+      "英文摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Keywords": {
+    "module": "Keywords",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "摘要与关键词之间应空两行"
+        ],
+        "keywords_paragraph": "KEY WORDS: Text-to-SQL, Large Language Models, SQL Error Identification and Correction, Fine-grained Error Classification",
+        "keywords_text": "Text-to-SQL, Large Language Models, SQL Error Identification and Correction, Fine-grained Error Classification",
+        "keywords_list": [
+          "Text-to-SQL",
+          "Large Language Models",
+          "SQL Error Identification and Correction",
+          "Fine-grained Error Classification"
+        ],
+        "keywords_paragraph_index": 75
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "首行缩进应为0.0pt，实际为-89.8pt",
+          "左缩进应为0.0pt，实际为89.8pt"
+        ]
+      }
+    },
+    "summary": [
+      "中文和英文关键词检测均失败",
+      "关键词检查结果: 失败",
+      "关键词检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Content": {
+    "module": "Content",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "level": 1,
+            "number": "1",
+            "text": "绪论",
+            "paragraph_index": 116,
+            "full_text": "第一章 绪论"
+          },
+          {
+            "level": 2,
+            "number": "1.1",
+            "text": "研究背景及意义",
+            "paragraph_index": 117,
+            "full_text": "1.1 研究背景及意义"
+          },
+          {
+            "level": 2,
+            "number": "1.2",
+            "text": "研究现状及不足",
+            "paragraph_index": 126,
+            "full_text": "1.2 研究现状及不足"
+          },
+          {
+            "level": 2,
+            "number": "1.3",
+            "text": "研究内容及贡献",
+            "paragraph_index": 145,
+            "full_text": "1.3 研究内容及贡献"
+          },
+          {
+            "level": 2,
+            "number": "1.4",
+            "text": "论文组织结构",
+            "paragraph_index": 150,
+            "full_text": "1.4 论文组织结构"
+          },
+          {
+            "level": 1,
+            "number": "2",
+            "text": "相关理论及技术",
+            "paragraph_index": 159,
+            "full_text": "第二章 相关理论及技术"
+          },
+          {
+            "level": 2,
+            "number": "2.1",
+            "text": "文本转SQL技术",
+            "paragraph_index": 161,
+            "full_text": "2.1 文本转SQL技术"
+          },
+          {
+            "level": 2,
+            "number": "2.2",
+            "text": "上下文学习技术",
+            "paragraph_index": 179,
+            "full_text": "2.2 上下文学习技术"
+          },
+          {
+            "level": 2,
+            "number": "2.3",
+            "text": "检索增强生成技术",
+            "paragraph_index": 185,
+            "full_text": "2.3 检索增强生成技术"
+          },
+          {
+            "level": 2,
+            "number": "2.4",
+            "text": "掩码语言建模技术",
+            "paragraph_index": 193,
+            "full_text": "2.4 掩码语言建模技术"
+          },
+          {
+            "level": 2,
+            "number": "2.5",
+            "text": "本章小结",
+            "paragraph_index": 203,
+            "full_text": "2.5 本章小结"
+          },
+          {
+            "level": 1,
+            "number": "3",
+            "text": "基于执行反馈与案例推理的SQL语法错误识别及纠正方法",
+            "paragraph_index": 208,
+            "full_text": "第三章 基于执行反馈与案例推理的SQL语法错误识别及纠正方法"
+          },
+          {
+            "level": 2,
+            "number": "3.1",
+            "text": "引言",
+            "paragraph_index": 210,
+            "full_text": "3.1 引言"
+          },
+          {
+            "level": 2,
+            "number": "3.2",
+            "text": "任务定义与框架概述",
+            "paragraph_index": 217,
+            "full_text": "3.2 任务定义与框架概述"
+          },
+          {
+            "level": 2,
+            "number": "3.3",
+            "text": "离线阶段",
+            "paragraph_index": 229,
+            "full_text": "3.3 离线阶段"
+          },
+          {
+            "level": 3,
+            "number": "3.3.1",
+            "text": "错误数据收集模块",
+            "paragraph_index": 231,
+            "full_text": "3.3.1 错误数据收集模块"
+          },
+          {
+            "level": 3,
+            "number": "3.3.2",
+            "text": "细粒度错误识别模块",
+            "paragraph_index": 233,
+            "full_text": "3.3.2 细粒度错误识别模块"
+          },
+          {
+            "level": 3,
+            "number": "3.3.3",
+            "text": "纠正方案生成模块",
+            "paragraph_index": 263,
+            "full_text": "3.3.3 纠正方案生成模块"
+          },
+          {
+            "level": 3,
+            "number": "3.3.4",
+            "text": "纠正方案验证模块",
+            "paragraph_index": 269,
+            "full_text": "3.3.4 纠正方案验证模块"
+          },
+          {
+            "level": 3,
+            "number": "3.3.5",
+            "text": "错误案例存储模块",
+            "paragraph_index": 274,
+            "full_text": "3.3.5 错误案例存储模块"
+          },
+          {
+            "level": 2,
+            "number": "3.4",
+            "text": "在线阶段",
+            "paragraph_index": 277,
+            "full_text": "3.4 在线阶段"
+          },
+          {
+            "level": 2,
+            "number": "3.5",
+            "text": "本章小结",
+            "paragraph_index": 287,
+            "full_text": "3.5 本章小结"
+          },
+          {
+            "level": 1,
+            "number": "4",
+            "text": "基于多智能体的SQL双重错误识别及纠正方法",
+            "paragraph_index": 291,
+            "full_text": "第四章 基于多智能体的SQL双重错误识别及纠正方法"
+          },
+          {
+            "level": 2,
+            "number": "4.1",
+            "text": "引言",
+            "paragraph_index": 293,
+            "full_text": "4.1 引言"
+          },
+          {
+            "level": 2,
+            "number": "4.2",
+            "text": "任务定义与框架概述",
+            "paragraph_index": 301,
+            "full_text": "4.2 任务定义与框架概述"
+          },
+          {
+            "level": 2,
+            "number": "4.3",
+            "text": "错误识别阶段",
+            "paragraph_index": 310,
+            "full_text": "4.3 错误识别阶段"
+          },
+          {
+            "level": 3,
+            "number": "4.3.1",
+            "text": "语法错误诊断模块",
+            "paragraph_index": 312,
+            "full_text": "4.3.1 语法错误诊断模块"
+          },
+          {
+            "level": 3,
+            "number": "4.3.2",
+            "text": "值错误诊断模块",
+            "paragraph_index": 314,
+            "full_text": "4.3.2 值错误诊断模块"
+          },
+          {
+            "level": 3,
+            "number": "4.3.3",
+            "text": "逻辑错误诊断模块",
+            "paragraph_index": 316,
+            "full_text": "4.3.3 逻辑错误诊断模块"
+          },
+          {
+            "level": 2,
+            "number": "4.4",
+            "text": "错误纠正阶段",
+            "paragraph_index": 328,
+            "full_text": "4.4 错误纠正阶段"
+          },
+          {
+            "level": 3,
+            "number": "4.4.1",
+            "text": "语法错误会诊模块",
+            "paragraph_index": 330,
+            "full_text": "4.4.1 语法错误会诊模块"
+          },
+          {
+            "level": 3,
+            "number": "4.4.2",
+            "text": "值错误会诊模块",
+            "paragraph_index": 332,
+            "full_text": "4.4.2 值错误会诊模块"
+          },
+          {
+            "level": 3,
+            "number": "4.4.3",
+            "text": "逻辑错误会诊模块",
+            "paragraph_index": 345,
+            "full_text": "4.4.3 逻辑错误会诊模块"
+          },
+          {
+            "level": 3,
+            "number": "4.4.4",
+            "text": "错误治疗模块",
+            "paragraph_index": 351,
+            "full_text": "4.4.4 错误治疗模块"
+          },
+          {
+            "level": 2,
+            "number": "4.5",
+            "text": "本章小结",
+            "paragraph_index": 362,
+            "full_text": "4.5 本章小结"
+          },
+          {
+            "level": 1,
+            "number": "5",
+            "text": "实验设计与结果分析",
+            "paragraph_index": 366,
+            "full_text": "第五章 实验设计与结果分析"
+          },
+          {
+            "level": 2,
+            "number": "5.1",
+            "text": "数据集与评估指标",
+            "paragraph_index": 367,
+            "full_text": "5.1 数据集与评估指标"
+          },
+          {
+            "level": 2,
+            "number": "5.2",
+            "text": "基于执行反馈与案例推理的SQL语法错误识别及纠正实验分析",
+            "paragraph_index": 371,
+            "full_text": "5.2 基于执行反馈与案例推理的SQL语法错误识别及纠正实验分析"
+          },
+          {
+            "level": 3,
+            "number": "5.2.1",
+            "text": "实验环境与参数设置",
+            "paragraph_index": 372,
+            "full_text": "5.2.1 实验环境与参数设置"
+          },
+          {
+            "level": 3,
+            "number": "5.2.2",
+            "text": "对比实验",
+            "paragraph_index": 374,
+            "full_text": "5.2.2 对比实验"
+          },
+          {
+            "level": 3,
+            "number": "5.2.3",
+            "text": "总体实验结果分析",
+            "paragraph_index": 379,
+            "full_text": "5.2.3 总体实验结果分析"
+          },
+          {
+            "level": 3,
+            "number": "5.2.4",
+            "text": "消融实验分析",
+            "paragraph_index": 387,
+            "full_text": "5.2.4 消融实验分析"
+          },
+          {
+            "level": 3,
+            "number": "5.2.5",
+            "text": "样例分析",
+            "paragraph_index": 402,
+            "full_text": "5.2.5 样例分析"
+          },
+          {
+            "level": 2,
+            "number": "5.3",
+            "text": "基于多智能体的SQL双重错误识别及纠正实验分析",
+            "paragraph_index": 409,
+            "full_text": "5.3 基于多智能体的SQL双重错误识别及纠正实验分析"
+          },
+          {
+            "level": 3,
+            "number": "5.3.1",
+            "text": "实验环境与参数设置",
+            "paragraph_index": 410,
+            "full_text": "5.3.1 实验环境与参数设置"
+          },
+          {
+            "level": 3,
+            "number": "5.3.2",
+            "text": "对比实验",
+            "paragraph_index": 414,
+            "full_text": "5.3.2 对比实验"
+          },
+          {
+            "level": 3,
+            "number": "5.3.3",
+            "text": "总体实验结果分析",
+            "paragraph_index": 422,
+            "full_text": "5.3.3 总体实验结果分析"
+          },
+          {
+            "level": 3,
+            "number": "5.3.4",
+            "text": "消融实验分析",
+            "paragraph_index": 429,
+            "full_text": "5.3.4 消融实验分析"
+          },
+          {
+            "level": 3,
+            "number": "5.3.5",
+            "text": "样例分析",
+            "paragraph_index": 443,
+            "full_text": "5.3.5 样例分析"
+          },
+          {
+            "level": 2,
+            "number": "5.4",
+            "text": "本章小结",
+            "paragraph_index": 450,
+            "full_text": "5.4 本章小结"
+          },
+          {
+            "level": 1,
+            "number": "6",
+            "text": "总结和展望",
+            "paragraph_index": 453,
+            "full_text": "第六章 总结和展望"
+          },
+          {
+            "level": 2,
+            "number": "6.1",
+            "text": "本文工作总结",
+            "paragraph_index": 454,
+            "full_text": "6.1 本文工作总结"
+          },
+          {
+            "level": 2,
+            "number": "6.2",
+            "text": "未来工作展望",
+            "paragraph_index": 460,
+            "full_text": "6.2 未来工作展望"
+          }
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "标题“绪论”段前应为0.0pt，实际为19.9pt",
+          "标题“绪论”段后应为0.0pt，实际为19.9pt",
+          "标题“相关理论及技术”段前应为0.0pt，实际为19.9pt",
+          "标题“相关理论及技术”段后应为0.0pt，实际为19.9pt",
+          "标题“基于执行反馈与案例推理的SQL语法错误识别及纠正方法”段前应为0.0pt，实际为19.9pt",
+          "标题“基于执行反馈与案例推理的SQL语法错误识别及纠正方法”段后应为0.0pt，实际为19.9pt",
+          "标题“错误数据收集模块”段前应为19.8pt，实际为8.5pt",
+          "标题“错误数据收集模块”段后应为19.8pt，实际为8.5pt",
+          "标题“细粒度错误识别模块”段前应为19.8pt，实际为8.5pt",
+          "标题“细粒度错误识别模块”段后应为19.8pt，实际为8.5pt",
+          "标题“纠正方案生成模块”段前应为19.8pt，实际为8.5pt",
+          "标题“纠正方案生成模块”段后应为19.8pt，实际为8.5pt",
+          "标题“纠正方案验证模块”段前应为19.8pt，实际为8.5pt",
+          "标题“纠正方案验证模块”段后应为19.8pt，实际为8.5pt",
+          "标题“错误案例存储模块”段前应为19.8pt，实际为8.5pt",
+          "标题“错误案例存储模块”段后应为19.8pt，实际为8.5pt",
+          "标题“基于多智能体的SQL双重错误识别及纠正方法”段前应为0.0pt，实际为19.9pt",
+          "标题“基于多智能体的SQL双重错误识别及纠正方法”段后应为0.0pt，实际为19.9pt",
+          "标题“语法错误诊断模块”段前应为19.8pt，实际为8.5pt",
+          "标题“语法错误诊断模块”段后应为19.8pt，实际为8.5pt",
+          "标题“值错误诊断模块”段前应为19.8pt，实际为8.5pt",
+          "标题“值错误诊断模块”段后应为19.8pt，实际为8.5pt",
+          "标题“逻辑错误诊断模块”段前应为19.8pt，实际为8.5pt",
+          "标题“逻辑错误诊断模块”段后应为19.8pt，实际为8.5pt",
+          "标题“语法错误会诊模块”段前应为19.8pt，实际为8.5pt",
+          "标题“语法错误会诊模块”段后应为19.8pt，实际为8.5pt",
+          "标题“值错误会诊模块”段前应为19.8pt，实际为8.5pt",
+          "标题“值错误会诊模块”段后应为19.8pt，实际为8.5pt",
+          "标题“逻辑错误会诊模块”段前应为19.8pt，实际为8.5pt",
+          "标题“逻辑错误会诊模块”段后应为19.8pt，实际为8.5pt",
+          "标题“错误治疗模块”段前应为19.8pt，实际为8.5pt",
+          "标题“错误治疗模块”段后应为19.8pt，实际为8.5pt",
+          "标题“实验设计与结果分析”段前应为0.0pt，实际为19.9pt",
+          "标题“实验设计与结果分析”段后应为0.0pt，实际为19.9pt",
+          "标题“实验环境与参数设置”段前应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数设置”段后应为19.8pt，实际为8.5pt",
+          "标题“对比实验”段前应为19.8pt，实际为8.5pt",
+          "标题“对比实验”段后应为19.8pt，实际为8.5pt",
+          "标题“总体实验结果分析”段前应为19.8pt，实际为8.5pt",
+          "标题“总体实验结果分析”段后应为19.8pt，实际为8.5pt",
+          "标题“消融实验分析”段前应为19.8pt，实际为8.5pt",
+          "标题“消融实验分析”段后应为19.8pt，实际为8.5pt",
+          "标题“样例分析”段前应为19.8pt，实际为8.5pt",
+          "标题“样例分析”段后应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数设置”段前应为19.8pt，实际为8.5pt",
+          "标题“实验环境与参数设置”段后应为19.8pt，实际为8.5pt",
+          "标题“对比实验”段前应为19.8pt，实际为8.5pt",
+          "标题“对比实验”段后应为19.8pt，实际为8.5pt",
+          "标题“总体实验结果分析”段前应为19.8pt，实际为8.5pt",
+          "标题“总体实验结果分析”段后应为19.8pt，实际为8.5pt",
+          "标题“消融实验分析”段前应为19.8pt，实际为8.5pt",
+          "标题“消融实验分析”段后应为19.8pt，实际为8.5pt",
+          "标题“样例分析”段前应为19.8pt，实际为8.5pt",
+          "标题“样例分析”段后应为19.8pt，实际为8.5pt",
+          "标题“总结和展望”段前应为0.0pt，实际为19.9pt",
+          "标题“总结和展望”段后应为0.0pt，实际为19.9pt"
+        ]
+      }
+    },
+    "summary": [],
+    "extracted": {},
+    "details": {}
+  },
+  "Formula": {
+    "module": "Formula",
+    "checks": {
+      "[公式检测]": {
+        "ok": true,
+        "messages": []
+      },
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      }
+    },
+    "summary": [
+      "公式格式检查结果: 通过",
+      "检测统计：共 573 个段落，识别出 5 个带编号的公式段落"
+    ],
+    "extracted": {},
+    "details": {
+      "total_paragraphs": 573,
+      "formula_paragraphs_count": 5,
+      "formula_paragraphs": [
+        {
+          "index": 1,
+          "paragraph_index": 195,
+          "text_preview": "",
+          "formula_label": "公式#2-1",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "L MLM =- i ∈ M log P x i x | M # 2-1"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 1)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 2,
+          "paragraph_index": 219,
+          "text_preview": "",
+          "formula_label": "公式#3-1",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "P M Y P Q , S = i =1 Y P M Y i Y < i | P Q , S ,# ..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 1)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 3,
+          "paragraph_index": 222,
+          "text_preview": "",
+          "formula_label": "公式#3-2",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "Y ' = F Y s , ε # 3-2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 2)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 4,
+          "paragraph_index": 281,
+          "text_preview": "",
+          "formula_label": "公式#3-3",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "sim A , B = A · B A B ,# 3-3"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 3)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 5,
+          "paragraph_index": 303,
+          "text_preview": "",
+          "formula_label": "公式#4-1",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": true,
+            "messages": [],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "Y e = F I Y ， Y ' = F C Y e , P e # 4-1"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 1)"
+              },
+              "fonts": {
+                "correct": true,
+                "issues": []
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        }
+      ],
+      "debug": true
+    }
+  },
+  "TOC": {
+    "module": "TOC",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "title_type": "图录",
+            "paragraph": "图录",
+            "index": 76,
+            "text": "图录"
+          },
+          {
+            "title_type": "表录",
+            "paragraph": "表录",
+            "index": 97,
+            "text": "表录"
+          }
+        ]
+      },
+      "[图录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗"
+        ]
+      },
+      "[表录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗"
+        ]
+      }
+    },
+    "summary": [
+      "目录/图录/表录检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Figure": {
+    "module": "Figure",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[图检测]": {
+        "ok": false,
+        "messages": [
+          "Fig 3-1 An Execution-Guided Refinement for Text-to-SQL via Case-Based Reasoning Framework for SQL Syntax Error Identification and Correction：标题格式——图片标题字体大小应为五号(10.5pt)（期望：五号，实际：小四）",
+          "Fig 3-2 Fine-Grained Distribution of Syntax Error Types：标题格式——图片标题字体大小应为五号(10.5pt)（期望：五号，实际：小四）",
+          "Fig 3-3 Multi-level Fine-Grained Syntax Error Classification：标题格式——图片标题字体大小应为五号(10.5pt)（期望：五号，实际：小四）"
+        ],
+        "total": 17,
+        "failed": 3
+      }
+    },
+    "summary": {
+      "figure_count": 17
+    },
+    "extracted": {},
+    "details": {
+      "figure_count": 17
+    }
+  },
+  "Table": {
+    "module": "Table",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[表格检测]": {
+        "ok": false,
+        "messages": [
+          "表3-1“列不存在”细粒度分类依据：表题文字规则——中文表题中不允许出现标点符号",
+          "表3-1“列不存在”细粒度分类依据：表格样式——表头底线宽度应为0.5磅，实际为0.75磅",
+          "表3-2各类细粒度错误的提示模板：表格样式——表头底线宽度应为0.5磅，实际为1.0磅",
+          "表3-2各类细粒度错误的提示模板：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表3-3纠正方案生成提示词模板：表格样式——表头底线宽度应为0.5磅，实际为1.0磅",
+          "表4-1SQL生成任务提示词模板：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表4-2大模型语义扩展提示词模板：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表4-3SQL错误治疗提示词模板：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表5-1不同模型在多种基础文本到SQL方法下的优化结果：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表5-2基于DIN-SQL的Spider-dev消融实验：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表5-3基于执行反馈与案例推理的SQL语法错误识别及纠正案例分析：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表5-6不同方法基于BIRD开发集的错误识别性能比较：表题文字规则——中英文表序不一致：中文为表5-6，英文为Table 5-5"
+        ],
+        "total": 17,
+        "failed": 11
+      }
+    },
+    "summary": [
+      "表格格式检查结果: 发现问题",
+      "检测到 17 个表格"
+    ],
+    "extracted": {},
+    "details": {
+      "table_count": 17
+    }
+  },
+  "References": {
+    "module": "References",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "header_paragraph": "参 考 文 献",
+        "content_paragraphs": [
+          "Codd E F. A relational model of data for large shared data banks[J]. Communications of the ACM, 1970, 13(6): 377-387.",
+          "陈乐, 肖忠良, 陈佳, 等. 基于层次化实体索引的自然语言转SQL方法[J/OL].计算机工程, 2026: 1-12.",
+          "Shin S S. Structured query language learning: Concept map-based instruction based on cognitive load theory[J]. IEEE Access, 2020, 8: 100095-100110.",
+          "Taipalus T, Siponen M, Vartiainen T. Errors and complications in SQL query formulation[J]. ACM Transactions on Computing Education (TOCE), 2018, 18(3): 1-29.",
+          "Chen W. Large language models are few (1)-shot table reasoners[C]//Findings of the association for computational linguistics: EACL 2023. 2023: 1120-1130.",
+          "谭钊, 刘喜平, 舒晴, 等. Hint-SQL:基于自动线索生成的Text-to-SQL提示方法[J/OL]. 计算机学报, 2026: 1-21.",
+          "刘喜平, 舒晴, 何佳壕, 等. 基于自然语言的数据库查询生成研究综述[J]. 软件学报, 2022, 33(11): 4107-4136.",
+          "Shi L, Tang Z, Zhang N, et al. A survey on employing large language models for text-to-sql tasks[J]. ACM Computing Surveys, 2025, 58(2): 1-37.",
+          "丁霖, 杨洋, 郭彩丽, 等. 基于表格创建信息微调的大模型文本转Sql方法[J/OL]. 计算机工程, 2026: 1-10.",
+          "Cen J, Liu J, Li Z, et al. SQLFixAgent: Towards Semantic-Accurate Text-to-SQL Parsing via Consistency-Enhanced Multi-Agent Collaboration[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2025, 39(1): 49-57.",
+          "Zhang B, Ye Y, Du G, et al. Benchmarking the text-to-sql capability of large language models: A comprehensive evaluation[J]. arXiv preprint arXiv:2403.02951, 2024.",
+          "Chen Z, Chen S, White M, et al. Text-to-SQL Error Correction with Language Models of Code[C]//Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics. 2023: 1359-1372.",
+          "Achiam J, Adler S, Agarwal S, et al. Gpt-4 technical report[J]. arXiv preprint arXiv:2303.08774, 2023.",
+          "Chen M, Tworek J, Jun H, et al. Evaluating large language models trained on code[J]. arXiv preprint arXiv:2107.03374, 2021.",
+          "Sun R, Arik S Ö, Muzio A, et al. SQL-PaLM: Improved Large Language Model Adaptation for Text-to-SQL (extended)[J]. arXiv preprint arXiv:2306.00739, 2023.",
+          "Li H, Zhang J, Liu H, et al. Codes: Towards building open-source language models for text-to-sql[J]. Proceedings of the ACM on Management of Data, 2024, 2(3): 1-28.",
+          "Bhaskar A, Tomar T, Sathe A, et al. Benchmarking and improving text-to-sql generation under ambiguity[J]. arXiv preprint arXiv:2310.13659, 2023.",
+          "Sun S, Zhang Y, Yan J, et al. Battle of the Large Language Models: Dolly vs LLaMA vs Vicuna vs Guanaco vs Bard vs ChatGPT-A Text-to-SQL Parsing Comparison[C]//Findings of the Association for Computational Linguistics: EMNLP 2023. 2023: 11225-11238.",
+          "Qu G, Li J, Li B, et al. Before Generation, Align it! A Novel and Effective Strategy for Mitigating Hallucinations in Text-to-SQL Generation[C]//Findings of the Association for Computational Linguistics ACL 2024. 2024: 5456-5471.",
+          "Xu B, Li S, Jing H, et al. Boosting Text-to-SQL through Multi-grained Error Identification[C]//Proceedings of the 31st International Conference on Computational Linguistics. 2025: 4282-4292.",
+          "Zhang K, Lin X, Wang Y, et al. Refsql: A retrieval-augmentation framework for text-to-sql generation[C]//Findings of the Association for Computational Linguistics: EMNLP 2023. 2023: 664-673.",
+          "Pourreza M, Rafiei D. Din-sql: Decomposed in-context learning of text-to-sql with self-correction[J]. Advances in Neural Information Processing Systems, 2024, 36.",
+          "Askari A, Poelitz C, Tang X. MAGIC: Generating Self-Correction Guideline for In-Context Text-to-SQL[J]. arXiv preprint arXiv:2406.12692, 2024.",
+          "Liu X, Tan Z. EPI-SQL: Enhancing Text-to-SQL Translation with Error-Prevention Instructions[J]. arXiv preprint arXiv:2404.14453, 2024.",
+          "Xie Y, Jin X, Xie T, et al. Decomposition for Enhancing Attention: Improving LLM-based Text-to-SQL through Workflow Paradigm. In Findings of the Association for Computational Linguistics[C], 2024, 10796–10816.",
+          "Dong X, Zhang C, Ge Y, et al. C3: Zero-shot text-to-sql with chatgpt[J]. arXiv preprint arXiv:2307.07306, 2023.",
+          "Gao D, Wang H, Li Y, et al. Text-to-sql empowered by large language models: A benchmark evaluation[J]. arXiv preprint arXiv:2308.15363, 2023.",
+          "Wang B, Ren C, Yang J, et al. Mac-sql: A multi-agent collaborative framework for text-to-sql[C]//Proceedings of the 31st International Conference on Computational Linguistics. 2025: 540-557.",
+          "Li C, Shao Y, Liu Z. SEA-SQL: Semantic-Enhanced Text-to-SQL with Adaptive Refinement[J]. arXiv preprint arXiv:2408.04919, 2024.",
+          "Mao W, Wang R, Guo J, et al. Enhancing Text-to-SQL Parsing through Question Rewriting and Execution-Guided Refinement[C]//Findings of the Association for Computational Linguistics ACL 2024. 2024: 2009-2024.",
+          "张宇, 罗泽. 一种面向复杂Text-to-SQL的语义驱动动态检索增强方法[J/OL]. 数据与计算发展前沿, 2026: 1-13.",
+          "Mahmud T, Hasan K M A, Ahmed M, et al. A rule based approach for NLP based query processing[C]//2015 2nd international conference on electrical information and communication technologies. IEEE, 2015: 78-82.",
+          "Kang N, Singh B, Afzal Z, et al. Using rule-based natural language processing to improve disease normalization in biomedical text[J]. Journal of the American Medical Informatics Association, 2013, 20(5): 876-881.",
+          "Hammami L, Paglialonga A, Pruneri G, et al. Automated classification of cancer morphology from Italian pathology reports using Natural Language Processing techniques: A rule-based approach[J]. Journal of Biomedical Informatics, 2021, 116: 103712.",
+          "Katsogiannis-Meimarakis G, Koutrika G. A deep dive into deep learning approaches for text-to-sql systems[C]//Proceedings of the 2021 International Conference on Management of Data. 2021: 2846-2851.",
+          "Guo J Q, Zhan Z C, Gao Y, et al. Towards complex text-to-SQL in cross-domain database with intermediate representation[C]//Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics. Florence, Italy: Association for Computational Linguistics, 2019: 4524-4535.",
+          "Choi D H, Shin M C, Kim E G, et al. Ryansql: Recursively applying sketch-based slot fillings for complex text-to-sql in cross-domain databases[J]. Computational Linguistics, 2021, 47(2): 309-332.",
+          "Wang B, Shin R, Liu X, et al. Rat-sql: Relation-aware schema encoding and linking for text-to-sql parsers[C]//Proceedings of the 58th annual meeting of the association for computational linguistics. 2020: 7567-7578.",
+          "Cao R S, Chen L, Chen Z, et al. LGESQL: line graph enhanced text-to-SQL model with mixed local and non-local relations[C]//Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing. Online: Association for Computational Linguistics, 2021: 2541-2555.",
+          "Scholak T, Schucher N, Bahdanau D. PICARD: parsing incrementally for constrained auto-regressive decoding from language models[C]//Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing. Online and Punta Cana, Dominican Republic: Association for Computational Linguistics, 2021: 9895-9901.",
+          "Wei J, Wang X, Schuurmans D, et al. Chain-of-thought prompting elicits reasoning in large language models[J]. Advances in neural information processing systems, 2022, 35: 24824-24837.",
+          "周昆, 朱余韬, 陈志朋. YuLan-Chat: 基于多阶段课程学习的大语言模型[J]. 计算机学报, 2025, 48(1): 1-18.",
+          "Dong Q, Li L, Dai D, et al. A survey on in-context learning[C]//Proceedings of the 2024 conference on empirical methods in natural language processing. 2024: 1107-1128.",
+          "Liu J, Shen D, Zhang Y, et al. What makes good in-context examples for GPT-3?[C]//Proceedings of Deep Learning Inside Out: The 3rd workshop on knowledge extraction and integration for deep learning architectures. 2022: 100-114.",
+          "Lu Y, Bartolo M, Moore A, et al. Fantastically ordered prompts and where to find them: Overcoming few-shot prompt order sensitivity[C]//Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics. 2022: 8086-8098.",
+          "Wu Z, Wang Y, Ye J, et al. Self-adaptive in-context learning: An information compression perspective for in-context example selection and ordering[C]//Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics. 2023: 1423-1436.",
+          "Sun T, Shao Y, Qian H, et al. Black-box tuning for language-model-as-a-service[C]//International Conference on Machine Learning. PMLR, 2022: 20841-20855.",
+          "Wang X, Zhu W, Saxon M, et al. Large language models are implicitly topic models: Explaining and finding good demonstrations for in-context learning[C]//Workshop on efficient systems for foundation models@ icml2023. 2023.",
+          "Liu Y, Liu J, Shi X, et al. Let's Learn Step by Step: Enhancing In-Context Learning Ability with Curriculum Learning[J]. arXiv preprint arXiv:2402.10738, 2024.",
+          "Liu S, Ye H, Xing L, et al. In-context vectors: making in context learning more effective and controllable through latent space steering[C]//Proceedings of the 41st International Conference on Machine Learning. 2024: 32287-32307.",
+          "Qin C, Zhang A, Chen C, et al. In-context learning with iterative demonstration selection[C]//Findings of the Association for Computational Linguistics: EMNLP 2024. 2024: 7441-7455.",
+          "Yang Z, Dai D, Wang P, et al. Not All Demonstration Examples are Equally Beneficial: Reweighting Demonstration Examples for In-Context Learning[C]//Findings of the Association for Computational Linguistics: EMNLP 2023. 2023: 13209-13221.",
+          "Honovich O, Shaham U, Bowman S, et al. Instruction induction: From few examples to natural language task descriptions[C]//Proceedings of the 61st Annual Meeting of the Association for Computational Linguistic. 2023: 1935-1952.",
+          "Wang Y, Kordi Y, Mishra S, et al. Self-instruct: Aligning language models with self-generated instructions[C]//Proceedings of the 61st annual meeting of the association for computational linguistics. 2023: 13484-13508.",
+          "Gao Y, Xiong Y, Gao X, et al. Retrieval-augmented generation for large language models: A survey[J]. arXiv preprint arXiv:2312.10997, 2023, 2(1).",
+          "Fan W, Ding Y, Ning L, et al. A survey on rag meeting llms: Towards retrieval-augmented large language models[C]//Proceedings of the 30th ACM SIGKDD conference on knowledge discovery and data mining. 2024: 6491-6501.",
+          "Lewis P, Perez E, Piktus A, et al. Retrieval-augmented generation for knowledge-intensive NLP tasks[C]//Proceedings of the 34th International Conference on Neural Information Processing Systems. 2020: 9459-9474.",
+          "毕枫林, 张豈明, 张嘉睿, 等. 基于滑动窗口策略的大语言模型检索增强生成系统[J]. 计算机研究与发展, 2025, 62(7): 1597-1610.",
+          "Robertson S, Zaragoza H. The Probabilistic Relevance Framework: BM25 and Beyond[J]. Information Retrieval, 2009, 3(4): 333-389.",
+          "Sparck Jones K. A statistical interpretation of term specificity and its application in retrieval[J]. Journal of documentation, 1972, 28(1): 11-21.",
+          "Karpukhin V, Oguz B, Min S, et al. Dense Passage Retrieval for Open-Domain Question Answering[C]//Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing. 2020: 6769-6781.",
+          "Feng Z, Guo D, Tang D, et al. CodeBERT: A Pre-Trained Model for Programming and Natural Languages[C]//Findings of the Association for Computational Linguistics: EMNLP 2020. 2020: 1536-1547.",
+          "Chen D, Fisch A, Weston J, et al. Reading Wikipedia to Answer Open-Domain Questions[C]//Proceedings of the 55th Annual Meeting of the Association for Computational Linguistic. Vancouver, Canada: Association for Computational Linguistics, 2017: 1870-1879.",
+          "Guu K, Lee K, Tung Z, et al. Retrieval augmented language model pre-training[C]//International conference on machine learning. PMLR, 2020: 3929-3938.",
+          "Jiang Z, Xu F F, Gao L, et al. Active retrieval augmented generation[C]//Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing. 2023: 7969-7992.",
+          "Izacard G, Grave E. Leveraging passage retrieval with generative models for open domain question answering[C]//Proceedings of the 16th conference of the european chapter of the association for computational linguistics: main volume. 2021: 874-880.",
+          "Kenton J D M W C, Toutanova L K. Bert: Pre-training of deep bidirectional transformers for language understanding[C]//Proceedings of naacL-HLT. 2019, 1: 2.",
+          "Vaswani A, Shazeer N, Parmar N, et al. Attention is all you need[J]. Advances in neural information processing systems, 2017, 30.",
+          "Rogers A, Kovaleva O, Rumshisky A. A primer in BERTology: What we know about how BERT works[J]. Transactions of the association for computational linguistics, 2020, 8: 842-866.",
+          "Yang Z, Dai Z, Yang Y, et al. Xlnet: Generalized autoregressive pretraining for language understanding[J]. Advances in neural information processing systems, 2019, 32.",
+          "Clark K, Khandelwal U, Levy O, et al. What Does BERT Look at? An Analysis of BERT’s Attention[C]//Proceedings of the 2019 ACL Workshop BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP. 2019: 276-286.",
+          "Liu X, Shen S, Li B, et al. Nl2sql-bugs: A benchmark for detecting semantic errors in nl2sql translation[C]//Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 2025: 5662-5673.",
+          "Shen J, Wan C, Qiao R, et al. A Study of In-Context-Learning-Based Text-to-SQL Errors[J]. arXiv preprint arXiv:2501.09310, 2025.",
+          "Yu T, Zhang R, Yang K, et al. Spider: A large-scale human-labeled dataset for complex and cross-domain semantic parsing and text-to-SQL task[C]//Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing. 2018: 3911-3921.",
+          "Li J, Hui B, Qu G, et al. Can llm already serve as a database interface? a big bench for large-scale database grounded text-to-sqls[J]. Advances in Neural Information Processing Systems, 2023, 36: 42330-42357.",
+          "Chen S, Chen Z, Sun H, et al. Error Detection for Text-to-SQL Semantic Parsing[C]//Findings of the Association for Computational Linguistics: EMNLP 2023. 2023: 11730-11743.",
+          "Somov O, Tutubalina E. Confidence estimation for error detection in text-to-sql systems[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2025, 39(23): 25137-25145.",
+          "Zhong R, Yu T, Klein D. Semantic evaluation for text-to-SQL with distilled test suites[C]//Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing. 2020: 396-411.",
+          "Nooralahzadeh F, Zhang Y, Smith E, et al. StatBot. Swiss: bilingual open data exploration in natural language[C]//Findings of the Association for Computational Linguistics: ACL 2024. 2024: 5486-5507.",
+          "Zhu Y, Jiang R, Li B, et al. Elliesql: Cost-efficient text-to-sql with complexity-aware routing[J]. arXiv preprint arXiv:2503.22402, 2025.",
+          "Hu E J, Wallis P, Allen-Zhu Z, et al. LoRA: Low-Rank Adaptation of Large Language Models[C]//International Conference on Learning Representations.",
+          "Ye J, Chen X, Xu N, et al. A comprehensive capability analysis of gpt-3 and gpt-3.5 series models[J]. arXiv preprint arXiv:2303.10420, 2023."
+        ],
+        "blank_lines_after_header": 2,
+        "header_paragraph_index": 465,
+        "content_paragraph_indices": [
+          468,
+          469,
+          470,
+          471,
+          472,
+          473,
+          474,
+          475,
+          476,
+          477,
+          478,
+          479,
+          480,
+          481,
+          482,
+          483,
+          484,
+          485,
+          486,
+          487,
+          488,
+          489,
+          490,
+          491,
+          492,
+          493,
+          494,
+          495,
+          496,
+          497,
+          498,
+          499,
+          500,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512,
+          513,
+          514,
+          515,
+          516,
+          517,
+          518,
+          519,
+          520,
+          521,
+          522,
+          523,
+          524,
+          525,
+          526,
+          527,
+          528,
+          529,
+          530,
+          531,
+          532,
+          533,
+          534,
+          535,
+          536,
+          537,
+          538,
+          539,
+          540,
+          541,
+          542,
+          543,
+          544,
+          545,
+          546,
+          547,
+          548,
+          549
+        ],
+        "reference_numbers": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ]
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "无法检测到标题段后间距格式信息"
+        ]
+      },
+      "[格式]": {
+        "ok": true,
+        "messages": [
+          "引用检测通过，共引用 82 次"
+        ]
+      }
+    },
+    "summary": [
+      "参考文献检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  }
+}

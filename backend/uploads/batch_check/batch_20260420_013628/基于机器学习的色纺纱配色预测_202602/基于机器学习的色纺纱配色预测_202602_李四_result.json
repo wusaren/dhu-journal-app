@@ -1,0 +1,3366 @@
+{
+  "Title": {
+    "module": "Title",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "YARN BASED ON MACHINE LEARNING",
+        "title_text": "YARN BASED ON MACHINE LEARNING"
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "标题检查结果: 失败",
+      "英文标题检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Abstract": {
+    "module": "Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "摘 要",
+        "content_paragraphs": [
+          "色纺纱是将染色后的纤维按一定的质量比例混合后再加工纺制而成的混色纱线。色纺纱技术能够加快加工进程，降低环境污染，相比于传统纺织品有着较大的优势。配色是色纺纱生成过程的关键步骤，任务是根据目标颜色，给出合适的单色纤维组合比例，实现混色纺织的颜色再现。如何快速准确地预测单色纤维的比例，保证颜色再现的准确性是色纺纱行业十分棘手的问题。",
+          "在实际生产中，色纺纱配色主要采用人工配色方法，需要反复混色和试纺，配色周期长。已有的基于反射率的理论模型及其改进算法存在未知参数或假设条件导致配色精度不高。近年来有学者尝试采用人工智能算法建模，如遗传算法、神经网络等，但是配色精度提升不明显且泛化能力较差，尚未实现可靠的配色系统。本文针对色纺纱智能配色需求，基于机器学习算法研究配色模型，主要工作如下： ",
+          "1．以红、黄、蓝、白、黑五种颜色的单色棉纤维试制光谱反射率小样数据为基础，结合光谱配色理论模型Kubelka-Munk双常数理论，建立了一种基于长短期记忆网络（LSTM）的色纺纱配色预测模型KM_LSTM。论文使用LSTM构建预测模型，损失函数基于Kubelka-Munk双常数理论计算得到的反射率定义，能够更好地实现颜色再现的目标；其次评估模型时同时使用配色比例误差和理论色差两种方法验证模型的准确度。",
+          "2．实现和训练了多种色纺纱配色预测模型进行对比实验。为了从不同角度验证KM_LSTM模型在色纺纱配色中的适用性，本文构建出多个以往研究者提出的配色预测模型。模型包括传统神经网络ANN、Kubelka-Munk双常数理论与传统神经网络相结合的KM_ANN、模块化人工神经网络MANN以及长短期记忆网络LSTM。实验结果表明，所提出的KM_LSTM配色模型能够提供更高的预测精度，并且将机器学习模型与Kubelka-Munk双常数理论相结合来优化损失函数能够有效减小色差。",
+          "3．设计并实现了配色预测系统。基于对色纺纱配色预测问题的需求分析，本文开发实现了配色预测系统。系统实现了颜色转换、配色预测以及样本维护的功能使配色预测过程更为方便快捷。另外，在系统功能中也尽可能的将数据进行了可视化，使配色结果更加直观，便于企业用户使用。",
+          "论文融合机器学习和光谱配色理论，提出和建立的智能配色模型具有更好的预测精度，开发的系统为色纺纱行业提供了配色功能预测和可视化支持，具有较好的使用参考价值。"
+        ],
+        "content_text": "色纺纱是将染色后的纤维按一定的质量比例混合后再加工纺制而成的混色纱线。色纺纱技术能够加快加工进程，降低环境污染，相比于传统纺织品有着较大的优势。配色是色纺纱生成过程的关键步骤，任务是根据目标颜色，给出合适的单色纤维组合比例，实现混色纺织的颜色再现。如何快速准确地预测单色纤维的比例，保证颜色再现的准确性是色纺纱行业十分棘手的问题。 在实际生产中，色纺纱配色主要采用人工配色方法，需要反复混色和试纺，配色周期长。已有的基于反射率的理论模型及其改进算法存在未知参数或假设条件导致配色精度不高。近年来有学者尝试采用人工智能算法建模，如遗传算法、神经网络等，但是配色精度提升不明显且泛化能力较差，尚未实现可靠的配色系统。本文针对色纺纱智能配色需求，基于机器学习算法研究配色模型，主要工作如下： 1．以红、黄、蓝、白、黑五种颜色的单色棉纤维试制光谱反射率小样数据为基础，结合光谱配色理论模型Kubelka-Munk双常数理论，建立了一种基于长短期记忆网络（LSTM）的色纺纱配色预测模型KM_LSTM。论文使用LSTM构建预测模型，损失函数基于Kubelka-Munk双常数理论计算得到的反射率定义，能够更好地实现颜色再现的目标；其次评估模型时同时使用配色比例误差和理论色差两种方法验证模型的准确度。 2．实现和训练了多种色纺纱配色预测模型进行对比实验。为了从不同角度验证KM_LSTM模型在色纺纱配色中的适用性，本文构建出多个以往研究者提出的配色预测模型。模型包括传统神经网络ANN、Kubelka-Munk双常数理论与传统神经网络相结合的KM_ANN、模块化人工神经网络MANN以及长短期记忆网络LSTM。实验结果表明，所提出的KM_LSTM配色模型能够提供更高的预测精度，并且将机器学习模型与Kubelka-Munk双常数理论相结合来优化损失函数能够有效减小色差。 3．设计并实现了配色预测系统。基于对色纺纱配色预测问题的需求分析，本文开发实现了配色预测系统。系统实现了颜色转换、配色预测以及样本维护的功能使配色预测过程更为方便快捷。另外，在系统功能中也尽可能的将数据进行了可视化，使配色结果更加直观，便于企业用户使用。 论文融合机器学习和光谱配色理论，提出和建立的智能配色模型具有更好的预测精度，开发的系统为色纺纱行业提供了配色功能预测和可视化支持，具有较好的使用参考价值。",
+        "title_paragraph_index": 56,
+        "content_paragraphs_indices": [],
+        "content_paragraph_indexes": []
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "标题字体应为加粗，实际为不加粗"
+        ]
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段正文中文字体应为宋体，实际为Times New Roman",
+          "第1段正文应为左对齐，实际为两端对齐",
+          "第2段正文中文字体应为宋体，实际为Times New Roman",
+          "第2段正文应为左对齐，实际为两端对齐",
+          "第3段正文应为左对齐，实际为两端对齐",
+          "第4段正文应为左对齐，实际为两端对齐",
+          "第5段正文应为左对齐，实际为两端对齐",
+          "第6段正文中文字体应为宋体，实际为Times New Roman",
+          "第6段正文应为左对齐，实际为两端对齐"
+        ]
+      }
+    },
+    "summary": [
+      "摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "English_Abstract": {
+    "module": "English_Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段首行缩进应为4.0字符，当前约2.0字符",
+          "第2段首行缩进应为4.0字符，当前约2.0字符",
+          "第3段首行缩进应为4.0字符，当前约2.0字符",
+          "第4段首行缩进应为4.0字符，当前约2.0字符",
+          "第5段首行缩进应为4.0字符，当前约2.0字符",
+          "第6段首行缩进应为4.0字符，当前约2.0字符"
+        ]
+      }
+    },
+    "summary": [
+      "英文摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Keywords": {
+    "module": "Keywords",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "keywords_paragraph": "Key words: melange yarn color matching, color matching prediction model, LSTM,  Kubelka-Munk double constant theory",
+        "keywords_text": "melange yarn color matching, color matching prediction model, LSTM,  Kubelka-Munk double constant theory",
+        "keywords_list": [
+          "melange yarn color matching",
+          "color matching prediction model",
+          "LSTM",
+          "Kubelka-Munk double constant theory"
+        ],
+        "keywords_paragraph_index": 83
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.25倍行距（1.25倍）",
+          "首行缩进应为0.0pt，实际为-65.2pt",
+          "左缩进应为0.0pt，实际为65.2pt"
+        ]
+      }
+    },
+    "summary": [
+      "中文和英文关键词检测均失败",
+      "关键词检查结果: 失败",
+      "关键词检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Content": {
+    "module": "Content",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "level": 2,
+            "number": "1.1",
+            "text": "研究背景及意义",
+            "paragraph_index": 207,
+            "full_text": "1.1 研究背景及意义"
+          },
+          {
+            "level": 2,
+            "number": "1.2",
+            "text": "国内外研究现状",
+            "paragraph_index": 219,
+            "full_text": "1.2 国内外研究现状"
+          },
+          {
+            "level": 3,
+            "number": "1.2.1",
+            "text": "传统理论模型配色方法",
+            "paragraph_index": 220,
+            "full_text": "1.2.1 传统理论模型配色方法"
+          },
+          {
+            "level": 3,
+            "number": "1.2.2",
+            "text": "机器学习配色方法",
+            "paragraph_index": 259,
+            "full_text": "1.2.2 机器学习配色方法"
+          },
+          {
+            "level": 2,
+            "number": "1.3",
+            "text": "研究内容",
+            "paragraph_index": 265,
+            "full_text": "1.3 研究内容"
+          },
+          {
+            "level": 2,
+            "number": "1.4",
+            "text": "本文组织结构",
+            "paragraph_index": 273,
+            "full_text": "1.4 本文组织结构"
+          },
+          {
+            "level": 2,
+            "number": "2.1",
+            "text": "色纺纱颜色的数字化描述",
+            "paragraph_index": 284,
+            "full_text": "2.1色纺纱颜色的数字化描述"
+          },
+          {
+            "level": 3,
+            "number": "2.1.1",
+            "text": "色纺纱的反射率",
+            "paragraph_index": 285,
+            "full_text": "2.1.1 色纺纱的反射率"
+          },
+          {
+            "level": 3,
+            "number": "2.1.2",
+            "text": "色纺纱的颜色空间",
+            "paragraph_index": 288,
+            "full_text": "2.1.2 色纺纱的颜色空间"
+          },
+          {
+            "level": 3,
+            "number": "2.1.3",
+            "text": "色差计算方法",
+            "paragraph_index": 295,
+            "full_text": "2.1.3 色差计算方法"
+          },
+          {
+            "level": 2,
+            "number": "2.2",
+            "text": "基于理论模型的配色预测方法",
+            "paragraph_index": 328,
+            "full_text": "2.2基于理论模型的配色预测方法"
+          },
+          {
+            "level": 3,
+            "number": "2.2.1",
+            "text": "Stearns-Noechel模型",
+            "paragraph_index": 330,
+            "full_text": "2.2.1 Stearns-Noechel模型"
+          },
+          {
+            "level": 3,
+            "number": "2.2.2",
+            "text": "Friele模型",
+            "paragraph_index": 340,
+            "full_text": "2.2.2 Friele模型"
+          },
+          {
+            "level": 3,
+            "number": "2.2.3",
+            "text": "Kubelka-Munk理论",
+            "paragraph_index": 345,
+            "full_text": "2.2.3 Kubelka-Munk理论"
+          },
+          {
+            "level": 2,
+            "number": "2.3",
+            "text": "基于机器学习的配色预测方法",
+            "paragraph_index": 364,
+            "full_text": "2.3基于机器学习的配色预测方法"
+          },
+          {
+            "level": 3,
+            "number": "2.3.1",
+            "text": "人工神经网络",
+            "paragraph_index": 365,
+            "full_text": "2.3.1 人工神经网络"
+          },
+          {
+            "level": 3,
+            "number": "2.3.2",
+            "text": "LSTM循环神经网络",
+            "paragraph_index": 382,
+            "full_text": "2.3.2 LSTM循环神经网络"
+          },
+          {
+            "level": 2,
+            "number": "2.4",
+            "text": "本章小结",
+            "paragraph_index": 398,
+            "full_text": "2.4 本章小结"
+          },
+          {
+            "level": 2,
+            "number": "3.1",
+            "text": "配色预测方法流程设计",
+            "paragraph_index": 402,
+            "full_text": "3.1 配色预测方法流程设计"
+          },
+          {
+            "level": 3,
+            "number": "3.1.1",
+            "text": "色纺纱样本数据获取",
+            "paragraph_index": 403,
+            "full_text": "3.1.1 色纺纱样本数据获取"
+          },
+          {
+            "level": 3,
+            "number": "3.1.2",
+            "text": "配色预测模型构建流程",
+            "paragraph_index": 430,
+            "full_text": "3.1.2 配色预测模型构建流程"
+          },
+          {
+            "level": 2,
+            "number": "3.2",
+            "text": "KM_LSTM网络结构",
+            "paragraph_index": 436,
+            "full_text": "3.2 KM_LSTM网络结构"
+          },
+          {
+            "level": 2,
+            "number": "3.3",
+            "text": "KM_LSTM损失函数",
+            "paragraph_index": 442,
+            "full_text": "3.3 KM_LSTM损失函数"
+          },
+          {
+            "level": 3,
+            "number": "3.3.1",
+            "text": "损失函数定义",
+            "paragraph_index": 443,
+            "full_text": "3.3.1 损失函数定义"
+          },
+          {
+            "level": 3,
+            "number": "3.3.2",
+            "text": "Kubelka-Munk双常数理论求解反射率",
+            "paragraph_index": 453,
+            "full_text": "3.3.2 Kubelka-Munk双常数理论求解反射率"
+          },
+          {
+            "level": 2,
+            "number": "3.4",
+            "text": "KM_LSTM评价指标",
+            "paragraph_index": 477,
+            "full_text": "3.4 KM_LSTM评价指标"
+          },
+          {
+            "level": 3,
+            "number": "3.4.1",
+            "text": "配色比例误差",
+            "paragraph_index": 479,
+            "full_text": "3.4.1 配色比例误差"
+          },
+          {
+            "level": 3,
+            "number": "3.4.2",
+            "text": "CMC(2:1)色差",
+            "paragraph_index": 484,
+            "full_text": "3.4.2 CMC(2:1)色差"
+          },
+          {
+            "level": 2,
+            "number": "3.5",
+            "text": "本章小结",
+            "paragraph_index": 486,
+            "full_text": "3.5 本章小结"
+          },
+          {
+            "level": 2,
+            "number": "4.1",
+            "text": "模型训练与预测",
+            "paragraph_index": 492,
+            "full_text": "4.1 模型训练与预测"
+          },
+          {
+            "level": 3,
+            "number": "4.1.1",
+            "text": "基于LSTM配色预测模型",
+            "paragraph_index": 494,
+            "full_text": "4.1.1 基于LSTM配色预测模型"
+          },
+          {
+            "level": 3,
+            "number": "4.1.2",
+            "text": "KM_LSTM配色预测模型",
+            "paragraph_index": 497,
+            "full_text": "4.1.2 KM_LSTM配色预测模型"
+          },
+          {
+            "level": 2,
+            "number": "4.2",
+            "text": "其他模型对比实验",
+            "paragraph_index": 507,
+            "full_text": "4.2其他模型对比实验"
+          },
+          {
+            "level": 3,
+            "number": "4.2.1",
+            "text": "基于神经网络的配色预测模型",
+            "paragraph_index": 508,
+            "full_text": "4.2.1 基于神经网络的配色预测模型"
+          },
+          {
+            "level": 3,
+            "number": "4.2.2",
+            "text": "KM_ANN配色预测模型",
+            "paragraph_index": 518,
+            "full_text": "4.2.2 KM_ANN配色预测模型"
+          },
+          {
+            "level": 3,
+            "number": "4.2.3",
+            "text": "MANN配色预测模型",
+            "paragraph_index": 520,
+            "full_text": "4.2.3 MANN配色预测模型"
+          },
+          {
+            "level": 2,
+            "number": "4.3",
+            "text": "实验结果分析",
+            "paragraph_index": 528,
+            "full_text": "4.3 实验结果分析"
+          },
+          {
+            "level": 2,
+            "number": "4.4",
+            "text": "本章小结",
+            "paragraph_index": 534,
+            "full_text": "4.4 本章小结"
+          },
+          {
+            "level": 2,
+            "number": "5.1",
+            "text": "需求分析",
+            "paragraph_index": 539,
+            "full_text": "5.1 需求分析"
+          },
+          {
+            "level": 3,
+            "number": "5.1.1",
+            "text": "业务需求分析",
+            "paragraph_index": 540,
+            "full_text": "5.1.1 业务需求分析"
+          },
+          {
+            "level": 3,
+            "number": "5.1.2",
+            "text": "系统角色需求分析",
+            "paragraph_index": 542,
+            "full_text": "5.1.2 系统角色需求分析"
+          },
+          {
+            "level": 3,
+            "number": "5.1.3",
+            "text": "系统功能需求分析",
+            "paragraph_index": 548,
+            "full_text": "5.1.3 系统功能需求分析"
+          },
+          {
+            "level": 2,
+            "number": "5.2",
+            "text": "系统设计",
+            "paragraph_index": 564,
+            "full_text": "5.2 系统设计"
+          },
+          {
+            "level": 3,
+            "number": "5.2.1",
+            "text": "功能设计",
+            "paragraph_index": 565,
+            "full_text": "5.2.1 功能设计"
+          },
+          {
+            "level": 3,
+            "number": "5.2.2",
+            "text": "数据库设计",
+            "paragraph_index": 595,
+            "full_text": "5.2.2 数据库设计"
+          },
+          {
+            "level": 2,
+            "number": "5.3",
+            "text": "功能实现",
+            "paragraph_index": 637,
+            "full_text": "5.3 功能实现"
+          },
+          {
+            "level": 3,
+            "number": "5.3.1",
+            "text": "系统开发环境",
+            "paragraph_index": 638,
+            "full_text": "5.3.1 系统开发环境"
+          },
+          {
+            "level": 3,
+            "number": "5.3.2",
+            "text": "系统实现",
+            "paragraph_index": 643,
+            "full_text": "5.3.2 系统实现"
+          },
+          {
+            "level": 2,
+            "number": "5.4",
+            "text": "本章小结",
+            "paragraph_index": 729,
+            "full_text": "5.4 本章小结"
+          },
+          {
+            "level": 2,
+            "number": "6.1",
+            "text": "总结",
+            "paragraph_index": 733,
+            "full_text": "6.1 总结"
+          },
+          {
+            "level": 2,
+            "number": "6.2",
+            "text": "展望",
+            "paragraph_index": 741,
+            "full_text": "6.2 展望"
+          }
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "标题“传统理论模型配色方法”段前应为19.8pt，实际为8.5pt",
+          "标题“传统理论模型配色方法”段后应为19.8pt，实际为8.5pt",
+          "标题“机器学习配色方法”段前应为19.8pt，实际为8.5pt",
+          "标题“机器学习配色方法”段后应为19.8pt，实际为8.5pt",
+          "标题“色纺纱的反射率”段前应为19.8pt，实际为8.5pt",
+          "标题“色纺纱的反射率”段后应为19.8pt，实际为8.5pt",
+          "标题“色纺纱的颜色空间”段前应为19.8pt，实际为8.5pt",
+          "标题“色纺纱的颜色空间”段后应为19.8pt，实际为8.5pt",
+          "标题“色差计算方法”段前应为19.8pt，实际为8.5pt",
+          "标题“色差计算方法”段后应为19.8pt，实际为8.5pt",
+          "标题“Stearns-Noechel模型”段前应为19.8pt，实际为8.5pt",
+          "标题“Stearns-Noechel模型”段后应为19.8pt，实际为8.5pt",
+          "标题“Friele模型”段前应为19.8pt，实际为8.5pt",
+          "标题“Friele模型”段后应为19.8pt，实际为8.5pt",
+          "标题“Kubelka-Munk理论”段前应为19.8pt，实际为8.5pt",
+          "标题“Kubelka-Munk理论”段后应为19.8pt，实际为8.5pt",
+          "标题“人工神经网络”段前应为19.8pt，实际为8.5pt",
+          "标题“人工神经网络”段后应为19.8pt，实际为8.5pt",
+          "标题“LSTM循环神经网络”段前应为19.8pt，实际为8.5pt",
+          "标题“LSTM循环神经网络”段后应为19.8pt，实际为8.5pt",
+          "标题“色纺纱样本数据获取”段前应为19.8pt，实际为8.5pt",
+          "标题“色纺纱样本数据获取”段后应为19.8pt，实际为8.5pt",
+          "标题“配色预测模型构建流程”段前应为19.8pt，实际为8.5pt",
+          "标题“配色预测模型构建流程”段后应为19.8pt，实际为8.5pt",
+          "标题“损失函数定义”段前应为19.8pt，实际为8.5pt",
+          "标题“损失函数定义”段后应为19.8pt，实际为8.5pt",
+          "标题“Kubelka-Munk双常数理论求解反射率”段前应为19.8pt，实际为8.5pt",
+          "标题“Kubelka-Munk双常数理论求解反射率”段后应为19.8pt，实际为8.5pt",
+          "标题“配色比例误差”段前应为19.8pt，实际为8.5pt",
+          "标题“配色比例误差”段后应为19.8pt，实际为8.5pt",
+          "标题“CMC(2:1)色差”段前应为19.8pt，实际为8.5pt",
+          "标题“CMC(2:1)色差”段后应为19.8pt，实际为8.5pt",
+          "标题“基于LSTM配色预测模型”段前应为19.8pt，实际为8.5pt",
+          "标题“基于LSTM配色预测模型”段后应为19.8pt，实际为8.5pt",
+          "标题“KM_LSTM配色预测模型”段前应为19.8pt，实际为8.5pt",
+          "标题“KM_LSTM配色预测模型”段后应为19.8pt，实际为8.5pt",
+          "标题“基于神经网络的配色预测模型”段前应为19.8pt，实际为8.5pt",
+          "标题“基于神经网络的配色预测模型”段后应为19.8pt，实际为8.5pt",
+          "标题“KM_ANN配色预测模型”段前应为19.8pt，实际为8.5pt",
+          "标题“KM_ANN配色预测模型”段后应为19.8pt，实际为8.5pt",
+          "标题“MANN配色预测模型”段前应为19.8pt，实际为8.5pt",
+          "标题“MANN配色预测模型”段后应为19.8pt，实际为8.5pt",
+          "标题“业务需求分析”段前应为19.8pt，实际为8.5pt",
+          "标题“业务需求分析”段后应为19.8pt，实际为8.5pt",
+          "标题“系统角色需求分析”段前应为19.8pt，实际为8.5pt",
+          "标题“系统角色需求分析”段后应为19.8pt，实际为8.5pt",
+          "标题“系统功能需求分析”段前应为19.8pt，实际为8.5pt",
+          "标题“系统功能需求分析”段后应为19.8pt，实际为8.5pt",
+          "标题“功能设计”段前应为19.8pt，实际为8.5pt",
+          "标题“功能设计”段后应为19.8pt，实际为8.5pt",
+          "标题“数据库设计”段前应为19.8pt，实际为8.5pt",
+          "标题“数据库设计”段后应为19.8pt，实际为8.5pt",
+          "标题“系统开发环境”段前应为19.8pt，实际为8.5pt",
+          "标题“系统开发环境”段后应为19.8pt，实际为8.5pt",
+          "标题“系统实现”段前应为19.8pt，实际为8.5pt",
+          "标题“系统实现”段后应为19.8pt，实际为8.5pt"
+        ]
+      }
+    },
+    "summary": [],
+    "extracted": {},
+    "details": {}
+  },
+  "Formula": {
+    "module": "Formula",
+    "checks": {
+      "[公式检测]": {
+        "ok": false,
+        "messages": [
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）",
+          "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+        ]
+      },
+      "[编号]": {
+        "ok": false,
+        "messages": [
+          "第2章公式序号不连续：[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 25, 26, 26, 27, 27, 28, 29, 30]",
+          "第4章公式序号不连续：[1, 1]"
+        ]
+      }
+    },
+    "summary": [
+      "公式格式检查结果: 发现问题",
+      "检测统计：共 820 个段落，识别出 52 个带编号的公式段落"
+    ],
+    "extracted": {},
+    "details": {
+      "total_paragraphs": 820,
+      "formula_paragraphs_count": 52,
+      "formula_paragraphs": [
+        {
+          "index": 1,
+          "paragraph_index": 222,
+          "text_preview": "(1-1)",
+          "formula_label": "公式(1-1)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "R b λ = i =1 n x i R i λ"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 1)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 2,
+          "paragraph_index": 225,
+          "text_preview": "(1-2)",
+          "formula_label": "公式(1-2)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f ( R b λ )= i =1 n x i f ( R i λ )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 2)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 3,
+          "paragraph_index": 229,
+          "text_preview": "(1-3)",
+          "formula_label": "公式(1-3)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f R λ = 1-R λ M R λ -0.01 +0.01"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 3)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 4,
+          "paragraph_index": 232,
+          "text_preview": "(1-4)",
+          "formula_label": "公式(1-4)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "M = 1 1000 (0.12λ+42.75)"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 4)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 5,
+          "paragraph_index": 237,
+          "text_preview": "(1-5)",
+          "formula_label": "公式(1-5)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f R λ = e - σ 1-R λ 2 /2R λ"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 5)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 6,
+          "paragraph_index": 244,
+          "text_preview": "(1-6)",
+          "formula_label": "公式(1-6)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = 1- R ( λ ) 2 2 R ( λ )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 6)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 7,
+          "paragraph_index": 249,
+          "text_preview": "(1-7)",
+          "formula_label": "公式(1-7)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = K 0 + i =1 n c i K i S 0 + i =1 n c i S i"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 7)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 8,
+          "paragraph_index": 254,
+          "text_preview": "(1-8)",
+          "formula_label": "公式(1-8)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = i =1 n C i K i i =1 n C i S i"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(1, 8)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 9,
+          "paragraph_index": 300,
+          "text_preview": "(2-1)",
+          "formula_label": "公式(2-1)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "L * = 116 ( Y Y 0 ) 1 3 -16"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 1)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 10,
+          "paragraph_index": 301,
+          "text_preview": "(2-2)",
+          "formula_label": "公式(2-2)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "a * = 500[ X X 0 1 3 - Y Y 0 1 3 ]"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 2)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 11,
+          "paragraph_index": 302,
+          "text_preview": "(2-3)",
+          "formula_label": "公式(2-3)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "b * = 200[ Y Y 0 1 3 - Z Z 0 1 3 ]"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 3)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 12,
+          "paragraph_index": 305,
+          "text_preview": "(2-4)",
+          "formula_label": "公式(2-4)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "L * = 903.3 Y Y 0"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 4)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 13,
+          "paragraph_index": 306,
+          "text_preview": "(2-5)",
+          "formula_label": "公式(2-5)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "a * = 3893( X X 0 )-( Y Y 0 )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 5)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 14,
+          "paragraph_index": 307,
+          "text_preview": "(2-6)",
+          "formula_label": "公式(2-6)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "b * = 1557.4( Y Y 0 )-( Z Z 0 )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 6)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 15,
+          "paragraph_index": 309,
+          "text_preview": "(2-7)",
+          "formula_label": "公式(2-7)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "DE= [ ( DL * ) 2 + (Da * ) 2 + ( Db * ) 2 ] 1 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 7)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 16,
+          "paragraph_index": 312,
+          "text_preview": "(2-8)",
+          "formula_label": "公式(2-8)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "C * = [ a * 2 + b * 2 ] 1 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 8)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 17,
+          "paragraph_index": 314,
+          "text_preview": "(2-9)",
+          "formula_label": "公式(2-9)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "H * = tan -1 ( b * / a * )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 9)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 18,
+          "paragraph_index": 316,
+          "text_preview": "(2-10)",
+          "formula_label": "公式(2-10)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "DE= [ ( DL * ) 2 + (DC * ) 2 + ( DH * ) 2 ] 1 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 10)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 19,
+          "paragraph_index": 321,
+          "text_preview": "(2-11)",
+          "formula_label": "公式(2-11)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "DE CMC = [ ( DL * l S L ) 2 + ( DC * c S C ) 2 + (..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 11)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 20,
+          "paragraph_index": 323,
+          "text_preview": "(时，) \t(2-12)",
+          "formula_label": "公式(2-12)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 3,
+                "types": [
+                  "office_math",
+                  "office_math",
+                  "office_math"
+                ],
+                "preview": [
+                  "S L = 0 . 040975 L std * 1 + 0 . 01765 L std *",
+                  "L std * ≤16",
+                  "S L = 0 . 511"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 12)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 21,
+          "paragraph_index": 325,
+          "text_preview": "(2-14)",
+          "formula_label": "公式(2-14)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "S H = S C ( tf + 1 - f )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 14)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 22,
+          "paragraph_index": 326,
+          "text_preview": "(2-15)",
+          "formula_label": "公式(2-15)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f = ( C std * ) 4 ( C std * ) 4 +1900 1 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 15)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 23,
+          "paragraph_index": 332,
+          "text_preview": "(2-16)",
+          "formula_label": "公式(2-16)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f ( R b λ )= i =1 n x i f ( R i λ )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 16)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 24,
+          "paragraph_index": 335,
+          "text_preview": "(2-17)",
+          "formula_label": "公式(2-17)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f R λ = 1-R λ M R λ -0.01 +0.01"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 17)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 25,
+          "paragraph_index": 338,
+          "text_preview": "(2-18)",
+          "formula_label": "公式(2-18)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "R λ = 0.01 M-1 f R λ +1 Mf R λ +1"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 18)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 26,
+          "paragraph_index": 342,
+          "text_preview": "(2-19)",
+          "formula_label": "公式(2-19)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f R λ = e - σ 1-R λ 2 /2R λ"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 19)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 27,
+          "paragraph_index": 347,
+          "text_preview": "(2-20)",
+          "formula_label": "公式(2-20)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = 1-R(λ) 2 2R(λ)"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 20)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 28,
+          "paragraph_index": 352,
+          "text_preview": "(2-21)",
+          "formula_label": "公式(2-21)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = K 0 + i =1 n c i K i S 0 + i =1 n c i S i = ..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 21)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 29,
+          "paragraph_index": 357,
+          "text_preview": "(2-22)",
+          "formula_label": "公式(2-22)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K= c 1 K 1 + c 2 K 2 + … + c i K i + … + c n K n"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 22)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 30,
+          "paragraph_index": 358,
+          "text_preview": "(2-23)",
+          "formula_label": "公式(2-23)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "S= c 1 S 1 + c 2 S 2 + … + c i S i + … + c n S n"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 23)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 31,
+          "paragraph_index": 361,
+          "text_preview": "(2-24)",
+          "formula_label": "公式(2-24)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = i =1 n C i K i i =1 n C i S i"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 24)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 32,
+          "paragraph_index": 374,
+          "text_preview": "(2-25)",
+          "formula_label": "公式(2-25)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "MAE = 1 n i = 1 n y - y"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 25)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 33,
+          "paragraph_index": 377,
+          "text_preview": "(2-26)",
+          "formula_label": "公式(2-26)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "MSE = 1 n i = 1 n ( y - y) 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 26)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 34,
+          "paragraph_index": 379,
+          "text_preview": "(2-27)",
+          "formula_label": "公式(2-27)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "RMSE = 1 n i = 1 n ( y - y) 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 27)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 35,
+          "paragraph_index": 391,
+          "text_preview": "(2-25)",
+          "formula_label": "公式(2-25)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "f t = σ ( W f h t -1 , x t + b f )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 25)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 36,
+          "paragraph_index": 392,
+          "text_preview": "(2-26)",
+          "formula_label": "公式(2-26)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "i t = σ ( W i h t -1 , x t + b i )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 26)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 37,
+          "paragraph_index": 393,
+          "text_preview": "(2-27)",
+          "formula_label": "公式(2-27)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "c t = tanh ( W c h t -1 , x t + b c )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 27)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 38,
+          "paragraph_index": 394,
+          "text_preview": "(2-28)",
+          "formula_label": "公式(2-28)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "c t = f t × c t -1 + i t × c t"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 28)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 39,
+          "paragraph_index": 395,
+          "text_preview": "(2-29)",
+          "formula_label": "公式(2-29)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "o t = σ ( W o h t -1 , x t + b o )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 29)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 40,
+          "paragraph_index": 396,
+          "text_preview": "(2-30)",
+          "formula_label": "公式(2-30)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "h t = o t ×tanh⁡( c t )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(2, 30)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 41,
+          "paragraph_index": 446,
+          "text_preview": "(3-1)",
+          "formula_label": "公式(3-1)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "loss= 1 n i=1 n ( R (λ) -R (λ) ) 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 1)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 42,
+          "paragraph_index": 455,
+          "text_preview": "(3-2)",
+          "formula_label": "公式(3-2)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S = 1- R ( λ ) 2 2 R ( λ )"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 2)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 43,
+          "paragraph_index": 460,
+          "text_preview": "(3-3)",
+          "formula_label": "公式(3-3)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "( K S ) m = i =1 n C i K i i =1 n C i S i"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 3)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 44,
+          "paragraph_index": 465,
+          "text_preview": "(3-4)",
+          "formula_label": "公式(3-4)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "K S C 1 S 1 + C 2 S 2 +…+ C n S n - C 1 K 1 + C 2 ..."
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 4)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 45,
+          "paragraph_index": 470,
+          "text_preview": "(3-5)",
+          "formula_label": "公式(3-5)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "B= A 1,1 ⋯ ⋮ ⋱ A m ,1 ⋯ A 1,2 n ⋮ A m ,2 n 1 ⋯ 1"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 5)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 46,
+          "paragraph_index": 471,
+          "text_preview": "(3-6)",
+          "formula_label": "公式(3-6)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "X= S 1 ⋯ S n K 1 ⋯ K n T"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 6)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 47,
+          "paragraph_index": 472,
+          "text_preview": "(3-7)",
+          "formula_label": "公式(3-7)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "Y= 0 ⋯ 0 1 T"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 7)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 48,
+          "paragraph_index": 474,
+          "text_preview": "(3-8)",
+          "formula_label": "公式(3-8)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "X= B T B -1 B T Y"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 8)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 49,
+          "paragraph_index": 481,
+          "text_preview": "(3-9)",
+          "formula_label": "公式(3-9)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "E r = 1 N i =1 N ( y - y ) 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 9)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 50,
+          "paragraph_index": 482,
+          "text_preview": "(3-10)",
+          "formula_label": "公式(3-10)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "ae= 1 N i=1 N y -y"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(3, 10)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 51,
+          "paragraph_index": 499,
+          "text_preview": "(4-1)",
+          "formula_label": "公式(4-1)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "loss= 1 n i=1 n ( R (λ) -R (λ) ) 2"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 1)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        },
+        {
+          "index": 52,
+          "paragraph_index": 510,
+          "text_preview": "(4-1)",
+          "formula_label": "公式(4-1)",
+          "has_math_object": false,
+          "math_object_count": 0,
+          "has_formula_tab_stops": false,
+          "has_formula_style": false,
+          "confidence_score": 10,
+          "format_check": {
+            "ok": false,
+            "messages": [
+              "字体问题: 公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+            ],
+            "details": {
+              "tab_stops": {
+                "skipped": true
+              },
+              "math_objects": {
+                "has_math": true,
+                "count": 1,
+                "types": [
+                  "office_math"
+                ],
+                "preview": [
+                  "H = m + n + L"
+                ]
+              },
+              "number": {
+                "parsed": true,
+                "value": "(4, 1)"
+              },
+              "fonts": {
+                "correct": false,
+                "issues": [
+                  "公式编号字号应为五号（10.5pt），实际为小四（12.0pt）"
+                ]
+              },
+              "reference": {
+                "ok": true,
+                "messages": []
+              }
+            }
+          }
+        }
+      ],
+      "debug": true
+    }
+  },
+  "TOC": {
+    "module": "TOC",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "title_type": "目录",
+            "paragraph": "目录",
+            "index": 85,
+            "text": "目录"
+          },
+          {
+            "title_type": "图录",
+            "paragraph": "图录",
+            "index": 154,
+            "text": "图录"
+          },
+          {
+            "title_type": "表录",
+            "paragraph": "表录",
+            "index": 189,
+            "text": "表录"
+          }
+        ]
+      },
+      "[目录格式]": {
+        "ok": false,
+        "messages": [
+          "字体大小应为三号（16.0pt），实际为小四（12.0pt）",
+          "字体应为不加粗，实际为加粗"
+        ]
+      },
+      "[图录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为黑体，实际为宋体",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      },
+      "[表录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为黑体，实际为宋体",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "目录/图录/表录检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Figure": {
+    "module": "Figure",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[图检测]": {
+        "ok": false,
+        "messages": [
+          "图1-1 企业人工配色图：图片对齐——图片应居中对齐（当前：两端对齐）",
+          "图3-2 样本数据库构建流程：图片对齐——图片应居中对齐（当前：两端对齐）",
+          "图26（无标题）：标题格式——❌ 图片缺少标题（应为：图片标题格式应为：图X-Y 标题(来源于xxxxxx)（如：图2-1 胶原蛋白化学结构式(来源于xxxxxx)））",
+          "图26（无标题）：引用检查——无法检测引用：图片缺少标题",
+          "图28（无标题）：标题格式——❌ 图片缺少标题（应为：图片标题格式应为：图X-Y 标题(来源于xxxxxx)（如：图2-1 胶原蛋白化学结构式(来源于xxxxxx)））",
+          "图28（无标题）：引用检查——无法检测引用：图片缺少标题",
+          "图29（无标题）：标题格式——❌ 图片缺少标题（应为：图片标题格式应为：图X-Y 标题(来源于xxxxxx)（如：图2-1 胶原蛋白化学结构式(来源于xxxxxx)））",
+          "图29（无标题）：引用检查——无法检测引用：图片缺少标题",
+          "图32（无标题）：标题格式——❌ 图片缺少标题（应为：图片标题格式应为：图X-Y 标题(来源于xxxxxx)（如：图2-1 胶原蛋白化学结构式(来源于xxxxxx)））",
+          "图32（无标题）：引用检查——无法检测引用：图片缺少标题",
+          "图5-19 个人管理页面截图：图片对齐——图片应居中对齐（当前：两端对齐）"
+        ],
+        "total": 35,
+        "failed": 7
+      }
+    },
+    "summary": {
+      "figure_count": 35
+    },
+    "extracted": {},
+    "details": {
+      "figure_count": 35
+    }
+  },
+  "Table": {
+    "module": "Table",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[表格检测]": {
+        "ok": false,
+        "messages": [
+          "表3-1单色棉纤维的CIELab颜色值：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表3-1单色棉纤维的CIELab颜色值：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表3-1单色棉纤维的CIELab颜色值：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表3-2样本A的特征（反射率）：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表3-2样本A的特征（反射率）：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表3-3样本A的标签（单色棉纤维比例）：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表3-3样本A的标签（单色棉纤维比例）：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表4-15折交叉验证实验结果：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表4-15折交叉验证实验结果：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表4-2不同预测方法结果对比：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表4-2不同预测方法结果对比：表格样式——顶线宽度应为1.5磅，实际为0.5磅",
+          "表5-1用户信息表结构：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表5-2配色模型表结构：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表5-3反射率表结构：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表5-4RGB表结构：中文表题格式——中文表题字体应为楷体_GB2312",
+          "表5-5预测结果表结构：中文表题格式——中文表题字体应为楷体_GB2312"
+        ],
+        "total": 10,
+        "failed": 10
+      }
+    },
+    "summary": [
+      "表格格式检查结果: 发现问题",
+      "检测到 10 个表格"
+    ],
+    "extracted": {},
+    "details": {
+      "table_count": 10
+    }
+  },
+  "References": {
+    "module": "References",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "header_paragraph": "参考文献",
+        "content_paragraphs": [
+          "刘建勇,黄烨,谭学强.色纺纱的计算机配色研究进展[J].纺织学报,2018,39(11):182-190.",
+          "DUNTLEY S Q. The prediction and control of colored fiber blends by optical means[J]. Am Dyest Rep, 1941, 30: 698-700.",
+          "陈维国,周华,温泉,沈加加,李茹珍.羊毛混色纺纱计算机智能测色配料系统[J].毛纺科技,2010,38(04):48-52.",
+          "STEARNS E I, NOECHEL F. Spectrophotometric prediction of color of wool blends[J]. American Dyestuff Reporter, 1944, 33(9) : 177-180．",
+          "Davidson H R, Tatlor M.Prediction of the color of fiber blends[J]. Journal of the Optical society of America, 1965,55(1):96-100.",
+          "Burlone DA. Theroetical and practial aspects of selected fiber-blend color formulation functions. Color Research and Application 1984 9(4):213-219.",
+          "Aspland JR, Zhou M. Influence od blending on color appearance of black and whiter fiber blends Txtile Chemist and Colorist and American Dyestuff Reporter, 2000, 32(10):47-51.",
+          "Philips B, Dupont D, JollyA'CazeC.Color formulation by fiber blending using the Stearns-Noechel model[J]. Color Research and Application, 2002, 27(2) : 100-107．",
+          "王玉娟,马崇启,刘建勇,程璐,张红梅,王宣. 应用改进Stearns-Noeche模型的色纺纱配色技术[J]. 纺织学报,2017,38(10):25-31.",
+          "白婧,杨柳,张毅,张瑞云,马颜雪,俞建勇,程隆棣. 纯棉色纺纱配色中的Stearns-Noechel模型参数优化[J]. 纺织学报,2018,39(03):31-37.",
+          "FRIELE L F C．The application of colour measurement in relation to fiber blending[J]．Journal of the Textile Institute Proceedings, 1952, 43(8) : 604-611．",
+          "BARBARA Thompson, HAMMERSLEY M J. Prediction of the colour of scoured-wool blends[J]．Journal of the Textile Institute Proceedings and Abstracts, 1978, 69(1) :1-7．",
+          "PHILIPS-INVERNIZZI B, DUPONT D, CAZE C. Formulation of colored fiber blends from Friele's theoretical model[J]. Color Research and Application, 2010, 27(3) : 191-198．",
+          "沈加加,胡英杰,刘伟,夏丽华.基于Friele模型的色纺纱光谱配色研究[J].针织工业,2013(05):32-36.",
+          "马崇启,程璐,王玉娟,等．基于 Friele 模型的彩色纤维混色配方模型[J]．纺织学报, 2017, 38(12) : 33-37．",
+          "Davidson H R, Hemmendinger H. Color prediction using the two-constant turbid-media  theory[J]. Journal of the Optical Society of America, 1966, 56(8): 1102-1109",
+          "BURLONE D A. Formulation of blends of precolored nylon fiber[J]. Color Research and Application, 1983, 8(2) : 114-120．",
+          "徐春川. 含荧光染料色纺纱的测配色[D].东华大学,2014．",
+          "WALOWIT E, MCCARTHY C J, BERNS R S. An algorithm for the optimization of Kubelka-Munk absorption and scattering coefficients[J]. Color Research and Application, 1987, 12(6) : 340-343．",
+          "BURLONE D A. Effect of fiber translucency on the color of blends of precolored fibers [J]. Textile Research Journal, 1990, 60(3) : 162-167．",
+          "车江宁,陈东辉. 天然色棉织物测配色[J]. 纺织学报,2000,(03):190-192+196.",
+          "朱松. 彩色纤维配色方法研究初探[J]. 聚酯工业,2010,23(01):29-32.",
+          "许佳艳. 涤棉双组份纤维混色计算机辅助配色的研究[D].浙江理工大学,2013. ",
+          "MA C, WANG Y, LI J, et al. Theoretical and practical analysis of fiber blend model in gray spun yarn[J]. ournal of Engineered Fibers and Fabrics, 2017, 12( 2) :28-38．",
+          "李戎,宋阳,顾峰. 基于Stearns-Noechel模型的纤维光谱配色算法[J]. 纺织学报,2007,(01):77-80. ",
+          "MIZUTANI E, JANG J S R, NISHIO K, et al. Coactive neuro-fuzzy modelling for colour recipe prediction[C]//IEEE International Conference on Neural Networks. Perth: IEEE, 1995: 2252 -2257．",
+          "沈加加,周翔,屠天民. 基于BP神经网络的色纺纱配色[J]. 纺织学报,2015,36(11):34-38.",
+          "程璐,马崇启,王玉娟,刘建勇. 麻灰纱中色纤维混合模型运用[J]. 纺织学报,2017,38(07):44-48. ",
+          "Yang Y , Ma H , Yang Q , et al. Recipe prediction of mélange yarn using modular artificial neural network[J]. Journal of the Textile Institute, 2017:1-7.",
+          "李君丽. 麻灰纱色纤维混合模型分析[D].天津工业大学,2016.",
+          "马崇启,王玉娟,刘建勇,程璐. 基于Ga-BP神经网络的色纺纱配色[J]. 天津工业大学学报,2016,35(06):27-31. ",
+          "Duncan. The colour of pigment mixtures[J]. Proceedings of the Physical Society, 1940, 52: 390-401.",
+          "Walowit E, Mccarthy C J, Berns R S. Spectrophotometric color matching based on  two-constant Kubelka-Munk theory[J]. Color Research & Application, 1988, 13(6): 358-362.",
+          "吴军, 李戎, 许仲哲, 等. 基于汉风色典的CMC、CIE DE2000色差公式研究分析[J]. 染整技术,2018,40(10):16-20.",
+          "曾安,聂文俊. 基于深度双向LSTM的股票推荐系统[J]. 计算机科学,2019,46(10): 84-89.",
+          "王鑫,吴际,刘超,杨海燕,杜艳丽,牛文生. 基于LSTM循环神经网络的故障时间序列预测[J]. 北京航空航天大学学报,2018,44(04):772-784.",
+          "周志华,陈世福. 神经网络集成[J]. 计算机学报,2002,(01):1-8.",
+          "王卓, 杨瑞华, 潘博, 等. 基于Kubelka-Munk双常数理论的色纺纱配色模型[J]. 棉纺织技术, 2021, 49(02): 24-30.",
+          "高新,潘如如,高卫东. 采用改进Stearns-Noechel模型的混色棉纤维颜色预测[J].东华大学学报(自然科学版),2020,46(04):549-554.",
+          "王玉娟. 基于STEARNS-NOECHE理论的色纺纱测配色研究[D]. 天津工业大学,2017."
+        ],
+        "blank_lines_after_header": 2,
+        "header_paragraph_index": 748,
+        "content_paragraph_indices": [
+          751,
+          752,
+          753,
+          754,
+          755,
+          756,
+          757,
+          758,
+          759,
+          760,
+          761,
+          762,
+          763,
+          764,
+          765,
+          766,
+          767,
+          768,
+          769,
+          770,
+          771,
+          772,
+          773,
+          774,
+          775,
+          776,
+          777,
+          778,
+          779,
+          780,
+          781,
+          782,
+          783,
+          784,
+          785,
+          786,
+          787,
+          788,
+          789,
+          790
+        ],
+        "reference_numbers": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ]
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "标题字体应为加粗，实际为不加粗",
+          "标题段后间距应为0.0厘米，实际约为0.70厘米"
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "第1条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第2条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第3条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第4条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第8条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第9条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第10条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第11条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第12条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第13条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第14条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第15条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第16条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第17条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第18条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第19条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第20条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第21条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第22条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第23条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第24条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第25条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第26条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第27条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第28条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第29条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第30条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第31条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第32条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第33条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第34条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第35条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第36条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第37条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第38条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第39条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "第40条参考文献英文文字字体应为Times New Roman，实际为Calibri",
+          "检测到 2 条文献未被正文引用:\n  [32] Duncan. The colour of pigment mixtures[J]. Proceedings of the Physical Society, ...\n  [40] 王玉娟. 基于STEARNS-NOECHE理论的色纺纱测配色研究[D]. 天津工业大学,2017...."
+        ]
+      }
+    },
+    "summary": [
+      "参考文献检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  }
+}

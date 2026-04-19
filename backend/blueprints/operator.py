@@ -166,38 +166,34 @@ def get_batch_jobs():
         return jsonify({'success': False, 'message': f'获取批次列表失败: {str(e)}'}), 500
 
 
-@operator_bp.route('/batch/jobs/<int:job_id>', methods=['GET'])
+@operator_bp.route('/batch/jobs/<int:job_id>', methods=['GET', 'DELETE'])
 @auth_required()
-def get_batch_job_detail(job_id):
+def get_or_delete_batch_job(job_id):
     """
-    获取批次任务详情（含论文列表）
+    获取批次任务详情（含论文列表）或删除批次任务
     
-    返回:
+    GET 返回:
     {
         "success": true,
-        "job": {
-            "id": 1,
-            "directory_path": "D:/论文批次/2024届",
-            "total_papers": 23,
-            "processed": 23,
-            "status": "completed",
-            "papers": [
-                {
-                    "id": 1,
-                    "student_id": "2021001",
-                    "student_name": "张三",
-                    "original_filename": "论文_2021001_张三.docx",
-                    "check_status": "completed",
-                    "review_status": "reviewed",
-                    "pass_rate": 92.5
-                },
-                ...
-            ]
-        }
+        "job": { ... }
+    }
+    
+    DELETE 返回:
+    {
+        "success": true,
+        "message": "批次任务已删除"
     }
     """
     try:
         service = BatchCheckService()
+
+        if request.method == 'DELETE':
+            result = service.delete_batch_job(job_id)
+            if result['success']:
+                return jsonify(result)
+            else:
+                return jsonify(result), 400
+
         job = service.get_batch_job_detail(job_id)
         
         if not job:

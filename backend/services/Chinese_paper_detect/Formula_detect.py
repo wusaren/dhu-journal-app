@@ -15,6 +15,26 @@ from docx.oxml.ns import qn
 logger = logging.getLogger(__name__)
 
 
+def _ns_path(xpath_expr, ns_map):
+    """将 '//w:t/text()' 等带命名空间前缀的 XPath 转换为 local-name() 写法，兼容所有 lxml 版本。"""
+    import re as _re
+    converted = _re.sub(
+        r'\b([a-zA-Z][a-zA-Z0-9]*):([a-zA-Z_][a-zA-Z0-9_]*)',
+        lambda m: '*[local-name()="%s"]' % m.group(2),
+        xpath_expr
+    )
+    return converted
+
+
+def _xpath_ns(elem, xpath_expr, ns_map=None):
+    """兼容所有 lxml 版本的 xpath 查询：优先用 namespaces 参数，失败时回退到 local-name()。"""
+    try:
+        return elem.xpath(xpath_expr, namespaces=ns_map)
+    except TypeError:
+        pass
+    fallback = _ns_path(xpath_expr, ns_map)
+    return elem.xpath(fallback)
+
 
 # 添加项目根目录到 sys.path 以支持独立运行（与 Title_detect.py 保持一致）
 if __name__ == "__main__" and __package__ is None:
@@ -266,10 +286,11 @@ def build_math_spans_map(p, text):
 
     for path in math_paths:
         try:
-            for elem in p.xpath(path, namespaces=math_ns):
+            converted_path = _ns_path(path, math_ns)
+            for elem in p.xpath(converted_path):
                 parts = []
-                parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
-                parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                parts.extend(elem.xpath(_ns_path('.//w:t/text()', math_ns)))
+                parts.extend(elem.xpath(_ns_path('.//m:t/text()', math_ns)))
                 math_text = ''.join(parts)
                 if not math_text:
                     continue
@@ -407,6 +428,8 @@ def find_formula_candidates(doc, template, debug=None):
         r'[##]\s*\d+[-－–]\s*\d+',
         r'\(\d+[-－–]\d+\)',
         r'\(\d+\)',
+        r'\uff08\d+[-－–]\d+\uff09',
+        r'\uff08\d+\uff09',
     ]
 
     def parse_formula_number(num_text):
@@ -499,8 +522,8 @@ def find_formula_candidates(doc, template, debug=None):
                         'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
                     }
                     math_text_parts = []
-                    math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
-                    math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                    math_text_parts.extend(elem.xpath(_ns_path('.//w:t/text()', math_ns)))
+                    math_text_parts.extend(elem.xpath(_ns_path('.//m:t/text()', math_ns)))
                     formula_text = ''.join(math_text_parts)
                     if not formula_text:
                         continue
@@ -542,8 +565,8 @@ def find_formula_candidates(doc, template, debug=None):
             math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
                        'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
             math_text_parts = []
-            math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
-            math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+            math_text_parts.extend(elem.xpath(_ns_path('.//w:t/text()', math_ns)))
+            math_text_parts.extend(elem.xpath(_ns_path('.//m:t/text()', math_ns)))
             math_text = ''.join(math_text_parts)
 
             if not math_text:
@@ -558,7 +581,7 @@ def find_formula_candidates(doc, template, debug=None):
                         if parsed:
                             # 关键修复：在 Math 内匹配到编号时，过滤掉公式内容中的数字（如 13-16）
                             # 有括号(如(2-1))或有#前缀(如#3-3)才视为编号；纯数字(如13-16)很可能是公式下标
-                            if not (num_text.startswith('#') or num_text.startswith('(')):
+                            if not (num_text.startswith('#') or num_text.startswith('（') or num_text.startswith('(')):
                                 continue
                             target_math_elem = elem
                             parsed_number = parsed
@@ -587,8 +610,8 @@ def find_formula_candidates(doc, template, debug=None):
                 math_ns = {'m': 'http://schemas.openxmlformats.org/officeDocument/2006/math',
                            'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
                 math_text_parts = []
-                math_text_parts.extend(elem.xpath('.//w:t/text()', namespaces=math_ns))
-                math_text_parts.extend(elem.xpath('.//m:t/text()', namespaces=math_ns))
+                math_text_parts.extend(elem.xpath(_ns_path('.//w:t/text()', math_ns)))
+                math_text_parts.extend(elem.xpath(_ns_path('.//m:t/text()', math_ns)))
                 formula_text = ''.join(math_text_parts)
 
                 if not formula_text:
@@ -1640,7 +1663,7 @@ def check_formula_reference(paragraph, parsed_number, template, tpl, doc, dbg=Fa
     return report
 
 
-def validate_formula_format(paragraph, template, parsed_number=None, formula_content_text=None, target_math_elem=None, doc=None, dbg=False):
+def validate_formula_format(paragraph, template, parsed_number=None, formula_content_text=None, target_math_elem=None, doc=None, dbg=False, formula_label=None):
     """
     检查单个公式段落的格式
     - parsed_number: 已解析出的编号 (chapter, seq)
@@ -1648,11 +1671,18 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
     - target_math_elem: 目标 Math 对象（用于检测公式内容字体）
     - doc: 文档对象（用于引用检查）
     - dbg: 是否启用调试日志
+    - formula_label: 公式标签（如"公式(3-1)"），用于消息前缀
 
     注意：当段落来自表格单元格（无法映射到 python-docx Paragraph 对象）时，
     paragraph 为 None，此时跳过制表位和 Math 对象格式检查，仅检查编号和引用。
     """
     report = {'ok': True, 'messages': [], 'details': {}}
+
+    def _msg(text):
+        """给消息加上公式标签前缀"""
+        if formula_label and text:
+            return f"{formula_label}: {text}"
+        return text
 
     rules = template.get('formula_detection_rules', {})
     messages = template.get('messages', {})
@@ -1669,7 +1699,7 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
         report['details']['number'] = {'parsed': parsed_number is not None, 'value': parsed_number}
         if not parsed_number:
             report['ok'] = False
-            report['messages'].append(messages.get('formula_number_missing', '未检测到公式编号'))
+            report['messages'].append(_msg(messages.get('formula_number_missing', '未检测到公式编号')))
         # 字体和引用检查（通过 target_math_elem 和 doc 进行）
         report['details']['fonts'] = {'skipped': True, 'reason': '表格单元格段落无 Paragraph 对象'}
         ref_report = check_formula_reference(None, parsed_number, template, template, doc, dbg=dbg)
@@ -1679,7 +1709,7 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
         }
         if not ref_report['ok']:
             report['ok'] = False
-            report['messages'].extend(ref_report['messages'])
+            report['messages'].extend([_msg(m) for m in ref_report['messages']])
         # 格式检查通过，不输出确认消息
         return report
 
@@ -1698,7 +1728,7 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
         }
         if not tab_ok:
             if tab_issues:
-                report['messages'].append(f"对齐建议: {'; '.join(tab_issues[:2])}")
+                report['messages'].append(_msg(f"对齐建议: {'; '.join(tab_issues[:2])}"))
     else:
         tab_check_skipped = not tab_check_enabled
         report['details']['tab_stops'] = {'skipped': tab_check_skipped}
@@ -1712,13 +1742,13 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
         'preview': math_info.get('content_preview', [])
     }
     if not has_math:
-        report['messages'].append(messages.get('math_object_missing', '未检测到Office Math对象（可能是手动输入的公式）'))
+        report['messages'].append(_msg(messages.get('math_object_missing', '未检测到Office Math对象（可能是手动输入的公式）')))
 
     # ========== 3. 编号检查 ==========
     report['details']['number'] = {'parsed': parsed_number is not None, 'value': parsed_number}
     if not parsed_number:
         report['ok'] = False
-        report['messages'].append(messages.get('formula_number_missing', '未检测到公式编号'))
+        report['messages'].append(_msg(messages.get('formula_number_missing', '未检测到公式编号')))
 
     # ========== 4. 字体检查（传递 target_math_elem 和 dbg） ==========
     font_ok, font_issues = check_formula_fonts(
@@ -1730,7 +1760,7 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
     report['details']['fonts'] = {'correct': font_ok, 'issues': font_issues}
     if not font_ok:
         report['ok'] = False
-        report['messages'].extend([f"字体问题: {x}" for x in font_issues])
+        report['messages'].extend([_msg(f"字体问题: {x}") for x in font_issues])
 
     # ========== 5. 公式引用检查 ==========
     ref_report = check_formula_reference(paragraph, parsed_number, template, template, doc, dbg=dbg)
@@ -1740,7 +1770,7 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
     }
     if not ref_report['ok']:
         report['ok'] = False
-        report['messages'].extend(ref_report['messages'])
+        report['messages'].extend([_msg(m) for m in ref_report['messages']])
 
     # 格式检查通过，不输出确认消息
 
@@ -1867,7 +1897,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
 
             if paragraph is None:
                 # 这是文本框/公式框里的段落，没有 Paragraph 对象，跳过深度格式检查
-                para_report = {'ok': True, 'messages': ["文本框公式，跳过格式检查"], 'details': {}}
+                para_report = {'ok': True, 'messages': [f"[{formula_label}] 文本框公式，跳过格式检查"], 'details': {}}
                 para_text = fp.get('text', '')
             else:
                 # 这是正文流里的段落，可以正常检查
@@ -1875,9 +1905,10 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
                     paragraph, template,
                     parsed_number=fp.get('number'),
                     formula_content_text=fp.get('formula_content', ''),
-                    target_math_elem=fp.get('target_math_elem'),  # 传入 Math 对象用于字体检测
-                    doc=doc,  # 传入文档对象用于引用检查
-                    dbg=debug  # 传入调试标志
+                    target_math_elem=fp.get('target_math_elem'),
+                    doc=doc,
+                    dbg=debug,
+                    formula_label=formula_label
                 )
                 para_text = (paragraph.text or '').strip()
 
@@ -1886,14 +1917,16 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
             para_info = {
                 'index': i + 1,
                 'paragraph_index': fp.get('paragraph_index', fp.get('w_p_index')),
+                'number_w_p_index': fp.get('number_w_p_index'),
                 'text_preview': text_preview,
-                'formula_label': formula_label,  # 添加公式编号标识
+                'formula_label': formula_label,
                 'has_math_object': fp.get('has_math_object', False),
                 'math_object_count': fp.get('math_object_count', 0),
                 'has_formula_tab_stops': fp.get('has_formula_tab_stops', False),
                 'has_formula_style': fp.get('has_formula_style', False),
                 'confidence_score': fp.get('confidence_score', 10),
-                'format_check': para_report
+                'format_check': para_report,
+                'target_math_elem': fp.get('target_math_elem'),
             }
 
             report['details']['formula_paragraphs'].append(para_info)

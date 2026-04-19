@@ -1580,16 +1580,31 @@ class ChinesePaperFormatService:
             
             # Formula模块：[公式检测] 和 [编号] 始终显示
             elif module_name == 'Formula':
-                formula_det = report.get('formula_detection', {})
-                if isinstance(formula_det, dict) and 'ok' in formula_det:
-                    if formula_det.get('ok', False):
-                        lines.append(f"\n  [公式检测] ✓ 符合规范")
-                    else:
-                        msgs = formula_det.get('messages', [])
-                        if msgs:
-                            lines.append(f"\n  [公式检测] ✗ 发现 {len(msgs)} 项问题")
-                            for msg in msgs:
-                                lines.append(f"    • {msg}")
+                # 按 formula_label 分组，从 formula_paragraphs 中提取每个公式的错误
+                formula_paragraphs = report.get('details', {}).get('formula_paragraphs', [])
+                all_formula_issues = {}  # formula_label -> [(check_label, msg)]
+                for fp in formula_paragraphs:
+                    fcheck = fp.get('format_check', {})
+                    if not isinstance(fcheck, dict):
+                        continue
+                    label = fp.get('formula_label', '公式')
+                    if not fcheck.get('ok', True):
+                        for msg in fcheck.get('messages', []):
+                            if label not in all_formula_issues:
+                                all_formula_issues[label] = []
+                            all_formula_issues[label].append(msg)
+
+                if all_formula_issues:
+                    total = sum(len(v) for v in all_formula_issues.values())
+                    lines.append(f"\n  [公式检测] ✗ 发现 {total} 项问题（涉及 {len(all_formula_issues)} 个公式）")
+                    for label, msgs in all_formula_issues.items():
+                        for msg in msgs:
+                            # 去掉消息中已包含的公式标签前缀（避免显示重复）
+                            prefix = f"{label}: "
+                            display_msg = msg[len(prefix):] if msg.startswith(prefix) else msg
+                            lines.append(f"    • [{label}] {display_msg}")
+                else:
+                    lines.append(f"\n  [公式检测] ✓ 符合规范")
 
                 numbering = report.get('numbering', {})
                 if isinstance(numbering, dict) and 'ok' in numbering:
