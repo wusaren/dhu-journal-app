@@ -24,6 +24,13 @@ def _get_font_size_name(pt_size):
     return size_map[closest_size]
 
 
+def _border_val_none_or_nil(val):
+    """判断边框 w:val 是否表示'无边框'，大小写不敏感。"""
+    if val is None:
+        return True
+    return str(val).lower().strip() in ('none', 'nil', '')
+
+
 
 # 添加项目根目录到 sys.path 以支持独立运行（与 Title_detect.py 保持一致）
 if __name__ == "__main__" and __package__ is None:
@@ -82,125 +89,243 @@ def load_template(identifier):
 
 def get_document_default_fonts(doc):
     """
-    从文档的默认字符格式中获取字体设置
-    
-    返回: {'ascii': str, 'east_asia': str} 或 None
+    从文档的默认字符格式中获取字体和字号设置
+
+    返回: {'ascii': str, 'east_asia': str, 'hAnsi': str, 'font_size': float} 或 None
     """
     try:
         doc_defaults = doc.styles._element.xpath(
-            '//w:docDefaults/w:rPrDefault/w:rPr/w:rFonts'
+            '//w:docDefaults/w:rPrDefault/w:rPr'
         )
-        if doc_defaults:
-            rfonts = doc_defaults[0]
-            result = {}
-            
+        if not doc_defaults:
+            return None
+        rpr = doc_defaults[0]
+        result = {}
+
+        # 字体
+        rfonts = rpr.find(qn('w:rFonts'))
+        if rfonts is not None:
             ascii_font = rfonts.get(qn('w:ascii'))
             hansi_font = rfonts.get(qn('w:hAnsi'))
             east_asia_font = rfonts.get(qn('w:eastAsia'))
-            
             if ascii_font:
                 result['ascii'] = ascii_font
             if hansi_font:
                 result['hAnsi'] = hansi_font
             if east_asia_font:
                 result['east_asia'] = east_asia_font
-            
-            if result:
-                return result
+
+        # 字号（w:sz / w:szCs，单位 half-point，需除以 2 转为 pt）
+        for xname in ['w:sz', 'w:szCs']:
+            sz_node = rpr.find(qn(xname))
+            if sz_node is not None and sz_node.get(qn('w:val')):
+                val_str = sz_node.get(qn('w:val'))
+                try:
+                    result['font_size'] = float(val_str) / 2.0
+                    break
+                except (ValueError, TypeError):
+                    continue
+
+        return result if result else None
     except Exception:
-        pass
-    
-    return None
+        return None
 
 
 def get_inherited_style_properties(style, doc, visited_styles=None):
     """
-    递归获取样式及其继承链的所有属性
-    
+    递归获取样式及其继承链的所有属性（字号、字体、加粗、斜体）
+
     参数:
         style: 当前样式对象
         doc: 文档对象
         visited_styles: 已访问的样式ID集合（防止循环继承）
-    
+
     返回: dict 包含继承属性
     """
     if visited_styles is None:
         visited_styles = set()
-    
+
     if style and hasattr(style, 'style_id') and style.style_id in visited_styles:
         return {}
-    
+
     if style and hasattr(style, 'style_id'):
         visited_styles.add(style.style_id)
-    
+
     properties = {}
-    
+
     if not style:
         return properties
-    
+
     try:
         if hasattr(style, 'element') and style.element is not None:
-            # 字体
-            rfonts_nodes = style.element.xpath('.//w:rFonts')
+            elem = style.element
+
+            # 字号（w:sz / w:szCs，单位 half-point，需除以 2）
+            for xname in ['.//w:sz', './/w:szCs']:
+                sz_nodes = elem.xpath(xname)
+                if sz_nodes and sz_nodes[0].get(qn('w:val')):
+                    val = float(sz_nodes[0].get(qn('w:val'))) / 2.0
+                    properties['font_size'] = val
+                    break
+
+            # 加粗（w:b / w:bCs）
+            for xname in ['.//w:b', './/w:bCs']:
+                b_nodes = elem.xpath(xname)
+                if b_nodes:
+                    v = b_nodes[0].get(qn('w:val'))
+                    properties['is_bold'] = (v != '0') if v else True
+                    break
+
+            # 斜体（w:i / w:iCs）
+            for xname in ['.//w:i', './/w:iCs']:
+                i_nodes = elem.xpath(xname)
+                if i_nodes:
+                    v = i_nodes[0].get(qn('w:val'))
+                    properties['is_italic'] = (v != '0') if v else True
+                    break
+
+            # 字体名称
+            rfonts_nodes = elem.xpath('.//w:rFonts')
             if rfonts_nodes:
                 rfonts = rfonts_nodes[0]
                 ascii_font = rfonts.get(qn('w:ascii'))
                 eastasia_font = rfonts.get(qn('w:eastAsia'))
                 hansi_font = rfonts.get(qn('w:hAnsi'))
                 if ascii_font:
-                    properties.setdefault('font_ascii', ascii_font)
+                    properties['font_ascii'] = ascii_font
                 if eastasia_font:
-                    properties.setdefault('font_east_asia', eastasia_font)
+                    properties['font_east_asia'] = eastasia_font
                 elif hansi_font:
-                    properties.setdefault('font_name', hansi_font)
+                    properties['font_name'] = hansi_font
+
+            # python-docx API 兜底（字号）
+            if 'font_size' not in properties:
+                if (hasattr(style, 'font')
+                        and hasattr(style.font, 'size')
+                        and style.font.size is not None
+                        and hasattr(style.font.size, 'pt')):
+                    properties['font_size'] = float(style.font.size.pt)
+
+            # python-docx API 兜底（加粗）
+            if 'is_bold' not in properties:
+                if (hasattr(style, 'font')
+                        and hasattr(style.font, 'bold')
+                        and style.font.bold is not None):
+                    properties['is_bold'] = style.font.bold
+
+            # python-docx API 兜底（斜体）
+            if 'is_italic' not in properties:
+                if (hasattr(style, 'font')
+                        and hasattr(style.font, 'italic')
+                        and style.font.italic is not None):
+                    properties['is_italic'] = style.font.italic
     except Exception:
         pass
-    
+
     if hasattr(style, 'base_style') and style.base_style:
         parent_properties = get_inherited_style_properties(style.base_style, doc, visited_styles)
         parent_properties.update(properties)
         properties = parent_properties
-    
+
     return properties
 
 
-def detect_font_for_run(run, paragraph=None, doc=None):
-    """检测 run 的字号、英文字体(ASCII/hAnsi)、中文字体(EastAsia)、加粗
-    支持样式继承链和docDefaults
+def _get_run_effective_font_size(run, paragraph=None):
+    """
+    获取单个 run 的有效字号，按优先级依次尝试：
+    1. run XML w:szCs（Complex Script 显示字号，Word 渲染值）
+    2. run XML w:sz
+    3. None（需从样式继承）
+    返回 float 或 None
+    """
+    try:
+        if hasattr(run._element, 'rPr'):
+            rpr = run._element.rPr
+            if rpr is not None:
+                szCs_nodes = rpr.xpath('.//w:szCs')
+                if szCs_nodes and szCs_nodes[0].get(qn('w:val')):
+                    return float(szCs_nodes[0].get(qn('w:val'))) / 2.0
+                sz_nodes = rpr.xpath('.//w:sz')
+                if sz_nodes and sz_nodes[0].get(qn('w:val')):
+                    return float(sz_nodes[0].get(qn('w:val'))) / 2.0
+    except Exception:
+        pass
+    return None
+
+
+def detect_font_for_run(run, paragraph=None, doc=None, expected_size_fallback=None):
+    """
+    检测 run 的字号、英文字体(ASCII/hAnsi)、中文字体(EastAsia)、加粗、斜体。
+    支持样式继承链和 docDefaults，各属性追溯路径如下：
+
+      字号：  1)run XML szCs  2)run XML sz  3)paragraph.style API  4)paragraph.style XML
+               5)paragraph direct XML  6)段落样式继承链  7)docDefaults  8)expected_size_fallback
+
+      字体：  1)run XML rFonts  2)paragraph.style XML  3)段落样式继承链  4)docDefaults
+
+      加粗：  1)run API  2)paragraph.style API  3)run XML  4)段落样式继承链
+
+      斜体：  1)run API  2)paragraph.style API  3)run XML  4)段落样式继承链
     """
     font_size = None
     font_ascii = None
     font_eastasia = None
     is_bold = None
+    is_italic = None
 
     if not run:
-        return 12.0, "Times New Roman", "宋体", False
+        return expected_size_fallback or 12.0, "Times New Roman", "宋体", False, False
 
+    # ---------- 字号（5 层精确路径） ----------
     try:
-        if run.font and run.font.size and hasattr(run.font.size, 'pt'):
-            font_size = float(run.font.size.pt)
-
-        if font_size is None and paragraph and paragraph.style and getattr(paragraph.style, 'font', None):
-            try:
-                if paragraph.style.font.size and hasattr(paragraph.style.font.size, 'pt'):
-                    font_size = float(paragraph.style.font.size.pt)
-            except Exception:
-                pass
+        if hasattr(run._element, 'rPr'):
+            rpr = run._element.rPr
+            if rpr is not None:
+                szCs_nodes = rpr.xpath('.//w:szCs')
+                szCs_val = szCs_nodes[0].get(qn('w:val')) if szCs_nodes and szCs_nodes[0].get(qn('w:val')) else None
+                if szCs_val:
+                    font_size = float(szCs_val) / 2.0
+                    logger.info("[DBG_FONT]   size step1 szCs=%.1f(pt) raw=%s", font_size, szCs_val)
 
         if font_size is None and hasattr(run._element, 'rPr'):
             sz_nodes = run._element.xpath('.//w:sz')
-            if sz_nodes and sz_nodes[0].get(qn('w:val')):
-                font_size = float(sz_nodes[0].get(qn('w:val'))) / 2.0
+            sz_val = sz_nodes[0].get(qn('w:val')) if sz_nodes and sz_nodes[0].get(qn('w:val')) else None
+            if sz_val:
+                font_size = float(sz_val) / 2.0
+                logger.info("[DBG_FONT]   size step2 sz=%.1f(pt) raw=%s", font_size, sz_val)
+
+        if font_size is None and paragraph and paragraph.style and getattr(paragraph.style, 'font', None):
+            try:
+                style_size_obj = paragraph.style.font.size
+                style_size_pt = float(style_size_obj.pt) if (style_size_obj and hasattr(style_size_obj, 'pt')) else None
+                if style_size_pt:
+                    font_size = style_size_pt
+                    logger.info("[DBG_FONT]   size step3 para_style.font.size=%.1f(pt)", font_size)
+            except Exception as e:
+                logger.info("[DBG_FONT]   size step3 exception: %s", e)
 
         if font_size is None and paragraph and paragraph.style and hasattr(paragraph.style, 'element'):
             sz_nodes = paragraph.style.element.xpath('.//w:sz')
-            if sz_nodes and sz_nodes[0].get(qn('w:val')):
-                font_size = float(paragraph.style.element.xpath('.//w:sz')[0].get(qn('w:val'))) / 2.0
+            sz_val = sz_nodes[0].get(qn('w:val')) if sz_nodes and sz_nodes[0].get(qn('w:val')) else None
+            if sz_val:
+                font_size = float(sz_val) / 2.0
+                logger.info("[DBG_FONT]   size step4 para_style_xml sz=%.1f(pt) raw=%s", font_size, sz_val)
+
+        if font_size is None and paragraph:
+            para_sz_nodes = paragraph._element.xpath('.//w:sz')
+            para_szCs_nodes = paragraph._element.xpath('.//w:szCs')
+            para_szCs_val = para_szCs_nodes[0].get(qn('w:val')) if para_szCs_nodes and para_szCs_nodes[0].get(qn('w:val')) else None
+            para_sz_val = para_sz_nodes[0].get(qn('w:val')) if para_sz_nodes and para_sz_nodes[0].get(qn('w:val')) else None
+            if para_szCs_val:
+                font_size = float(para_szCs_val) / 2.0
+                logger.info("[DBG_FONT]   size step5 para_direct_xml szCs=%.1f(pt) raw=%s", font_size, para_szCs_val)
+            elif para_sz_val:
+                font_size = float(para_sz_val) / 2.0
+                logger.info("[DBG_FONT]   size step5 para_direct_xml sz=%.1f(pt) raw=%s", font_size, para_sz_val)
     except Exception:
         pass
 
-    font_size = font_size if font_size is not None else 12.0
-
+    # ---------- 字体名称（run XML + 段落样式 XML + 继承链 + docDefaults） ----------
     try:
         if run.font and run.font.name:
             font_ascii = run.font.name
@@ -223,8 +348,8 @@ def detect_font_for_run(run, paragraph=None, doc=None):
                         font_eastasia = xml_eastasia
                     elif xml_hansi and font_eastasia is None:
                         font_eastasia = xml_hansi
-        
-        # 从段落样式XML读取字体
+
+        # 段落样式 XML
         if not font_ascii or not font_eastasia:
             if paragraph and paragraph.style and hasattr(paragraph.style, 'element'):
                 rfonts_list = paragraph.style.element.xpath('.//w:rFonts')
@@ -243,21 +368,18 @@ def detect_font_for_run(run, paragraph=None, doc=None):
                             font_eastasia = xml_eastasia_s
                         elif xml_hansi_s:
                             font_eastasia = xml_hansi_s
-        
+
         # 样式继承链追溯
         if (not font_ascii or not font_eastasia) and paragraph and paragraph.style and doc:
-            try:
-                inherited_props = get_inherited_style_properties(paragraph.style, doc)
-                if not font_ascii and 'font_ascii' in inherited_props:
-                    font_ascii = inherited_props['font_ascii']
-                if not font_eastasia:
-                    if 'font_east_asia' in inherited_props:
-                        font_eastasia = inherited_props['font_east_asia']
-                    elif 'font_name' in inherited_props:
-                        font_eastasia = inherited_props['font_name']
-            except Exception:
-                pass
-        
+            inherited_props = get_inherited_style_properties(paragraph.style, doc)
+            if not font_ascii and 'font_ascii' in inherited_props:
+                font_ascii = inherited_props['font_ascii']
+            if not font_eastasia:
+                if 'font_east_asia' in inherited_props:
+                    font_eastasia = inherited_props['font_east_asia']
+                elif 'font_name' in inherited_props:
+                    font_eastasia = inherited_props['font_name']
+
         # docDefaults 兜底
         if not font_ascii or not font_eastasia:
             if doc:
@@ -273,6 +395,7 @@ def detect_font_for_run(run, paragraph=None, doc=None):
     font_ascii = font_ascii if font_ascii else "Times New Roman"
     font_eastasia = font_eastasia if font_eastasia else ""
 
+    # ---------- 加粗（run API + 段落样式 API + run XML + 继承链） ----------
     try:
         if run.font and run.font.bold is not None:
             is_bold = run.font.bold
@@ -285,13 +408,66 @@ def detect_font_for_run(run, paragraph=None, doc=None):
         if is_bold is None and hasattr(run._element, 'rPr'):
             b_nodes = run._element.xpath('.//w:b')
             if b_nodes:
-                is_bold = True
+                v = b_nodes[0].get(qn('w:val'))
+                is_bold = (v != '0') if v else True
+
+        # 样式继承链追溯（加粗）
+        if is_bold is None and paragraph and paragraph.style and doc:
+            inherited_props = get_inherited_style_properties(paragraph.style, doc)
+            if 'is_bold' in inherited_props:
+                is_bold = inherited_props['is_bold']
     except Exception:
         pass
 
     is_bold = bool(is_bold) if is_bold is not None else False
 
-    return font_size, font_ascii, font_eastasia, is_bold
+    # ---------- 斜体（run API + 段落样式 API + run XML + 继承链） ----------
+    try:
+        if run.font and run.font.italic is not None:
+            is_italic = run.font.italic
+        if is_italic is None and paragraph and paragraph.style and getattr(paragraph.style, 'font', None):
+            try:
+                if paragraph.style.font.italic is not None:
+                    is_italic = paragraph.style.font.italic
+            except Exception:
+                pass
+        if is_italic is None and hasattr(run._element, 'rPr'):
+            i_nodes = run._element.xpath('.//w:i')
+            if i_nodes:
+                v = i_nodes[0].get(qn('w:val'))
+                is_italic = (v != '0') if v else True
+
+        # 样式继承链追溯（斜体）
+        if is_italic is None and paragraph and paragraph.style and doc:
+            inherited_props = get_inherited_style_properties(paragraph.style, doc)
+            if 'is_italic' in inherited_props:
+                is_italic = inherited_props['is_italic']
+    except Exception:
+        pass
+
+    is_italic = bool(is_italic) if is_italic is not None else False
+
+    # ---------- 字号最终兜底：样式继承链 → docDefaults → expected_size_fallback ----------
+    if font_size is None:
+        inherited_size = None
+        if paragraph and paragraph.style and doc:
+            inherited_props = get_inherited_style_properties(paragraph.style, doc)
+            inherited_size = inherited_props.get('font_size')
+
+        doc_size = None
+        if doc:
+            doc_defaults = get_document_default_fonts(doc)
+            if doc_defaults:
+                doc_size = doc_defaults.get('font_size')
+
+        font_size = inherited_size or doc_size or (expected_size_fallback if expected_size_fallback is not None else 12.0)
+        src = ('继承链 ' + str(round(inherited_size, 1)) + 'pt') if inherited_size \
+              else ('docDefaults ' + str(round(doc_size, 1)) + 'pt') if doc_size \
+              else ('expected_size_fallback ' + str(round(expected_size_fallback, 1)) + 'pt') if expected_size_fallback \
+              else 'hardcoded 12.0pt'
+        logger.info("[DBG_FONT]   size fallback -> %s", src)
+
+    return font_size, font_ascii, font_eastasia, is_bold, is_italic
 
 
 def get_run_actual_color(run):
@@ -396,24 +572,45 @@ def build_body_paragraph_index_map(doc):
     return body_i_to_para_i
 
 
-def extract_tables_with_body_index(doc):
+def extract_tables_with_body_index(doc, body_p_map=None):
     """
     先枚举文档里所有表格（w:tbl），并记录：
     - table_body_index: 在 doc.element.body 的位置
+    - table_paragraph_index: 表格在 doc.paragraphs 中的对应索引（用于引用搜索）
     - table_index: 在 doc.tables 中的位置
     - table: python-docx Table 对象
+
+    table_paragraph_index 的计算方式：
+    body_p_map 只映射 body 中 w:p 元素的索引 -> doc.paragraphs 索引。
+    所以对于表格（w:tbl），需要找表格之后 body 中的第一个 w:p，
+    再用 body_p_map 查出对应的 doc.paragraphs 索引。
+    如果 body_p_map 为 None，则 table_paragraph_index 为 None。
     """
     items = []
     table_idx = -1
-    for body_i, el in enumerate(doc.element.body):
+    body_elements = doc.element.body
+    body_len = len(body_elements)
+
+    for body_i, el in enumerate(body_elements):
         if el.tag.endswith('tbl'):
             table_idx += 1
             if table_idx < len(doc.tables):
-                items.append({
+                item = {
                     'table_body_index': body_i,
                     'table_index': table_idx,
                     'table': doc.tables[table_idx],
-                })
+                }
+                # 计算表格在 doc.paragraphs 中的对应索引：
+                # 找表格之后 body 中的第一个 w:p，再用 body_p_map 查其对应的段落索引
+                if body_p_map is not None:
+                    next_p_body_i = None
+                    for j in range(body_i + 1, body_len):
+                        if body_elements[j].tag.endswith('p'):
+                            next_p_body_i = j
+                            break
+                    if next_p_body_i is not None:
+                        item['table_paragraph_index'] = body_p_map.get(next_p_body_i)
+                items.append(item)
     return items
 
 
@@ -422,7 +619,7 @@ def attach_caption_to_table_item(doc, table_item, tpl, body_p_map, debug=None):
     对单个表格：从表格上方回溯找 caption（中文/英文），并解析 chapter/seq/title。
 
     规则：
-    - 从 table_body_index-1 往上找 w:p，最多找 N 个段落（默认 30，可从模板读）
+    - 从 table_body_index-1 往上找 w:p，最多找 N 个段落（默认 10，可从模板读）
     - 优先找最近的英文表题（Table...），找到后再向上找中文表题（表...）
     - 英文编号缺失时，用中文编号补齐（沿用你现有逻辑）
     """
@@ -437,7 +634,7 @@ def attach_caption_to_table_item(doc, table_item, tpl, body_p_map, debug=None):
 )
     en_line_pat = r'^\s*Table\b(.*)$'
 
-    max_back = int(rules.get('caption_search_back_paragraphs', 30))
+    max_back = int(rules.get('caption_search_back_paragraphs', 10))
 
     table_item['caption_cn_paragraph_index'] = None
     table_item['caption_en_paragraph_index'] = None
@@ -617,6 +814,8 @@ def detect_paragraph_alignment(paragraph):
         except Exception:
             pass
 
+    # 段落和样式都没有显式对齐，说明对齐由 Word 默认行为决定
+    # 硬编码返回 0（左对齐），这是一个近似值
     return 0
 
 
@@ -689,21 +888,51 @@ def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
     messages = tpl.get('messages', {})
 
     non_empty_runs = [r for r in paragraph.runs if (r.text or '').strip()]
-    main_run = max(non_empty_runs, key=lambda r: len((r.text or '').strip()), default=None)
-    if not main_run:
+    if not non_empty_runs:
         report['ok'] = False
         report['messages'].append("表题段落没有有效文本")
         return report
 
-    size_pt, font_ascii, font_eastasia, is_bold = detect_font_for_run(main_run, paragraph, doc)
-    logger.info(
-        "[DBG_FONT] lang=%s para=%r | main_run=%r | eastAsia=%r ascii=%r",
-        language,
-        paragraph.text,
-        main_run.text,
-        font_eastasia,
-        font_ascii
-    )
+    # 遍历所有 run 检测字体属性，取众数（最常见的值）
+    from collections import Counter
+    size_values = []
+    eastasia_values = []
+    ascii_values = []
+    bold_values = []
+    italic_values = []
+    expected_size_pt = expected.get('font_size_pt')
+    for r in non_empty_runs:
+        sz, fa, fe, bd, italic = detect_font_for_run(r, paragraph, doc, expected_size_fallback=expected_size_pt)
+        size_values.append(sz)
+        if fe:
+            eastasia_values.append(fe)
+        if fa:
+            ascii_values.append(fa)
+        bold_values.append(bd)
+        italic_values.append(italic)
+        logger.info(
+            "[DBG_FONT] run text=%r size=%.2f eastAsia=%r ascii=%r bold=%r italic=%r",
+            r.text, sz, fe, fa, bd, italic,
+        )
+
+    # 字号：取出现次数最多的值
+    size_counter = Counter(size_values)
+    size_pt = size_counter.most_common(1)[0][0]
+    logger.info("[DBG_FONT] lang=%s para=%r | all_sizes=%s | size_mode=%.2f (count=%d)",
+        language, (paragraph.text or '')[:30], dict(size_counter), size_pt, size_counter[size_pt])
+
+    # 字体：中文字体取众数（仅统计有值的）
+    font_eastasia = ""
+    if eastasia_values:
+        ea_counter = Counter(eastasia_values)
+        font_eastasia = ea_counter.most_common(1)[0][0]
+    font_ascii = "Times New Roman"
+    if ascii_values:
+        fa_counter = Counter(ascii_values)
+        font_ascii = fa_counter.most_common(1)[0][0]
+
+    # 加粗：任意一个 run 加粗则视为加粗（更严格）
+    is_bold = any(bold_values)
     if not should_skip_check('font_size'):
         expected_size = float(expected.get('font_size_pt', 10.5))
         if abs(size_pt - expected_size) > 0.5:
@@ -741,10 +970,22 @@ def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
             else:
                 report['messages'].append(f"英文表题{'应加粗' if expected_bold else '应不加粗'}，实际为{'加粗' if is_bold else '不加粗'}")
 
-    if not should_skip_check('color') and expected.get('no_special_color', True):
-        if not detect_run_color_is_default(main_run):
+    if not should_skip_check('italic') and 'italic' in expected:
+        is_italic = any(italic_values)
+        expected_italic = bool(expected.get('italic'))
+        if is_italic != expected_italic:
             report['ok'] = False
-            actual_color = get_run_actual_color(main_run)
+            if language == 'cn':
+                report['messages'].append(f"中文表题{'应为斜体' if expected_italic else '应不为斜体'}，实际为{'斜体' if is_italic else '非斜体'}")
+            else:
+                report['messages'].append(f"英文表题{'应为斜体' if expected_italic else '应不为斜体'}，实际为{'斜体' if is_italic else '非斜体'}")
+
+    if not should_skip_check('color') and expected.get('no_special_color', True):
+        # 颜色：任意一个 run 有特殊颜色则报错
+        colored_runs = [r for r in non_empty_runs if not detect_run_color_is_default(r)]
+        if colored_runs:
+            report['ok'] = False
+            actual_color = get_run_actual_color(colored_runs[0])
             if language == 'cn':
                 report['messages'].append(f"中文表题应为无特殊颜色，实际为{'#' + actual_color if actual_color else '默认/无特殊颜色'}")
             else:
@@ -755,14 +996,21 @@ def check_caption_format(paragraph, expected, tpl, language='cn', doc=None):
         exp = alignment_map.get(str(expected.get('alignment')).lower())
         if exp is not None:
             actual = detect_paragraph_alignment(paragraph)
-            if actual != exp:
-                report['ok'] = False
-                alignment_name_map = {0: "左对齐", 1: "居中对齐", 2: "右对齐", 3: "两端对齐"}
-                alignment_int_map = {"left": 0, "center": 1, "right": 2, "justify": 3}
-                exp_raw = alignment_int_map.get(str(expected.get('alignment')).lower() if expected.get('alignment') else '', None)
-                exp = alignment_name_map.get(exp_raw, '未知') if exp_raw is not None else '未知'
-                act = alignment_name_map.get(actual, '未知')
-                report['messages'].append(f'表题对齐应为{exp}，实际为{act}')
+            raw_direct = paragraph.paragraph_format.alignment
+            raw_style = paragraph.style.paragraph_format.alignment if paragraph.style else None
+            logger.info("[DBG_ALIGN] lang=%s para=%r | direct=%r style=%r | expected=%s actual=%s",
+                language, (paragraph.text or '')[:30], raw_direct, raw_style, exp, actual)
+            # 当 direct 和 style 都没有显式对齐时，说明对齐由 Word 默认行为决定
+            # 无法通过 XML 确定，跳过检查以避免误报
+            if raw_direct is not None or raw_style is not None:
+                if actual != exp:
+                    report['ok'] = False
+                    alignment_name_map = {0: "左对齐", 1: "居中对齐", 2: "右对齐", 3: "两端对齐"}
+                    alignment_int_map = {"left": 0, "center": 1, "right": 2, "justify": 3}
+                    exp_raw = alignment_int_map.get(str(expected.get('alignment')).lower() if expected.get('alignment') else '', None)
+                    exp = alignment_name_map.get(exp_raw, '未知') if exp_raw is not None else '未知'
+                    act = alignment_name_map.get(actual, '未知')
+                    report['messages'].append(f'表题对齐应为{exp}，实际为{act}')
 
     return report
 
@@ -875,18 +1123,18 @@ def check_table_content_alignment(table, tpl):
 
 def check_table_reference(table_item, doc, tpl):
     """
-    检查表格引用：表格上一个段落必须提及该表格引用（表{章}-{序}）
+    检查表格是否在文档中被引用
+    在表格上方和下方的一定范围内查找引用文本
+    支持中文引用格式：表3-1、见表格3-1、如下表3-1等
     """
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'messages': [], 'reference_found': False, 'reference_text': ''}
     messages = tpl.get('messages', {})
     check_rules = tpl.get('check_rules', {})
 
-    # 检查是否启用引用检查
     reference_check = check_rules.get('table_reference_check', True)
     if not reference_check:
         return report
 
-    # 跳过续表
     if table_item.get('is_continuation', False):
         return report
 
@@ -894,119 +1142,64 @@ def check_table_reference(table_item, doc, tpl):
     seq = table_item.get('seq')
 
     if chapter is None or seq is None:
-        return report  # 无法获取编号，跳过检查
-
-    # 获取表格的 body_index
-    table_body_index = table_item.get('table_body_index')
-    if table_body_index is None:
         return report
 
-    # 获取上一个段落元素（直接通过索引获取）
-    prev_body_index = table_body_index - 1
-    if prev_body_index < 0:
-        report['ok'] = False
-        report['messages'].append(messages.get('table_reference_error', f'表格上一段落未提及该表格引用'))
+    # 优先使用 table_paragraph_index（直接对应 doc.paragraphs 的索引），
+    # 降级使用 table_body_index（仅当表格是 body 中第一个元素时才正确）
+    table_para_index = table_item.get('table_paragraph_index')
+    if table_para_index is None:
+        # 降级：使用 body_index，但需要注意 doc.paragraphs 长度可能小于 table_body_index
+        table_para_index = table_item.get('table_body_index')
+
+    if table_para_index is None:
         return report
 
-    # 直接获取上一个元素
-    try:
-        prev_elem = doc.element.body[prev_body_index]
-    except IndexError:
-        report['ok'] = False
-        report['messages'].append(messages.get('table_reference_error', f'表格上一段落未提及该表格引用'))
-        return report
+    connector_chars = r'[-－.．]'
 
-    # 合并的表题正则（匹配 "Table 3-1 Title" 或 "表3-1 标题"）
-    # 格式：Table/表 + 数字 + 分隔符 + 数字，忽略中间的空格
-    caption_pattern = r'^\s*(Table|表)\s*\d+[-－.．]?\s*\d+'
-    # 图题正则（匹配 "Figure 3-1 Title" 或 "图3-1 标题"）
-    figure_caption_pattern = r'^\s*(Figure|Fig\.?|图)\s*\d+[-－.．]?\s*\d*'
-    # 章节标题正则（匹配形如 "3.1", "第三章", "3.1.1" 等）
-    chapter_title_pattern = r'^\s*\d+[\.\d]*\s*|^第[一二三四五六七八九十0-9]+[章节]'
+    ref_patterns = [
+        rf'表\s*{chapter}\s*{connector_chars}\s*{seq}',
+        rf'表格\s*{chapter}\s*{connector_chars}\s*{seq}',
+        rf'下表\s*{chapter}\s*{connector_chars}\s*{seq}',
+        rf'上表\s*{chapter}\s*{connector_chars}\s*{seq}',
+        rf'见表\s*{chapter}\s*{connector_chars}\s*{seq}',
+        rf'如表\s*{chapter}\s*{connector_chars}\s*{seq}',
+    ]
 
-    # 如果不是段落，则继续向前查找
-    while prev_body_index >= 0:
-        if prev_elem.tag.endswith('p'):
-            # 获取段落文本
-            prev_text = _strip_invisible((''.join(prev_elem.xpath('.//w:t/text()')) or '').strip())
+    search_range = 10
+    # table_para_index 是表格在 doc.paragraphs 中的对应位置，
+    # 所以 skip 时应该用 table_para_index 而非 table_body_index
+    skip_index = table_para_index
+    total_paragraphs = len(doc.paragraphs)
+    start_idx = max(0, table_para_index - search_range)
+    end_idx = min(total_paragraphs, table_para_index + search_range + 1)
 
-            if prev_text:
-                # 检查是否是表题（英文表题如 "Table 3-1 Title" 或中文表题如 "表3-1 标题"）
-                if re.match(caption_pattern, prev_text, re.IGNORECASE):
-                    # 是表题，继续向上查找
-                    prev_body_index -= 1
-                    if prev_body_index < 0:
-                        break
-                    try:
-                        prev_elem = doc.element.body[prev_body_index]
-                    except IndexError:
-                        break
-                    continue
+    for i in range(start_idx, end_idx):
+        if i == skip_index:
+            continue
 
-                # 检查是否是图题（英文图题如 "Figure 3-1" 或中文图题如 "图3-1"）
-                if re.match(figure_caption_pattern, prev_text, re.IGNORECASE):
-                    # 是图题，继续向上查找
-                    prev_body_index -= 1
-                    if prev_body_index < 0:
-                        break
-                    try:
-                        prev_elem = doc.element.body[prev_body_index]
-                    except IndexError:
-                        break
-                    continue
+        para = doc.paragraphs[i]
+        text = _strip_invisible((''.join(para._element.xpath('.//w:t/text()')) or '').strip())
 
-                # 检查是否包含表格引用
-                # 匹配模式：表3-1, 见表格3-1, 如下表3-1等
-                # 忽略表名和引用词之间的空格
-                ref_patterns = [
-                    rf'表\s*{chapter}\s*[-－.．]\s*{seq}',  # 表3-1
-                    rf'表格\s*{chapter}\s*[-－.．]\s*{seq}',  # 表格3-1
-                    rf'下表\s*{chapter}\s*[-－.．]\s*{seq}',  # 下表3-1
-                    rf'上表\s*{chapter}\s*[-－.．]\s*{seq}',  # 上表3-1
-                    rf'见表\s*{chapter}\s*[-－.．]\s*{seq}',  # 见表3-1
-                    rf'如表\s*{chapter}\s*[-－.．]\s*{seq}',  # 如表3-1
-                ]
+        if not text:
+            continue
 
-                found_ref = False
-                for pattern in ref_patterns:
-                    if re.search(pattern, prev_text, re.IGNORECASE):
-                        found_ref = True
-                        break
+        found_ref = False
+        matched = ''
+        for pattern in ref_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                found_ref = True
+                matched = match.group(0)
+                break
 
-                if found_ref:
-                    return report  # 找到引用，通过检查
+        if found_ref:
+            report['reference_found'] = True
+            report['reference_text'] = matched
+            return report
 
-                # 如果没有找到引用，检查是否是章节标题
-                if re.match(chapter_title_pattern, prev_text):
-                    # 是标题，继续向上查找
-                    prev_body_index -= 1
-                    if prev_body_index < 0:
-                        break
-                    try:
-                        prev_elem = doc.element.body[prev_body_index]
-                    except IndexError:
-                        break
-                    continue
-
-                # 不是标题也没有引用，报告错误
-                report['ok'] = False
-                report['messages'].append(
-                    messages.get('table_reference_error', f'表格上一段落未提及该表格引用（如：表{chapter}-{seq}）')
-                )
-                return report
-
-        # 继续向上查找
-        prev_body_index -= 1
-        if prev_body_index < 0:
-            break
-        try:
-            prev_elem = doc.element.body[prev_body_index]
-        except IndexError:
-            break
-
-    # 没找到有效的段落或没有引用
     report['ok'] = False
-    report['messages'].append(messages.get('table_reference_error', f'表格上一段落未提及该表格引用'))
+    msg_tpl = messages.get('table_reference_error', '表格引用检测未通过（如：表{chapter}-{seq}）').format(chapter=chapter, seq=seq)
+    report['messages'].append(msg_tpl)
     return report
 
 
@@ -1025,17 +1218,43 @@ def check_table_style_three_line(table, tpl):
 
         tblBorders = tblPr.find(qn('w:tblBorders'))
 
+        # 表级别边框检查（左右边线和内部竖线）
         if tblBorders is not None:
             left_border = tblBorders.find(qn('w:left'))
             right_border = tblBorders.find(qn('w:right'))
             inside_v = tblBorders.find(qn('w:insideV'))
+            inside_h = tblBorders.find(qn('w:insideH'))
 
-            if left_border is not None and left_border.get(qn('w:val')) not in [None, 'none', 'nil']:
+            if left_border is not None and not _border_val_none_or_nil(left_border.get(qn('w:val'))):
                 issues.append("表格不应有左边框（三线表格式）")
-            if right_border is not None and right_border.get(qn('w:val')) not in [None, 'none', 'nil']:
+            if right_border is not None and not _border_val_none_or_nil(right_border.get(qn('w:val'))):
                 issues.append("表格不应有右边框（三线表格式）")
-            if inside_v is not None and inside_v.get(qn('w:val')) not in [None, 'none', 'nil']:
+            if inside_v is not None and not _border_val_none_or_nil(inside_v.get(qn('w:val'))):
                 issues.append("表格不应有内部竖线（三线表格式）")
+            # 内部水平线（insideH）也不应出现（三线表只有表头底线，内部不应有水平分隔线）
+            if inside_h is not None and not _border_val_none_or_nil(inside_h.get(qn('w:val'))):
+                issues.append("表格内部不应有水平分隔线（三线表格式）")
+
+        # 单元格级别边框检查：遍历所有单元格，确保没有多余的边线
+        # 注意：三线表允许第一行顶边和第一行底边（表头底线），这些由表级别 tblBorders 控制
+        for row_idx, row in enumerate(table.rows):
+            for cell in row.cells:
+                tc = cell._element
+                tcPr = tc.find(qn('w:tcPr'))
+                if tcPr is None:
+                    continue
+                tcBorders = tcPr.find(qn('w:tcBorders'))
+                if tcBorders is None:
+                    continue
+                # 检查左右边线（任何行都不应有左右边线）
+                for side, side_name in [
+                    (qn('w:left'), '左边框'),
+                    (qn('w:right'), '右边框'),
+                ]:
+                    border_el = tcBorders.find(side)
+                    if border_el is not None and not _border_val_none_or_nil(border_el.get(qn('w:val'))):
+                        issues.append(f"表格单元格不应有{side_name}（三线表格式）")
+                        break  # 该单元格已报错，跳过其他边（避免同一单元格重复报错）
 
         if tpl.get('check_rules', {}).get('border_width_check', False):
             border_config = tpl.get('table_detection_rules', {}).get('table_style', {}).get('border_width', {})
@@ -1045,53 +1264,75 @@ def check_table_style_three_line(table, tpl):
             expected_bottom = float(border_config.get('bottom_line', 1.5))
             expected_header = float(border_config.get('header_line', 0.75))
 
-            # 获取消息模板，如果配置中有期望值则使用配置值
             top_msg_template = messages.get('top_border_width_error', f'顶线宽度应为{expected_top}磅，实际为{{actual}}磅')
             header_msg_template = messages.get('header_border_width_error', f'表头底线宽度应为{expected_header}磅，实际为{{actual}}磅')
             bottom_msg_template = messages.get('bottom_border_width_error', f'底线宽度应为{expected_bottom}磅，实际为{{actual}}磅')
 
             border_width_issues = []
 
-            if len(table.rows) > 0 and table.rows[0].cells:
-                tc = table.rows[0].cells[0]._element
-                tcPr = tc.find(qn('w:tcPr'))
-                if tcPr is not None:
-                    tcBorders = tcPr.find(qn('w:tcBorders'))
-                    if tcBorders is not None:
-                        top_border = tcBorders.find(qn('w:top'))
-                        bottom_border = tcBorders.find(qn('w:bottom'))
+            # 顶线：从第一行第一列的单元格顶边获取（使用表级别 tblBorders 的 top）
+            tbl_top_border = None
+            if tblBorders is not None:
+                tbl_top_border = tblBorders.find(qn('w:top'))
+            # 如果表级别没有顶线，再从单元格级别获取
+            if tbl_top_border is None or _border_val_none_or_nil(tbl_top_border.get(qn('w:val'))):
+                if len(table.rows) > 0 and len(table.rows[0].cells) > 0:
+                    tc = table.rows[0].cells[0]._element
+                    tcPr = tc.find(qn('w:tcPr'))
+                    if tcPr is not None:
+                        tcBorders = tcPr.find(qn('w:tcBorders'))
+                        if tcBorders is not None:
+                            tbl_top_border = tcBorders.find(qn('w:top'))
+            if tbl_top_border is not None:
+                sz = tbl_top_border.get(qn('w:sz'))
+                if sz:
+                    actual_width = float(sz) / 8.0
+                    if abs(actual_width - expected_top) > tolerance:
+                        border_width_issues.append(top_msg_template.format(actual=round(actual_width, 2)))
 
-                        if top_border is not None:
-                            sz = top_border.get(qn('w:sz'))
-                            if sz:
-                                actual_width = float(sz) / 8.0
-                                if abs(actual_width - expected_top) > tolerance:
-                                    border_width_issues.append(top_msg_template.format(actual=round(actual_width, 2)))
+            # 表头底线（第一行底边）
+            header_bottom_border = None
+            if tblBorders is not None:
+                header_bottom_border = tblBorders.find(qn('w:insideH'))
+            if header_bottom_border is None or _border_val_none_or_nil(header_bottom_border.get(qn('w:val'))):
+                if len(table.rows) > 0 and len(table.rows[0].cells) > 0:
+                    tc = table.rows[0].cells[0]._element
+                    tcPr = tc.find(qn('w:tcPr'))
+                    if tcPr is not None:
+                        tcBorders = tcPr.find(qn('w:tcBorders'))
+                        if tcBorders is not None:
+                            header_bottom_border = tcBorders.find(qn('w:bottom'))
+            if header_bottom_border is not None:
+                sz = header_bottom_border.get(qn('w:sz'))
+                if sz:
+                    actual_width = float(sz) / 8.0
+                    if abs(actual_width - expected_header) > tolerance:
+                        border_width_issues.append(header_msg_template.format(actual=round(actual_width, 2)))
 
-                        if bottom_border is not None:
-                            sz = bottom_border.get(qn('w:sz'))
-                            if sz:
-                                actual_width = float(sz) / 8.0
-                                if abs(actual_width - expected_header) > tolerance:
-                                    border_width_issues.append(header_msg_template.format(actual=round(actual_width, 2)))
-
-            if len(table.rows) > 0 and table.rows[-1].cells:
-                tc = table.rows[-1].cells[0]._element
-                tcPr = tc.find(qn('w:tcPr'))
-                if tcPr is not None:
-                    tcBorders = tcPr.find(qn('w:tcBorders'))
-                    if tcBorders is not None:
-                        bottom_border = tcBorders.find(qn('w:bottom'))
-                        if bottom_border is not None:
-                            sz = bottom_border.get(qn('w:sz'))
-                            if sz:
-                                actual_width = float(sz) / 8.0
-                                if abs(actual_width - expected_bottom) > tolerance:
-                                    border_width_issues.append(bottom_msg_template.format(actual=round(actual_width, 2)))
+            # 底线（最后一行底边）
+            tbl_bottom_border = None
+            if tblBorders is not None:
+                tbl_bottom_border = tblBorders.find(qn('w:bottom'))
+            if tbl_bottom_border is None or _border_val_none_or_nil(tbl_bottom_border.get(qn('w:val'))):
+                if len(table.rows) > 0 and len(table.rows[-1].cells) > 0:
+                    tc = table.rows[-1].cells[0]._element
+                    tcPr = tc.find(qn('w:tcPr'))
+                    if tcPr is not None:
+                        tcBorders = tcPr.find(qn('w:tcBorders'))
+                        if tcBorders is not None:
+                            tbl_bottom_border = tcBorders.find(qn('w:bottom'))
+            if tbl_bottom_border is not None:
+                sz = tbl_bottom_border.get(qn('w:sz'))
+                if sz:
+                    actual_width = float(sz) / 8.0
+                    if abs(actual_width - expected_bottom) > tolerance:
+                        border_width_issues.append(bottom_msg_template.format(actual=round(actual_width, 2)))
 
             issues.extend(border_width_issues)
 
-        return len(issues) == 0, issues
+        # 去重，避免同一问题被多次报告
+        unique_issues = list(dict.fromkeys(issues))
+        return len(unique_issues) == 0, unique_issues
 
     except Exception as e:
         return False, [f"表格样式检测异常: {str(e)}"]
@@ -1162,7 +1403,7 @@ def check_doc_with_template(doc_path, template_identifier, skip_checks=None, deb
     messages = tpl.get('messages', {})
 
     body_p_map = build_body_paragraph_index_map(doc)
-    table_items = extract_tables_with_body_index(doc)
+    table_items = extract_tables_with_body_index(doc, body_p_map)
 
     report = {
         'table_detection': {'ok': True, 'messages': []},

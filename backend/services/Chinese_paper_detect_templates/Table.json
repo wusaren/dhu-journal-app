@@ -21,11 +21,12 @@
       "description": "表头行居中对齐，内容行根据长度判断（较长左对齐，较短居中对齐）"
     }
   },
-  "format_rules": {
+    "format_rules": {
     "caption_cn": {
       "font_size_pt": 10.5,
       "font_name_eastasia": "楷体_GB2312",
       "bold": false,
+      "italic": false,
       "no_special_color": true,
       "alignment": "center"
     },
@@ -33,6 +34,7 @@
       "font_size_pt": 10.5,
       "font_name_ascii": "Times New Roman",
       "bold": false,
+      "italic": false,
       "no_special_color": true,
       "alignment": "center"
     }
@@ -78,7 +80,7 @@
 
     "table_not_found": "未在英文表题下方找到表格",
 
-    "table_reference_error": "表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+    "table_reference_error": "表格引用检测未通过（如：表{chapter}-{seq}）",
 
     "table_content_alignment_error": "表格内容对齐方式不正确",
     "table_header_alignment_error": "表头行应居中对齐",

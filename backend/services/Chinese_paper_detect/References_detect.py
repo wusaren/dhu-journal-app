@@ -831,16 +831,26 @@ def detect_paragraph_indent(paragraph):
     if hasattr(paragraph, '_document'):
         doc = paragraph._document
     
-    if doc:
-        props, style_based = detect_paragraph_format_with_inheritance(paragraph, doc)
-        first_line_indent = props.get('first_line_indent')
-        left_indent = props.get('left_indent')
-        right_indent = props.get('right_indent')
-        
-        # 调试日志
-        logger.debug(f"[缩进调试] 使用样式继承检测，最终结果: first_line_indent={first_line_indent}, left_indent={left_indent}, right_indent={right_indent}, style_based={style_based}")
-        
-        return first_line_indent, left_indent, right_indent, style_based
+        if doc:
+            props, style_based = detect_paragraph_format_with_inheritance(paragraph, doc)
+            first_line_indent = props.get('first_line_indent')
+            left_indent = props.get('left_indent')
+            right_indent = props.get('right_indent')
+
+            # 兜底：段落使用了自动编号但 numbering.xml 中没有定义缩进时
+            if left_indent is None:
+                try:
+                    if (paragraph._element.pPr is not None and
+                            paragraph._element.pPr.xpath('.//w:numPr')):
+                        logger.debug(f"[缩进调试] 主路径：段落使用自动编号但未定义缩进，将 left_indent 置为 0.0")
+                        left_indent = 0.0
+                except Exception:
+                    pass
+
+            # 调试日志
+            logger.debug(f"[缩进调试] 使用样式继承检测，最终结果: first_line_indent={first_line_indent}, left_indent={left_indent}, right_indent={right_indent}, style_based={style_based}")
+
+            return first_line_indent, left_indent, right_indent, style_based
     else:
         # 后备方案：使用原有逻辑 + XML直接读取
         logger.debug(f"[缩进调试] 使用后备方案检测")
@@ -1136,6 +1146,19 @@ def detect_paragraph_indent(paragraph):
                 logger.debug(f"[缩进调试] 使用默认设置右缩进: {right_indent}")
             else:
                 right_indent = None  # 读不到值，返回 None
+            
+            # 兜底：段落使用了自动编号但 numbering.xml 中没有定义缩进
+            # Word 在渲染时动态计算标号宽度，XML 中不存储精确值
+            # 此时将 left_indent 视为 0，让悬挂缩进检查能继续执行而不被跳过
+            if left_indent is None:
+                try:
+                    if (hasattr(paragraph, '_element') and
+                            paragraph._element.pPr is not None and
+                            paragraph._element.pPr.xpath('.//w:numPr')):
+                        logger.debug(f"[缩进调试] 段落使用自动编号但 numbering.xml 未定义缩进，将 left_indent 置为 0.0")
+                        left_indent = 0.0
+                except Exception:
+                    pass
             
             # 调试日志
             logger.debug(f"[缩进调试] 最终结果: first_line_indent={first_line_indent}, left_indent={left_indent}, right_indent={right_indent}, style_based={style_based}")
@@ -2147,7 +2170,12 @@ def check_reference_header_format(paragraph, tpl, doc=None):
         return report
     
     actual_size_pt, actual_font_ascii, actual_font_eastasia, actual_bold, actual_italic, actual_line_spacing, _ = detect_font_for_run(main_run, paragraph, doc)
-    
+
+    # 使用统一的段落格式提取函数（含样式继承链）
+    para_props, para_style_based = detect_paragraph_format_with_inheritance(paragraph, doc)
+    actual_space_before_pt = para_props.get('space_before')
+    actual_space_after_pt = para_props.get('space_after')
+
     issues = []
     
     # 【新增】判断是否是样式继承（没有直接设置字体，从段落样式继承）
@@ -2196,18 +2224,6 @@ def check_reference_header_format(paragraph, tpl, doc=None):
             actual_status = "加粗" if actual_bold else "不加粗"
             issues.append(f"标题字体应为{bold_status}，实际为{actual_status}")
     
-    # 行间距检查
-    if not should_skip_check('spacing') and 'line_spacing' in format_rules:
-        if actual_line_spacing is None:
-            issues.append("无法检测到参考文献标题行间距格式信息")
-        else:
-            expected_line_spacing = float(format_rules['line_spacing'])
-            actual_spacing_name = get_line_spacing_name(actual_line_spacing, tpl)
-            expected_spacing_name = get_line_spacing_name(expected_line_spacing, tpl)
-            logger.debug(f"参考文献标题行间距: {actual_spacing_name}（{actual_line_spacing}倍）(期望: {expected_spacing_name}（{expected_line_spacing}倍）)")
-            if abs(actual_line_spacing - expected_line_spacing) > 0.1:
-                issues.append(f"标题行间距应为{expected_spacing_name}（{expected_line_spacing}倍），实际为{actual_spacing_name}（{actual_line_spacing}倍）")
-    
     # 段落对齐检查
     if 'alignment' in format_rules:
         expected_alignment_str = str(format_rules['alignment'])
@@ -2225,61 +2241,25 @@ def check_reference_header_format(paragraph, tpl, doc=None):
     if 'space_before_cm' in format_rules:
         expected_space_before_cm = float(format_rules['space_before_cm'])
         expected_space_before_pt = cm_to_pt(expected_space_before_cm)
-        
-        try:
-            actual_space_before = paragraph.paragraph_format.space_before
-            actual_space_before_pt = actual_space_before.pt if actual_space_before else None
-            
-            # 【新增】如果段落直接设置没有值，尝试从样式继承读取
-            if actual_space_before_pt is None and paragraph.style:
-                try:
-                    if hasattr(paragraph.style.paragraph_format, 'space_before'):
-                        style_space_before = paragraph.style.paragraph_format.space_before
-                        if style_space_before:
-                            actual_space_before_pt = style_space_before.pt
-                            logger.debug(f"  [check_references_header_format] 从段落样式读取到段前间距: {actual_space_before_pt:.1f}pt")
-                except Exception as e:
-                    logger.debug(f"  [check_references_header_format] 从段落样式读取段前间距异常: {e}")
-            
-            # 如果仍然没有，报告错误
-            if actual_space_before_pt is None:
-                issues.append(f"无法检测到标题段前间距格式信息")
-            else:
-                logger.debug(f"参考文献标题段前间距: {actual_space_before_pt:.1f}pt (期望: {expected_space_before_pt:.1f}pt ≈ {expected_space_before_cm}cm)")
-                if abs(actual_space_before_pt - expected_space_before_pt) > 5:  # 容差5pt
-                    issues.append(f"标题段前间距应为{expected_space_before_cm}厘米，实际约为{actual_space_before_pt / 28.35:.2f}厘米")
-        except Exception as e:
-            logger.debug(f"  段前间距检测异常: {e}")
-    
+
+        if actual_space_before_pt is None:
+            issues.append(f"无法检测到标题段前间距格式信息")
+        else:
+            logger.debug(f"参考文献标题段前间距: {actual_space_before_pt:.1f}pt (期望: {expected_space_before_pt:.1f}pt ≈ {expected_space_before_cm}cm)")
+            if abs(actual_space_before_pt - expected_space_before_pt) > 5:
+                issues.append(f"标题段前间距应为{expected_space_before_cm}厘米，实际约为{actual_space_before_pt / 28.35:.2f}厘米")
+
     # 段后间距检查
     if 'space_after_cm' in format_rules:
         expected_space_after_cm = float(format_rules['space_after_cm'])
         expected_space_after_pt = cm_to_pt(expected_space_after_cm)
-        
-        try:
-            actual_space_after = paragraph.paragraph_format.space_after
-            actual_space_after_pt = actual_space_after.pt if actual_space_after else None
-            
-            # 【新增】如果段落直接设置没有值，尝试从样式继承读取
-            if actual_space_after_pt is None and paragraph.style:
-                try:
-                    if hasattr(paragraph.style.paragraph_format, 'space_after'):
-                        style_space_after = paragraph.style.paragraph_format.space_after
-                        if style_space_after:
-                            actual_space_after_pt = style_space_after.pt
-                            logger.debug(f"  [check_references_header_format] 从段落样式读取到段后间距: {actual_space_after_pt:.1f}pt")
-                except Exception as e:
-                    logger.debug(f"  [check_references_header_format] 从段落样式读取段后间距异常: {e}")
-            
-            # 如果仍然没有，报告错误
-            if actual_space_after_pt is None:
-                issues.append(f"无法检测到标题段后间距格式信息")
-            else:
-                logger.debug(f"参考文献标题段后间距: {actual_space_after_pt:.1f}pt (期望: {expected_space_after_pt:.1f}pt ≈ {expected_space_after_cm}cm)")
-                if abs(actual_space_after_pt - expected_space_after_pt) > 5:  # 容差5pt
-                    issues.append(f"标题段后间距应为{expected_space_after_cm}厘米，实际约为{actual_space_after_pt / 28.35:.2f}厘米")
-        except Exception as e:
-            logger.debug(f"  段后间距检测异常: {e}")
+
+        if actual_space_after_pt is None:
+            issues.append(f"无法检测到标题段后间距格式信息")
+        else:
+            logger.debug(f"参考文献标题段后间距: {actual_space_after_pt:.1f}pt (期望: {expected_space_after_pt:.1f}pt ≈ {expected_space_after_cm}cm)")
+            if abs(actual_space_after_pt - expected_space_after_pt) > 5:
+                issues.append(f"标题段后间距应为{expected_space_after_cm}厘米，实际约为{actual_space_after_pt / 28.35:.2f}厘米")
     
     logger.debug(f"参考文献标题格式检查发现 {len(issues)} 个问题")
     logger.debug("---")
@@ -2450,43 +2430,35 @@ def check_reference_content_format(content_paragraphs, tpl, doc=None):
         # 5. 悬挂缩进检查（首行应为0，后续行有缩进）
         if 'hanging_indent' in format_rules:
             expected_hanging_chars = float(format_rules['hanging_indent'])
-            # 如果 actual_size_pt 为 None，用默认值 10.5（五号）
             if actual_size_pt is None:
                 actual_size_pt = 10.5
             expected_hanging_pt = expected_hanging_chars * actual_size_pt
-            
-            # 悬挂缩进的判定：
-            # 1. left_indent > 1（整体有缩进）
-            # 2. first_line_indent < 0（首行向左突出，形成悬挂效果）
-            
-            # 只有当缩进信息都检测到时，才进行悬挂缩进检查
+            # 有意义缩进的最小阈值：大于半个字符宽才算有缩进
+            min_meaningful_indent = actual_size_pt * 0.5
+
             if left_indent is not None and first_line_indent is not None:
                 if first_line_indent > 0:
-                    # 有首行缩进（正数），这不是悬挂缩进，是错误的
                     msg = f"第{para_idx}条参考文献应使用悬挂缩进（首行无缩进，后续行缩进{expected_hanging_chars}字符），当前为首行缩进"
                     if msg not in issues:
                         issues.append(msg)
-                elif left_indent > 1 and first_line_indent < 0:
-                    # 正确的悬挂缩进：left_indent > 1 且 first_line_indent < 0
-                    has_hanging_indent = True
-                    # 计算实际悬挂缩进值（取绝对值比较）
+                elif first_line_indent < 0 and left_indent > min_meaningful_indent:
+                    # 正确的悬挂缩进：first_line_indent < 0 且 left_indent 有意义
                     actual_hanging_pt = abs(first_line_indent)
                     hanging_chars = pt_to_chars(actual_hanging_pt, actual_size_pt)
-                    if abs(actual_hanging_pt - expected_hanging_pt) > actual_size_pt * 0.5:
+                    if abs(actual_hanging_pt - expected_hanging_pt) > actual_size_pt * 0.3:
                         msg = f"第{para_idx}条参考文献悬挂缩进应为{expected_hanging_chars}字符，实际约为{hanging_chars}字符"
                         if msg not in issues:
                             issues.append(msg)
-                elif left_indent > 1:
-                    # 有左缩进但没有悬挂缩进（首行也有缩进）
+                elif left_indent > min_meaningful_indent:
+                    # 有左缩进但没有悬挂效果（首行也有缩进或未突出）
                     msg = f"第{para_idx}条参考文献应使用悬挂缩进（首行无缩进，后续行缩进{expected_hanging_chars}字符）"
                     if msg not in issues:
                         issues.append(msg)
-                elif left_indent == 0 and first_line_indent == 0:
-                    # left_indent 为 0，且 first_line_indent 为 0，说明没有设置缩进
+                elif first_line_indent == 0 and left_indent <= min_meaningful_indent:
+                    # 首行和左缩进都没有设置有意义值，认为未设置悬挂缩进
                     msg = f"第{para_idx}条参考文献应使用悬挂缩进（首行无缩进，后续行缩进{expected_hanging_chars}字符），当前未设置缩进"
                     if msg not in issues:
                         issues.append(msg)
-                # else: 其他情况（如left_indent<0）不报错
         
         # 6. [标号]与作者之间空一格检查
         para_text = paragraph.text.strip()

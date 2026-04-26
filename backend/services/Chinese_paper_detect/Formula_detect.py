@@ -111,6 +111,168 @@ def get_font_size(pt_size, tpl=None):
     return size_map[closest_size]
 
 
+# =============================================================================
+# 字体属性追溯辅助函数
+# =============================================================================
+
+def _get_style_property_chain(paragraph, property_name):
+    """
+    沿样式继承链（basedOn）向上追溯指定属性，返回第一个非 None 值。
+    支持属性：'font_size', 'font_name', 'is_bold', 'is_italic'
+
+    追溯路径（按优先级）：
+      1. paragraph.style.font.<property>
+      2. paragraph.style XML 元素中的对应节点（sz / rFonts / b / i）
+      3. 递归追溯 paragraph.style.base_style
+    """
+    if paragraph is None:
+        return None, []
+
+    visited = set()
+    current_style = paragraph.style
+    trail = []
+
+    while current_style is not None:
+        style_id = getattr(current_style, 'style_id', None)
+        if style_id is None or style_id in visited:
+            break
+        visited.add(style_id)
+        trail.append(style_id)
+
+        # ---- 字号 ----
+        if property_name == 'font_size':
+            val = None
+            # python-docx API
+            if (hasattr(current_style, 'font')
+                    and hasattr(current_style.font, 'size')
+                    and current_style.font.size is not None
+                    and hasattr(current_style.font.size, 'pt')):
+                val = float(current_style.font.size.pt)
+            # style XML: sz / szCs
+            if val is None and hasattr(current_style, 'element'):
+                elem = current_style.element
+                for xname in ['.//w:sz', './/w:szCs']:
+                    nodes = elem.xpath(xname)
+                    if nodes and nodes[0].get(qn('w:val')):
+                        val = float(nodes[0].get(qn('w:val'))) / 2.0
+                        break
+            if val is not None:
+                return val, trail
+
+        # ---- 字体名称 ----
+        elif property_name == 'font_name':
+            val = None
+            if (hasattr(current_style, 'font')
+                    and hasattr(current_style.font, 'name')
+                    and current_style.font.name):
+                val = current_style.font.name
+            if val is None and hasattr(current_style, 'element'):
+                elem = current_style.element
+                rfonts_list = elem.xpath('.//w:rFonts')
+                if rfonts_list:
+                    rf = rfonts_list[0]
+                    val = (rf.get(qn('w:eastAsia'))
+                           or rf.get(qn('w:ascii'))
+                           or rf.get(qn('w:hAnsi')))
+            if val is not None:
+                return val, trail
+
+        # ---- 加粗 ----
+        elif property_name == 'is_bold':
+            val = None
+            if (hasattr(current_style, 'font')
+                    and hasattr(current_style.font, 'bold')
+                    and current_style.font.bold is not None):
+                val = current_style.font.bold
+            if val is None and hasattr(current_style, 'element'):
+                elem = current_style.element
+                for xname in ['.//w:b', './/w:bCs']:
+                    nodes = elem.xpath(xname)
+                    if nodes:
+                        v = nodes[0].get(qn('w:val'))
+                        val = (v != '0') if v else True
+                        break
+            if val is not None:
+                return bool(val), trail
+
+        # ---- 斜体 ----
+        elif property_name == 'is_italic':
+            val = None
+            if (hasattr(current_style, 'font')
+                    and hasattr(current_style.font, 'italic')
+                    and current_style.font.italic is not None):
+                val = current_style.font.italic
+            if val is None and hasattr(current_style, 'element'):
+                elem = current_style.element
+                for xname in ['.//w:i', './/w:iCs']:
+                    nodes = elem.xpath(xname)
+                    if nodes:
+                        v = nodes[0].get(qn('w:val'))
+                        val = (v != '0') if v else True
+                        break
+            if val is not None:
+                return bool(val), trail
+
+        # ---- 向上追溯 base_style ----
+        try:
+            current_style = current_style.base_style
+        except Exception:
+            break
+
+    return None, trail
+
+
+def _get_doc_defaults_font_property(doc, property_name):
+    """
+    从文档 docDefaults 中获取字体属性（最后的 fallback）。
+    必须在段落和样式都无显式设置时使用。
+
+    返回 (value, trail)，trail 用于调试日志。
+    """
+    if doc is None:
+        return None, []
+
+    try:
+        root = doc.element._element.getroottree().getroot()
+        ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+
+        if property_name == 'font_size':
+            for xp in ['//w:docDefaults/w:rPrDefault/w:rPr/w:sz',
+                       '//w:docDefaults/w:rPrDefault/w:rPr/w:szCs']:
+                nodes = root.xpath(xp, namespaces={'w': ns})
+                if nodes and nodes[0].get(qn('w:val')):
+                    val = float(nodes[0].get(qn('w:val'))) / 2.0
+                    return val, [xp]
+            return None, []
+
+        elif property_name == 'font_name':
+            for xp in ['//w:docDefaults/w:rPrDefault/w:rPr/w:rFonts']:
+                nodes = root.xpath(xp, namespaces={'w': ns})
+                if nodes:
+                    rf = nodes[0]
+                    val = (rf.get(qn('w:eastAsia'))
+                           or rf.get(qn('w:ascii'))
+                           or rf.get(qn('w:hAnsi')))
+                    if val:
+                        return val, [xp]
+            return None, []
+
+        elif property_name == 'is_bold':
+            nodes = root.xpath(
+                '//w:docDefaults/w:rPrDefault/w:rPr/w:b', namespaces={'w': ns})
+            return (True, ['//w:docDefaults/w:rPrDefault/w:rPr/w:b']) if nodes else (None, [])
+
+        elif property_name == 'is_italic':
+            nodes = root.xpath(
+                '//w:docDefaults/w:rPrDefault/w:rPr/w:i', namespaces={'w': ns})
+            return (True, ['//w:docDefaults/w:rPrDefault/w:rPr/w:i']) if nodes else (None, [])
+
+    except Exception:
+        pass
+
+    return None, []
+
+
 def detect_font_for_run(run, paragraph=None):
     """检测 run 的字号、字体、加粗"""
     font_source = run.font if run else (paragraph.style.font if paragraph else None)
@@ -160,7 +322,7 @@ def detect_font_for_run(run, paragraph=None):
     except Exception:
         pass
 
-    font_size = font_size if font_size is not None else 12.0
+    font_size = font_size  # 不再兜底，调用方自行决定 None 时的处理方式
 
     is_bold = font_source.bold if font_source.bold is not None else False
     is_italic = font_source.italic if font_source.italic is not None else False
@@ -303,6 +465,21 @@ def build_math_spans_map(p, text):
     return spans
 
 
+def _is_math_symbol(ch):
+    """判断一个字符是否属于公式符号（希腊字母、下标数字等）"""
+    if not ch:
+        return False
+    # 希腊字母：α-ωΑ-Ω 等常用希腊字母
+    if '\u0370' <= ch <= '\u03FF' or '\u1F00' <= ch <= '\u1FFF':
+        return True
+    # 下标/上标数字和字母（₀-₉⁰-⁹ₐ-ₚ₊₋₌₍₎⁺⁻⁼⁽⁾等）
+    if '\u2080' <= ch <= '\u208E' or '\u2070' <= ch <= '\u2079':
+        return True
+    # 数学符号集合
+    math_symbols = set('=<>±∓≤≥≠≈∝∫∑∏∂∇√∝∞∀∃∈∉⊂⊃∪∩∧∨⊕⊗←→↑↓↔⇒⇐⇔≠≈≤≥≡∼≃≅≺≻⊂⊃⊆⊇⊕⊖⊗⊙⊚⊛⌈⌉⌊⌋⌜⌝⟨⟩⟦⟧')
+    return ch in math_symbols
+
+
 def is_adjacent_to_formula(number_start, number_end, text, math_spans, formula_text):
     """
     判断编号是否与公式 Math 对象相邻（中间只有空白字符，不含正文内容）。
@@ -312,10 +489,36 @@ def is_adjacent_to_formula(number_start, number_end, text, math_spans, formula_t
     - math_spans: build_math_spans_map 返回的索引
     - formula_text: 公式 Math 对象的文本内容
 
-    返回: True 表示编号与公式 Math 相邻（视为有效公式候选）
+    返回 True 表示编号与公式 Math 相邻（视为有效公式候选）
     """
     formula_pos = text.find(formula_text)
     if formula_pos < 0:
+        # 公式文本在段落中找不到，说明 Math 对象的文本提取与段落文本不一致，
+        # 退而求其次：检查编号后面紧接着的字符是否是公式特征字符（字母或数学符号）。
+        # 这样可以区分：
+        #   ① 图3-3上半部分所示，A=B  → 3-3 后面是"上"（中文），返回 False
+        #   ② 式(3-3)A=B             → (3-3) 后面是"A"（字母），返回 True
+        #   ③ （4-2）AUC=...          → （4-2）后面是"A"（字母），返回 True
+        #   ④ #3-1x+y=z              → #3-1 后面是"x"（字母），返回 True
+        #   ⑤ 如式3-2所示：ADD        → 编号后面是"A"，但"ADD"不是公式内容，拒绝
+        if number_end < len(text):
+            next_char = text[number_end]
+            # 跳过编号后面的连续空白字符，找到下一个真正的字符
+            while number_end < len(text) and text[number_end] in ' \t\xa0':
+                number_end += 1
+            if number_end >= len(text):
+                return False
+            next_char = text[number_end]
+            # 编号后面紧跟的是中文（且不是公式符号）→ 说明是正文描述句（如"所示"），拒绝
+            # 公式符号包括：ASCII字母/数字/数学符号、希腊字母、下标数字等
+            if not next_char.isascii() and not _is_math_symbol(next_char):
+                return False
+            # 编号后面紧跟的是 ASCII 字符，还需进一步验证：
+            # 该字符必须也出现在公式文本中，否则编号和 Math 对象只是碰巧相邻，不是同一个公式
+            if next_char.isascii() and next_char not in formula_text:
+                return False
+            if next_char.isalpha() or next_char in '=<>±∓≤≥≠≈∝∫∑∏∂∇':
+                return True
         return False
 
     formula_start = formula_pos
@@ -401,7 +604,7 @@ def find_formula_candidates(doc, template, debug=None):
     dbg = _debug_enabled(template, debug)
 
     rules = template.get('formula_detection_rules', {})
-    number_pattern = rules.get('number_pattern', r'[##]?\s*\d+[-－–]?\s*\d+')
+    number_pattern = rules.get('number_pattern', r'[#＃]?\s*\d+\s*[-－–]\s*\d+')
     mod = rules.get('math_object_detection', {})
     fallback_patterns = mod.get('fallback_patterns', [])
 
@@ -423,13 +626,14 @@ def find_formula_candidates(doc, template, debug=None):
                     logger.info("[Formula] 表格段落 idx=%s text=%r loc=%s", idx_sample, text_sample, loc)
 
     # 编号模式列表
+    # 说明：\s* 能同时覆盖紧贴(如(3-1))和带空格(如( 3-1 ))的写法
     number_patterns = [
-        number_pattern,
-        r'[##]\s*\d+[-－–]\s*\d+',
-        r'\(\d+[-－–]\d+\)',
-        r'\(\d+\)',
-        r'\uff08\d+[-－–]\d+\uff09',
-        r'\uff08\d+\uff09',
+        number_pattern,                                        # 模板配置的正则
+        r'[#＃]\s*\d+\s*[-－–]\s*\d+',                   # #3-1
+        r'\(\s*\d+\s*[-－–]\s*\d+\s*\)',                # (3-1) 半角括号
+        r'\(\s*\d+\s*\)',                                   # (3) 半角括号
+        r'\uff08\s*\d+\s*[-－–]\s*\d+\s*\uff09',          # （3-1）全角括号
+        r'\uff08\s*\d+\s*\uff09',                           # （3）全角括号
     ]
 
     def parse_formula_number(num_text):
@@ -580,7 +784,7 @@ def find_formula_candidates(doc, template, debug=None):
                         parsed = parse_formula_number(num_text)
                         if parsed:
                             # 关键修复：在 Math 内匹配到编号时，过滤掉公式内容中的数字（如 13-16）
-                            # 有括号(如(2-1))或有#前缀(如#3-3)才视为编号；纯数字(如13-16)很可能是公式下标
+                            # 编号的判定依据：带括号（半角( 或全角（））或带 # 前缀
                             if not (num_text.startswith('#') or num_text.startswith('（') or num_text.startswith('(')):
                                 continue
                             target_math_elem = elem
@@ -1104,12 +1308,15 @@ def extract_formula_number(text, number_pattern):
         return None
 
 
-def check_formula_fonts(paragraph, math_objects, template, number_pattern, formula_content_text=None, target_math_elem=None, dbg=False):
+def check_formula_fonts(paragraph, math_objects, template, number_pattern, formula_content_text=None, target_math_elem=None, dbg=False, doc=None):
     """
     检测公式字体要求：
     1. 公式内容必须全部使用 Cambria Math 字体
     2. 公式编号字号应为 12pt（小四）
     3. 公式编号字体可以是任意字体（不强检）
+
+    参数:
+        doc: 文档对象（用于 docDefaults fallback，当段落为 None 或样式链无显式值时使用）
     """
     issues = []
 
@@ -1136,10 +1343,23 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
 
     # ========== 0. 提取 Math 对象中的属性信息 ==========
     math_font_info = {
-        'cambria_math': None,  # Cambria Math 字体
-        'font_size': None,     # 字号 (pt)
-        'is_bold': None,       # 是否加粗
-        'is_italic': None,     # 是否斜体
+        'cambria_math': None,              # 字体 (pt)，从 Math 对象内 m:r/w:rPr 提取
+        'content_font_from_style': None,   # 字体，从段落样式追溯
+        'font_size': None,                 # 字号 (pt)，从 Math 对象内 m:r/w:rPr 提取
+        'font_size_from_style': None,     # 字号 (pt)，从段落样式追溯
+        'is_bold': None,                  # 是否加粗，从 Math 对象内提取
+        'is_bold_from_style': None,       # 是否加粗，从段落样式追溯
+        'is_italic': None,                # 是否斜体，从 Math 对象内提取
+        'is_italic_from_style': None,     # 是否斜体，从段落样式追溯
+        # 编号属性（主路径从 Math XML 提取，备选路径用段落 run 追溯）
+        'num_font': None,                 # 编号字体，从 Math XML 提取
+        'num_font_from_style': None,     # 编号字体，从段落样式追溯
+        'num_size': None,                # 编号字号，从 Math XML 提取
+        'num_size_from_style': None,      # 编号字号，从段落样式追溯
+        'num_bold': None,                # 编号加粗，从 Math XML 提取
+        'num_bold_from_style': None,     # 编号加粗，从段落样式追溯
+        'num_italic': None,              # 编号斜体，从 Math XML 提取
+        'num_italic_from_style': None,   # 编号斜体，从段落样式追溯
     }
 
     if target_math_elem is not None:
@@ -1166,36 +1386,91 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                         second_child = list(first_child)[0]
                         level2_tags = [c.tag for c in second_child]
                         logger.info("[Formula] Second level tags: %s", level2_tags[:15])
-        try:
-            # 遍历 oMath 的所有子元素，查找字体信息
-            # MathML 结构: oMath -> eqArr -> {eqArrPr, e}
-            # eqArrPr 是数组属性，不是公式内容字体
-            # 真正的公式内容字体在 e 元素内的 sPre/rPr 中
+            # =========================================================
+            # 查找公式文本元素的 rPr（这是公式字符的真正字体定义位置）
+            # MathML 结构:
+            #   oMath -> sSub/sSup/sqrt/acc/r/accPr/sSubPr/sSupPr/...
+            #     └─ m:r  或  m:accPr/m:sSubPr/m:sSupPr
+            #         └─ w:rPr  ← 真正的公式内容字体定义（包含 sz/rFonts/b/i 等）
+            # 不在 m:accPr/m:sSubPr/m:sSupPr/m:sPrePr/m:sPr/m:ctrlPr 中的 rPr，因为那些是格式控制属性，不是字符格式
+            #
+            # 正确的找法：先找到第一个公式文本 run (m:r)，再从其中取 w:rPr
+            # =========================================================
             rpr = None
+
+            # 格式控制类元素的本地名称（这些里面的 rPr 不是公式内容字体）
+            ctrl_tag_names = {
+                'ctrlPr',      # m:ctrlPr - Math 控制属性
+                'sSubPr',      # m:sSubPr - 下标格式属性
+                'sSupPr',      # m:sSupPr - 上标格式属性
+                'sSubSupPr',   # m:sSubSupPr - 下上标格式属性
+                'sPrePr',      # m:sPrePr - 前缀格式属性
+                'sPr',         # m:sPr - 一般样式属性
+                'accPr',       # m:accPr - 重音符号属性
+                'barPr',       # m:barPr - 括号属性
+                'borderBoxPr', # m:borderBoxPr - 边框属性
+                'boxPr',       # m:boxPr - 盒子属性
+                'dPr',         # m:dPr - 定界符属性
+                'eqArrPr',     # m:eqArrPr - 方程组属性
+                'funcPr',      # m:funcPr - 函数格式属性
+                'groupChrPr',  # m:groupChrPr - 分组字符属性
+                'limLocPr',    # m:limLocPr - 极限位置属性
+                'mPr',         # m:mPr - 矩阵属性
+                'naryPr',      # m:naryPr - n元运算符属性
+                'oMathParaPr', # m:oMathParaPr - Math段落属性
+                'oMathPr',     # m:oMathPr - Math整体属性
+                'phantPr',     # m:phantPr - 占位符属性
+            }
+
+            # 第一步：在 oMath 中找第一个公式文本 run (m:r)
             for elem in target_math_elem.iter():
-                tag = elem.tag if hasattr(elem, 'tag') else ''
-                # 跳过 eqArrPr（公式数组属性）
-                if 'eqArrPr' in tag:
+                tag = getattr(elem, 'tag', '') or ''
+                local_name = tag.split('}')[-1] if '}' in tag else tag
+
+                # 跳过格式控制属性元素里的所有内容
+                if local_name in ctrl_tag_names:
                     continue
-                # 查找 rPr 元素（公式内容字体）
-                if 'rPr' in tag and 'eqArrPr' not in tag:
-                    rpr = elem
+
+                # 找到公式文本 run：m:r 或 m:mr（多列公式中的单列）
+                if local_name == 'r' or local_name == 'mr':
+                    rpr = elem.find(
+                        '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr'
+                    )
+                    if rpr is None:
+                        # 备选：MathML 命名空间下的 rPr
+                        rpr = elem.find(
+                            '{http://schemas.openxmlformats.org/officeDocument/2006/math}rPr'
+                        )
                     if dbg:
-                        logger.info("[Formula] Found content rPr in element: %s", tag)
+                        logger.info("[Formula] Found m:r, looking inside for w:rPr: %s",
+                                    'Found' if rpr is not None else 'Not found')
                     break
+
+            # 兜底：完全找不到 m:r，退回到原来 iter()+break 的方式（但仍然跳过 ctrlPr）
             if rpr is None:
-                # 备选：尝试使用安全的 XPath（不使用前缀）
-                try:
-                    rpr_candidates = target_math_elem.xpath('.//*[local-name()="rPr"]')
-                    if rpr_candidates:
-                        rpr = rpr_candidates[0]
+                for elem in target_math_elem.iter():
+                    tag = getattr(elem, 'tag', '') or ''
+                    if 'rPr' in tag:
+                        # 跳过 ctrlPr 及其后代中的 rPr
+                        parent = elem
+                        is_ctrl = False
+                        while parent is not None:
+                            parent_tag = getattr(parent, 'tag', '') or ''
+                            parent_local = parent_tag.split('}')[-1] if '}' in parent_tag else parent_tag
+                            if parent_local in ctrl_tag_names:
+                                is_ctrl = True
+                                break
+                            parent = getattr(parent, 'parent', None)
+                        if is_ctrl:
+                            continue
+                        rpr = elem
                         if dbg:
-                            logger.info("[Formula] Found rPr via local-name()")
-                except Exception as e:
-                    if dbg:
-                        logger.info("[Formula] XPath with local-name() failed: %s", str(e))
+                            logger.info("[Formula] Fallback: found rPr at: %s", tag)
+                        break
+
             if dbg:
                 logger.info("[Formula] rPr find result: %s", 'Found' if rpr is not None else 'Not found')
+
             if rpr is not None:
                 # 尝试多种方式查找 rFonts
                 rFonts = None
@@ -1223,22 +1498,18 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                     if cambria:
                         math_font_info['cambria_math'] = cambria
 
-                    # 检查其他字体属性（MathML 中无命名空间前缀）
-                    ascii_font = rFonts.get('ascii')
-                    east_asia = rFonts.get('eastAsia')
-                    hAnsi = rFonts.get('hAnsi')
-                    math_font_info['other_fonts'] = {
-                        'ascii': ascii_font,
-                        'eastAsia': east_asia,
-                        'hAnsi': hAnsi,
-                    }
+                    # 记录 rFonts 上的所有字体属性（不只 ascii/eastAsia/hAnsi，还有 cs/hint 等）
+                    math_font_info['other_fonts'] = {k: v for k, v in rFonts.attrib.items()
+                                                     if k not in ('cambriaMath',
+                                                                  '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}cambriaMath')}
 
-                # 检查字号 (w:sz / w:szCs) - MathML 中使用 val 属性
+                # 检查字号 (w:sz / w:szCs) - 搜索所有后代（szCs 可能嵌套在第二层）
                 sz = None
                 for xpath_expr in [
                     './/*[local-name()="sz"]',
-                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}sz',
-                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sz'
+                    './/*[local-name()="szCs"]',
+                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sz',
+                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}szCs',
                 ]:
                     try:
                         results = rpr.xpath(xpath_expr)
@@ -1254,12 +1525,27 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                     if val:
                         math_font_info['font_size'] = float(val) / 2.0
 
-                # 检查是否斜体 (i / iCs)
+                # ========== 公式内容字号：段落样式链追溯 + docDefaults fallback ==========
+                if math_font_info['font_size'] is None:
+                    # 优先级1：样式继承链追溯
+                    style_size, trail = _get_style_property_chain(paragraph, 'font_size')
+                    if style_size is not None:
+                        math_font_info['font_size_from_style'] = style_size
+                        if dbg:
+                            logger.info("[Formula] 公式内容字号：样式链追溯成功=%.1fpt trail=%s", style_size, trail)
+                    else:
+                        # 优先级2：docDefaults（段落为 None 时也有用）
+                        doc_size, doc_trail = _get_doc_defaults_font_property(doc, 'font_size')
+                        if doc_size is not None:
+                            math_font_info['font_size_from_style'] = doc_size
+                            if dbg:
+                                logger.info("[Formula] 公式内容字号：docDefaults追溯成功=%.1fpt", doc_size)
+
+                # 检查是否斜体 (i / iCs) - 只查 rPr 直接子元素
                 i_elem = None
                 for xpath_expr in [
-                    './/*[local-name()="i"]',
-                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}i',
-                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}i'
+                    './*[local-name()="i"]',
+                    './*[local-name()="iCs"]',
                 ]:
                     try:
                         results = rpr.xpath(xpath_expr)
@@ -1274,12 +1560,11 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                         val = i_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
                     math_font_info['is_italic'] = val != '0'
 
-                # 检查是否加粗 (b / bCs)
+                # 检查是否加粗 (b / bCs) - 只查 rPr 直接子元素
                 b_elem = None
                 for xpath_expr in [
-                    './/*[local-name()="b"]',
-                    './/{http://schemas.openxmlformats.org/officeDocument/2006/math}b',
-                    './/{http://schemas.openxmlformats.org/wordprocessingml/2006/main}b'
+                    './*[local-name()="b"]',
+                    './*[local-name()="bCs"]',
                 ]:
                     try:
                         results = rpr.xpath(xpath_expr)
@@ -1293,9 +1578,49 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                     if not val:
                         val = b_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
                     math_font_info['is_bold'] = val != '0'
-        except Exception as e:
-            if dbg:
-                logger.info("[Formula] 解析Math对象字体信息失败: %s", str(e))
+
+                # ========== 公式内容斜体：段落样式链追溯 + docDefaults fallback ==========
+                if math_font_info['is_italic'] is None:
+                    style_val, trail = _get_style_property_chain(paragraph, 'is_italic')
+                    if style_val is not None:
+                        math_font_info['is_italic_from_style'] = style_val
+                        if dbg:
+                            logger.info("[Formula] 公式内容斜体：样式链追溯=%s trail=%s", style_val, trail)
+                    else:
+                        doc_val, _ = _get_doc_defaults_font_property(doc, 'is_italic')
+                        if doc_val is not None:
+                            math_font_info['is_italic_from_style'] = doc_val
+                            if dbg:
+                                logger.info("[Formula] 公式内容斜体：docDefaults追溯=%s", doc_val)
+
+                # ========== 公式内容加粗：段落样式链追溯 + docDefaults fallback ==========
+                if math_font_info['is_bold'] is None:
+                    style_val, trail = _get_style_property_chain(paragraph, 'is_bold')
+                    if style_val is not None:
+                        math_font_info['is_bold_from_style'] = style_val
+                        if dbg:
+                            logger.info("[Formula] 公式内容加粗：样式链追溯=%s trail=%s", style_val, trail)
+                    else:
+                        doc_val, _ = _get_doc_defaults_font_property(doc, 'is_bold')
+                        if doc_val is not None:
+                            math_font_info['is_bold_from_style'] = doc_val
+                            if dbg:
+                                logger.info("[Formula] 公式内容加粗：docDefaults追溯=%s", doc_val)
+
+                # ========== 公式内容字体：段落样式链追溯 + docDefaults fallback ==========
+                # 当 Math 对象内没有 Cambria Math 字体时，追溯段落样式（仅记录，不报错）
+                if math_font_info['cambria_math'] is None:
+                    style_val, trail = _get_style_property_chain(paragraph, 'font_name')
+                    if style_val is not None:
+                        math_font_info['content_font_from_style'] = style_val
+                        if dbg:
+                            logger.info("[Formula] 公式内容字体：样式链追溯=%s trail=%s", style_val, trail)
+                    else:
+                        doc_val, _ = _get_doc_defaults_font_property(doc, 'font_name')
+                        if doc_val is not None:
+                            math_font_info['content_font_from_style'] = doc_val
+                            if dbg:
+                                logger.info("[Formula] 公式内容字体：docDefaults追溯=%s", doc_val)
 
         # 调试日志：打印提取到的字体信息
         if dbg:
@@ -1305,12 +1630,30 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
     if target_math_elem is not None:
         # 从 Math 对象 XML 检测字体
         if math_font_info.get('cambria_math'):
-            # Cambria Math 字体存在
+            # Cambria Math 字体存在（w:cambriaMath 属性）
             if dbg:
                 logger.info("[Formula] 公式内容使用 Cambria Math 字体: %s", math_font_info.get('cambria_math'))
-        elif math_font_info.get('other_fonts', {}).get('ascii') or math_font_info.get('other_fonts', {}).get('eastAsia'):
-            # 其他字体（非 Cambria Math）
-            issues.append(f"公式内容应全部使用 {expected_math_font} 字体")
+        else:
+            # 检查 Math 对象中是否通过 w:ascii / w:hAnsi 设置了 Cambria Math
+            other = math_font_info.get('other_fonts', {})
+            ascii_font = other.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ascii')
+            hasi_font = other.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}hAnsi')
+
+            math_has_cambria = False
+            if ascii_font and 'cambria' in ascii_font.lower():
+                math_has_cambria = True
+            if hasi_font and 'cambria' in hasi_font.lower():
+                math_has_cambria = True
+
+            if math_has_cambria:
+                # Math 对象通过 ascii/hAnsi 指定了 Cambria Math，判定通过
+                if dbg:
+                    logger.info("[Formula] 公式内容通过 w:ascii/w:hAnsi 使用 Cambria Math: ascii=%s hasi=%s",
+                                ascii_font, hasi_font)
+            elif (math_font_info.get('content_font_from_style')
+                  and 'cambria' not in math_font_info['content_font_from_style'].lower()):
+                # Math 对象内无 Cambria 字体指定，且段落样式也不是 Cambria → 报错
+                issues.append(f"公式内容应全部使用 {expected_math_font} 字体")
     elif formula_content_text and paragraph:
         # 备选：从 paragraph runs 检测
         formula_runs = []
@@ -1342,8 +1685,16 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                     font_elems = rpr.xpath('.//w:rFonts')
                     if font_elems:
                         font_elem = font_elems[0]
+                        # 同时检查 w:cambriaMath 和 w:ascii/w:hAnsi（都指向 Cambria Math 时视为通过）
                         cambria_font = font_elem.get(qn('w:cambriaMath'))
-                        if not cambria_font:
+                        ascii_font = font_elem.get(qn('w:ascii'))
+                        hasi_font = font_elem.get(qn('w:hAnsi'))
+                        has_cambria = (
+                            (cambria_font and 'cambria' in cambria_font.lower())
+                            or (ascii_font and 'cambria' in ascii_font.lower())
+                            or (hasi_font and 'cambria' in hasi_font.lower())
+                        )
+                        if not has_cambria:
                             all_cambria = False
                             break
                 else:
@@ -1358,27 +1709,39 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
             issues.append(f"公式内容应全部使用 {expected_math_font} 字体")
 
     # ========== 1b. 检查公式内容字号 ==========
+    # 优先使用 Math 对象内显式设置的字号，备选使用段落样式追溯的字号
     actual_size = math_font_info.get('font_size')
+    if actual_size is None:
+        actual_size = math_font_info.get('font_size_from_style')
+
     if actual_size is not None:
         if dbg:
-            logger.info("[Formula] 公式内容字号: 预期=%spt, 实际=%spt", expected_size_pt, actual_size)
+            size_source = 'Math对象' if math_font_info.get('font_size') is not None else '段落样式'
+            logger.info("[Formula] 公式内容字号: 预期=%spt, 实际=%spt (来源: %s)", expected_size_pt, actual_size, size_source)
         if abs(actual_size - expected_size_pt) > 0.5:
             issues.append(f"公式内容字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(actual_size, template)}（{actual_size}pt）")
     else:
-        # 无法提取字号时，记录为问题
-        if dbg:
-            logger.info("[Formula] 公式内容：无法从Math对象提取字号信息")
+        # 完全无法提取字号时（Math 内无显式设置，且段落也未设置样式）
+        logger.info("[Formula] 公式内容：无法提取字号信息（Math对象内无显式字号，且段落无样式字号设置）")
 
     # ========== 1c. 检查公式内容是否斜体 ==========
+    # 优先使用 Math 对象内显式斜体，备选使用段落样式追溯的斜体
     if check_content_italic and expected_content_italic is not None:
-        if math_font_info.get('is_italic') is not None:
-            if math_font_info.get('is_italic') != expected_content_italic:
+        actual_italic = math_font_info.get('is_italic')
+        if actual_italic is None:
+            actual_italic = math_font_info.get('is_italic_from_style')
+        if actual_italic is not None:
+            if actual_italic != expected_content_italic:
                 issues.append(f"公式内容斜体设置不正确，期望{'斜体' if expected_content_italic else '正体'}")
 
     # ========== 1d. 检查公式内容是否加粗 ==========
+    # 优先使用 Math 对象内显式加粗，备选使用段落样式追溯的加粗
     if expected_content_bold is not None:
-        if math_font_info.get('is_bold') is not None:
-            if math_font_info.get('is_bold') != expected_content_bold:
+        actual_bold = math_font_info.get('is_bold')
+        if actual_bold is None:
+            actual_bold = math_font_info.get('is_bold_from_style')
+        if actual_bold is not None:
+            if actual_bold != expected_content_bold:
                 issues.append(f"公式内容加粗设置不正确，期望{'加粗' if expected_content_bold else '正常'}")
 
     # ========== 2. 检查公式编号 ==========
@@ -1504,25 +1867,82 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
                                 val = b_elem.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val')
                             num_bold = val != '0'
 
-                    # 检查字号（只在成功提取到字号时才比较）
-                    if num_size is not None and abs(num_size - expected_size_pt) > 0.5:
-                        issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(num_size, template)}（{num_size}pt）")
+                    # ========== 编号字号/斜体/加粗/字体：段落样式链追溯 + docDefaults fallback ==========
+                    # 当 Math XML 内没有显式设置时，向上追溯段落样式
 
-                    # 检查斜体（由 formula_number_italic_check 控制开关）
-                    if check_number_italic and num_italic is not None and expected_number_italic is not None and num_italic != expected_number_italic:
-                        issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
+                    # 字号
+                    if num_size is None:
+                        style_val, trail = _get_style_property_chain(paragraph, 'font_size')
+                        if style_val is not None:
+                            num_size_from_style = style_val
+                            if dbg:
+                                logger.info("[Formula] 编号字号：样式链追溯=%.1fpt trail=%s", style_val, trail)
+                        else:
+                            doc_val, _ = _get_doc_defaults_font_property(doc, 'font_size')
+                            if doc_val is not None:
+                                num_size_from_style = doc_val
+                                if dbg:
+                                    logger.info("[Formula] 编号字号：docDefaults追溯=%.1fpt", doc_val)
 
-                    # 检查加粗（只在成功提取到加粗值时才比较）
-                    if num_bold is not None and expected_number_bold is not None and num_bold != expected_number_bold:
-                        issues.append(f"公式编号加粗设置不正确，期望{'加粗' if expected_number_bold else '正常'}")
+                    # 斜体
+                    if num_italic is None:
+                        style_val, trail = _get_style_property_chain(paragraph, 'is_italic')
+                        if style_val is not None:
+                            num_italic_from_style = style_val
+                            if dbg:
+                                logger.info("[Formula] 编号斜体：样式链追溯=%s trail=%s", style_val, trail)
+                        else:
+                            doc_val, _ = _get_doc_defaults_font_property(doc, 'is_italic')
+                            if doc_val is not None:
+                                num_italic_from_style = doc_val
 
-                    # 检查字体名称
-                    if num_font and num_font != 'Unknown':
-                        font_lower = num_font.lower()
-                        expected_font_lower = expected_number_font.lower()
-                        # 允许 Times New Roman 或其变体
-                        if 'times new roman' not in font_lower and font_lower != expected_font_lower:
-                            issues.append(messages.get('font_number_error', f'公式编号字体应为{expected_number_font}，实际为{num_font}'))
+                    # 加粗
+                    if num_bold is None:
+                        style_val, trail = _get_style_property_chain(paragraph, 'is_bold')
+                        if style_val is not None:
+                            num_bold_from_style = style_val
+                            if dbg:
+                                logger.info("[Formula] 编号加粗：样式链追溯=%s trail=%s", style_val, trail)
+                        else:
+                            doc_val, _ = _get_doc_defaults_font_property(doc, 'is_bold')
+                            if doc_val is not None:
+                                num_bold_from_style = doc_val
+
+                    # 字体
+                    if num_font in ('Unknown', None):
+                        style_val, trail = _get_style_property_chain(paragraph, 'font_name')
+                        if style_val is not None:
+                            num_font_from_style = style_val
+                            if dbg:
+                                logger.info("[Formula] 编号字体：样式链追溯=%s trail=%s", style_val, trail)
+                        else:
+                            doc_val, _ = _get_doc_defaults_font_property(doc, 'font_name')
+                            if doc_val is not None:
+                                num_font_from_style = doc_val
+
+                    # 检查字号（主路径 + 样式追溯兜底）
+                    actual_num_size = num_size if num_size is not None else num_size_from_style
+                    if actual_num_size is not None and abs(actual_num_size - expected_size_pt) > 0.5:
+                        issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(actual_num_size, template)}（{actual_num_size}pt）")
+
+                    # 检查斜体（主路径 + 样式追溯兜底）
+                    if check_number_italic and expected_number_italic is not None:
+                        actual_num_italic = num_italic if num_italic is not None else num_italic_from_style
+                        if actual_num_italic is not None and actual_num_italic != expected_number_italic:
+                            issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
+
+                    # 检查加粗（主路径 + 样式追溯兜底）
+                    if expected_number_bold is not None:
+                        actual_num_bold = num_bold if num_bold is not None else num_bold_from_style
+                        if actual_num_bold is not None and actual_num_bold != expected_number_bold:
+                            issues.append(f"公式编号加粗设置不正确，期望{'加粗' if expected_number_bold else '正常'}")
+
+                    # 检查字体名称（主路径 + 样式追溯兜底）
+                    actual_num_font = num_font if num_font not in ('Unknown', None) else num_font_from_style
+                    if actual_num_font:
+                        font_lower = actual_num_font.lower()
+                        if 'times new roman' not in font_lower and font_lower != expected_number_font.lower():
+                            issues.append(messages.get('font_number_error', f'公式编号字体应为{expected_number_font}，实际为{actual_num_font}'))
 
                     break
             except Exception:
@@ -1538,13 +1958,32 @@ def check_formula_fonts(paragraph, math_objects, template, number_pattern, formu
 
             # 检查是否是编号
             if re.search(number_pattern, t):
-                size, font, is_italic, _ = detect_font_for_run(run, paragraph)
+                size, font, is_bold, is_italic = detect_font_for_run(run, paragraph)
 
-                # 检查字号（只在成功提取到字号时才比较）
-                if size is not None and abs(size - expected_size_pt) > 0.5:
-                    issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(size, template)}（{size}pt）")
+                # 检查字号（detect_font_for_run 已追溯到 paragraph.style，但仍尝试 docDefaults 兜底）
+                actual_size = size
+                if actual_size is None:
+                    # 优先级1：样式继承链追溯
+                    style_val, trail = _get_style_property_chain(paragraph, 'font_size')
+                    if style_val is not None:
+                        actual_size = style_val
+                        if dbg:
+                            logger.info("[Formula] 编号备选路径字号：样式链追溯=%.1fpt", style_val)
+                    else:
+                        # 优先级2：docDefaults
+                        doc_val, _ = _get_doc_defaults_font_property(doc, 'font_size')
+                        if doc_val is not None:
+                            actual_size = doc_val
+                            if dbg:
+                                logger.info("[Formula] 编号备选路径字号：docDefaults追溯=%.1fpt", doc_val)
 
-                # 检查斜体（由 formula_number_italic_check 控制开关）
+                if actual_size is not None:
+                    if abs(actual_size - expected_size_pt) > 0.5:
+                        issues.append(f"公式编号字号应为{get_font_size(expected_size_pt, template)}（{expected_size_pt}pt），实际为{get_font_size(actual_size, template)}（{actual_size}pt）")
+                elif dbg:
+                    logger.info("[Formula] 公式编号：无法从段落 run 中提取字号")
+
+                # 检查斜体（由 formula_number_italic_check 控制开关；is_bold 漏接，已为既有 bug）
                 if check_number_italic and expected_number_italic is not None and is_italic != expected_number_italic:
                     issues.append(f"公式编号斜体设置不正确，期望{'斜体' if expected_number_italic else '正体'}")
 
@@ -1750,12 +2189,13 @@ def validate_formula_format(paragraph, template, parsed_number=None, formula_con
         report['ok'] = False
         report['messages'].append(_msg(messages.get('formula_number_missing', '未检测到公式编号')))
 
-    # ========== 4. 字体检查（传递 target_math_elem 和 dbg） ==========
+    # ========== 4. 字体检查（传递 target_math_elem、dbg 和 doc） ==========
     font_ok, font_issues = check_formula_fonts(
         paragraph, math_objects, template, number_pattern,
         formula_content_text=formula_content_text,
         target_math_elem=target_math_elem,
-        dbg=dbg
+        dbg=dbg,
+        doc=doc
     )
     report['details']['fonts'] = {'correct': font_ok, 'issues': font_issues}
     if not font_ok:
