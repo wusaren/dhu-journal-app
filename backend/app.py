@@ -1856,7 +1856,10 @@ def confirm_new_term():
             'message': f'确认失败: {str(e)}'
         }), 500
 
+try:
+    init_db()
+except Exception as e:
+    logger.error(f"数据库初始化失败: {str(e)}", exc_info=True)
 
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
