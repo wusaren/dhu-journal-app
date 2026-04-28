@@ -169,22 +169,25 @@ class FileService:
                             
                             if mineru_result['success']:
                                 mineru_batch_id = mineru_result.get('batch_id')
-                                model_json_path = mineru_result.get('model_json_path')
-                                logger.info(f"MinerU处理完成，batch_id: {mineru_batch_id}, model_json_path: {model_json_path}")
-                                
-                                if model_json_path and os.path.exists(model_json_path):
+                                content_list_json_path = mineru_result.get('content_list_json_path')
+                                logger.info(f"MinerU处理完成，batch_id: {mineru_batch_id}, content_list_json_path: {content_list_json_path}")
+
+                                if content_list_json_path and os.path.exists(content_list_json_path):
                                     # 使用新的JSON解析函数
                                     # 注意：此时journal可能为None（PDF文件在解析前不创建期刊），传入临时值0
                                     from services.pdf_parser import parse_pdf_from_mineru_json
+                                    mineru_extract_dir = mineru_result.get('extract_dir', '')
+                                    mineru_folder = os.path.basename(mineru_extract_dir) if mineru_extract_dir else ''
                                     papers_data = parse_pdf_from_mineru_json(
-                                        model_json_path=model_json_path,
+                                        content_list_json_path=content_list_json_path,
                                         pdf_path=file_path,
                                         journal_id=journal.id if journal else 0,
-                                        output_dir=temp_output_dir
+                                        output_dir=mineru_extract_dir,
+                                        mineru_folder=mineru_folder
                                     )
                                     logger.info(f"MinerU JSON解析结果: {len(papers_data) if papers_data else 0} 篇论文")
                                 else:
-                                    logger.warning(f"MinerU处理完成，但未找到model_json_path: {model_json_path}")
+                                    logger.warning(f"MinerU处理完成，但未找到content_list_json_path: {content_list_json_path}")
                             else:
                                 logger.warning(f"MinerU处理失败: {mineru_result.get('message', '未知错误')}")
                         except Exception as mineru_error:
@@ -263,7 +266,74 @@ class FileService:
                                         logger.warning(f"PDF解析失败，且指定的期刊ID={journal_id}不存在")
                                 else:
                                     logger.warning(f"PDF解析失败，且没有可用的期刊，文件将无法关联到期刊")
-                    
+                    else:
+                        # papers_data 存在但 issue 为空，无法从期号确定期刊，使用传入的 journal_id
+                        if not journal:
+                            if journal_id and journal_id != '1':
+                                journal = Journal.query.get(int(journal_id))
+                                if journal:
+                                    logger.info(f"解析的issue为空，使用用户指定的期刊ID={journal.id}")
+                                else:
+                                    logger.warning(f"指定的期刊ID={journal_id}不存在")
+                        if not journal:
+                            default_journal = Journal.query.filter_by(title='东华学报', status='draft').first()
+                            if default_journal:
+                                journal = default_journal
+                                logger.info(f"解析issue为空，使用默认期刊: journal_id={journal.id}")
+                            else:
+                                if not user:
+                                    user = User.query.first()
+                                if not user:
+                                    password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                                    user = User(
+                                        username='admin',
+                                        password_hash=password_hash.decode('utf-8'),
+                                        email='admin@example.com',
+                                        role='admin'
+                                    )
+                                    db.session.add(user)
+                                    db.session.flush()
+                                journal = Journal(
+                                    title='东华学报',
+                                    issue='Unknown',
+                                    publish_date=datetime.now().date(),
+                                    status='draft',
+                                    description=f'解析issue为空时自动创建的兜底期刊',
+                                    paper_count=0,
+                                    created_by=user.id
+                                )
+                                db.session.add(journal)
+                                db.session.flush()
+                                logger.info(f"创建兜底期刊: journal_id={journal.id}")
+
+                    # 确保 journal 不为 None（所有 fallback 都失败时的最终兜底）
+                    if not journal:
+                        logger.warning(f"无法确定期刊（papers_data存在={bool(papers_data)}, issue={papers_data[0].get('issue') if papers_data else 'N/A'}），创建最终兜底期刊")
+                        if not user:
+                            user = User.query.first()
+                        if not user:
+                            password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                            user = User(
+                                username='admin',
+                                password_hash=password_hash.decode('utf-8'),
+                                email='admin@example.com',
+                                role='admin'
+                            )
+                            db.session.add(user)
+                            db.session.flush()
+                        journal = Journal(
+                            title='东华学报',
+                            issue='Unknown',
+                            publish_date=datetime.now().date(),
+                            status='draft',
+                            description=f'兜底期刊',
+                            paper_count=0,
+                            created_by=user.id
+                        )
+                        db.session.add(journal)
+                        db.session.flush()
+                        logger.info(f"创建最终兜底期刊: journal_id={journal.id}")
+
                     # 检查数据库唯一约束冲突
                     if papers_data:
                         for paper_data in papers_data:
@@ -306,6 +376,34 @@ class FileService:
                                         'requires_confirmation': True
                                     }
                     
+                    # 确保 journal 不为 None（所有 fallback 都失败时，创建一个兜底期刊）
+                    if not journal:
+                        logger.warning(f"无法确定期刊（papers_data存在={bool(papers_data)}, issue={papers_data[0].get('issue') if papers_data else 'N/A'}），创建兜底期刊")
+                        if not user:
+                            user = User.query.first()
+                        if not user:
+                            password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
+                            user = User(
+                                username='admin',
+                                password_hash=password_hash.decode('utf-8'),
+                                email='admin@example.com',
+                                role='admin'
+                            )
+                            db.session.add(user)
+                            db.session.flush()
+                        journal = Journal(
+                            title='东华学报',
+                            issue='Unknown',
+                            publish_date=datetime.now().date(),
+                            status='draft',
+                            description=f'解析失败时自动创建的兜底期刊',
+                            paper_count=0,
+                            created_by=user.id
+                        )
+                        db.session.add(journal)
+                        db.session.flush()
+                        logger.info(f"创建兜底期刊: journal_id={journal.id}")
+
                     # 更新文件上传记录的journal_id（如果期刊发生了变化或之前为None）
                     if file_upload.journal_id != journal.id:
                         old_journal_id = file_upload.journal_id
@@ -335,8 +433,9 @@ class FileService:
                                 is_dhu=paper_data.get('is_dhu', False),
                                 chinese_title=paper_data.get('chinese_title', ''),
                                 chinese_authors=paper_data.get('chinese_authors', ''),
-                                first_image_url=paper_data.get('first_local_path'),
-                                second_image_url=paper_data.get('second_local_path')
+                                first_image_url=paper_data.get('first_image_path', ''),
+                                second_image_url=paper_data.get('second_image_path', ''),
+                                mineru_folder=paper_data.get('mineru_folder', '')
                             )
                             db.session.add(paper)
                         

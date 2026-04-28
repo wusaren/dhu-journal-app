@@ -2,26 +2,10 @@
   "user_id": 2,
   "fields": [
     {
-      "field": "citation",
-      "label": "引用信息",
-      "required": false,
-      "order": 1,
-      "type": "content_based",
-      "location": "paragraph_1",
-      "detected_type": null,
-      "prefix": "",
-      "format": {
-        "font_color": "#000000",
-        "font_name": "",
-        "font_size": 12
-      },
-      "prefix_format": {}
-    },
-    {
       "field": "chinese_title",
       "label": "中文标题",
       "required": false,
-      "order": 2,
+      "order": 1,
       "type": "numbered",
       "location": "paragraph_5",
       "detected_type": null,
@@ -42,7 +26,7 @@
       "field": "chinese_authors",
       "label": "中文作者",
       "required": false,
-      "order": 3,
+      "order": 2,
       "type": "content_based",
       "location": "paragraph_6",
       "detected_type": null,
@@ -58,7 +42,7 @@
       "field": "second_image",
       "label": "论文配图",
       "required": false,
-      "order": 4,
+      "order": 3,
       "type": "image",
       "location": "paragraph_7",
       "detected_type": "first_image",
@@ -74,7 +58,7 @@
       "field": "title",
       "label": "标题",
       "required": false,
-      "order": 5,
+      "order": 4,
       "type": "numbered",
       "location": "paragraph_8",
       "detected_type": null,
@@ -95,7 +79,7 @@
       "field": "authors",
       "label": "作者",
       "required": false,
-      "order": 6,
+      "order": 5,
       "type": "text_label",
       "location": "paragraph_9",
       "detected_type": null,
@@ -115,7 +99,7 @@
       "field": "doi",
       "label": "DOI",
       "required": false,
-      "order": 7,
+      "order": 6,
       "type": "text_label",
       "location": "paragraph_10",
       "detected_type": null,
@@ -130,6 +114,22 @@
         "font_name": "",
         "font_size": 12
       }
+    },
+    {
+      "field": "citation",
+      "label": "引用信息",
+      "required": false,
+      "order": 7,
+      "type": "content_based",
+      "location": "paragraph_1",
+      "detected_type": null,
+      "prefix": "",
+      "format": {
+        "font_color": "#000000",
+        "font_name": "",
+        "font_size": 12
+      },
+      "prefix_format": {}
     },
     {
       "field": "first_image",
@@ -164,5 +164,5 @@
   "paper_file_path": "user_configs\\user_2\\templates\\paper_20251208_154015_1-.pdf",
   "paper_cache_path": "configs\\paper_cache\\user_2_paper_data.json",
   "created_at": "2025-11-30T22:49:47.909338",
-  "updated_at": "2025-12-08T15:45:22.400813"
+  "updated_at": "2026-04-28T19:23:19.636170"
 }

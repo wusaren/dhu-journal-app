@@ -179,9 +179,9 @@ def parse_mineru_result(batch_id):
                 'message': extract_result['message']
             }), 500
         
-        # 解析结果（使用model_json_path，通过parse_pdf_from_mineru_json解析）
+        # 解析结果（使用 content_list_json_path，通过 parse_pdf_from_mineru_json 解析）
         parsed_data = None
-        if extract_result.get('model_json_path'):
+        if extract_result.get('content_list_json_path'):
             # 使用新的JSON解析方法
             from services.pdf_parser import parse_pdf_from_mineru_json
             # 注意：parse_pdf_from_mineru_json需要pdf_path参数，这里暂时返回None
@@ -261,7 +261,7 @@ def _process_file_with_mineru_internal(file_path: str, data_id: str = None, **kw
             **mineru_params  # 统一使用参数传递
         )
         
-        # 注意：现在使用model_json_path进行解析，不再使用markdown解析
+        # 注意：现在使用 content_list_json_path 进行解析，不再使用markdown解析
         # parse_markdown_result方法已废弃，应使用parse_pdf_from_mineru_json
         
         return result

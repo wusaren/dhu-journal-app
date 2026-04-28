@@ -478,55 +478,64 @@ def generate_excel_stats_from_template(articles, journal, template_file_path: st
         logger.error(f"基于模板生成统计表Excel失败: {str(e)}")
         raise Exception(f"基于模板生成统计表Excel失败: {str(e)}")
 
-def get_local_image_path(image_path: str, temp_dir: str) -> Optional[str]:
+def get_local_image_path(image_path: str, temp_dir: str, mineru_folder: str = None) -> Optional[str]:
     """
-    获取本地图片路径，如果图片存在则返回路径，否则返回None
-    支持相对路径和绝对路径，会在多个可能的位置查找文件
-    
+    获取本地图片路径，支持以下查找策略（按优先级）：
+    1. 如果传入了 mineru_folder，直接拼接 mineru_output/{mineru_folder}/{image_path}
+    2. 如果图片路径是绝对路径且存在，直接返回
+    3. 如果是相对路径，尝试多个可能的查找位置（保留原有兼容逻辑）
+
     返回: 本地图片路径，如果图片不存在则返回None
     """
     try:
         if not image_path:
             return None
-        
-        # 首先尝试直接使用原始路径
+
+        # 策略1：使用 mineru_folder 直接拼接（最优路径）
+        if mineru_folder and image_path:
+            current_file = os.path.abspath(__file__)
+            backend_dir = os.path.dirname(os.path.dirname(current_file))
+            direct_path = os.path.join(backend_dir, 'mineru_output', mineru_folder, image_path)
+            if os.path.exists(direct_path):
+                logger.info(f"本地图片存在（mineru_folder路径）: {direct_path}")
+                return direct_path
+
+        # 策略2：直接使用原始路径（绝对路径）
         if os.path.exists(image_path):
             logger.info(f"本地图片存在（原始路径）: {image_path}")
             return image_path
-        
-        # 如果是相对路径，尝试在多个位置查找
+
+        # 策略3：相对路径查找（兼容旧数据）
         if not os.path.isabs(image_path):
-            # 获取backend目录的绝对路径
             current_file = os.path.abspath(__file__)
             backend_dir = os.path.dirname(os.path.dirname(current_file))
-            
-            # 可能的查找位置列表
+
+            mineru_extra = []
+            if 'images' in image_path:
+                mineru_extra = [
+                    os.path.join(root, image_path)
+                    for root, _, files in os.walk(os.path.join(backend_dir, 'mineru_output'))
+                    for f in files if f == os.path.basename(image_path)
+                ]
+
             possible_paths = [
-                # 1. 相对于backend目录
                 os.path.join(backend_dir, image_path),
-                # 2. 相对于当前工作目录
                 os.path.join(os.getcwd(), image_path),
-                # 3. 如果路径以images开头，尝试backend/images
                 os.path.join(backend_dir, 'images', os.path.basename(image_path)) if 'images' in image_path else None,
-                # 4. 如果路径包含images，尝试从backend目录查找
                 os.path.join(backend_dir, image_path.replace('images\\', 'images\\').replace('images/', 'images/')) if 'images' in image_path else None,
+                os.path.join(backend_dir, 'mineru_output', image_path),
+                *mineru_extra,
             ]
-            
-            # 过滤掉None值
             possible_paths = [p for p in possible_paths if p]
-            
-            # 尝试每个可能的路径
+
             for possible_path in possible_paths:
                 if os.path.exists(possible_path):
                     logger.info(f"本地图片存在（查找路径）: {possible_path} (原始路径: {image_path})")
                     return possible_path
-        
-        # 如果都找不到，记录警告
-        logger.warning(f"本地图片不存在，已尝试多个位置: {image_path}")
-        logger.warning(f"当前工作目录: {os.getcwd()}")
-        logger.warning(f"backend目录: {os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}")
+
+        logger.warning(f"本地图片不存在: {image_path}, mineru_folder={mineru_folder}")
         return None
-            
+
     except Exception as e:
         logger.error(f"检查本地图片时出错: {str(e)}, 图片路径: {image_path}")
         return None
@@ -1072,9 +1081,10 @@ def _generate_tuiwen_content_legacy(papers, journal):
                 # 获取图片URL
                 first_image_url = getattr(paper, 'first_image_url', '') or ''
                 second_image_url = getattr(paper, 'second_image_url', '') or ''
+                mineru_folder = getattr(paper, 'mineru_folder', '') or ''
                 # 使用数据库中的citation字段
                 citation = getattr(paper, 'citation', '') or ''
-            
+
             # 添加中文标题（如果有）
             if chinese_title:
                 chinese_title_para = doc.add_paragraph()
@@ -1095,7 +1105,7 @@ def _generate_tuiwen_content_legacy(papers, journal):
                 try:
                     logger.info(f"开始处理第二张图片: {second_image_url}")
                     # 获取本地图片路径
-                    local_image_path = get_local_image_path(second_image_url, temp_dir)
+                    local_image_path = get_local_image_path(second_image_url, temp_dir, mineru_folder)
                     logger.info(f"本地图片路径检查结果: {local_image_path}, 文件存在: {os.path.exists(local_image_path) if local_image_path else False}")
                     
                     if local_image_path and os.path.exists(local_image_path):
@@ -1157,7 +1167,7 @@ def _generate_tuiwen_content_legacy(papers, journal):
                 try:
                     logger.info(f"开始处理第一张图片(QRcode): {first_image_url}")
                     # 获取本地图片路径
-                    local_image_path = get_local_image_path(first_image_url, temp_dir)
+                    local_image_path = get_local_image_path(first_image_url, temp_dir, mineru_folder)
                     logger.info(f"本地图片路径检查结果: {local_image_path}, 文件存在: {os.path.exists(local_image_path) if local_image_path else False}")
                     
                     if local_image_path and os.path.exists(local_image_path):
@@ -1295,6 +1305,7 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 # 获取图片URL
                 first_image_url = getattr(paper, 'first_image_url', '') or ''
                 second_image_url = getattr(paper, 'second_image_url', '') or ''
+                mineru_folder = getattr(paper, 'mineru_folder', '') or ''
             else:
                 title = paper.get('title', '')
                 authors = paper.get('authors', '')
@@ -1308,12 +1319,13 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 # 获取图片URL
                 first_image_url = paper.get('first_image_url', '') or ''
                 second_image_url = paper.get('second_image_url', '') or ''
+                mineru_folder = paper.get('mineru_folder', '') or ''
             
             # 记录图片路径信息，便于排查
             logger.info(f"论文 {paper_idx} 图片路径: first_image_url={first_image_url}, second_image_url={second_image_url}")
             logger.info(f"论文 {paper_idx} 基本信息: title={title[:50] if title else ''}, page_start={page_start}, page_end={page_end}")
             
-            # 字段值映射
+            # 字段值映射（图片字段映射到数据库字段名）
             field_values = {
                 'chinese_title': chinese_title,
                 'chinese_authors': chinese_authors,
@@ -1323,8 +1335,8 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                 'citation': citation,
                 'page_start': str(page_start) if page_start else '',
                 'page_end': str(page_end) if page_end else '',
-                'first_image': first_image_url,  # 图片URL
-                'second_image': second_image_url,  # 图片URL
+                'second_image': second_image_url,  # 映射到数据库 second_image_url
+                'first_image': first_image_url,   # 映射到数据库 first_image_url
             }
             
             # 按配置的字段顺序添加内容
@@ -1338,7 +1350,7 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                     # 处理图片字段
                     if field_key == 'second_image' and value:
                         try:
-                            local_image_path = get_local_image_path(value, temp_dir)
+                            local_image_path = get_local_image_path(value, temp_dir, mineru_folder)
                             if local_image_path and os.path.exists(local_image_path):
                                 try:
                                     doc.add_picture(local_image_path, width=Pt(300))
@@ -1363,7 +1375,7 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                         osid_run.font.bold = True
                         # 插入图片
                         try:
-                            local_image_path = get_local_image_path(value, temp_dir)
+                            local_image_path = get_local_image_path(value, temp_dir, mineru_folder)
                             if local_image_path and os.path.exists(local_image_path):
                                 try:
                                     doc.add_picture(local_image_path, width=Pt(100))
@@ -1380,26 +1392,29 @@ def generate_tuiwen_from_fields(papers, journal, fields_config: List[Dict]) -> s
                     # 处理文本字段（使用统一的格式应用函数）
                     elif value and field_key not in ['first_image', 'second_image']:
                         para = doc.add_paragraph()
-                        
-                        # 对于title字段，如果没有自定义prefix，添加论文编号
+
+                        # 中文标题：始终使用动态序号；英文标题：始终不带序号
                         if field_key in ['chinese_title', 'title']:
-                            if not field_config.get('prefix'):
-                                # 如果没有自定义prefix，使用论文编号作为prefix
-                                field_config_with_idx = field_config.copy()
+                            field_config_with_idx = field_config.copy()
+                            # 中文标题才加序号，英文标题不加
+                            if field_key == 'chinese_title':
                                 field_config_with_idx['prefix'] = f"{paper_idx}. "
-                                if not field_config_with_idx.get('prefix_format'):
-                                    field_config_with_idx['prefix_format'] = {}
-                                if 'font_size' not in field_config_with_idx['prefix_format']:
-                                    field_config_with_idx['prefix_format']['font_size'] = 12
-                                # 注意：bold属性需要在apply_field_format_to_paragraph中处理
-                                apply_field_format_to_paragraph(para, field_config_with_idx, value, paper_idx)
                             else:
-                                # 有自定义prefix，直接使用
-                                apply_field_format_to_paragraph(para, field_config, value, paper_idx)
+                                field_config_with_idx['prefix'] = ''
+                            if not field_config_with_idx.get('prefix_format'):
+                                field_config_with_idx['prefix_format'] = {}
+                            if 'font_size' not in field_config_with_idx['prefix_format']:
+                                field_config_with_idx['prefix_format']['font_size'] = 12
+                            apply_field_format_to_paragraph(para, field_config_with_idx, value, paper_idx)
                         else:
-                            # 其他字段直接使用配置
-                            apply_field_format_to_paragraph(para, field_config, value, paper_idx)
-            
+                            # 作者字段（authors）：强制去掉 prefix（如用户配置的"作者："）
+                            field_config_clean = field_config.copy()
+                            if field_key == 'authors':
+                                field_config_clean['prefix'] = ''
+                            if not field_config_clean.get('prefix_format'):
+                                field_config_clean['prefix_format'] = {}
+                            apply_field_format_to_paragraph(para, field_config_clean, value, paper_idx)
+
             # 添加空行分隔
             doc.add_paragraph()
         
@@ -1504,7 +1519,7 @@ def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: 
         # 添加空行
         doc.add_paragraph()
         
-        # 准备字段值映射
+        # 准备字段值映射（图片字段映射到数据库字段名）
         field_values = {
             'title': source_data.get('title', ''),
             'chinese_title': source_data.get('chinese_title', '') or '',
@@ -1514,9 +1529,10 @@ def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: 
             'citation': source_data.get('citation', ''),
             'page_start': str(source_data.get('page_start', '')) if source_data.get('page_start') else '',
             'page_end': str(source_data.get('page_end', '')) if source_data.get('page_end') else '',
-            'first_image': source_data.get('first_image_url', '') or '',
-            'second_image': source_data.get('second_image_url', '') or '',
+            'second_image': source_data.get('second_image_url', '') or '',  # 映射到数据库 second_image_url
+            'first_image': source_data.get('first_image_url', '') or '',     # 映射到数据库 first_image_url
         }
+        mineru_folder = source_data.get('mineru_folder', '') or ''
         
         # 使用数据库中的citation字段（如果为空则为空字符串）
         if not field_values.get('citation'):
@@ -1548,7 +1564,7 @@ def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: 
             # 处理图片字段
             if field_key == 'second_image' and value:
                 try:
-                    local_image_path = get_local_image_path(value, temp_dir)
+                    local_image_path = get_local_image_path(value, temp_dir, mineru_folder)
                     if local_image_path and os.path.exists(local_image_path):
                         try:
                             doc.add_picture(local_image_path, width=Pt(300))
@@ -1582,7 +1598,7 @@ def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: 
                 osid_run.font.bold = True
                 # 插入图片
                 try:
-                    local_image_path = get_local_image_path(value, temp_dir)
+                    local_image_path = get_local_image_path(value, temp_dir, mineru_folder)
                     if local_image_path and os.path.exists(local_image_path):
                         try:
                             doc.add_picture(local_image_path, width=Pt(100))
@@ -1608,24 +1624,28 @@ def generate_tuiwen_preview_from_config(fields_config: List[Dict], source_data: 
             # 处理文本字段（使用统一的格式应用函数，与最终生成保持一致）
             elif value and field_key not in ['first_image', 'second_image']:
                 para = doc.add_paragraph()
-                
-                # 对于title字段，如果没有自定义prefix，添加论文编号
+
+                # 中文标题：始终使用动态序号；英文标题：始终不带序号
                 if field_key in ['chinese_title', 'title']:
-                    if not field_config.get('prefix'):
-                        # 如果没有自定义prefix，使用论文编号作为prefix
-                        field_config_with_idx = field_config.copy()
+                    field_config_with_idx = field_config.copy()
+                    # 中文标题才加序号，英文标题不加
+                    if field_key == 'chinese_title':
                         field_config_with_idx['prefix'] = f"{paper_idx}. "
-                        if not field_config_with_idx.get('prefix_format'):
-                            field_config_with_idx['prefix_format'] = {}
-                        if 'font_size' not in field_config_with_idx['prefix_format']:
-                            field_config_with_idx['prefix_format']['font_size'] = 12
-                        preview_item = apply_field_format_to_paragraph(para, field_config_with_idx, value, paper_idx)
                     else:
-                        # 有自定义prefix，直接使用
-                        preview_item = apply_field_format_to_paragraph(para, field_config, value, paper_idx)
+                        field_config_with_idx['prefix'] = ''
+                    if not field_config_with_idx.get('prefix_format'):
+                        field_config_with_idx['prefix_format'] = {}
+                    if 'font_size' not in field_config_with_idx['prefix_format']:
+                        field_config_with_idx['prefix_format']['font_size'] = 12
+                    preview_item = apply_field_format_to_paragraph(para, field_config_with_idx, value, paper_idx)
                 else:
-                    # 其他字段直接使用配置
-                    preview_item = apply_field_format_to_paragraph(para, field_config, value, paper_idx)
+                    # 作者字段（authors）：强制去掉 prefix（如用户配置的"作者："）
+                    field_config_clean = field_config.copy()
+                    if field_key == 'authors':
+                        field_config_clean['prefix'] = ''
+                    if not field_config_clean.get('prefix_format'):
+                        field_config_clean['prefix_format'] = {}
+                    preview_item = apply_field_format_to_paragraph(para, field_config_clean, value, paper_idx)
                 
                 # 添加到文本预览数据
                 text_preview_data.append(preview_item)

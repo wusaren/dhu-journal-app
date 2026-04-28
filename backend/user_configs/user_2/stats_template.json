@@ -1,6 +1,6 @@
 {
   "user_id": 2,
-  "template_file_path": "C:\\Users\\57189\\dhu-journal-app\\backend\\user_configs\\user_2\\stats_template_20251118_113315.xlsx",
+  "template_file_path": "C:\\Users\\57189\\dhu-journal-app\\backend\\user_configs\\user_2\\stats_template_20260428_164007.xlsx",
   "column_mapping": [
     {
       "system_key": "manuscript_id",
@@ -37,14 +37,8 @@
       "template_header": "是否东华大学",
       "order": 6,
       "is_custom": false
-    },
-    {
-      "system_key": "123",
-      "template_header": "123",
-      "order": 7,
-      "is_custom": true
     }
   ],
-  "created_at": "2025-11-18T11:33:15.521094",
-  "updated_at": "2025-11-18T11:33:15.521094"
+  "created_at": "2026-04-28T16:40:07.086245",
+  "updated_at": "2026-04-28T16:40:07.086245"
 }

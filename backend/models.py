@@ -157,8 +157,9 @@ class Paper(db.Model):
     chinese_authors = db.Column(db.Text)  # 中文作者
     
     # image_path = db.Column(db.String(500))  # MinIO图片URL（保留用于兼容）
-    first_image_url = db.Column(db.String(500))  # 第一张图片URL（QRcode）
+    first_image_url = db.Column(db.String(500))  # 第一张图片URL（相对路径，如 images/xxx.jpg）
     second_image_url = db.Column(db.String(500))  # 第二张图片URL
+    mineru_folder = db.Column(db.String(255))  # MinerU输出文件夹名，用于定位图片
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

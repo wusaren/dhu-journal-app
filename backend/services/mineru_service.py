@@ -358,6 +358,7 @@ class MinerUService:
             markdown_path = None
             json_path = None
             model_json_path = None
+            content_list_json_path = None
             docx_path = None
             html_path = None
             
@@ -366,6 +367,8 @@ class MinerUService:
                     file_path = os.path.join(root, file)
                     if file.endswith('_model.json') and not model_json_path:
                         model_json_path = file_path
+                    elif file.endswith('_content_list.json') and not content_list_json_path:
+                        content_list_json_path = file_path
                     elif file.endswith('.md') and not markdown_path:
                         markdown_path = file_path
                     elif file.endswith('.json') and not json_path:
@@ -380,6 +383,7 @@ class MinerUService:
                 'markdown_path': markdown_path,
                 'json_path': json_path,
                 'model_json_path': model_json_path,
+                'content_list_json_path': content_list_json_path,
                 'docx_path': docx_path,
                 'html_path': html_path,
                 'zip_path': zip_path,
@@ -393,6 +397,7 @@ class MinerUService:
                 'markdown_path': None,
                 'json_path': None,
                 'model_json_path': None,
+                'content_list_json_path': None,
                 'message': f'失败: {str(e)}'
             }
     
