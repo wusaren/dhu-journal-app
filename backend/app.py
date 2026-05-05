@@ -1595,94 +1595,89 @@ def save_temp_file():
         }), 500
 
 # 格式检测
-# @app.route('/api/paper-format/check-all', methods=['POST'])
-# def check_format_all():
-#     """执行论文格式检测"""
-#     try:
-#         # 获取JSON数据
-#         data = request.get_json()
-#         temp_file_path = data.get('temp_file_path')
-#         file_id = data.get('file_id')  # 获取文件ID
-        
-#         if not temp_file_path:
-#             return jsonify({
-#                 'success': False, 
-#                 'message': '缺少临时文件路径'
-#             }), 400
-        
-#         # 检查文件是否存在
-#         if not os.path.exists(temp_file_path):
-#             return jsonify({
-#                 'success': False, 
-#                 'message': '临时文件不存在'
-#             }), 404
-        
-#         # 获取参数
-#         enable_figure_api = data.get('enableFigureApi', False)
-#         enable_classification_api = data.get('enableClassificationApi', False)
-#         modules = data.get('modules')  # 可选，逗号分隔的模块名称
-#         skip_checks = data.get('skip_checks', {})  # 获取跳过检测项字典
-        
-#         if modules:
-#             modules_list = [m.strip() for m in modules.split(',')]
-#         else:
-#             modules_list = None
-        
-#         logger.info(f"接收到skip_checks参数: {skip_checks}")
-        
-#         # 执行检测
-#         paper_format_service = PaperFormatService()
-#         result = paper_format_service.check_all(
-#             temp_file_path,
-#             enable_figure_api=enable_figure_api,
-#             enable_classification_api=enable_classification_api,
-#             modules=modules_list,
-#             reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
-#             annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
-#             skip_checks=skip_checks
-#         )
-        
-#         # 更新数据库记录
-#         if file_id and result.get('success'):
-#             try:
-#                 format_check_file = FormatCheckFile.query.get(file_id)
-#                 if format_check_file:
-#                     # 更新文件路径
-#                     if result['data'].get('report_saved'):
-#                         format_check_file.report_path = os.path.join(
-#                             app.config['FORMAT_CHECK_REPORTS_FOLDER'], 
-#                             result['data']['report_filename']
-#                         )
-                    
-#                     if result['data'].get('annotated_saved'):
-#                         format_check_file.annotated_path = os.path.join(
-#                             app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], 
-#                             result['data']['annotated_filename']
-#                         )
-                    
-#                     # 更新检测结果摘要
-#                     if 'summary' in result['data']:
-#                         summary = result['data']['summary']
-#                         format_check_file.total_checks = summary.get('total_checks', 0)
-#                         format_check_file.passed_checks = summary.get('passed_checks', 0)
-#                         format_check_file.failed_checks = summary.get('failed_checks', 0)
-#                         format_check_file.pass_rate = summary.get('pass_rate', 0.0)
-                    
-#                     format_check_file.check_status = 'completed'
-#                     db.session.commit()
-#                     logger.info(f"数据库记录已更新: ID={file_id}")
-#             except Exception as e:
-#                 db.session.rollback()
-#                 logger.warning(f"更新数据库记录失败: {e}")
-        
-#         return jsonify(result)
-            
-#     except Exception as e:
-#         logger.error(f"格式检测错误: {str(e)}")
-#         return jsonify({
-#             'success': False, 
-#             'message': f'检测失败: {str(e)}'
-#         }), 500
+@app.route('/api/paper-format/check-all', methods=['POST'])
+def check_format_all():
+    """执行论文格式检测"""
+    try:
+        data = request.get_json()
+        temp_file_path = data.get('temp_file_path')
+        file_id = data.get('file_id')
+
+        if not temp_file_path:
+            return jsonify({'success': False, 'message': '缺少临时文件路径'}), 400
+
+        if not os.path.exists(temp_file_path):
+            return jsonify({'success': False, 'message': '临时文件不存在'}), 404
+
+        enable_figure_api = data.get('enableFigureApi', False)
+        enable_classification_api = data.get('enableClassificationApi', False)
+        modules = data.get('modules')
+        skip_checks = data.get('skip_checks', {})
+
+        if modules:
+            modules_list = [m.strip() for m in modules.split(',')]
+        else:
+            modules_list = None
+
+        logger.info(f"接收到skip_checks参数: {skip_checks}")
+
+        chinese_paper_format_service = ChinesePaperFormatService()
+        result = chinese_paper_format_service.check_all(
+            temp_file_path,
+            enable_figure_api=enable_figure_api,
+            enable_classification_api=enable_classification_api,
+            modules=modules_list,
+            reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
+            annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
+            skip_checks=skip_checks
+        )
+
+        if file_id and result.get('success'):
+            try:
+                format_check_file = FormatCheckFile.query.get(file_id)
+                if format_check_file:
+                    if 'results' in result['data']:
+                        try:
+                            import json as _json
+                            content_details_dir = app.config['FORMAT_CHECK_CONTENT_FOLDER']
+                            os.makedirs(content_details_dir, exist_ok=True)
+                            content_details_filename = f"file_{file_id}_content_details.json"
+                            content_details_path = os.path.join(content_details_dir, content_details_filename)
+                            with open(content_details_path, 'w', encoding='utf-8') as f:
+                                _json.dump(result['data']['results'], f, ensure_ascii=False, indent=2)
+                            format_check_file.content_details_path = content_details_path
+                            logger.info(f"各模块详细结果已保存: {content_details_path}")
+                        except Exception as e:
+                            logger.warning(f"保存 content_details JSON 失败: {e}")
+
+                    if result['data'].get('report_saved'):
+                        format_check_file.report_path = os.path.join(
+                            app.config['FORMAT_CHECK_REPORTS_FOLDER'],
+                            result['data']['report_filename']
+                        )
+                    if result['data'].get('annotated_saved'):
+                        format_check_file.annotated_path = os.path.join(
+                            app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
+                            result['data']['annotated_filename']
+                        )
+                    if 'summary' in result['data']:
+                        summary = result['data']['summary']
+                        format_check_file.total_checks = summary.get('total_checks', 0)
+                        format_check_file.passed_checks = summary.get('passed_checks', 0)
+                        format_check_file.failed_checks = summary.get('failed_checks', 0)
+                        format_check_file.pass_rate = summary.get('pass_rate', 0.0)
+                    format_check_file.check_status = 'completed'
+                    db.session.commit()
+                    logger.info(f"数据库记录已更新: ID={file_id}")
+            except Exception as e:
+                db.session.rollback()
+                logger.warning(f"更新数据库记录失败: {e}")
+
+        return jsonify(result)
+
+    except Exception as e:
+        logger.error(f"格式检测错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'检测失败: {str(e)}'}), 500
 
 # 格式检测
 @app.route('/api/chinese-paper-format/check-all', methods=['POST'])

@@ -1,7 +1,7 @@
 <template>
   <el-config-provider :locale="zhCn">
     <div class="preliminary-review">
-    
+
     <!-- 待审核论文筛选区域 -->
     <el-card class="filter-card">
       <el-form :model="pendingSearchForm" label-width="80px">
@@ -47,7 +47,8 @@
         </div>
       </template>
 
-      <el-table :data="paginatedPendingList" style="width: 100%">
+      <el-table :data="paginatedPendingList" style="width: 100%" @selection-change="handlePendingSelectionChange">
+        <el-table-column type="selection" width="55" />
         <el-table-column prop="title" label="论文标题" width="300" />
         <el-table-column prop="submitDate" label="提交日期" width="120" />
         <el-table-column label="操作" width="500">
@@ -61,18 +62,18 @@
             <el-button class="term-detect-btn" size="small" @click="handleTermDetect(scope.row)">
               术语检测
             </el-button>
-            <el-button 
+            <el-button
               v-if="scope.row.formatCheckResult?.success"
-              class="report-btn" 
-              size="small" 
+              class="report-btn"
+              size="small"
               @click="openReportDoc(scope.row)"
             >
               检测报告
             </el-button>
-            <el-button 
+            <el-button
               v-if="scope.row.formatCheckResult?.success"
-              class="annotated-btn" 
-              size="small" 
+              class="annotated-btn"
+              size="small"
               @click="openAnnotatedDoc(scope.row)"
             >
               标记文档
@@ -83,7 +84,7 @@
           </template>
         </el-table-column>
       </el-table>
-      
+
       <!-- 待审核列表分页 -->
       <div class="pagination">
         <el-pagination
@@ -100,82 +101,96 @@
       </div>
     </el-card>
 
-    <!-- 已审核论文筛选区域 -->
-    <el-card class="filter-card">
-      <el-form :model="filterForm" label-width="80px">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="论文状态">
-              <el-select v-model="filterForm.status" placeholder="请选择状态" clearable>
-                <el-option label="已审核" value="reviewed" />
-                <el-option label="需修改" value="need_revision" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="审核日期">
-              <el-date-picker
-                v-model="filterForm.dateRange"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                value-format="YYYY-MM-DD"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="关键词">
-              <el-input v-model="filterForm.keyword" placeholder="输入关键词搜索" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button class="search-btn" type="primary" @click="handleSearch">搜索</el-button>
-              <el-button class="reset-btn" @click="resetFilter">重置</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+    <!-- 批量审核工具栏 -->
+    <div class="batch-toolbar" v-if="selectedPendingPapers.length > 0">
+      <span class="selected-count">已选择 <strong>{{ selectedPendingPapers.length }}</strong> 篇论文</span>
+      <el-select v-model="batchReviewStatus" placeholder="设置审核状态" style="width: 140px;">
+        <el-option label="已审核" value="reviewed" />
+        <el-option label="需修改" value="needs_revision" />
+      </el-select>
+      <el-input
+        v-model="batchReviewComment"
+        type="textarea"
+        :rows="2"
+        placeholder="统一审核意见（可选）"
+        style="width: 300px;"
+      />
+      <el-button class="confirm-btn" type="primary" @click="handleBatchReview">批量提交审核</el-button>
+      <el-button @click="selectedPendingPapers = []">取消选择</el-button>
+    </div>
 
     <!-- 已审核论文列表 -->
-    <el-card class="content-card">
+    <el-card class="content-card reviewed-list-card">
       <template #header>
         <div class="card-header">
           <div class="header-left">
             <h3>已审核论文列表</h3>
             <span class="total-count">共 {{ filteredReviewedList.length }} 篇论文</span>
           </div>
+          <div class="header-right">
+            <el-button class="report-btn" type="primary" size="small" @click="openComprehensiveReport">综合报告</el-button>
+          </div>
         </div>
       </template>
 
+      <el-form :model="filterForm" inline>
+        <el-form-item label="审核状态">
+          <el-select v-model="filterForm.status" placeholder="全部" clearable style="width: 120px;">
+            <el-option label="已审核" value="reviewed" />
+            <el-option label="需修改" value="need_revision" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="审核日期">
+          <el-date-picker
+            v-model="filterForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始"
+            end-placeholder="结束"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+        <el-form-item label="关键词">
+          <el-input v-model="filterForm.keyword" placeholder="输入关键词" clearable />
+        </el-form-item>
+        <el-form-item>
+          <el-button class="search-btn" type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="resetFilter">重置</el-button>
+        </el-form-item>
+      </el-form>
+
       <el-table :data="paginatedReviewedList" style="width: 100%">
-        <el-table-column prop="title" label="论文标题" width="250" />
-        <el-table-column prop="reviewDate" label="审核日期" width="120" />
-        <el-table-column label="审核状态" width="120">
+        <el-table-column prop="title" label="论文标题" width="300" />
+        <el-table-column prop="submitDate" label="提交日期" width="120" />
+        <el-table-column prop="reviewStatus" label="审核状态" width="100">
           <template #default="scope">
-            <el-tag :type="getReviewStatusType(scope.row.reviewStatus)">
-              {{ scope.row.reviewStatus }}
+            <el-tag :type="scope.row.reviewStatus === 'reviewed' ? 'success' : 'warning'">
+              {{ scope.row.reviewStatus === 'reviewed' ? '已审核' : '需修改' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250">
+        <el-table-column prop="reviewedAt" label="审核日期" width="120" />
+        <el-table-column label="操作" width="400">
           <template #default="scope">
-            <el-button class="view-btn" size="small" @click="handleView(scope.row)">
-              查看
-            </el-button>
-            <el-button class="edit-btn" size="small" @click="handleEdit(scope.row)">
-              修改
-            </el-button>
-            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">
-              删除
-            </el-button>
+            <el-button class="view-btn" size="small" @click="openOriginalDoc(scope.row)">原文档</el-button>
+            <el-button
+              v-if="scope.row.formatCheckResult?.success"
+              class="report-btn"
+              size="small"
+              @click="openReportDoc(scope.row)"
+            >检测报告</el-button>
+            <el-button
+              v-if="scope.row.formatCheckResult?.success"
+              class="annotated-btn"
+              size="small"
+              @click="openAnnotatedDoc(scope.row)"
+            >标记文档</el-button>
+            <el-button size="small" @click="handleViewComment(scope.row)">审核意见</el-button>
+            <el-button class="delete-btn" size="small" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
-      
-      <!-- 已审核列表分页 -->
+
       <div class="pagination">
         <el-pagination
           v-model:current-page="reviewedPagination.currentPage"
@@ -190,8 +205,6 @@
         />
       </div>
     </el-card>
-
-    <!-- 添加论文对话框 -->
     <el-dialog v-model="showAddDialog" title="添加论文" width="500px">
       <el-form :model="newPaper" label-width="80px">
         <el-form-item label="论文标题">
@@ -233,15 +246,15 @@
     <el-dialog v-model="showReviewDialog" title="论文审核" width="900px">
       <div class="review-content">
         <p class="paper-title-display"><strong>论文标题：</strong>{{ currentPaper?.title }}</p>
-        
+
          <!-- 格式检测区域 -->
          <el-card class="format-check-card" shadow="never">
            <template #header>
              <div class="card-header-format">
                <span>论文格式检测</span>
-               <el-button 
+               <el-button
                  v-if="!isFormatChecking && !formatCheckResult"
-                 class="check-format-btn" 
+                 class="check-format-btn"
                  size="small"
                  @click="showModuleSelector"
                  :disabled="!currentPaper?.tempFilePath"
@@ -250,12 +263,12 @@
                </el-button>
              </div>
            </template>
-          
+
           <!-- 检测状态提示 -->
           <div v-if="!currentPaper?.tempFilePath" class="format-hint">
             <el-alert title="请先上传论文文件才能进行格式检测" type="info" :closable="false" />
           </div>
-          
+
           <!-- 检测进度 -->
           <div v-if="isFormatChecking" class="format-checking">
             <el-progress :percentage="formatCheckProgress" />
@@ -263,7 +276,7 @@
               正在检测论文格式，请稍候...
             </p>
           </div>
-          
+
           <!-- 检测结果 -->
           <div v-if="formatCheckResult && !isFormatChecking" class="format-result">
             <div class="result-summary">
@@ -284,7 +297,7 @@
                 </el-descriptions-item>
               </el-descriptions>
             </div>
-            
+
             <!-- 详细结果折叠面板 -->
             <el-collapse v-model="activeModules" class="result-details" accordion>
               <el-collapse-item
@@ -294,7 +307,7 @@
               >
                 <template #title>
                   <div class="module-title">
-                    <span class="module-name">{{ moduleName }}</span>
+                    <span class="module-name">{{ moduleNamesCN[moduleName] || moduleName }}</span>
                     <el-tag
                       :type="getModuleStatusType(moduleResult)"
                       size="small"
@@ -304,7 +317,7 @@
                     </el-tag>
                   </div>
                 </template>
-                
+
                 <div class="module-checks">
                   <div
                     v-for="(check, checkName) in moduleResult.checks"
@@ -315,7 +328,7 @@
                       <span :class="['check-icon', check.ok ? 'success' : 'error']">
                         {{ check.ok ? '✓' : '✗' }}
                       </span>
-                      <span class="check-name-text">{{ checkName }}</span>
+                      <span class="check-name-text">{{ checkNamesCN[checkName] || checkName }}</span>
                     </div>
                     <div v-if="check.messages && check.messages.length > 0" class="check-messages-inline">
                       <div v-for="(message, index) in check.messages" :key="index" class="message-text">
@@ -326,28 +339,29 @@
                 </div>
               </el-collapse-item>
             </el-collapse>
-            
+
            <div class="format-actions">
              <el-button size="small" @click="resetFormatCheck">重新检测</el-button>
              <el-button class="view-report-btn" size="small" @click="viewDetailReport">查看检测报告</el-button>
-             <el-button 
+             <el-button
                v-if="formatCheckResult?.data?.annotated_saved"
-               class="download-annotated-btn" 
-               size="small" 
+               class="download-annotated-btn"
+               size="small"
                @click="downloadAnnotatedDocument"
              >
                下载标记文档
              </el-button>
            </div>
          </div>
-       </el-card>
-        
+         </el-card>
+       </div>
+
         <!-- 审核表单 -->
         <el-form :model="reviewForm" label-width="80px" style="margin-top: 20px;">
           <el-form-item label="审核结果">
             <el-radio-group v-model="reviewForm.status">
-              <el-radio value="已审核">已审核</el-radio>
-              <el-radio value="需修改">需修改</el-radio>
+              <el-radio value="reviewed">已审核</el-radio>
+              <el-radio value="needs_revision">需修改</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="审核意见">
@@ -359,13 +373,12 @@
             />
           </el-form-item>
         </el-form>
-      </div>
       <template #footer>
         <el-button @click="showReviewDialog = false">取消</el-button>
         <el-button class="confirm-btn" type="primary" @click="confirmReview">确定</el-button>
       </template>
     </el-dialog>
-    
+
     <!-- 详细报告对话框 -->
     <el-dialog v-model="showReportDialog" title="格式检测详细报告" width="800px">
       <div class="report-content">
@@ -376,17 +389,17 @@
         <el-button class="download-report-btn" type="primary" @click="downloadReport">下载报告</el-button>
       </template>
     </el-dialog>
-    
+
     <!-- 跳过检测项选择对话框 -->
     <el-dialog v-model="showSkipChecksDialog" title="选择跳过的检测项" width="500px">
       <div class="skip-checks-content">
-        <el-alert 
+        <el-alert
           :title="`正在配置：${currentModuleForSkip ? availableModules.find(m => m.value === currentModuleForSkip)?.label : ''}`"
-          type="info" 
+          type="info"
           :closable="false"
           style="margin-bottom: 20px;"
         />
-        
+
         <el-checkbox-group v-model="currentSkipChecks">
           <div class="skip-check-option" v-for="check in availableSkipChecks" :key="check.value">
             <el-checkbox :value="check.value">
@@ -396,7 +409,7 @@
           </div>
         </el-checkbox-group>
       </div>
-      
+
       <template #footer>
         <el-button @click="cancelSkipChecksSelection">取消</el-button>
         <el-button class="confirm-btn" type="primary" @click="confirmSkipChecksSelection">
@@ -413,9 +426,9 @@
           <template #header>
             <div class="card-header-format">
               <span>论文术语检测</span>
-              <el-button 
+              <el-button
                 v-if="!isTermDetecting && !termDetectResult"
-                class="check-format-btn" 
+                class="check-format-btn"
                 size="small"
                 @click="startTermDetection"
                 :disabled="!termDetectPaper?.tempFilePath"
@@ -468,15 +481,15 @@
               <!-- Tab 1: 关键词 -->
               <el-tab-pane label="关键词" name="keywords">
                 <div v-if="termDetectResult.data?.keywords?.length > 0">
-                  <el-alert 
-                    title="从论文Keywords部分提取的关键词" 
-                    type="info" 
+                  <el-alert
+                    title="从论文Keywords部分提取的关键词"
+                    type="info"
                     :closable="false"
                     style="margin-bottom: 15px;"
                   />
-                  <el-tag 
-                    v-for="keyword in termDetectResult.data.keywords" 
-                    :key="keyword" 
+                  <el-tag
+                    v-for="keyword in termDetectResult.data.keywords"
+                    :key="keyword"
                     size="large"
                     type="primary"
                     style="margin: 8px;"
@@ -486,13 +499,13 @@
                 </div>
                 <el-empty v-else description="未检测到关键词" />
               </el-tab-pane>
-            
+
                <!-- Tab 2: SciBERT模型检测的科学术语 -->
               <el-tab-pane label="SciBERT术语" name="scibert_terms">
                 <div v-if="termDetectResult.data?.scibert_terms?.length > 0">
-                  <el-alert 
-                     title="使用SciBERT深度学习模型识别的科学术语。" 
-                     type="primary" 
+                  <el-alert
+                     title="使用SciBERT深度学习模型识别的科学术语。"
+                     type="primary"
                      :closable="false"
                      description="C-Value通过结合候选术语的长度、出现频率和候选术语间的嵌套关系进行打分。分数越高，该候选术语越可能是专业术语。"
                      style="margin-bottom: 15px;"
@@ -510,13 +523,6 @@
                         <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
                       </template>
                     </el-table-column>
-                    <!-- <el-table-column prop="confidence" label="置信度" width="100" align="center">
-                      <template #default="scope">
-                        <el-tag :type="scope.row.confidence === 'high' ? 'success' : 'warning'">
-                          {{ scope.row.confidence === 'high' ? '高' : '中' }}
-                        </el-tag>
-                      </template>
-                    </el-table-column> -->
                   </el-table>
                 </div>
                 <el-empty v-else description="未检测到科学术语" />
@@ -525,9 +531,9 @@
               <!-- Tab 3: 智能提取的多词术语 -->
               <el-tab-pane label="多词术语" name="multi_word_terms">
                 <div v-if="termDetectResult.data?.multi_word_terms?.length > 0">
-                  <el-alert 
-                    title="使用N-gram+C-value算法提取多词术语。" 
-                    type="success" 
+                  <el-alert
+                    title="使用N-gram+C-value算法提取多词术语。"
+                    type="success"
                     :closable="false"
                     description="C-Value通过结合候选术语的长度、出现频率和候选术语间的嵌套关系进行打分。分数越高，该候选术语越可能是专业术语。"
                     style="margin-bottom: 15px;"
@@ -554,9 +560,9 @@
                <!-- Tab 4: 所有候选术语 -->
               <el-tab-pane label="术语列表" name="all_terms">
                 <div v-if="termDetectResult.data?.all_candidate_terms?.length > 0">
-                  <el-tag 
-                    v-for="term in termDetectResult.data.all_candidate_terms" 
-                    :key="term" 
+                  <el-tag
+                    v-for="term in termDetectResult.data.all_candidate_terms"
+                    :key="term"
                     style="margin: 5px;"
                     size="large" effect="plain"
                   >
@@ -569,27 +575,21 @@
                <!-- Tab 5: 疑似新术语 -->
                <el-tab-pane label="疑似新术语" name="new_terms">
                 <div v-if="termDetectResult.data?.new_terms?.length > 0">
-                  <!-- <el-alert 
-                    title="以下术语可能是作者新提出的，请确认" 
-                    type="warning" 
-                    :closable="false"
-                    style="margin-bottom: 15px;"
-                  /> -->
                   <div v-for="(newTerm, index) in termDetectResult.data.new_terms" :key="index" class="new-term-item">
                     <div class="new-term-header">
                       <span class="term-text">{{ newTerm.term }}</span>
                       <span class="term-trigger">触发词：{{ newTerm.trigger }}</span>
                       <el-button-group>
-                        <el-button 
-                          size="small" 
+                        <el-button
+                          size="small"
                           type="success"
                           :disabled="newTerm.confirmed === true"
                           @click="confirmNewTerm(newTerm, true)"
                         >
                           ✓ 确认
                         </el-button>
-                        <el-button 
-                          size="small" 
+                        <el-button
+                          size="small"
                           type="danger"
                           :disabled="newTerm.confirmed === false"
                           @click="confirmNewTerm(newTerm, false)"
@@ -615,9 +615,9 @@
               <!-- Tab 6: 相似术语（规范性问题） -->
               <el-tab-pane label="相似术语" name="similar_pairs">
                 <div v-if="termDetectResult.data?.similar_pairs?.length > 0">
-                  <el-alert 
-                    title="以下术语在语义或词汇层面相似，可能存在混用情况，请检查使用规范性" 
-                    type="error" 
+                  <el-alert
+                    title="以下术语在语义或词汇层面相似，可能存在混用情况，请检查使用规范性"
+                    type="error"
                     :closable="false"
                     style="margin-bottom: 15px;"
                   />
@@ -626,8 +626,8 @@
                     <el-table-column prop="term2" label="术语2" min-width="150" />
                     <el-table-column prop="final_score" label="综合相似度" width="110" align="center">
                       <template #default="scope">
-                        <el-progress 
-                          :percentage="Math.round((scope.row.final_score || 0) * 100)" 
+                        <el-progress
+                          :percentage="Math.round((scope.row.final_score || 0) * 100)"
                           :color="scope.row.final_score >= 0.9 ? '#F56C6C' : scope.row.final_score >= 0.8 ? '#E6A23C' : '#67C23A'"
                           :stroke-width="10"
                         />
@@ -648,7 +648,7 @@
                     </el-table-column>
                     <el-table-column prop="severity" label="相似等级" width="90" align="center">
                       <template #default="scope">
-                        <el-tag 
+                        <el-tag
                           :type="scope.row.severity === 'high' ? 'danger' : scope.row.severity === 'medium' ? 'warning' : 'success'"
                           size="small"
                         >
@@ -675,28 +675,6 @@
                 </div>
                 <el-empty v-else description="未检测到相似术语问题" />
               </el-tab-pane>
-
-              <!-- Tab 6: 引号术语 -->
-              <!-- <el-tab-pane label="引号术语" name="quoted_terms">
-                <div v-if="termDetectResult.data?.quoted_terms?.length > 0">
-                  <el-alert 
-                    title="从引号中提取的术语（通常是作者强调的重要概念）" 
-                    type="info" 
-                    :closable="false"
-                    style="margin-bottom: 15px;"
-                  />
-                  <el-tag 
-                    v-for="term in termDetectResult.data.quoted_terms" 
-                    :key="term" 
-                    size="large"
-                    effect="dark"
-                    style="margin: 8px;"
-                  >
-                    "{{ term }}"
-                  </el-tag>
-                </div>
-                <el-empty v-else description="未检测到引号术语" />
-              </el-tab-pane> -->
             </el-tabs>
 
             <!-- 操作按钮 -->
@@ -705,9 +683,9 @@
             </div>
           </div>
         </el-card>
-        
+
       </div>
-      
+
       <template #footer>
         <el-button @click="showTermDetectDialog = false">关闭</el-button>
       </template>
@@ -716,26 +694,26 @@
     <!-- 检测模块选择对话框 -->
     <el-dialog v-model="showModuleSelectorDialog" title="选择检测模块" width="600px">
       <div class="module-selector-content">
-        <el-alert 
-          title="请选择需要检测的内容模块" 
-          type="info" 
+        <el-alert
+          title="请选择需要检测的内容模块"
+          type="info"
           :closable="false"
           style="margin-bottom: 20px;"
         />
-        
+
         <!-- 全选选项 -->
         <div class="module-option">
-          <el-checkbox 
-            v-model="selectAllModules" 
+          <el-checkbox
+            v-model="selectAllModules"
             @change="handleSelectAll"
             :indeterminate="isIndeterminate"
           >
             <span class="module-label">全部检测</span>
           </el-checkbox>
         </div>
-        
+
         <el-divider />
-        
+
         <!-- 各检测模块 -->
         <el-checkbox-group v-model="selectedModules" @change="handleModuleChange">
           <div class="module-option" v-for="module in availableModules" :key="module.value">
@@ -759,13 +737,12 @@
             </div>
           </div>
         </el-checkbox-group>
-        
+
         <!-- 图片内容检测选项 -->
         <div v-if="selectedModules.includes('Figure')" class="figure-api-option">
-          <!-- <el-divider /> -->
-          <el-alert 
-            title="图片检测选项（使用大模型）" 
-            type="warning" 
+          <el-alert
+            title="图片检测选项（使用大模型）"
+            type="warning"
             :closable="false"
             style="margin-bottom: 10px;padding: 0"
           />
@@ -774,27 +751,13 @@
             <span class="module-description">*需要调用API，检测时间较长</span>
           </el-checkbox>
         </div>
-        
-        <!-- 摘要分类号检测选项 -->
-        <!-- <div v-if="selectedModules.includes('Abstract')" class="figure-api-option">
-          <el-alert 
-            title="摘要分类号检测选项（使用大模型）" 
-            type="warning" 
-            :closable="false"
-            style="margin-bottom: 10px;padding: 0"
-          />
-          <el-checkbox v-model="enableClassificationApi" style="padding-bottom: 10px;">
-            <span class="module-label">启用分类号智能检测</span>
-            <span class="module-description">*需要调用API，自动识别并验证中图分类号</span>
-          </el-checkbox>
-        </div> -->
       </div>
-      
+
       <template #footer>
         <el-button @click="showModuleSelectorDialog = false">取消</el-button>
-        <el-button 
-          class="confirm-btn" 
-          type="primary" 
+        <el-button
+          class="confirm-btn"
+          type="primary"
           @click="confirmModuleSelection"
           :disabled="selectedModules.length === 0"
         >
@@ -802,8 +765,110 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 审核意见查看弹窗 -->
+    <el-dialog v-model="showCommentDialog" :title="isCommentEditing ? '修改审核意见' : '审核意见'" width="500px">
+      <p v-if="currentPaper"><strong>论文标题：</strong>{{ currentPaper.title }}</p>
+      <p v-if="currentPaper">
+        <strong>审核状态：</strong>
+        <el-tag :type="currentPaper.reviewStatus === 'reviewed' ? 'success' : currentPaper.reviewStatus === 'needs_revision' ? 'warning' : 'info'">
+          {{ currentPaper.reviewStatus === 'reviewed' ? '已审核' : currentPaper.reviewStatus === 'needs_revision' ? '需修改' : '待审核' }}
+        </el-tag>
+      </p>
+      <el-divider v-if="!isCommentEditing" />
+
+      <!-- 非编辑模式：只展示审核意见 -->
+      <template v-if="!isCommentEditing">
+        <div v-if="currentPaper?.reviewComment" class="comment-content">
+          <p>{{ currentPaper.reviewComment }}</p>
+        </div>
+        <el-empty v-else description="暂无审核意见" />
+      </template>
+
+      <!-- 编辑模式：显示修改表单 -->
+      <template v-else>
+        <el-form :model="editCommentForm" label-width="80px" style="margin-top: 20px;">
+          <el-form-item label="审核结果">
+            <el-radio-group v-model="editCommentForm.status">
+              <el-radio value="pending">退回待审核</el-radio>
+              <el-radio value="reviewed">已审核（通过）</el-radio>
+              <el-radio value="needs_revision">需修改</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="审核意见">
+            <el-input
+              v-model="editCommentForm.comment"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入审核意见（可选）"
+            />
+          </el-form-item>
+        </el-form>
+      </template>
+
+      <template #footer>
+        <template v-if="!isCommentEditing">
+          <el-button @click="showCommentDialog = false">关闭</el-button>
+          <el-button type="primary" @click="startEditComment">修改审核意见</el-button>
+        </template>
+        <template v-else>
+          <el-button @click="cancelEditComment">取消</el-button>
+          <el-button type="primary" @click="submitEditComment">保存</el-button>
+        </template>
+      </template>
+    </el-dialog>
+
+    <!-- 综合报告弹窗 -->
+    <el-dialog v-model="showComprehensiveReport" title="综合报告" width="700px">
+      <div v-if="comprehensiveReport" class="comprehensive-report">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="已审核论文总数">{{ comprehensiveReport.total_papers }}</el-descriptions-item>
+          <el-descriptions-item label="通过数">
+            <span style="color: #67c23a;">{{ comprehensiveReport.reviewed_count }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="需修改数">
+            <span style="color: #f56c6c;">{{ comprehensiveReport.needs_revision_count }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="平均通过率">
+            <el-progress
+              :percentage="Number(comprehensiveReport.overall_pass_rate)"
+              :color="getPassRateColor(Number(comprehensiveReport.overall_pass_rate))"
+            />
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <h4 style="margin-top: 20px;">各模块通过率</h4>
+        <el-table
+          :data="Object.entries(comprehensiveReport.module_pass_rates || {}).map(([module, stats]: [string, any]) => ({ module, ...stats }))"
+          border
+          stripe
+        >
+          <el-table-column prop="module" label="模块" />
+          <el-table-column prop="total" label="总检测数" width="100" align="center" />
+          <el-table-column prop="passed" label="通过数" width="100" align="center">
+            <template #default="scope">
+              <span style="color: #67c23a;">{{ scope.row.passed }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="failed" label="失败数" width="100" align="center">
+            <template #default="scope">
+              <span style="color: #f56c6c;">{{ scope.row.failed }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="pass_rate" label="通过率" width="200" align="center">
+            <template #default="scope">
+              <el-progress
+                :percentage="scope.row.pass_rate"
+                :color="getPassRateColor(scope.row.pass_rate)"
+              />
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <el-empty v-else description="暂无已审核论文数据" />
+    </el-dialog>
   </div>
-  </el-config-provider>   
+  </el-config-provider>
 </template>
 
 <script setup lang="ts">
@@ -820,11 +885,13 @@ interface Paper {
   title: string
   file?: File
   tempFilePath?: string
-  fileId?: number  // 数据库记录ID
+  fileId?: number
   submitDate?: string
   reviewDate?: string
   reviewStatus?: string
   comment?: string
+  reviewComment?: string
+  reviewedAt?: string
   formatCheckResult?: ApiResponse<CheckAllResult>
 }
 
@@ -837,22 +904,7 @@ interface FilterForm {
 // 数据定义
 const pendingList = ref<Paper[]>([])
 
-const reviewedList = ref<Paper[]>([
-  {
-    id: 3,
-    title: '区块链技术在供应链管理中的研究',
-    submitDate: '2024-01-10',
-    reviewDate: '2024-01-11',
-    reviewStatus: '已审核'
-  },
-  {
-    id: 4,
-    title: '大数据分析在商业决策中的应用',
-    submitDate: '2024-01-08',
-    reviewDate: '2024-01-09',
-    reviewStatus: '需修改'
-  }
-])
+const reviewedList = ref<Paper[]>([])
 
 // 筛选表单
 const filterForm = ref<FilterForm>({
@@ -886,6 +938,10 @@ const showAddDialog = ref(false)
 const showReviewDialog = ref(false)
 const showReportDialog = ref(false)
 const showModuleSelectorDialog = ref(false)
+const showCommentDialog = ref(false)
+const isCommentEditing = ref(false)
+const editCommentForm = ref({ status: '', comment: '' })
+const showComprehensiveReport = ref(false)
 
 // 表单数据
 const newPaper = ref({
@@ -925,23 +981,34 @@ const currentSkipChecks = ref<string[]>([])
 const skipChecks = ref<Record<string, string[]>>({})
 
 // 术语检测相关状态
-const showTermDetectDialog = ref(false)  // 术语检测对话框显示状态
-const termDetectPaper = ref<Paper | null>(null)  // 当前进行术语检测的论文
+const showTermDetectDialog = ref(false)
+const termDetectPaper = ref<Paper | null>(null)
 const isTermDetecting = ref(false)
 const termDetectProgress = ref(0)
 const termDetectResult = ref<any>(null)
-const activeTermTab = ref('keywords')  // 默认显示keywords
-const isLoadingTermHistory = ref(false)  // 是否正在加载历史术语检测结果
+const activeTermTab = ref('keywords')
+const isLoadingTermHistory = ref(false)
+
+// 综合报告相关状态
+const comprehensiveReport = ref<any>(null)
+
+// 批量审核相关状态
+const selectedPendingPapers = ref<Paper[]>([])
+const batchReviewStatus = ref('')
+const batchReviewComment = ref('')
 
 // 可用的检测模块列表
 const availableModules = [
   { value: 'Title', label: '标题格式检测', description: '检测标题、作者、单位格式' },
   { value: 'Abstract', label: '摘要格式检测', description: '检测摘要结构和格式' },
+  { value: 'English_Abstract', label: '英文摘要格式检测', description: '检测英文摘要结构和格式' },
   { value: 'Keywords', label: '关键词格式检测', description: '检测关键词格式' },
   { value: 'Content', label: '正文格式检测', description: '检测正文格式' },
+  { value: 'TOC', label: '目录/图录/表录检测', description: '检测目录/图录/表录格式检测'},
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
   { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' },
+  { value: 'References', label: '参考文献格式检测', description: '检测参考文献结构和格式' },
   { value: 'Chinese_section', label: '中文部分检测', description: '检测中文标题、作者、单位、摘要和关键词格式' }
 ]
 
@@ -968,16 +1035,14 @@ const isIndeterminate = computed(() => {
 // 计算属性：筛选后的待审核列表
 const filteredPendingList = computed(() => {
   let filtered = [...pendingList.value]
-  
-  // 按关键词筛选
+
   if (pendingSearchKeyword.value.trim()) {
     const keyword = pendingSearchKeyword.value.toLowerCase()
-    filtered = filtered.filter(paper => 
+    filtered = filtered.filter(paper =>
       paper.title.toLowerCase().includes(keyword)
     )
   }
-  
-  // 按提交日期筛选
+
   if (pendingSearchForm.value.dateRange && pendingSearchForm.value.dateRange.length === 2) {
     const [startDate, endDate] = pendingSearchForm.value.dateRange
     filtered = filtered.filter(paper => {
@@ -985,15 +1050,14 @@ const filteredPendingList = computed(() => {
       return paper.submitDate >= startDate && paper.submitDate <= endDate
     })
   }
-  
+
   return filtered
 })
 
 // 计算属性：筛选后的已审核列表
 const filteredReviewedList = computed(() => {
   let filtered = [...reviewedList.value]
-  
-  // 按状态筛选
+
   if (filterForm.value.status) {
     const statusMap: Record<string, string> = {
       'reviewed': '已审核',
@@ -1004,8 +1068,7 @@ const filteredReviewedList = computed(() => {
       filtered = filtered.filter(paper => paper.reviewStatus === targetStatus)
     }
   }
-  
-  // 按审核日期筛选
+
   if (filterForm.value.dateRange && filterForm.value.dateRange.length === 2) {
     const [startDate, endDate] = filterForm.value.dateRange
     filtered = filtered.filter(paper => {
@@ -1013,15 +1076,14 @@ const filteredReviewedList = computed(() => {
       return paper.reviewDate >= startDate && paper.reviewDate <= endDate
     })
   }
-  
-  // 按关键词筛选
+
   if (filterForm.value.keyword.trim()) {
     const keyword = filterForm.value.keyword.toLowerCase()
-    filtered = filtered.filter(paper => 
+    filtered = filtered.filter(paper =>
       paper.title.toLowerCase().includes(keyword)
     )
   }
-  
+
   return filtered
 })
 
@@ -1072,35 +1134,47 @@ const handleFileExceed = (files: any[]) => {
 const loadPaperList = async () => {
   try {
     const response = await paperFormatService.getFiles()
-    
+
     if (response.success && response.data) {
-      // 将数据库记录转换为Paper对象
-      pendingList.value = response.data.map((file: any) => ({
-        id: file.id,
-        fileId: file.fileId,
-        title: file.title,
-        submitDate: file.submitDate,
-        tempFilePath: file.tempFilePath,
-        // 如果已完成检测，标记有检测结果
-        formatCheckResult: file.checkStatus === 'completed' ? {
-          success: true,
-          data: {
-            summary: {
-              total_checks: file.totalChecks || 0,
-              passed_checks: file.passedChecks || 0,
-              failed_checks: file.failedChecks || 0,
-              pass_rate: file.passRate || 0
-            },
-            report_saved: !!file.reportPath,
-            report_filename: file.reportPath ? file.reportPath.split(/[\\/]/).pop() : undefined,
-            annotated_saved: !!file.annotatedPath,
-            annotated_filename: file.annotatedPath ? file.annotatedPath.split(/[\\/]/).pop() : undefined,
-            annotated_download_url: file.annotatedPath ? `/api/paper-format/download-annotated/${file.annotatedPath.split(/[\\/]/).pop()}` : undefined
-          }
-        } : undefined
-      }))
-      
-      console.log('论文列表加载成功:', pendingList.value)
+      const pending: Paper[] = []
+      const reviewed: Paper[] = []
+
+      response.data.forEach((file: any) => {
+        const paper: Paper = {
+          id: file.id,
+          fileId: file.fileId,
+          title: file.title,
+          submitDate: file.submitDate,
+          tempFilePath: file.tempFilePath,
+          reviewStatus: file.reviewStatus || 'pending',
+          reviewComment: file.reviewComment || '',
+          reviewedAt: file.reviewedAt || '',
+          formatCheckResult: file.checkStatus === 'completed' ? {
+            success: true,
+            data: {
+              summary: {
+                total_checks: file.totalChecks || 0,
+                passed_checks: file.passedChecks || 0,
+                failed_checks: file.failedChecks || 0,
+                pass_rate: file.passRate || 0
+              },
+              report_saved: !!file.reportPath,
+              report_filename: file.reportPath ? file.reportPath.split(/[\\/]/).pop() : undefined,
+              annotated_saved: !!file.annotatedPath,
+              annotated_filename: file.annotatedPath ? file.annotatedPath.split(/[\\/]/).pop() : undefined
+            }
+          } : undefined
+        }
+
+        if (paper.reviewStatus === 'pending') {
+          pending.push(paper)
+        } else {
+          reviewed.push(paper)
+        }
+      })
+
+      pendingList.value = pending
+      reviewedList.value = reviewed
     } else {
       ElMessage.error('加载论文列表失败：' + response.message)
     }
@@ -1116,23 +1190,21 @@ const handleAddPaper = async () => {
     ElMessage.error('请输入论文标题')
     return
   }
-  
+
   if (!newPaper.value.submitDate) {
     ElMessage.error('请选择提交日期')
     return
   }
-  
+
   if (!newPaper.value.file) {
     ElMessage.error('请选择文件')
     return
   }
-  
-  // 检查标题是否重复
+
   try {
     const duplicateResponse = await paperFormatService.checkDuplicate(newPaper.value.title)
-    
+
     if (duplicateResponse.success && duplicateResponse.data.exists) {
-      // 标题已存在，询问是否覆盖
       try {
         await ElMessageBox.confirm(
           `已存在标题为"${newPaper.value.title}"的论文（提交日期：${duplicateResponse.data.submit_date}），是否覆盖？`,
@@ -1143,15 +1215,13 @@ const handleAddPaper = async () => {
             type: 'warning',
           }
         )
-        
-        // 用户确认覆盖，先删除旧记录
+
         const deleteResponse = await paperFormatService.deleteFile(duplicateResponse.data.file_id)
         if (!deleteResponse.success) {
           ElMessage.error('删除旧记录失败：' + deleteResponse.message)
           return
         }
       } catch {
-        // 用户取消覆盖
         ElMessage.info('已取消添加')
         return
       }
@@ -1161,23 +1231,20 @@ const handleAddPaper = async () => {
     ElMessage.error('检查标题失败：' + (error as Error).message)
     return
   }
-  
+
   try {
-    // 上传文件到临时目录
     const formData = new FormData()
     formData.append('file', newPaper.value.file)
     formData.append('title', newPaper.value.title)
     formData.append('submit_date', newPaper.value.submitDate)
-    
+
     const response = await paperFormatService.saveTempFile(formData)
-    
+
     if (response.success) {
       ElMessage.success('论文添加成功')
-      
-      // 重新加载论文列表
+
       await loadPaperList()
-      
-      // 重置表单和文件列表
+
       newPaper.value = { title: '', submitDate: new Date().toISOString().split('T')[0], file: null }
       fileList.value = []
       if (uploadRef.value) {
@@ -1194,65 +1261,208 @@ const handleAddPaper = async () => {
 
 // 审核论文
 const handleReview = (paper: Paper) => {
-  console.log(paper)
   currentPaper.value = paper
   reviewForm.value = { status: '', comment: '' }
-  
-  // 如果论文已有格式检测结果，直接显示
+
   if (paper.formatCheckResult) {
     formatCheckResult.value = paper.formatCheckResult
     isFormatChecking.value = false
     formatCheckProgress.value = 100
-    
-    // 加载报告文本（如果有）- 优先使用缓存的报告文本
+
     if (paper.formatCheckResult.data?.report_text) {
       reportText.value = paper.formatCheckResult.data.report_text
     } else {
-      // 从数据库加载的数据没有报告文本，将在用户点击"查看检测报告"时按需加载
       reportText.value = ''
     }
   } else {
-    // 重置格式检测状态（未检测过）
     formatCheckResult.value = null
     isFormatChecking.value = false
     formatCheckProgress.value = 0
     reportText.value = ''
   }
-  
+
   activeModules.value = ''
   showReviewDialog.value = true
 }
 
 // 确认审核
-const confirmReview = () => {
+const confirmReview = async () => {
   if (!reviewForm.value.status) {
     ElMessage.error('请选择审核结果')
     return
   }
-  
+
   if (!currentPaper.value) return
-  
-  // 从待审核列表移除
-  const index = pendingList.value.findIndex(p => p.id === currentPaper.value!.id)
-  if (index > -1) {
-    pendingList.value.splice(index, 1)
+
+  try {
+    const response = await paperFormatService.reviewPaper(
+      [currentPaper.value.id],
+      reviewForm.value.status,
+      reviewForm.value.comment
+    )
+
+    if (!response.success) {
+      ElMessage.error(response.message || '审核失败')
+      return
+    }
+
+    const index = pendingList.value.findIndex(p => p.id === currentPaper.value!.id)
+    if (index > -1) {
+      pendingList.value.splice(index, 1)
+    }
+
+    const reviewDate = new Date().toISOString().split('T')[0]
+
+    const reviewedPaper: Paper = {
+      ...currentPaper.value,
+      reviewDate: reviewDate,
+      reviewStatus: reviewForm.value.status,
+      comment: reviewForm.value.comment,
+      reviewedAt: reviewDate,
+      formatCheckResult: formatCheckResult.value || undefined
+    }
+    reviewedList.value.push(reviewedPaper)
+
+    ElMessage.success(response.message || '审核完成')
+    showReviewDialog.value = false
+  } catch (error) {
+    ElMessage.error('审核失败：' + (error as Error).message)
   }
-  
-  // 获取当前日期作为审核日期
-  const reviewDate = new Date().toISOString().split('T')[0]
-  
-  // 添加到已审核列表
-  const reviewedPaper: Paper = {
-    ...currentPaper.value,
-    reviewDate: reviewDate,
-    reviewStatus: reviewForm.value.status,
-    comment: reviewForm.value.comment,
-    formatCheckResult: formatCheckResult.value || undefined
+}
+
+// 批量审核
+const handleBatchReview = async () => {
+  if (selectedPendingPapers.value.length === 0) {
+    ElMessage.warning('请先选择要审核的论文')
+    return
   }
-  reviewedList.value.push(reviewedPaper)
-  
-  ElMessage.success('审核完成')
-  showReviewDialog.value = false
+  if (!batchReviewStatus.value) {
+    ElMessage.error('请选择审核状态')
+    return
+  }
+
+  const fileIds = selectedPendingPapers.value.map(p => p.id)
+  try {
+    const response = await paperFormatService.reviewPaper(
+      fileIds,
+      batchReviewStatus.value,
+      batchReviewComment.value
+    )
+
+    if (!response.success) {
+      ElMessage.error(response.message || '批量审核失败')
+      return
+    }
+
+    const reviewDate = new Date().toISOString().split('T')[0]
+    selectedPendingPapers.value.forEach(paper => {
+      const index = pendingList.value.findIndex(p => p.id === paper.id)
+      if (index > -1) {
+        pendingList.value.splice(index, 1)
+        reviewedList.value.push({
+          ...paper,
+          reviewDate: reviewDate,
+          reviewStatus: batchReviewStatus.value,
+          comment: batchReviewComment.value,
+          reviewedAt: reviewDate
+        })
+      }
+    })
+
+    selectedPendingPapers.value = []
+    batchReviewStatus.value = ''
+    batchReviewComment.value = ''
+    ElMessage.success(response.message || '批量审核完成')
+  } catch (error) {
+    ElMessage.error('批量审核失败：' + (error as Error).message)
+  }
+}
+
+// 查看审核意见
+const handleViewComment = (paper: Paper) => {
+  currentPaper.value = paper
+  isCommentEditing.value = false
+  showCommentDialog.value = true
+}
+
+// 开始修改审核意见
+const startEditComment = () => {
+  if (!currentPaper.value) return
+  editCommentForm.value = {
+    status: currentPaper.value.reviewStatus || 'pending',
+    comment: currentPaper.value.reviewComment || ''
+  }
+  isCommentEditing.value = true
+}
+
+// 取消修改审核意见
+const cancelEditComment = () => {
+  isCommentEditing.value = false
+}
+
+// 提交修改审核意见
+const submitEditComment = async () => {
+  if (!currentPaper.value) return
+
+  try {
+    const response = await paperFormatService.reviewPaper(
+      [currentPaper.value.id],
+      editCommentForm.value.status,
+      editCommentForm.value.comment
+    )
+
+    if (!response.success) {
+      ElMessage.error(response.message || '修改审核意见失败')
+      return
+    }
+
+    currentPaper.value.reviewStatus = editCommentForm.value.status
+    currentPaper.value.reviewComment = editCommentForm.value.comment
+    currentPaper.value.reviewDate = new Date().toISOString().split('T')[0]
+
+    const index = reviewedList.value.findIndex(p => p.id === currentPaper.value!.id)
+    if (index > -1) {
+      reviewedList.value[index] = { ...currentPaper.value }
+    }
+
+    if (editCommentForm.value.status === 'pending') {
+      const idx = reviewedList.value.findIndex(p => p.id === currentPaper.value!.id)
+      if (idx > -1) {
+        const paper = reviewedList.value.splice(idx, 1)[0]
+        paper.reviewStatus = 'pending'
+        pendingList.value.push(paper)
+      }
+    }
+
+    ElMessage.success(response.message || '修改成功')
+    isCommentEditing.value = false
+    showCommentDialog.value = false
+  } catch (error) {
+    ElMessage.error('修改审核意见失败：' + (error as Error).message)
+  }
+}
+
+// 打开综合报告
+const openComprehensiveReport = async () => {
+  showComprehensiveReport.value = true
+  try {
+    const response = await paperFormatService.getComprehensiveReport()
+    if (response.success && response.data) {
+      comprehensiveReport.value = response.data
+    } else {
+      comprehensiveReport.value = null
+      ElMessage.info(response.message || '暂无已审核论文')
+    }
+  } catch (error) {
+    ElMessage.error('获取综合报告失败：' + (error as Error).message)
+  }
+}
+
+// 获取通过率对应的进度条颜色
+const getPassRateColor = (rate: number) => {
+  if (rate >= 80) return '#67c23a'
+  if (rate >= 60) return '#e6a23c'
+  return '#f56c6c'
 }
 
 // 模块选择相关方法
@@ -1261,14 +1471,12 @@ const showModuleSelector = () => {
     ElMessage.error('论文文件未上传到服务器')
     return
   }
-  
-  // 重置选择状态
+
   selectedModules.value = []
   selectAllModules.value = false
   enableFigureApi.value = false
   enableClassificationApi.value = false
-  
-  // 显示选择对话框
+
   showModuleSelectorDialog.value = true
 }
 
@@ -1282,18 +1490,15 @@ const handleSelectAll = (value: boolean) => {
 
 const handleModuleChange = (value: string[]) => {
   selectAllModules.value = value.length === availableModules.length
-  
-  // 如果取消了图片检测，也取消图片内容检测
+
   if (!value.includes('Figure')) {
     enableFigureApi.value = false
   }
-  
-  // 如果取消了摘要检测，也取消分类号API检测
+
   if (!value.includes('Abstract')) {
     enableClassificationApi.value = false
   }
-  
-  // 清理已取消模块的跳过检测项配置
+
   const currentSkipModules = Object.keys(skipChecks.value)
   currentSkipModules.forEach(module => {
     if (!value.includes(module)) {
@@ -1329,11 +1534,9 @@ const confirmModuleSelection = () => {
     ElMessage.warning('请至少选择一个检测模块')
     return
   }
-  
-  // 关闭选择对话框
+
   showModuleSelectorDialog.value = false
-  
-  // 开始检测
+
   startFormatCheck()
 }
 
@@ -1343,48 +1546,40 @@ const startFormatCheck = async () => {
     ElMessage.error('论文文件未上传到服务器')
     return
   }
-  
+
   try {
     isFormatChecking.value = true
     formatCheckProgress.value = 0
-    
-    // 模拟进度更新
+
     const progressInterval = setInterval(() => {
       if (formatCheckProgress.value < 90) {
         formatCheckProgress.value += 10
       }
     }, 500)
-    
-    // 执行格式检测
+
     const result = await paperFormatService.checkAll(
-      currentPaper.value.tempFilePath, 
+      currentPaper.value.tempFilePath,
       enableFigureApi.value,
       selectedModules.value,
       currentPaper.value.fileId,
       skipChecks.value,
       enableClassificationApi.value
     )
-    
+
     clearInterval(progressInterval)
     formatCheckProgress.value = 100
-    
-    // 保存检测结果
+
     formatCheckResult.value = result
-    console.log(result)
-    
+
     if (result.success) {
       ElMessage.success('格式检测完成，报告已自动保存')
-      
-      // 如果返回了报告信息，可以提示用户
+
       if (result.data?.report_saved) {
-        console.log('报告已保存:', result.data.report_filename)
         reportText.value = result.data.report_text
       }
-      
-      // 重新加载论文列表以同步检测结果
+
       await loadPaperList()
-      
-      // 更新当前论文的检测结果
+
       if (currentPaper.value) {
         const updatedPaper = pendingList.value.find(p => p.id === currentPaper.value?.id)
         if (updatedPaper) {
@@ -1394,7 +1589,7 @@ const startFormatCheck = async () => {
     } else {
       ElMessage.error(result.message || '格式检测失败')
     }
-    
+
   } catch (error) {
     ElMessage.error('格式检测失败：' + (error as Error).message)
   } finally {
@@ -1410,31 +1605,26 @@ const resetFormatCheck = () => {
   formatCheckProgress.value = 0
   activeModules.value = ''
   isFormatChecking.value = false
-  
-  // 显示模块选择对话框
+
   showModuleSelector()
 }
 
 // 术语检测相关方法
-// 打开术语检测对话框
 const handleTermDetect = async (paper: Paper) => {
   termDetectPaper.value = paper
   termDetectResult.value = null
   termDetectProgress.value = 0
   isTermDetecting.value = false
   showTermDetectDialog.value = true
-  
-  // 检查是否有历史术语检测结果
+
   if (paper.fileId) {
     try {
       isLoadingTermHistory.value = true
       const response = await paperFormatService.getTermResult(paper.fileId)
-      
+
       if (response.success && response.has_result && response.data) {
-        // 有历史结果，直接展示
         termDetectResult.value = { success: true, data: response.data }
         termDetectProgress.value = 100
-        console.log('加载历史术语检测结果:', response.data)
         ElMessage.info('已加载历史术语检测结果')
       }
     } catch (error) {
@@ -1451,34 +1641,30 @@ const startTermDetection = async () => {
     ElMessage.error('论文文件未上传到服务器')
     return
   }
-  
+
   try {
     isTermDetecting.value = true
     termDetectProgress.value = 0
-    
-    // 模拟进度更新
+
     const progressInterval = setInterval(() => {
       if (termDetectProgress.value < 90) {
         termDetectProgress.value += 10
       }
     }, 500)
-    
-    // 执行术语检测（传递file_id以保存结果）
+
     const result = await paperFormatService.detectTerms(paper.tempFilePath, paper.fileId, paper.title)
-    
+
     clearInterval(progressInterval)
     termDetectProgress.value = 100
-    
-    // 保存检测结果
+
     termDetectResult.value = result
-    
+
     if (result.success) {
       ElMessage.success('术语检测完成，结果已保存')
-      console.log('术语检测结果:', result)
     } else {
       ElMessage.error('术语检测失败: ' + result.message)
     }
-    
+
   } catch (error: any) {
     console.error('术语检测失败:', error)
     ElMessage.error('术语检测失败: ' + error.message)
@@ -1497,22 +1683,20 @@ const resetTermDetection = () => {
 
 const confirmNewTerm = async (newTerm: any, confirmed: boolean) => {
   try {
-    // 更新本地状态
     newTerm.confirmed = confirmed
-    
-    // 调用后端API保存确认结果
+
     const result = await paperFormatService.confirmNewTerm(
       newTerm.term,
       confirmed,
       termDetectPaper.value?.fileId
     )
-    
+
     if (result.success) {
       ElMessage.success(confirmed ? '已确认为新术语' : '已标记为非新术语')
     } else {
       ElMessage.error('确认失败: ' + result.message)
     }
-    
+
   } catch (error: any) {
     console.error('确认新术语失败:', error)
     ElMessage.error('确认失败: ' + error.message)
@@ -1525,13 +1709,12 @@ const viewDetailReport = async () => {
     ElMessage.error('无检测结果')
     return
   }
-  
-  // 如果没有报告文本，但有fileId，尝试从服务器加载
+
   if (!reportText.value && currentPaper.value?.fileId) {
     try {
       ElMessage.info('正在加载报告内容...')
       const response = await paperFormatService.getReportText(currentPaper.value.fileId)
-      
+
       if (response.success && response.data?.report_text) {
         reportText.value = response.data.report_text
         ElMessage.success('报告加载成功')
@@ -1548,7 +1731,6 @@ const viewDetailReport = async () => {
     return
   }
 
-  // 显示报告内容
   showReportDialog.value = true
 }
 
@@ -1558,22 +1740,19 @@ const downloadReport = () => {
     ElMessage.error('无报告内容')
     return
   }
-  
-  // 创建Blob对象
+
   const blob = new Blob([reportText.value], { type: 'text/plain;charset=utf-8' })
   const url = window.URL.createObjectURL(blob)
-  
-  // 创建下载链接
+
   const link = document.createElement('a')
   link.href = url
   link.download = `论文格式检测报告_${currentPaper.value?.title || '未命名'}_${new Date().getTime()}.txt`
   document.body.appendChild(link)
   link.click()
-  
-  // 清理
+
   document.body.removeChild(link)
   window.URL.revokeObjectURL(url)
-  
+
   ElMessage.success('报告下载成功')
 }
 
@@ -1582,7 +1761,7 @@ const downloadAnnotatedDocument = () => {
     ElMessage.error('标记文档不可用')
     return
   }
-  
+
   try {
     const downloadUrl = formatCheckResult.value.data.annotated_download_url
     const link = document.createElement('a')
@@ -1591,7 +1770,7 @@ const downloadAnnotatedDocument = () => {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     ElMessage.success('标记文档下载成功')
   } catch (error) {
     ElMessage.error('下载标记文档失败：' + (error as Error).message)
@@ -1604,25 +1783,61 @@ const getPassRateType = (passRate: number) => {
   return 'danger'
 }
 
+// 检查项 key → 中文标签映射
+const checkNamesCN: Record<string, string> = {
+  '[结构]': '结构',
+  '[格式]': '格式',
+  '[标题格式]': '标题格式',
+  '[内容格式]': '内容格式',
+  '[公式检测]': '公式检测',
+  '[编号]': '编号',
+  '[图录格式]': '图录格式',
+  '[目录格式]': '目录格式',
+  '[表录格式]': '表录格式',
+  '[图检测]': '图检测',
+  '[表格检测]': '表格检测',
+  '[中文标题格式]': '中文标题格式',
+  '[中文作者格式]': '中文作者格式',
+  '[中文单位格式]': '中文单位格式',
+  '[中文摘要格式]': '中文摘要格式',
+  '[中文关键词格式]': '中文关键词格式',
+}
+
+// 模块名 → 中文标签映射
+const moduleNamesCN: Record<string, string> = {
+  'Title': '标题',
+  'Abstract': '摘要',
+  'English_Abstract': '英文摘要',
+  'Keywords': '关键词',
+  'Content': '正文',
+  'Formula': '公式',
+  'TOC': '目录/图录/表录',
+  'Figure': '图',
+  'Table': '表格',
+  'References': '参考文献',
+  'Chinese_section': '中文部分',
+  'Classification': '摘要分类号',
+}
+
 const getModuleStatus = (moduleResult: any) => {
   const checks = moduleResult.checks || {}
   const checkValues = Object.values(checks)
-  
+
   if (checkValues.length === 0) return '未检测'
-  
+
   const allPassed = checkValues.every((check: any) => check.ok === true)
-  if (allPassed) return '全部通过'
-  
+  if (allPassed) return '符合规范'
+
   const allFailed = checkValues.every((check: any) => check.ok === false)
   if (allFailed) return '全部失败'
-  
+
   return '部分通过'
 }
 
 const getModuleStatusType = (moduleResult: any) => {
   const status = getModuleStatus(moduleResult)
-  
-  if (status === '全部通过') return 'success'
+
+  if (status === '符合规范') return 'success'
   if (status === '全部失败') return 'danger'
   if (status === '部分通过') return 'warning'
   return 'info'
@@ -1630,14 +1845,12 @@ const getModuleStatusType = (moduleResult: any) => {
 
 // 删除论文
 const handleDelete = async (paper: Paper) => {
-  // 检查是否有fileId（数据库记录）
   if (!paper.fileId) {
     ElMessage.warning('无法删除：论文记录不存在')
     return
   }
-  
+
   try {
-    // 确认删除
     await ElMessageBox.confirm(
       `确定要删除论文"${paper.title}"吗？\n\n删除后将无法恢复。`,
       '删除论文',
@@ -1647,14 +1860,12 @@ const handleDelete = async (paper: Paper) => {
         type: 'warning',
       }
     )
-    
-    // 调用后端API删除数据库记录和物理文件
+
     const response = await paperFormatService.deleteFile(paper.fileId)
-    
+
     if (response.success) {
       ElMessage.success('论文已成功删除')
-      
-      // 重新从数据库加载论文列表
+
       await loadPaperList()
     } else {
       ElMessage.error('删除失败：' + response.message)
@@ -1680,9 +1891,8 @@ const openOriginalDoc = (paper: Paper) => {
     ElMessage.error('文件记录不存在')
     return
   }
-  
+
   try {
-    // 直接打开下载链接
     window.open(`/api/paper-format/open-original/${paper.fileId}`, '_blank')
   } catch (error) {
     ElMessage.error('打开文档失败：' + (error as Error).message)
@@ -1695,12 +1905,12 @@ const openReportDoc = (paper: Paper) => {
     ElMessage.error('文件记录不存在')
     return
   }
-  
+
   if (!paper.formatCheckResult?.success) {
     ElMessage.error('检测报告不存在')
     return
   }
-  
+
   try {
     window.open(`/api/paper-format/open-report/${paper.fileId}`, '_blank')
   } catch (error) {
@@ -1714,12 +1924,12 @@ const openAnnotatedDoc = (paper: Paper) => {
     ElMessage.error('文件记录不存在')
     return
   }
-  
+
   if (!paper.formatCheckResult?.success) {
     ElMessage.error('标记文档不存在')
     return
   }
-  
+
   try {
     window.open(`/api/paper-format/open-annotated/${paper.fileId}`, '_blank')
   } catch (error) {
@@ -1734,9 +1944,13 @@ const handleEdit = (paper: Paper) => {
 
 // 待审核列表搜索
 const handlePendingSearch = () => {
-  // 重置到第一页
   pendingPagination.value.currentPage = 1
   ElMessage.info('搜索完成')
+}
+
+// 待审核列表选择变化
+const handlePendingSelectionChange = (selection: Paper[]) => {
+  selectedPendingPapers.value = selection
 }
 
 // 重置待审核列表搜索
@@ -1769,9 +1983,7 @@ const handleReviewedPageSizeChange = (size: number) => {
 
 // 筛选功能
 const handleSearch = () => {
-  // 重置到第一页
   reviewedPagination.value.currentPage = 1
-  
   ElMessage.success(`筛选完成，找到 ${filteredReviewedList.value.length} 篇论文`)
 }
 
@@ -1782,10 +1994,9 @@ const resetFilter = () => {
     dateRange: [],
     keyword: ''
   }
-  
-  // 重置分页
+
   reviewedPagination.value.currentPage = 1
-  
+
   ElMessage.info('筛选已重置')
 }
 
@@ -1823,10 +2034,6 @@ onMounted(() => {
   margin: 0;
 }
 
-.filter-card {
-  margin-bottom: 20px;
-}
-
 .review-list-card {
   margin-bottom: 20px;
 }
@@ -1835,6 +2042,26 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.batch-toolbar {
+  background: #f5f7fa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.batch-toolbar .selected-count {
+  font-size: 14px;
+  color: #606266;
+}
+
+.batch-toolbar .selected-count strong {
+  color: #9c0e0e;
+}
 
 .pagination {
   margin-top: 20px;
@@ -1926,17 +2153,6 @@ onMounted(() => {
 }
 
 .add-paper-btn:hover {
-  background-color: #7a0b0b !important;
-  border-color: #7a0b0b !important;
-}
-/* 搜索按钮自定义样式 */
-.search-btn {
-  background-color: #9c0e0e !important;
-  border-color: #9c0e0e !important;
-  color: white !important;
-}
-
-.search-btn:hover {
   background-color: #7a0b0b !important;
   border-color: #7a0b0b !important;
 }
@@ -2049,6 +2265,20 @@ onMounted(() => {
 .check-name-text {
   font-weight: 500;
   color: #606266;
+}
+
+.pass-text {
+  color: #67c23a;
+  font-weight: normal;
+  margin-left: 6px;
+  font-size: 13px;
+}
+
+.fail-text {
+  color: #f56c6c;
+  font-weight: normal;
+  margin-left: 6px;
+  font-size: 13px;
 }
 
 .check-messages-inline {

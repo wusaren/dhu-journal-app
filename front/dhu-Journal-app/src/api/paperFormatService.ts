@@ -194,6 +194,26 @@ export const paperFormatService = {
             confirmed,
             file_id: fileId
         })
+    },
+
+    /**
+     * 审核论文（支持单篇或批量）
+     * @param fileIds 文件ID列表
+     * @param reviewStatus 审核状态 'reviewed' | 'needs_revision'
+     * @param reviewComment 审核意见
+     */
+    async reviewPaper(fileIds: number[], reviewStatus: string, reviewComment: string): Promise<ApiResponse<any>> {
+        return await apiClient.post('/paper-format/review', {
+            file_ids: fileIds,
+            review_status: reviewStatus,
+            review_comment: reviewComment
+        })
+    },
+
+    /**
+     * 获取已审核论文的综合报告
+     */
+    async getComprehensiveReport(): Promise<ApiResponse<any>> {
+        return await apiClient.get('/paper-format/comprehensive-report')
     }
 }
-

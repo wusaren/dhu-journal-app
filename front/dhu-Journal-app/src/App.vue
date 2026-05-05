@@ -4,7 +4,7 @@
     <header class="top-header">
       <div class="header-content">
         <div class="header-left">
-          <h1>东华学报编辑社工作系统</h1>
+          <h1>东华学报编辑与论文检测系统</h1>
         </div>
         <div class="header-right">
           <el-button v-if="!isLoggedIn" class="login-btn" @click="handleLogin">
@@ -50,6 +50,12 @@
           </el-menu-item>
           <el-menu-item index="/journal-management">
             <span>期刊管理</span>
+          </el-menu-item>
+          <el-menu-item index="/master-paper-review">
+            <span>硕士论文规范性检测</span>
+          </el-menu-item>
+          <el-menu-item index="/operator">
+            <span>批量检测工作台</span>
           </el-menu-item>
           <el-menu-item index="/personality-center">
             <span>个人中心</span>

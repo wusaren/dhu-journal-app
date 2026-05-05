@@ -201,12 +201,56 @@ def get_or_delete_batch_job(job_id):
         
         return jsonify({
             'success': True,
-            'job': job
+            'data': {
+                'job': job
+            }
         })
         
     except Exception as e:
         logger.error(f"获取批次详情失败: {e}")
         return jsonify({'success': False, 'message': f'获取批次详情失败: {str(e)}'}), 500
+
+
+@operator_bp.route('/batch/jobs/<int:job_id>/open-folder', methods=['GET'])
+@auth_required()
+def open_batch_folder(job_id):
+    """
+    在文件资源管理器中打开批次输出文件夹
+
+    返回:
+    {
+        "success": true,
+        "folder_path": "uploads/batch_check/batch_xxx"
+    }
+    """
+    try:
+        batch_job = BatchJob.query.get(job_id)
+        if not batch_job:
+            return jsonify({'success': False, 'message': '批次任务不存在'}), 404
+
+        folder_path = batch_job.output_path
+        if not folder_path or not os.path.exists(folder_path):
+            return jsonify({'success': False, 'message': '文件夹不存在'}), 404
+
+        abs_path = os.path.abspath(folder_path)
+        import platform
+        if platform.system() == 'Windows':
+            os.system(f'explorer "{abs_path}"')
+        elif platform.system() == 'Darwin':
+            os.system(f'open "{abs_path}"')
+        else:
+            os.system(f'xdg-open "{abs_path}"')
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'folder_path': abs_path
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"打开文件夹失败: {e}")
+        return jsonify({'success': False, 'message': f'打开文件夹失败: {str(e)}'}), 500
 
 
 @operator_bp.route('/batch/jobs/<int:job_id>/progress', methods=['GET'])

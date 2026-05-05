@@ -22,29 +22,44 @@ from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
+
+# API 配置（从 config_api 加载，允许缺失）
 try:
-    # 尝试相对导入（当作为模块导入时）
-    from .check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
     from .config_api import (
         AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
         DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
     )
-except ImportError as e:
-    print('错误：',e)
-    # 尝试绝对导入（当直接运行时）
+except ImportError:
     try:
-        from paper_detect.check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
         from paper_detect.config_api import (
             AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
             DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
         )
     except ImportError:
-        # 最后尝试同目录导入
-        from check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
         from config_api import (
             AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
             DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
         )
+
+# check_code 模块（条件加载，aliyunsdkcore 可能未安装）
+_check_code = None
+_aliyunsdkcore_available = False
+try:
+    from .check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
+    _check_code = 'relative'
+    _aliyunsdkcore_available = True
+except ImportError:
+    try:
+        from paper_detect.check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
+        _check_code = 'absolute'
+        _aliyunsdkcore_available = True
+    except ImportError:
+        try:
+            from check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
+            _check_code = 'local'
+            _aliyunsdkcore_available = True
+        except ImportError:
+            _aliyunsdkcore_available = False
 
 # 定义直辖市列表，用于地址格式检测
 MUNICIPALITIES = ["北京", "上海", "天津", "重庆"]
@@ -638,9 +653,9 @@ def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
                 print(f"  单位引用检查: ✓ 所有引用的编号都存在")
     
     # 4. API地址审核与邮编验证
-    amap_enabled = bool(AMAP_API_KEY)
-    aliyun_enabled = all([ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET])
-    deepseek_enabled = bool(DEEPSEEK_API_KEY)
+    amap_enabled = bool(AMAP_API_KEY) and _aliyunsdkcore_available
+    aliyun_enabled = all([ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET]) and _aliyunsdkcore_available
+    deepseek_enabled = bool(DEEPSEEK_API_KEY) and _aliyunsdkcore_available
 
     if not any([amap_enabled, aliyun_enabled, deepseek_enabled]):
         print("  所有API均未配置，跳过地址审核与邮编验证。")

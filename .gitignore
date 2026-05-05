@@ -11,3 +11,4 @@ backend/mineru_output/
 temp_images/
 logs/
 instance/
+backend/logs/app.log
