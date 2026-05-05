@@ -1,0 +1,39 @@
+{
+  "structure_rules": {
+    "header_pattern": "^\\s*ABSTRACT\\s*$",
+    "blank_lines_after_title": 1,
+    "blank_lines_between_sections": 2,
+    "min_content_length": 50,
+    "max_content_length": 20000
+  },
+  "format_rules": {
+    "title": {
+      "font_size_pt": 16,
+      "font_name": "Times New Roman",
+      "bold": true,
+      "alignment": "center",
+      "space_before": 0,
+      "space_after": 0
+    },
+    "content": {
+      "font_size_pt": 11,
+      "english_font": "Times New Roman",
+      "chinese_font": "Times New Roman",
+      "bold": false,
+      "line_spacing": 1.25,
+      "alignment": "justify",
+      "first_line_indent_chars": 4,
+      "space_before": 0,
+      "space_after": 0
+    }
+  },
+  "messages": {
+    "structure_header_error": "未找到 ABSTRACT 标题",
+    "structure_blank_after_title_error": "ABSTRACT 与内容之间应空一行",
+    "structure_length_short": "英文摘要过短（少于 {min} 字符）",
+    "structure_length_long": "英文摘要过长（超过 {max} 字符）",
+    "format_issue_header": "英文摘要格式问题：",
+    "summary_overall": "英文摘要检查结果: {ok}"
+  }
+}
+

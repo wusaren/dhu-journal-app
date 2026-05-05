@@ -1,0 +1,12 @@
+{
+    "abstract": {
+        "title_keywords": ["摘 要"],
+        "title_regex": "^\\s*摘\\s要\\s*$",
+        "content_follow_title": true
+    },
+    "keywords": {
+        "title_keywords": ["关键词"],
+        "title_regex": "^\\s*关键词\\s*$",
+        "content_follow_title": true
+    }
+}

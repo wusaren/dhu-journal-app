@@ -1,0 +1,64 @@
+{
+  "toc_rule": "目录、图录、表录格式：黑体3号字（16pt），段前0.7厘米，段后0；目录题目与条目之间空两行",
+  "structure_rules": {
+    "title_patterns": {
+      "目录": "^\\s*目录\\s*$",
+      "图录": "^\\s*图录\\s*$",
+      "表录": "^\\s*表录\\s*$"
+    },
+    "blank_lines_after_title": 2
+  },
+  "format_rules": {
+    "title": {
+      "font_size_pt": 16,
+      "font_name": "黑体",
+      "bold": false,
+      "italic": false,
+      "line_spacing": 1.0,
+      "space_before_cm": 0.7,
+      "space_after_cm": 0.0,
+      "alignment": "center",
+      "first_line_indent": 0,
+      "left_indent": 0,
+      "right_indent": 0
+    }
+  },
+  "check_rules": {
+    "font_size_mapping": {
+      "9": "小五",
+      "10.5": "五号",
+      "12": "小四",
+      "14": "四号",
+      "16": "三号",
+      "18": "小二",
+      "22": "二号",
+      "24": "小一",
+      "26": "一号"
+    },
+    "line_spacing_mapping": {
+      "1.0": "单倍行距",
+      "1.15": "1.15倍行距",
+      "1.25": "1.25倍行距",
+      "1.5": "1.5倍行距",
+      "2.0": "双倍行距"
+    },
+    "alignment_mapping": {
+      "left": "左对齐",
+      "center": "居中对齐",
+      "right": "右对齐",
+      "justify": "两端对齐"
+    }
+  },
+  "messages": {
+    "structure_title_not_found": "未找到{title_type}标题",
+    "structure_blank_lines_error": "{title_type}标题与条目之间应空两行，实际为空{actual}行",
+    "format_toc_issue_header": "{title_type}格式问题：",
+    "summary_overall": "目录/图录/表录检查结果: {ok}"
+  },
+  "notes": [
+    "目录、图录、表录检查重点：1) 黑体3号字（16pt） 2) 段前0.7厘米，段后0 3) 标题与条目之间空两行",
+    "支持检测：目录、图录、表录三种类型"
+  ],
+  "generated_from": "用户提供的目录/图录/表录格式要求"
+}
+

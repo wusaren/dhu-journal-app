@@ -1,3 +1,4 @@
+import json
 from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, auth_required, roles_required, hash_password, logout_user,verify_password, current_user
@@ -15,20 +16,22 @@ from sqlalchemy import text
 
 # 导入配置和模型
 from config.config import current_config
-from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore, FormatCheckFile
+from models import User, Role, Journal, Paper, FileUpload, db, roles_users, user_datastore, FormatCheckFile, BatchJob, PaperCheckResult
 
 # 导入封装后的模块
 from services.journal_service import JournalService
 from services.paper_service import PaperService
 from services.file_service import FileService
 from services.export_service import ExportService
-from services.paper_format_service import PaperFormatService
+# from services.paper_format_service import PaperFormatService
+from services.paper_format_service import ChinesePaperFormatService
 from services.template_service import TemplateService
 from services.template_config_service import TemplateConfigService
 from services.tuiwen_template_service import TuiwenTemplateService
 
 # 导入管理蓝图
 from blueprints.admin import admin_bp
+from blueprints.operator import operator_bp
 
 app = Flask(__name__)
 
@@ -72,7 +75,7 @@ if not os.path.exists(log_dir):
 
 # 配置日志：同时输出到控制台和文件
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,  # 改为DEBUG级别以便输出调试信息
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8'),
@@ -87,6 +90,8 @@ FORMAT_CHECK_FOLDER = 'uploads/format_check'
 FORMAT_CHECK_TEMP_FOLDER = 'uploads/format_check/temp'
 FORMAT_CHECK_REPORTS_FOLDER = 'uploads/format_check/reports'
 FORMAT_CHECK_ANNOTATE_FOLDER = 'uploads/format_check/annotate'
+FORMAT_CHECK_TERM_FOLDER = 'uploads/format_check/term'
+FORMAT_CHECK_CONTENT_FOLDER = 'uploads/format_check/content_details'
 # 新增：用户配置目录（用于用户模板、用户配置文件等，和 uploads 分离）
 USER_CONFIG_FOLDER = 'user_configs'
 
@@ -97,10 +102,14 @@ app.config['FORMAT_CHECK_FOLDER'] = FORMAT_CHECK_FOLDER
 app.config['FORMAT_CHECK_TEMP_FOLDER'] = FORMAT_CHECK_TEMP_FOLDER
 app.config['FORMAT_CHECK_REPORTS_FOLDER'] = FORMAT_CHECK_REPORTS_FOLDER
 app.config['FORMAT_CHECK_ANNOTATE_FOLDER'] = FORMAT_CHECK_ANNOTATE_FOLDER
+app.config['FORMAT_CHECK_TERM_FOLDER'] = FORMAT_CHECK_TERM_FOLDER
+app.config['FORMAT_CHECK_CONTENT_FOLDER'] = FORMAT_CHECK_CONTENT_FOLDER
 app.config['USER_CONFIG_FOLDER'] = USER_CONFIG_FOLDER
 
 # 创建必要的目录
-for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER, FORMAT_CHECK_ANNOTATE_FOLDER, USER_CONFIG_FOLDER]:
+BATCH_CHECK_FOLDER = 'uploads/batch_check'
+for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FORMAT_CHECK_REPORTS_FOLDER,
+    FORMAT_CHECK_ANNOTATE_FOLDER, FORMAT_CHECK_TERM_FOLDER, FORMAT_CHECK_CONTENT_FOLDER, USER_CONFIG_FOLDER, BATCH_CHECK_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
         logger.info(f"创建目录: {folder}")
@@ -108,6 +117,7 @@ for folder in [UPLOAD_FOLDER, FORMAT_CHECK_FOLDER, FORMAT_CHECK_TEMP_FOLDER, FOR
 # 设置 Flask-Security
 security = Security(app, user_datastore)
 app.register_blueprint(admin_bp)
+app.register_blueprint(operator_bp)
 from utils.config_loader import UserConfig
 
 def create_default_users():
@@ -1308,7 +1318,10 @@ def get_format_check_files():
                 'passedChecks': file.passed_checks,
                 'failedChecks': file.failed_checks,
                 'passRate': file.pass_rate,
-                'createdAt': file.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                'createdAt': file.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'reviewStatus': file.review_status or 'pending',
+                'reviewComment': file.review_comment or '',
+                'reviewedAt': file.reviewed_at.strftime('%Y-%m-%d') if file.reviewed_at else ''
             })
         
         return jsonify({
@@ -1414,6 +1427,106 @@ def delete_format_check_file(file_id):
         }), 500
 
 
+# 审核论文（支持单篇或批量）
+@app.route('/api/paper-format/review', methods=['POST'])
+def review_paper():
+    """审核论文（支持单篇或批量）"""
+    try:
+        data = request.get_json()
+        file_ids = data.get('file_ids', [])
+        review_status = data.get('review_status')
+        review_comment = data.get('review_comment', '')
+
+        if not file_ids:
+            return jsonify({'success': False, 'message': '未指定要审核的论文'}), 400
+        if not review_status:
+            return jsonify({'success': False, 'message': '未指定审核状态'}), 400
+        # 支持三种状态：pending（退回待审核）、reviewed（通过）、needs_revision（需修改）
+        if review_status not in ['pending', 'reviewed', 'needs_revision']:
+            return jsonify({'success': False, 'message': '审核状态值无效'}), 400
+
+        updated_count = 0
+        for file_id in file_ids:
+            file = FormatCheckFile.query.get(file_id)
+            if file:
+                file.review_status = review_status
+                file.review_comment = review_comment
+                file.reviewed_at = datetime.now()
+                if review_status in ['reviewed', 'needs_revision']:
+                    file.check_status = 'completed'
+                updated_count += 1
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'审核成功，共更新 {updated_count} 篇论文'})
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"审核论文错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'审核失败: {str(e)}'}), 500
+
+
+# 获取综合报告
+@app.route('/api/paper-format/comprehensive-report', methods=['GET'])
+def get_comprehensive_report():
+    """获取已审核论文的综合报告"""
+    try:
+        files = FormatCheckFile.query.filter(
+            FormatCheckFile.review_status.in_(['reviewed', 'needs_revision'])
+        ).all()
+
+        if not files:
+            return jsonify({'success': True, 'data': None, 'message': '暂无已审核论文'})
+
+        module_stats = {}
+        for file in files:
+            if file.content_details_path and os.path.exists(file.content_details_path):
+                try:
+                    with open(file.content_details_path, 'r', encoding='utf-8') as f:
+                        details = json.load(f)
+                    for module_name, module_data in details.items():
+                        if module_name == 'module':
+                            continue
+                        if module_name not in module_stats:
+                            module_stats[module_name] = {'total': 0, 'passed': 0, 'failed': 0}
+                        checks = module_data.get('checks', {}) if isinstance(module_data, dict) else {}
+                        module_passed = 0
+                        module_failed = 0
+                        for check_result in checks.values():
+                            if isinstance(check_result, dict) and 'ok' in check_result:
+                                module_stats[module_name]['total'] += 1
+                                if check_result.get('ok'):
+                                    module_passed += 1
+                                else:
+                                    module_failed += 1
+                        module_stats[module_name]['passed'] += module_passed
+                        module_stats[module_name]['failed'] += module_failed
+                except Exception:
+                    pass
+
+        total_papers = len(files)
+        module_pass_rates = {}
+        for module, stats in module_stats.items():
+            module_pass_rates[module] = {
+                'total': stats['total'],
+                'passed': stats['passed'],
+                'failed': stats['failed'],
+                'pass_rate': round(stats['passed'] / stats['total'] * 100, 2) if stats['total'] else 0
+            }
+
+        report_data = {
+            'total_papers': total_papers,
+            'reviewed_count': sum(1 for f in files if f.review_status == 'reviewed'),
+            'needs_revision_count': sum(1 for f in files if f.review_status == 'needs_revision'),
+            'overall_pass_rate': round(sum(f.pass_rate or 0 for f in files) / total_papers, 2),
+            'module_pass_rates': module_pass_rates
+        }
+        return jsonify({'success': True, 'data': report_data})
+
+    except Exception as e:
+        logger.error(f"获取综合报告错误: {str(e)}")
+        return jsonify({'success': False, 'message': f'获取综合报告失败: {str(e)}'}), 500
+
+
 # 保存临时文件
 @app.route('/api/paper-format/save-temp', methods=['POST'])
 def save_temp_file():
@@ -1482,8 +1595,98 @@ def save_temp_file():
         }), 500
 
 # 格式检测
-@app.route('/api/paper-format/check-all', methods=['POST'])
-def check_format_all():
+# @app.route('/api/paper-format/check-all', methods=['POST'])
+# def check_format_all():
+#     """执行论文格式检测"""
+#     try:
+#         # 获取JSON数据
+#         data = request.get_json()
+#         temp_file_path = data.get('temp_file_path')
+#         file_id = data.get('file_id')  # 获取文件ID
+        
+#         if not temp_file_path:
+#             return jsonify({
+#                 'success': False, 
+#                 'message': '缺少临时文件路径'
+#             }), 400
+        
+#         # 检查文件是否存在
+#         if not os.path.exists(temp_file_path):
+#             return jsonify({
+#                 'success': False, 
+#                 'message': '临时文件不存在'
+#             }), 404
+        
+#         # 获取参数
+#         enable_figure_api = data.get('enableFigureApi', False)
+#         enable_classification_api = data.get('enableClassificationApi', False)
+#         modules = data.get('modules')  # 可选，逗号分隔的模块名称
+#         skip_checks = data.get('skip_checks', {})  # 获取跳过检测项字典
+        
+#         if modules:
+#             modules_list = [m.strip() for m in modules.split(',')]
+#         else:
+#             modules_list = None
+        
+#         logger.info(f"接收到skip_checks参数: {skip_checks}")
+        
+#         # 执行检测
+#         paper_format_service = PaperFormatService()
+#         result = paper_format_service.check_all(
+#             temp_file_path,
+#             enable_figure_api=enable_figure_api,
+#             enable_classification_api=enable_classification_api,
+#             modules=modules_list,
+#             reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
+#             annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
+#             skip_checks=skip_checks
+#         )
+        
+#         # 更新数据库记录
+#         if file_id and result.get('success'):
+#             try:
+#                 format_check_file = FormatCheckFile.query.get(file_id)
+#                 if format_check_file:
+#                     # 更新文件路径
+#                     if result['data'].get('report_saved'):
+#                         format_check_file.report_path = os.path.join(
+#                             app.config['FORMAT_CHECK_REPORTS_FOLDER'], 
+#                             result['data']['report_filename']
+#                         )
+                    
+#                     if result['data'].get('annotated_saved'):
+#                         format_check_file.annotated_path = os.path.join(
+#                             app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], 
+#                             result['data']['annotated_filename']
+#                         )
+                    
+#                     # 更新检测结果摘要
+#                     if 'summary' in result['data']:
+#                         summary = result['data']['summary']
+#                         format_check_file.total_checks = summary.get('total_checks', 0)
+#                         format_check_file.passed_checks = summary.get('passed_checks', 0)
+#                         format_check_file.failed_checks = summary.get('failed_checks', 0)
+#                         format_check_file.pass_rate = summary.get('pass_rate', 0.0)
+                    
+#                     format_check_file.check_status = 'completed'
+#                     db.session.commit()
+#                     logger.info(f"数据库记录已更新: ID={file_id}")
+#             except Exception as e:
+#                 db.session.rollback()
+#                 logger.warning(f"更新数据库记录失败: {e}")
+        
+#         return jsonify(result)
+            
+#     except Exception as e:
+#         logger.error(f"格式检测错误: {str(e)}")
+#         return jsonify({
+#             'success': False, 
+#             'message': f'检测失败: {str(e)}'
+#         }), 500
+
+# 格式检测
+@app.route('/api/chinese-paper-format/check-all', methods=['POST'])
+def check_chinese_format_all():
     """执行论文格式检测"""
     try:
         # 获取JSON数据
@@ -1506,21 +1709,27 @@ def check_format_all():
         
         # 获取参数
         enable_figure_api = data.get('enableFigureApi', False)
+        enable_classification_api = data.get('enableClassificationApi', False)
         modules = data.get('modules')  # 可选，逗号分隔的模块名称
+        skip_checks = data.get('skip_checks', {})  # 获取跳过检测项字典
         
         if modules:
             modules_list = [m.strip() for m in modules.split(',')]
         else:
             modules_list = None
         
+        logger.info(f"接收到skip_checks参数: {skip_checks}")
+        
         # 执行检测
-        paper_format_service = PaperFormatService()
-        result = paper_format_service.check_all(
+        chinese_paper_format_service = ChinesePaperFormatService()
+        result = chinese_paper_format_service.check_all(
             temp_file_path,
             enable_figure_api=enable_figure_api,
+            enable_classification_api=enable_classification_api,
             modules=modules_list,
             reports_dir=app.config['FORMAT_CHECK_REPORTS_FOLDER'],
-            annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER']
+            annotate_dir=app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
+            skip_checks=skip_checks
         )
         
         # 更新数据库记录
@@ -1528,19 +1737,34 @@ def check_format_all():
             try:
                 format_check_file = FormatCheckFile.query.get(file_id)
                 if format_check_file:
+                    # 保存各模块详细结果到 JSON 文件（供综合报告使用）
+                    if 'results' in result['data']:
+                        try:
+                            import json as _json
+                            content_details_dir = app.config['FORMAT_CHECK_CONTENT_FOLDER']
+                            os.makedirs(content_details_dir, exist_ok=True)
+                            content_details_filename = f"file_{file_id}_content_details.json"
+                            content_details_path = os.path.join(content_details_dir, content_details_filename)
+                            with open(content_details_path, 'w', encoding='utf-8') as f:
+                                _json.dump(result['data']['results'], f, ensure_ascii=False, indent=2)
+                            format_check_file.content_details_path = content_details_path
+                            logger.info(f"各模块详细结果已保存: {content_details_path}")
+                        except Exception as e:
+                            logger.warning(f"保存 content_details JSON 失败: {e}")
+
                     # 更新文件路径
                     if result['data'].get('report_saved'):
                         format_check_file.report_path = os.path.join(
-                            app.config['FORMAT_CHECK_REPORTS_FOLDER'], 
+                            app.config['FORMAT_CHECK_REPORTS_FOLDER'],
                             result['data']['report_filename']
                         )
-                    
+
                     if result['data'].get('annotated_saved'):
                         format_check_file.annotated_path = os.path.join(
-                            app.config['FORMAT_CHECK_ANNOTATE_FOLDER'], 
+                            app.config['FORMAT_CHECK_ANNOTATE_FOLDER'],
                             result['data']['annotated_filename']
                         )
-                    
+
                     # 更新检测结果摘要
                     if 'summary' in result['data']:
                         summary = result['data']['summary']
@@ -1548,7 +1772,7 @@ def check_format_all():
                         format_check_file.passed_checks = summary.get('passed_checks', 0)
                         format_check_file.failed_checks = summary.get('failed_checks', 0)
                         format_check_file.pass_rate = summary.get('pass_rate', 0.0)
-                    
+
                     format_check_file.check_status = 'completed'
                     db.session.commit()
                     logger.info(f"数据库记录已更新: ID={file_id}")
@@ -1564,7 +1788,6 @@ def check_format_all():
             'success': False, 
             'message': f'检测失败: {str(e)}'
         }), 500
-
 
 # 下载带批注的论文文档
 @app.route('/api/paper-format/download-annotated/<filename>')
@@ -1740,6 +1963,164 @@ def open_annotated_by_id(file_id):
         return jsonify({
             'success': False,
             'message': f'打开失败: {str(e)}'
+        }), 500
+
+
+@app.route('/api/paper-format/detect-terms', methods=['POST'])
+def detect_terms():
+    """执行论文术语检测"""
+    try:
+        from services.term_detector import detect_terms_from_file
+        import json
+        
+        data = request.get_json()
+        temp_file_path = data.get('temp_file_path')
+        file_id = data.get('file_id')  # 数据库记录ID
+        title = data.get('title')
+
+        if not temp_file_path:
+            return jsonify({
+                'success': False,
+                'message': '缺少临时文件路径'
+            }), 400
+        
+        if not os.path.exists(temp_file_path):
+            return jsonify({
+                'success': False,
+                'message': '临时文件不存在'
+            }), 404
+        
+        # 执行术语检测
+        result = detect_terms_from_file(temp_file_path)
+        
+        if result.get('success'):
+            logger.info(f"术语检测完成: 共检测到 {result['data']['total_terms']} 个术语")
+            
+            # 保存结果到JSON文件
+            try:
+                # term目录
+                term_dir = app.config['FORMAT_CHECK_TERM_FOLDER']
+                # 生成文件名: %Y%m%d_%H%M%S_论文名_term.json
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                json_filename = f"{timestamp}_{title}_term.json"
+                json_path = os.path.join(term_dir, json_filename)
+                
+                # 保存JSON文件
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    json.dump(result, f, ensure_ascii=False, indent=2)
+                
+                logger.info(f"术语检测结果已保存: {json_path}")
+                
+                # 更新数据库记录
+                if file_id:
+                    format_file = FormatCheckFile.query.get(file_id)
+                    if format_file:
+                        format_file.term_result_path = json_path
+                        db.session.commit()
+                        logger.info(f"数据库记录已更新: file_id={file_id}, term_result_path={json_path}")
+                
+                # 在返回结果中添加保存信息
+                result['data']['term_result_saved'] = True
+                result['data']['term_result_path'] = json_path
+                result['data']['term_result_filename'] = json_filename
+                
+            except Exception as save_error:
+                logger.error(f"保存术语检测结果失败: {save_error}", exc_info=True)
+                result['data']['term_result_saved'] = False
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"术语检测错误: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'术语检测失败: {str(e)}'
+        }), 500
+
+
+@app.route('/api/paper-format/term-result/<int:file_id>', methods=['GET'])
+def get_term_result(file_id):
+    """获取历史术语检测结果"""
+    try:
+        import json
+        
+        # 查找数据库记录
+        format_file = FormatCheckFile.query.get(file_id)
+        
+        if not format_file:
+            return jsonify({
+                'success': False,
+                'message': '文件记录不存在'
+            }), 404
+        
+        if not format_file.term_result_path:
+            return jsonify({
+                'success': True,
+                'data': None,
+                'message': '该论文尚未进行术语检测'
+            })
+        
+        if not os.path.exists(format_file.term_result_path):
+            return jsonify({
+                'success': False,
+                'message': '术语检测结果文件不存在'
+            }), 404
+        
+        # 读取JSON文件
+        with open(format_file.term_result_path, 'r', encoding='utf-8') as f:
+            result = json.load(f)
+        
+        logger.info(f"读取术语检测历史结果: file_id={file_id}")
+        
+        return jsonify({
+            'success': True,
+            'data': result.get('data') if result.get('success') else None,
+            'has_result': True,
+            'result_path': format_file.term_result_path,
+            'message': '获取历史术语检测结果成功'
+        })
+        
+    except Exception as e:
+        logger.error(f"获取术语检测结果错误: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'获取结果失败: {str(e)}'
+        }), 500
+
+
+@app.route('/api/paper-format/confirm-new-term', methods=['POST'])
+def confirm_new_term():
+    """用户确认新术语"""
+    try:
+        data = request.get_json()
+        term = data.get('term')
+        confirmed = data.get('confirmed', False)
+        file_id = data.get('file_id')
+        
+        if not term:
+            return jsonify({
+                'success': False,
+                'message': '缺少术语参数'
+            }), 400
+        
+        # 这里可以将确认结果保存到数据库
+        # 暂时只返回确认结果
+        logger.info(f"用户确认新术语: {term}, 确认结果: {confirmed}")
+        
+        return jsonify({
+            'success': True,
+            'message': '确认成功',
+            'data': {
+                'term': term,
+                'confirmed': confirmed
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"确认新术语错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'确认失败: {str(e)}'
         }), 500
 
 

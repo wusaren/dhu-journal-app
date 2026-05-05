@@ -1,0 +1,14 @@
+{
+  "figure_content_detection": {
+    "is_chart": "**严格要求：只输出JSON，不要任何解释文字**\n\n判断图片是否为带坐标轴的图表？\n\n输出格式（二选一）：\n```json\n{\"is_chart\": true, \"chart_type\": \"折线图\"}\n```\n```json\n{\"is_chart\": false, \"chart_type\": \"照片\"}\n```\n\n禁止输出任何JSON之外的文字！",
+    "tick_direction": "**只输出JSON，不要任何其他文字**\n\n刻度线是否指向图内？（要求：必须指向图内）\n\n格式：\n```json\n{\"ok\": true, \"description\": \"指向图内\"}\n```\n或\n```json\n{\"ok\": false, \"description\": \"指向图外\"}\n```",
+    "unit_format": "**只输出JSON**\n\n物理量/单位格式是否正确？\n要求：用\"/\"分隔，物理量斜体，单位正体\n\n```json\n{\"ok\": true, \"issues\": []}\n```\n或\n```json\n{\"ok\": false, \"issues\": [\"E未斜体\", \"V应正体\"]}\n```\n\n只列问题，不解释！",
+    "unit_brackets": "**只输出JSON**\n\n组合单位是否加括号？\n要求：组合单位加括号(H/m)，℃不加，角度(°)加\n\n```json\n{\"ok\": true, \"issues\": []}\n```\n或\n```json\n{\"ok\": false, \"issues\": [\"V/m应为(V/m)\"]}\n```",
+    "decimal_consistency": "**只输出JSON**\n\n纵横轴小数位数是否一致？\n规则：纵轴0.1,0.2(1位) → 横轴必须1.0,2.0(1位)，不能1,2(整数)\n\n```json\n{\"ok\": true, \"y_decimals\": \"1位\", \"x_decimals\": \"1位\"}\n```\n或\n```json\n{\"ok\": false, \"y_decimals\": \"1位\", \"x_decimals\": \"0位\", \"description\": \"不一致\"}\n```",
+    "axis_title_consistency": "**只输出JSON，不要任何其他文字**\n\n检查纵横坐标轴标题的风格是否统一：要么都使用**物理量符号**（如 T, t），要么都使用**物理量全称**（如 Temperature, Time）。\n\n**正确示例 (风格统一)**:\n- 纵轴: `Temperature / K`, 横轴: `Time / s` (都是全称)\n- 纵轴: `T / K`, 横轴: `t / s` (都是符号)\n\n**错误示例 (风格不统一)**:\n- 纵轴: `Temperature / K` (全称), 横轴: `t / s` (符号)\n\n**错误示例 (无效标题)**:\n- `variable_name` 或 `x-axis` (无效占位符)\n\n请按以下JSON格式输出，并判断风格：\n```json\n{\n  \"ok\": true,\n  \"y_style\": \"全称\",\n  \"x_style\": \"全称\"\n}\n```\n或\n```json\n{\n  \"ok\": false,\n  \"y_style\": \"全称\",\n  \"x_style\": \"符号\",\n  \"issue\": \"风格不统一：纵轴使用全称，横轴使用符号\"\n}\n```\n或\n```json\n{\n  \"ok\": false,\n  \"issue\": \"横轴标题'variable_name'是无效占位符\"\n}\n```"
+  },
+  "zipcode_query": {
+    "prompt": "根据地址查询邮编。地址：{address}\n\n简要分析后返回6位邮编。\n格式：邮编：[6位数字]",
+    "direct_address_prompt": "根据地址查询邮编。地址：{address}\n\n简要分析后返回6位邮编。\n格式：邮编：[6位数字]"
+  }
+}

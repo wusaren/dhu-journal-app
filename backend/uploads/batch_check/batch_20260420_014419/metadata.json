@@ -1,0 +1,54 @@
+{
+  "batch_id": 17,
+  "created_at": "2026-04-20T01:44:19.100471",
+  "completed_at": "2026-04-20T01:45:08.610638",
+  "directory_path": "uploads/batch_check\\temp\\upload_20260420_014418",
+  "output_path": "uploads/batch_check\\batch_20260420_014419",
+  "pass_threshold": 85.0,
+  "total_papers": 5,
+  "processed": 5,
+  "passed": 5,
+  "failed": 0,
+  "papers": [
+    {
+      "student_id": "16",
+      "student_name": "景红雨",
+      "filename": "16_景红雨_基于大语言模型的文本到SQL错误识别及纠正方法研究 .docx",
+      "check_status": "completed",
+      "review_status": "needs_revision",
+      "pass_rate": 54.17
+    },
+    {
+      "student_id": "基于机器学习的色纺纱配色预测",
+      "student_name": "202602",
+      "filename": "基于机器学习的色纺纱配色预测_202602_李四.docx",
+      "check_status": "completed",
+      "review_status": "needs_revision",
+      "pass_rate": 40.0
+    },
+    {
+      "student_id": "基于采样预构建和密度感知的图索引算法研究",
+      "student_name": "202506",
+      "filename": "基于采样预构建和密度感知的图索引算法研究_202506_吴轶硕.docx",
+      "check_status": "completed",
+      "review_status": "needs_revision",
+      "pass_rate": 33.33
+    },
+    {
+      "student_id": "对齐测试1",
+      "student_name": "202601",
+      "filename": "对齐测试1_202601_张三.docx",
+      "check_status": "completed",
+      "review_status": "needs_revision",
+      "pass_rate": 48.0
+    },
+    {
+      "student_id": "面向电力指标问答的NLU模型设计与优化",
+      "student_name": "202603",
+      "filename": "面向电力指标问答的NLU模型设计与优化_202603_王五.docx",
+      "check_status": "completed",
+      "review_status": "needs_revision",
+      "pass_rate": 44.0
+    }
+  ]
+}

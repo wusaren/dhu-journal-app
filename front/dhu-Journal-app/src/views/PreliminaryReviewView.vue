@@ -50,13 +50,16 @@
       <el-table :data="paginatedPendingList" style="width: 100%">
         <el-table-column prop="title" label="论文标题" width="300" />
         <el-table-column prop="submitDate" label="提交日期" width="120" />
-        <el-table-column label="操作" width="400">
+        <el-table-column label="操作" width="500">
           <template #default="scope">
             <el-button class="view-btn" size="small" @click="openOriginalDoc(scope.row)">
               原文档
             </el-button>
             <el-button class="audit-btn" size="small" @click="handleReview(scope.row)">
               审核
+            </el-button>
+            <el-button class="term-detect-btn" size="small" @click="handleTermDetect(scope.row)">
+              术语检测
             </el-button>
             <el-button 
               v-if="scope.row.formatCheckResult?.success"
@@ -374,6 +377,342 @@
       </template>
     </el-dialog>
     
+    <!-- 跳过检测项选择对话框 -->
+    <el-dialog v-model="showSkipChecksDialog" title="选择跳过的检测项" width="500px">
+      <div class="skip-checks-content">
+        <el-alert 
+          :title="`正在配置：${currentModuleForSkip ? availableModules.find(m => m.value === currentModuleForSkip)?.label : ''}`"
+          type="info" 
+          :closable="false"
+          style="margin-bottom: 20px;"
+        />
+        
+        <el-checkbox-group v-model="currentSkipChecks">
+          <div class="skip-check-option" v-for="check in availableSkipChecks" :key="check.value">
+            <el-checkbox :value="check.value">
+              <span class="check-label">{{ check.label }}</span>
+              <span class="check-description">{{ check.description }}</span>
+            </el-checkbox>
+          </div>
+        </el-checkbox-group>
+      </div>
+      
+      <template #footer>
+        <el-button @click="cancelSkipChecksSelection">取消</el-button>
+        <el-button class="confirm-btn" type="primary" @click="confirmSkipChecksSelection">
+          确定
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 术语检测对话框 -->
+    <el-dialog v-model="showTermDetectDialog" title="论文术语检测" width="900px">
+      <div class="review-content">
+        <p class="paper-title-display"><strong>论文标题：</strong>{{ termDetectPaper?.title }}</p>
+        <el-card class="term-detect-card" shadow="never">
+          <template #header>
+            <div class="card-header-format">
+              <span>论文术语检测</span>
+              <el-button 
+                v-if="!isTermDetecting && !termDetectResult"
+                class="check-format-btn" 
+                size="small"
+                @click="startTermDetection"
+                :disabled="!termDetectPaper?.tempFilePath"
+              >
+                开始术语检测
+              </el-button>
+            </div>
+          </template>
+
+          <!-- 检测状态提示 -->
+          <div v-if="!termDetectPaper?.tempFilePath" class="format-hint">
+            <el-alert title="请先上传论文文件才能进行术语检测" type="info" :closable="false" />
+          </div>
+
+          <!-- 加载历史结果 -->
+          <div v-if="isLoadingTermHistory" class="format-checking">
+            <el-progress :percentage="50" :indeterminate="true" />
+            <p style="text-align: center; margin-top: 10px; color: #666;">
+              正在加载历史检测结果...
+            </p>
+          </div>
+
+          <!-- 检测进度 -->
+          <div v-if="isTermDetecting && !isLoadingTermHistory" class="format-checking">
+            <el-progress :percentage="termDetectProgress" />
+            <p style="text-align: center; margin-top: 10px; color: #666;">
+              正在检测论文术语，请稍候...
+            </p>
+          </div>
+
+          <!-- 检测结果 -->
+          <div v-if="termDetectResult && !isTermDetecting" class="term-result">
+            <!-- 术语统计摘要 -->
+            <div class="result-summary" style="margin-bottom: 20px;">
+              <el-descriptions :column="3" border size="small">
+                <el-descriptions-item label="检测到术语">
+                  <span style="color: #409eff; font-weight: bold;">{{ termDetectResult.data?.total_terms || 0 }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="疑似新术语">
+                  <span style="color: #e6a23c; font-weight: bold;">{{ termDetectResult.data?.new_terms?.length || 0 }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="相似术语对">
+                  <span style="color: #f56c6c; font-weight: bold;">{{ termDetectResult.data?.similar_pairs?.length || 0 }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 术语检测详情 -->
+            <el-tabs v-model="activeTermTab">
+              <!-- Tab 1: 关键词 -->
+              <el-tab-pane label="关键词" name="keywords">
+                <div v-if="termDetectResult.data?.keywords?.length > 0">
+                  <el-alert 
+                    title="从论文Keywords部分提取的关键词" 
+                    type="info" 
+                    :closable="false"
+                    style="margin-bottom: 15px;"
+                  />
+                  <el-tag 
+                    v-for="keyword in termDetectResult.data.keywords" 
+                    :key="keyword" 
+                    size="large"
+                    type="primary"
+                    style="margin: 8px;"
+                  >
+                    {{ keyword }}
+                  </el-tag>
+                </div>
+                <el-empty v-else description="未检测到关键词" />
+              </el-tab-pane>
+            
+               <!-- Tab 2: SciBERT模型检测的科学术语 -->
+              <el-tab-pane label="SciBERT术语" name="scibert_terms">
+                <div v-if="termDetectResult.data?.scibert_terms?.length > 0">
+                  <el-alert 
+                     title="使用SciBERT深度学习模型识别的科学术语。" 
+                     type="primary" 
+                     :closable="false"
+                     description="C-Value通过结合候选术语的长度、出现频率和候选术语间的嵌套关系进行打分。分数越高，该候选术语越可能是专业术语。"
+                     style="margin-bottom: 15px;"
+                  />
+                  <el-table :data="termDetectResult.data.scibert_terms" border stripe>
+                    <el-table-column type="index" label="排名" width="80" align="center" />
+                    <el-table-column prop="term" label="科学术语" min-width="220">
+                      <template #default="scope">
+                        <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="frequency" label="出现次数" width="100" align="center" />
+                    <el-table-column prop="cvalue_score" label="C-value分数" width="130" align="center">
+                      <template #default="scope">
+                        <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
+                      </template>
+                    </el-table-column>
+                    <!-- <el-table-column prop="confidence" label="置信度" width="100" align="center">
+                      <template #default="scope">
+                        <el-tag :type="scope.row.confidence === 'high' ? 'success' : 'warning'">
+                          {{ scope.row.confidence === 'high' ? '高' : '中' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column> -->
+                  </el-table>
+                </div>
+                <el-empty v-else description="未检测到科学术语" />
+              </el-tab-pane>
+
+              <!-- Tab 3: 智能提取的多词术语 -->
+              <el-tab-pane label="多词术语" name="multi_word_terms">
+                <div v-if="termDetectResult.data?.multi_word_terms?.length > 0">
+                  <el-alert 
+                    title="使用N-gram+C-value算法提取多词术语。" 
+                    type="success" 
+                    :closable="false"
+                    description="C-Value通过结合候选术语的长度、出现频率和候选术语间的嵌套关系进行打分。分数越高，该候选术语越可能是专业术语。"
+                    style="margin-bottom: 15px;"
+                  />
+                  <el-table :data="termDetectResult.data.multi_word_terms" border stripe>
+                    <el-table-column type="index" label="排名" width="80" align="center" />
+                    <el-table-column prop="term" label="术语" min-width="200">
+                      <template #default="scope">
+                        <el-tag size="large" effect="plain">{{ scope.row.term }}</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="word_count" label="词数" width="80" align="center" />
+                    <el-table-column prop="frequency" label="频率" width="80" align="center" />
+                    <el-table-column prop="cvalue_score" label="C-value分数" width="120" align="center">
+                      <template #default="scope">
+                        <el-tag type="info">{{ scope.row.cvalue_score }}</el-tag>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                <el-empty v-else description="未检测到多词术语" />
+              </el-tab-pane>
+
+               <!-- Tab 4: 所有候选术语 -->
+              <el-tab-pane label="术语列表" name="all_terms">
+                <div v-if="termDetectResult.data?.all_candidate_terms?.length > 0">
+                  <el-tag 
+                    v-for="term in termDetectResult.data.all_candidate_terms" 
+                    :key="term" 
+                    style="margin: 5px;"
+                    size="large" effect="plain"
+                  >
+                    {{ term }}
+                  </el-tag>
+                </div>
+                <el-empty v-else description="未检测到术语" />
+              </el-tab-pane>
+
+               <!-- Tab 5: 疑似新术语 -->
+               <el-tab-pane label="疑似新术语" name="new_terms">
+                <div v-if="termDetectResult.data?.new_terms?.length > 0">
+                  <!-- <el-alert 
+                    title="以下术语可能是作者新提出的，请确认" 
+                    type="warning" 
+                    :closable="false"
+                    style="margin-bottom: 15px;"
+                  /> -->
+                  <div v-for="(newTerm, index) in termDetectResult.data.new_terms" :key="index" class="new-term-item">
+                    <div class="new-term-header">
+                      <span class="term-text">{{ newTerm.term }}</span>
+                      <span class="term-trigger">触发词：{{ newTerm.trigger }}</span>
+                      <el-button-group>
+                        <el-button 
+                          size="small" 
+                          type="success"
+                          :disabled="newTerm.confirmed === true"
+                          @click="confirmNewTerm(newTerm, true)"
+                        >
+                          ✓ 确认
+                        </el-button>
+                        <el-button 
+                          size="small" 
+                          type="danger"
+                          :disabled="newTerm.confirmed === false"
+                          @click="confirmNewTerm(newTerm, false)"
+                        >
+                          ✗ 非新术语
+                        </el-button>
+                      </el-button-group>
+                    </div>
+                    <div class="term-contexts">
+                      <el-collapse>
+                        <el-collapse-item title="查看上下文">
+                          <div v-for="(context, ctxIdx) in newTerm.contexts" :key="ctxIdx" class="context-text">
+                            {{ context }}
+                          </div>
+                        </el-collapse-item>
+                      </el-collapse>
+                    </div>
+                  </div>
+                </div>
+                <el-empty v-else description="未检测到疑似新术语" />
+              </el-tab-pane>
+
+              <!-- Tab 6: 相似术语（规范性问题） -->
+              <el-tab-pane label="相似术语" name="similar_pairs">
+                <div v-if="termDetectResult.data?.similar_pairs?.length > 0">
+                  <el-alert 
+                    title="以下术语在语义或词汇层面相似，可能存在混用情况，请检查使用规范性" 
+                    type="error" 
+                    :closable="false"
+                    style="margin-bottom: 15px;"
+                  />
+                  <el-table :data="termDetectResult.data.similar_pairs" border stripe>
+                    <el-table-column prop="term1" label="术语1" min-width="150" />
+                    <el-table-column prop="term2" label="术语2" min-width="150" />
+                    <el-table-column prop="final_score" label="综合相似度" width="110" align="center">
+                      <template #default="scope">
+                        <el-progress 
+                          :percentage="Math.round((scope.row.final_score || 0) * 100)" 
+                          :color="scope.row.final_score >= 0.9 ? '#F56C6C' : scope.row.final_score >= 0.8 ? '#E6A23C' : '#67C23A'"
+                          :stroke-width="10"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="semantic_score" label="语义相似度" width="100" align="center">
+                      <template #default="scope">
+                        <span v-if="scope.row.semantic_score !== null">
+                          {{ (scope.row.semantic_score * 100).toFixed(1) }}%
+                        </span>
+                        <span v-else style="color: #909399;">N/A</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="lexical_score" label="词汇相似度" width="100" align="center">
+                      <template #default="scope">
+                        {{ (scope.row.lexical_score * 100).toFixed(1) }}%
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="severity" label="相似等级" width="90" align="center">
+                      <template #default="scope">
+                        <el-tag 
+                          :type="scope.row.severity === 'high' ? 'danger' : scope.row.severity === 'medium' ? 'warning' : 'success'"
+                          size="small"
+                        >
+                          {{ scope.row.severity === 'high' ? '高' : scope.row.severity === 'medium' ? '中' : '低' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="建议" min-width="180">
+                      <template #default="scope">
+                        <span v-if="scope.row.semantic_score !== null && scope.row.semantic_score >= 0.85">
+                          <el-icon style="color: #F56C6C;"><WarningFilled /></el-icon>
+                          语义高度相似，建议检查是否为同一概念的不同表达
+                        </span>
+                        <span v-else-if="scope.row.lexical_score >= 0.8">
+                          <el-icon style="color: #E6A23C;"><Warning /></el-icon>
+                          词形相近，可能存在拼写变体或混用
+                        </span>
+                        <span v-else>
+                          建议统一使用其中一个术语
+                        </span>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                <el-empty v-else description="未检测到相似术语问题" />
+              </el-tab-pane>
+
+              <!-- Tab 6: 引号术语 -->
+              <!-- <el-tab-pane label="引号术语" name="quoted_terms">
+                <div v-if="termDetectResult.data?.quoted_terms?.length > 0">
+                  <el-alert 
+                    title="从引号中提取的术语（通常是作者强调的重要概念）" 
+                    type="info" 
+                    :closable="false"
+                    style="margin-bottom: 15px;"
+                  />
+                  <el-tag 
+                    v-for="term in termDetectResult.data.quoted_terms" 
+                    :key="term" 
+                    size="large"
+                    effect="dark"
+                    style="margin: 8px;"
+                  >
+                    "{{ term }}"
+                  </el-tag>
+                </div>
+                <el-empty v-else description="未检测到引号术语" />
+              </el-tab-pane> -->
+            </el-tabs>
+
+            <!-- 操作按钮 -->
+            <div class="format-actions" style="margin-top: 20px;">
+              <el-button size="small" @click="resetTermDetection">重新检测</el-button>
+            </div>
+          </div>
+        </el-card>
+        
+      </div>
+      
+      <template #footer>
+        <el-button @click="showTermDetectDialog = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 检测模块选择对话框 -->
     <el-dialog v-model="showModuleSelectorDialog" title="选择检测模块" width="600px">
       <div class="module-selector-content">
@@ -400,10 +739,24 @@
         <!-- 各检测模块 -->
         <el-checkbox-group v-model="selectedModules" @change="handleModuleChange">
           <div class="module-option" v-for="module in availableModules" :key="module.value">
-            <el-checkbox :value="module.value">
-              <span class="module-label">{{ module.label }}</span>
-              <span class="module-description">{{ module.description }}</span>
-            </el-checkbox>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <el-checkbox :value="module.value">
+                <span class="module-label">{{ module.label }}</span>
+                <span class="module-description">{{ module.description }}</span>
+              </el-checkbox>
+              <el-button
+                v-if="selectedModules.includes(module.value) && !modulesWithoutSkipChecks.includes(module.value)"
+                size="small"
+                text
+                type="primary"
+                @click="showSkipChecksSelector(module.value)"
+              >
+                选择跳过项
+                <span v-if="skipChecks[module.value] && skipChecks[module.value].length > 0">
+                  ({{ skipChecks[module.value].length }})
+                </span>
+              </el-button>
+            </div>
           </div>
         </el-checkbox-group>
         
@@ -411,7 +764,7 @@
         <div v-if="selectedModules.includes('Figure')" class="figure-api-option">
           <!-- <el-divider /> -->
           <el-alert 
-            title="图片检测选项" 
+            title="图片检测选项（使用大模型）" 
             type="warning" 
             :closable="false"
             style="margin-bottom: 10px;padding: 0"
@@ -421,6 +774,20 @@
             <span class="module-description">*需要调用API，检测时间较长</span>
           </el-checkbox>
         </div>
+        
+        <!-- 摘要分类号检测选项 -->
+        <!-- <div v-if="selectedModules.includes('Abstract')" class="figure-api-option">
+          <el-alert 
+            title="摘要分类号检测选项（使用大模型）" 
+            type="warning" 
+            :closable="false"
+            style="margin-bottom: 10px;padding: 0"
+          />
+          <el-checkbox v-model="enableClassificationApi" style="padding-bottom: 10px;">
+            <span class="module-label">启用分类号智能检测</span>
+            <span class="module-description">*需要调用API，自动识别并验证中图分类号</span>
+          </el-checkbox>
+        </div> -->
       </div>
       
       <template #footer>
@@ -442,6 +809,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Warning, WarningFilled } from '@element-plus/icons-vue'
 import { paperFormatService } from '@/api/paperFormatService'
 import type { ApiResponse, CheckAllResult } from '@/api/paperFormatService'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
@@ -548,6 +916,22 @@ const reportText = ref('')
 const selectedModules = ref<string[]>([])
 const selectAllModules = ref(false)
 const enableFigureApi = ref(false)
+const enableClassificationApi = ref(false)
+
+// 跳过检测项相关状态
+const showSkipChecksDialog = ref(false)
+const currentModuleForSkip = ref<string>('')
+const currentSkipChecks = ref<string[]>([])
+const skipChecks = ref<Record<string, string[]>>({})
+
+// 术语检测相关状态
+const showTermDetectDialog = ref(false)  // 术语检测对话框显示状态
+const termDetectPaper = ref<Paper | null>(null)  // 当前进行术语检测的论文
+const isTermDetecting = ref(false)
+const termDetectProgress = ref(0)
+const termDetectResult = ref<any>(null)
+const activeTermTab = ref('keywords')  // 默认显示keywords
+const isLoadingTermHistory = ref(false)  // 是否正在加载历史术语检测结果
 
 // 可用的检测模块列表
 const availableModules = [
@@ -557,7 +941,21 @@ const availableModules = [
   { value: 'Content', label: '正文格式检测', description: '检测正文格式' },
   { value: 'Formula', label: '公式格式检测', description: '检测公式编号和格式' },
   { value: 'Figure', label: '图片格式检测', description: '检测图片格式和编号' },
-  { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' }
+  { value: 'Table', label: '表格格式检测', description: '检测表格格式和编号' },
+  { value: 'Chinese_section', label: '中文部分检测', description: '检测中文标题、作者、单位、摘要和关键词格式' }
+]
+
+// 不支持跳过项功能的模块列表
+const modulesWithoutSkipChecks = ['Chinese_section']
+
+// 可跳过的检测项列表
+const availableSkipChecks = [
+  { value: 'font_size', label: '字体大小', description: '跳过字体大小检测' },
+  { value: 'bold', label: '加粗', description: '跳过文字加粗检测' },
+  { value: 'italic', label: '斜体', description: '跳过文字斜体检测' },
+  { value: 'alignment', label: '对齐', description: '跳过段落对齐检测' },
+  { value: 'spacing', label: '行距', description: '跳过行距检测' },
+  { value: 'indent', label: '缩进', description: '跳过首行缩进检测' }
 ]
 
 // 计算是否为半选状态
@@ -868,6 +1266,7 @@ const showModuleSelector = () => {
   selectedModules.value = []
   selectAllModules.value = false
   enableFigureApi.value = false
+  enableClassificationApi.value = false
   
   // 显示选择对话框
   showModuleSelectorDialog.value = true
@@ -888,6 +1287,41 @@ const handleModuleChange = (value: string[]) => {
   if (!value.includes('Figure')) {
     enableFigureApi.value = false
   }
+  
+  // 如果取消了摘要检测，也取消分类号API检测
+  if (!value.includes('Abstract')) {
+    enableClassificationApi.value = false
+  }
+  
+  // 清理已取消模块的跳过检测项配置
+  const currentSkipModules = Object.keys(skipChecks.value)
+  currentSkipModules.forEach(module => {
+    if (!value.includes(module)) {
+      delete skipChecks.value[module]
+    }
+  })
+}
+
+// 显示跳过检测项选择对话框
+const showSkipChecksSelector = (moduleName: string) => {
+  currentModuleForSkip.value = moduleName
+  currentSkipChecks.value = skipChecks.value[moduleName] ? [...skipChecks.value[moduleName]] : []
+  showSkipChecksDialog.value = true
+}
+
+// 确认跳过检测项选择
+const confirmSkipChecksSelection = () => {
+  if (currentModuleForSkip.value) {
+    skipChecks.value[currentModuleForSkip.value] = [...currentSkipChecks.value]
+  }
+  showSkipChecksDialog.value = false
+}
+
+// 取消跳过检测项选择
+const cancelSkipChecksSelection = () => {
+  showSkipChecksDialog.value = false
+  currentModuleForSkip.value = ''
+  currentSkipChecks.value = []
 }
 
 const confirmModuleSelection = () => {
@@ -926,7 +1360,9 @@ const startFormatCheck = async () => {
       currentPaper.value.tempFilePath, 
       enableFigureApi.value,
       selectedModules.value,
-      currentPaper.value.fileId
+      currentPaper.value.fileId,
+      skipChecks.value,
+      enableClassificationApi.value
     )
     
     clearInterval(progressInterval)
@@ -977,6 +1413,110 @@ const resetFormatCheck = () => {
   
   // 显示模块选择对话框
   showModuleSelector()
+}
+
+// 术语检测相关方法
+// 打开术语检测对话框
+const handleTermDetect = async (paper: Paper) => {
+  termDetectPaper.value = paper
+  termDetectResult.value = null
+  termDetectProgress.value = 0
+  isTermDetecting.value = false
+  showTermDetectDialog.value = true
+  
+  // 检查是否有历史术语检测结果
+  if (paper.fileId) {
+    try {
+      isLoadingTermHistory.value = true
+      const response = await paperFormatService.getTermResult(paper.fileId)
+      
+      if (response.success && response.has_result && response.data) {
+        // 有历史结果，直接展示
+        termDetectResult.value = { success: true, data: response.data }
+        termDetectProgress.value = 100
+        console.log('加载历史术语检测结果:', response.data)
+        ElMessage.info('已加载历史术语检测结果')
+      }
+    } catch (error) {
+      console.error('加载历史术语检测结果失败:', error)
+    } finally {
+      isLoadingTermHistory.value = false
+    }
+  }
+}
+
+const startTermDetection = async () => {
+  const paper = termDetectPaper.value
+  if (!paper?.tempFilePath) {
+    ElMessage.error('论文文件未上传到服务器')
+    return
+  }
+  
+  try {
+    isTermDetecting.value = true
+    termDetectProgress.value = 0
+    
+    // 模拟进度更新
+    const progressInterval = setInterval(() => {
+      if (termDetectProgress.value < 90) {
+        termDetectProgress.value += 10
+      }
+    }, 500)
+    
+    // 执行术语检测（传递file_id以保存结果）
+    const result = await paperFormatService.detectTerms(paper.tempFilePath, paper.fileId, paper.title)
+    
+    clearInterval(progressInterval)
+    termDetectProgress.value = 100
+    
+    // 保存检测结果
+    termDetectResult.value = result
+    
+    if (result.success) {
+      ElMessage.success('术语检测完成，结果已保存')
+      console.log('术语检测结果:', result)
+    } else {
+      ElMessage.error('术语检测失败: ' + result.message)
+    }
+    
+  } catch (error: any) {
+    console.error('术语检测失败:', error)
+    ElMessage.error('术语检测失败: ' + error.message)
+  } finally {
+    isTermDetecting.value = false
+  }
+}
+
+const resetTermDetection = () => {
+  termDetectResult.value = null
+  termDetectProgress.value = 0
+  activeTermTab.value = 'keywords'
+  isTermDetecting.value = false
+  isLoadingTermHistory.value = false
+}
+
+const confirmNewTerm = async (newTerm: any, confirmed: boolean) => {
+  try {
+    // 更新本地状态
+    newTerm.confirmed = confirmed
+    
+    // 调用后端API保存确认结果
+    const result = await paperFormatService.confirmNewTerm(
+      newTerm.term,
+      confirmed,
+      termDetectPaper.value?.fileId
+    )
+    
+    if (result.success) {
+      ElMessage.success(confirmed ? '已确认为新术语' : '已标记为非新术语')
+    } else {
+      ElMessage.error('确认失败: ' + result.message)
+    }
+    
+  } catch (error: any) {
+    console.error('确认新术语失败:', error)
+    ElMessage.error('确认失败: ' + error.message)
+  }
 }
 
 // 查看检测报告
@@ -1402,13 +1942,13 @@ onMounted(() => {
 }
 
 /* 操作按钮统一样式 */
-.view-btn, .audit-btn, .edit-btn, .delete-btn {
+.view-btn, .audit-btn, .edit-btn, .delete-btn, .term-detect-btn {
   background-color: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
   color: #333 !important;
 }
 
-.view-btn:hover, .audit-btn:hover, .edit-btn:hover, .delete-btn:hover {
+.view-btn:hover, .audit-btn:hover, .edit-btn:hover, .delete-btn:hover, .term-detect-btn:hover {
   background-color: #e6f7ff !important;
   border-color: #91d5ff !important;
   color: #1890ff !important;
@@ -1633,6 +2173,32 @@ onMounted(() => {
   font-size: 13px;
 }
 
+/* 跳过检测项对话框样式 */
+.skip-checks-content {
+  padding: 10px 0;
+}
+
+.skip-check-option {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.skip-check-option:last-child {
+  border-bottom: none;
+}
+
+.check-label {
+  font-weight: 500;
+  color: #303133;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.check-description {
+  color: #909399;
+  font-size: 13px;
+}
+
 .figure-api-option {
   margin-top: 10px;
   padding: 15px;
@@ -1644,6 +2210,52 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   width: 100%;
+}
+
+.term-detect-card {
+  margin-bottom: 20px;
+}
+
+.new-term-item {
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.new-term-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.term-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #409eff;
+  margin-right: 15px;
+}
+
+.term-trigger {
+  color: #e6a23c;
+  font-size: 13px;
+  margin-right: auto;
+}
+
+.term-contexts {
+  margin-top: 10px;
+}
+
+.context-text {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f5f7fa;
+  border-left: 3px solid #409eff;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #606266;
 }
 
 :deep(.el-checkbox__label) {

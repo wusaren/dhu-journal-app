@@ -1,0 +1,90 @@
+{
+    "abstract_rule": "摘要二字中间空一格，摘要与内容中间隔一行。摘要正文可分段，有缩进。",
+    "structure_rules": {
+      "header_pattern": "^\\s*摘\\s要\\s*$",
+      "no_paragraph_breaks": false,
+      "min_content_length": 300,
+      "max_content_length": 2000,
+      "content_start_line": 2
+    },
+    "format_rules": {
+      "abstract": {
+        "font_size_pt": 16,
+        "font_name": "黑体",
+        "bold": true,
+        "italic": false,
+        "line_spacing": 1.0,
+        "space_before": 0,
+        "space_after": 0,
+        "alignment": "center",
+        "first_line_indent": 0,
+        "left_indent": 0,
+        "right_indent": 0
+      },
+      "content": {
+        "font_size_pt": 12,
+        "chinese_font": "宋体",
+        "english_font": "Times New Roman",
+        "bold": false,
+        "italic": false,
+        "line_spacing": 1.25,
+        "space_before": 0,
+        "space_after": 0,
+        "alignment": "left",
+        "first_line_indent": 2,
+        "left_indent": 0,
+        "right_indent": 0
+      }
+    },
+    "check_rules": {
+      "font_size_mapping": {
+        "9": "小五",
+        "10.5": "五号", 
+        "12": "小四",
+        "14": "四号",
+        "16": "三号",
+        "18": "小二",
+        "22": "二号",
+        "24": "小一",
+        "26": "一号"
+      },
+      "line_spacing_mapping": {
+        "1.0": "单倍行距",
+        "1.15": "1.15倍行距",
+        "1.25": "1.25倍行距",
+        "1.5": "1.5倍行距",
+        "2.0": "双倍行距"
+      },
+      "alignment_mapping": {
+        "left": "左对齐",
+        "center": "居中对齐", 
+        "right": "右对齐",
+        "justify": "两端对齐"
+      },
+      "indent_mapping": {
+        "0": "无缩进",
+        "2": "缩进2字符",
+        "4": "缩进4字符",
+        "8": "缩进8字符"
+      }
+    },
+    "messages": {
+      "structure_header_error": "摘要标题格式错误，应为 '摘 要/n 内容' 格式",
+      "structure_paragraph_error": "摘要内容不应分段，检测到多个段落",
+      "structure_length_short": "摘要内容过短（少于{min}字符）",
+      "structure_length_long": "摘要内容过长（超过{max}字符）",
+      "format_abstract_issue_header": "摘要格式检查发现问题：",
+      "format_content_font_size_error": "摘要正文字号应为小四（12pt），实际为{actual}",
+      "format_content_chinese_font_error": "摘要正文中文字体应为宋体，实际为{actual}",
+      "format_content_english_font_error": "摘要正文英文字体应为Times New Roman，实际为{actual}",
+      "format_content_line_spacing_error": "摘要正文行间距应为1.25倍行距，实际为{actual}",
+      "summary_overall": "摘要检查结果: {ok}"
+    },
+    "notes": [
+      "摘要检查重点：1) 摘 要 中间一个空格格式 2) 不分段 3) 黑体3号 4) 1倍行间距 5) 居中对齐 6) 无缩进（顶格书写）",
+      "摘要正文格式要求：1) 宋体小四号（12pt） 2) 英文Times New Roman 3) 1.25倍行间距 4) 左对齐 5) 首行缩进2字符",
+      "摘要应为{建议段落数}段，包含研究目的、方法、结果和结论的简要描述",
+      "段落建议：通常摘要可分为2-3段，第一段研究背景目的，第二段方法结果，第三段结论"
+    ],
+    "generated_from": "用户提供的摘要格式要求"
+  }

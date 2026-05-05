@@ -11,6 +11,25 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.table import Table
 
+
+
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
+
+
 """
 === 论文格式检测系统 - 表格检测器 ===
 
@@ -516,16 +535,17 @@ def check_caption_format(caption_info, tpl):
             report['messages'].append(f"{msg}（当前：{actual_alignment_name}）")
     
     # 检查字体大小
-    expected_size = expected_format.get('font_size_pt', 12)
-    main_run = next((r for r in paragraph.runs if r.text.strip()), None)
-    if main_run:
-        actual_size, actual_font, _, _, _ = detect_font_for_run(main_run, paragraph)
-        if abs(actual_size - expected_size) > 0.5:
-            report['ok'] = False
-            expected_size_name = get_font_size(expected_size, tpl)
-            actual_size_name = get_font_size(actual_size, tpl)
-            msg = tpl.get('messages', {}).get('caption_font_size_error', '表格标题字体大小不正确')
-            report['messages'].append(f"{msg}（期望：{expected_size_name}，实际：{actual_size_name}）")
+    if not should_skip_check('font_size'):
+        expected_size = expected_format.get('font_size_pt', 12)
+        main_run = next((r for r in paragraph.runs if r.text.strip()), None)
+        if main_run:
+            actual_size, actual_font, _, _, _ = detect_font_for_run(main_run, paragraph)
+            if abs(actual_size - expected_size) > 0.5:
+                report['ok'] = False
+                expected_size_name = get_font_size(expected_size, tpl)
+                actual_size_name = get_font_size(actual_size, tpl)
+                msg = tpl.get('messages', {}).get('caption_font_size_error', '表格标题字体大小不正确')
+                report['messages'].append(f"{msg}（期望：{expected_size_name}，实际：{actual_size_name}）")
     
     # 检查标题大小写（首字母应大写）
     title = caption_info['title']
@@ -562,11 +582,19 @@ def check_table_numbering(captions, tpl):
     
     return report
 
-def check_doc_with_template(doc_path, template_identifier):
+def check_doc_with_template(doc_path, template_identifier, skip_checks=None):
     """
     主检查函数：使用模板检查文档中的表格格式
+    参数:
+        doc_path: 文档路径
+        template_identifier: 模板标识符
+        skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
     返回完整的检查报告
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     tpl = load_template(template_identifier)
     doc = Document(doc_path)
     

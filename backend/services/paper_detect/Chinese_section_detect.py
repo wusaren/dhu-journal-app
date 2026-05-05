@@ -7,16 +7,47 @@ import json
 import re
 from pathlib import Path
 
-# 添加项目根目录到路径
-if __name__ == '__main__':
-    project_root = Path(__file__).parent.parent
-    if str(project_root) not in sys.path:
-        sys.path.insert(0, str(project_root))
+# 添加项目根目录到 sys.path 以支持独立运行
+if __name__ == "__main__" and __package__ is None:
+    file = Path(__file__).resolve()
+    parent, root = file.parent, file.parents[1]
+    sys.path.append(str(root))
+    # 尝试将当前目录也加入，以防万一
+    try:
+        sys.path.remove(str(parent))
+    except ValueError:
+        pass
 
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
+try:
+    # 尝试相对导入（当作为模块导入时）
+    from .check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
+    from .config_api import (
+        AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
+        DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
+    )
+except ImportError as e:
+    print('错误：',e)
+    # 尝试绝对导入（当直接运行时）
+    try:
+        from paper_detect.check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
+        from paper_detect.config_api import (
+            AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
+            DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
+        )
+    except ImportError:
+        # 最后尝试同目录导入
+        from check_code import get_address_info, get_structured_address_aliyun, get_zipcode_from_deepseek
+        from config_api import (
+            AMAP_API_KEY, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET,
+            DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL
+        )
+
+# 定义直辖市列表，用于地址格式检测
+MUNICIPALITIES = ["北京", "上海", "天津", "重庆"]
 
 """
 === 论文格式检测系统 - 中文部分检测器 ===
@@ -260,18 +291,19 @@ def find_chinese_section(doc):
     return result
 
 # ---------- 检测函数 ----------
-def check_paragraph_full_format(paragraph, section_name, expected_format, tpl):
+def check_paragraph_full_format(paragraph, section_name, expected_format, tpl, verbose=True):
     """
     完整的段落格式检查（遍历所有run）
     """
     report = {'ok': True, 'messages': []}
     
-    # 只打印一次段落的总体格式
-    print(f"  检测Run数量: {len(paragraph.runs)}")
-    if paragraph.runs:
-        first_run = paragraph.runs[0]
-        font_size, font_ascii, font_eastasia, is_bold, is_italic = detect_font_for_run(first_run, paragraph)
-        print(f"  段落总体格式 - 中文: {font_eastasia}, 英文: {font_ascii}, 字号: {get_font_size(font_size)}({font_size}pt)")
+    if verbose:
+        # 只打印一次段落的总体格式
+        print(f"  检测Run数量: {len(paragraph.runs)}")
+        if paragraph.runs:
+            first_run = paragraph.runs[0]
+            font_size, font_ascii, font_eastasia, is_bold, is_italic = detect_font_for_run(first_run, paragraph)
+            print(f"  段落总体格式 - 中文: {font_eastasia}, 英文: {font_ascii}, 字号: {get_font_size(font_size)}({font_size}pt)")
     
     # 遍历段落中的所有run进行详细检查
     for run in paragraph.runs:
@@ -307,36 +339,39 @@ def check_paragraph_full_format(paragraph, section_name, expected_format, tpl):
                 report['ok'] = False
                 report['messages'].append(msg)
         
-        # 检查加粗
-        expected_bold = expected_format.get('bold', False)
-        if is_bold != expected_bold:
-            if expected_bold:
-                msg = f"{section_name}应加粗"
-            else:
-                msg = f"{section_name}不应加粗"
-            if msg not in report['messages']:
-                report['ok'] = False
-                report['messages'].append(msg)
-        
-        # 检查斜体
-        expected_italic = expected_format.get('italic', False)
-        if is_italic != expected_italic:
-            # 如果期望是正体，但检测到斜体，并且内容是单个字符，则忽略
-            if not expected_italic and len(run.text.strip()) == 1:
-                pass  # 允许单个字母为斜体，跳过报错
-            else:
-                if expected_italic:
-                    msg = f"{section_name}应为斜体"
+        # 检查加粗（仅当规则中明确指定时）
+        if 'bold' in expected_format:
+            expected_bold = expected_format['bold']
+            if is_bold != expected_bold:
+                if expected_bold:
+                    msg = f"{section_name}应加粗"
                 else:
-                    msg = f"{section_name}应为正体（不应为斜体，问题文本：'{run.text}'）"
+                    msg = f"{section_name}不应加粗"
                 if msg not in report['messages']:
                     report['ok'] = False
                     report['messages'].append(msg)
+        
+        # 检查斜体（仅当规则中明确指定时）
+        if 'italic' in expected_format:
+            expected_italic = expected_format['italic']
+            if is_italic != expected_italic:
+                # 如果期望是正体，但检测到斜体，并且内容是单个字符，则忽略
+                if not expected_italic and len(run.text.strip()) == 1:
+                    pass  # 允许单个字母为斜体，跳过报错
+                else:
+                    if expected_italic:
+                        msg = f"{section_name}应为斜体"
+                    else:
+                        msg = f"{section_name}应为正体（不应为斜体，问题文本：'{run.text}'）"
+                    if msg not in report['messages']:
+                        report['ok'] = False
+                        report['messages'].append(msg)
     
     # 2. 检查对齐方式
     alignment = detect_paragraph_alignment(paragraph)
     alignment_names = {0: '左对齐', 1: '居中对齐', 2: '右对齐', 3: '两端对齐'}
-    print(f"  对齐方式: {alignment_names.get(alignment)}")
+    if verbose:
+        print(f"  对齐方式: {alignment_names.get(alignment)}")
     
     expected_alignment = expected_format.get('alignment', 'justify')
     if expected_alignment == 'justify' and alignment != 3:
@@ -348,7 +383,8 @@ def check_paragraph_full_format(paragraph, section_name, expected_format, tpl):
     
     # 3. 检查段前段后间距
     space_before, space_after = get_paragraph_spacing(paragraph)
-    print(f"  段前间距: {space_before}行, 段后间距: {space_after}行")
+    if verbose:
+        print(f"  段前间距: {space_before}行, 段后间距: {space_after}行")
     
     expected_before = expected_format.get('space_before', 0)
     expected_after = expected_format.get('space_after', 0)
@@ -366,7 +402,7 @@ def check_paragraph_full_format(paragraph, section_name, expected_format, tpl):
         line_spacing = paragraph.paragraph_format.line_spacing
         expected_spacing = expected_format.get('line_spacing', 1.5)
         
-        if line_spacing:
+        if line_spacing and verbose:
             actual_spacing = float(line_spacing) if isinstance(line_spacing, (int, float)) else 1.0
             print(f"  行间距: {actual_spacing}倍")
             
@@ -379,7 +415,8 @@ def check_paragraph_full_format(paragraph, section_name, expected_format, tpl):
         first_line_indent = paragraph.paragraph_format.first_line_indent
         actual_indent = first_line_indent.pt if first_line_indent else 0
         expected_indent = expected_format.get('first_line_indent', 0)
-        print(f"  首行缩进: {actual_indent}pt")
+        if verbose:
+            print(f"  首行缩进: {actual_indent}pt")
         
         if abs(actual_indent - expected_indent) > 1:
             report['ok'] = False
@@ -514,7 +551,7 @@ def check_chinese_author(doc, chinese_section, tpl):
 
 def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
     """检测中文单位格式和内容"""
-    report = {'ok': True, 'messages': []}
+    report = {'ok': True, 'messages': [], 'affiliations_detail': []}
     
     if chinese_section is None or chinese_section['affiliation_index'] is None:
         report['ok'] = False
@@ -529,7 +566,7 @@ def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
     doc_affiliations = {}  # {编号: 单位文本}
     stop_keywords = ['摘要', '关键词', '关键字', 'Abstract', 'Keywords']
     
-    for idx in range(affiliation_start_idx, min(affiliation_start_idx + 10, len(doc.paragraphs))):
+    for idx in range(affiliation_start_idx, min(affiliation_start_idx + 20, len(doc.paragraphs))):
         para = doc.paragraphs[idx]
         text = para.text.strip()
         
@@ -542,8 +579,9 @@ def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
             break
         
         # 判断是否为单位段落
-        # 支持半角和全角标点：. 。 、 ． ， 
-        has_number_match = re.match(r'^\s*(\d+)[\.\。\、\．\，\s:-]+(.+)$', text)
+        # 支持半角和全角标点：. 。 、 ． ， 以及编号后直接跟中文（无分隔符）
+        # 匹配：1. 或 1． 或 1、 或 1 或直接 1中文
+        has_number_match = re.match(r'^\s*(\d+)[\.\。\、\．\，\s:-]*(.+)$', text)
         has_institution_keyword = bool(re.search(r'(大学|学院|研究院|研究所|中心|实验室|University|College|Institute)', text))
         
         # 方法1：以数字编号开头（如"1. 某某大学" 或 "1．某某大学"）
@@ -562,9 +600,8 @@ def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
             affiliation_paragraphs.append({'para': para, 'text': text, 'has_number': False, 'number': None, 'idx': idx})
             print(f"  段落 {idx}: 识别为单位（包含关键字，无编号） - '{text[:40]}...'")
         else:
-            # 不是单位段落，停止查找
-            print(f"  段落 {idx}: 不是单位段落 '{text[:30]}...' - 停止查找")
-            break
+            # 不是单位段落，但继续查找（可能后面还有单位段落）
+            print(f"  段落 {idx}: 不是单位段落 '{text[:30]}...' - 继续查找")
     
     if not affiliation_paragraphs:
         report['ok'] = False
@@ -600,7 +637,163 @@ def check_chinese_affiliation(doc, chinese_section, authors_data, tpl):
             else:
                 print(f"  单位引用检查: ✓ 所有引用的编号都存在")
     
-    # 4. 检测单位编号规则
+    # 4. API地址审核与邮编验证
+    amap_enabled = bool(AMAP_API_KEY)
+    aliyun_enabled = all([ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET])
+    deepseek_enabled = bool(DEEPSEEK_API_KEY)
+
+    if not any([amap_enabled, aliyun_enabled, deepseek_enabled]):
+        print("  所有API均未配置，跳过地址审核与邮编验证。")
+    else:
+        print("  正在使用API进行地址审核与邮编验证...")
+        for aff_idx, aff_para in enumerate(affiliation_paragraphs, 1):
+            text = aff_para['text']
+
+            # a. 提取单位名称和邮编
+            # 支持编号后直接跟中文或有分隔符的格式
+            match = re.search(r'^(?:\d+[．.]\s*)?(.+?)(?=\s*[，,])', text)
+            if not match:
+                continue
+            raw_unit_name = match.group(1)
+            unit_name = "".join(raw_unit_name.split())
+            
+            # 支持任意位数的邮编（作者可能写错）
+            zip_match = re.search(r'(\d{4,})', text)
+            doc_zipcode = zip_match.group(1) if zip_match else None
+
+            # b. 阶段一：高德地图地址审核
+            address_ok = False
+            if amap_enabled:
+                address_info = get_address_info(unit_name, AMAP_API_KEY)
+                if not address_info['is_exact_match']:
+                    msg = f"单位名称 '{unit_name}' 可能有误。{address_info['message']}"
+                    if msg not in report['messages']:
+                        report['ok'] = False
+                        report['messages'].append(msg)
+                else:
+                    address_ok = True
+            else:
+                print("  高德地图API未配置，跳过地址审核。")
+                address_ok = True
+
+            # c. 阶段二 & 三：邮编查询（两种方式）
+            # 邮编检测独立进行，不依赖地址审核结果
+            if deepseek_enabled and doc_zipcode:
+                # 方式1：直接文档地址检测
+                # 移除邮编，只保留地址部分，避免干扰模型识别
+                full_address_text = ' '.join(text.split())
+                # 移除邮编（4位及以上的数字）
+                direct_address = re.sub(r'\d{4,}', '', full_address_text).strip()
+                direct_zipcode = None
+                
+                if direct_address:
+                    print(f"  邮编检测 (文档地址):")
+                    print(f"    检测地址: {direct_address}")
+                    zip_info_direct = get_zipcode_from_deepseek(direct_address, DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL)
+                    if zip_info_direct['status'] == 'ok':
+                        direct_zipcode = zip_info_direct['zipcode']
+                        print(f"    API检测邮编: {direct_zipcode}")
+                    else:
+                        print(f"    API调用失败: {zip_info_direct.get('message', '未知错误')}")
+                
+                # 方式2：结构化地址检测（如果启用了阿里云）
+                struct_zipcode = None
+                formatted_address = None
+                
+                if aliyun_enabled:
+                    full_address_text = ' '.join(text.split())
+                    struct_info = get_structured_address_aliyun(full_address_text, ALIYUN_APP_KEY, ALIYUN_ACCESS_KEY_ID, ALIYUN_ACCESS_KEY_SECRET)
+
+                    if struct_info['status'] == 'ok' and struct_info['structured_address']:
+                        zip_info = get_zipcode_from_deepseek(struct_info['structured_address'], DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL)
+                        if zip_info['status'] == 'ok':
+                            struct_zipcode = zip_info['zipcode']
+                            # 解析结构化地址为连贯的自然语言格式
+                            address_parts = []
+                            struct_addr = struct_info['structured_address']
+                            
+                            # 提取各个部分
+                            prov_match = re.search(r'prov=([^\s]+)', struct_addr)
+                            city_match = re.search(r'city=([^\s]+)', struct_addr)
+                            district_match = re.search(r'district=([^\s]+)', struct_addr)
+                            town_match = re.search(r'town=([^\s]+)', struct_addr)
+                            road_match = re.search(r'road=([^\s]+)', struct_addr)
+                            poi_match = re.search(r'poi=([^\s]+)', struct_addr)
+                            
+                            if prov_match:
+                                address_parts.append(prov_match.group(1))
+                            if city_match:
+                                address_parts.append(city_match.group(1))
+                            if district_match:
+                                address_parts.append(district_match.group(1))
+                            if town_match:
+                                address_parts.append(town_match.group(1))
+                            if road_match:
+                                address_parts.append(road_match.group(1))
+                            if poi_match:
+                                address_parts.append(poi_match.group(1))
+                            
+                            formatted_address = '，'.join(address_parts) if address_parts else struct_addr
+                            
+                            print(f"  邮编检测 (结构化地址):")
+                            print(f"    检测地址: {formatted_address}")
+                            print(f"    API检测邮编: {struct_zipcode}")
+                
+                # 使用结构化地址的结果作为主要检测结果（如果有的话），否则使用文档地址的结果
+                api_zipcode = struct_zipcode if struct_zipcode else direct_zipcode
+                detected_address = formatted_address if formatted_address else direct_address
+                
+                # 保存单位详细信息
+                aff_detail = {
+                    'number': aff_para.get('number', aff_idx),
+                    'unit_name': unit_name,
+                    'direct_address': direct_address,
+                    'direct_zipcode': direct_zipcode,
+                    'structured_address': formatted_address,
+                    'structured_zipcode': struct_zipcode,
+                    'api_zipcode': api_zipcode,
+                    'doc_zipcode': doc_zipcode,
+                    'match': api_zipcode == doc_zipcode if api_zipcode else None
+                }
+                report['affiliations_detail'].append(aff_detail)
+                
+                if api_zipcode and api_zipcode != doc_zipcode:
+                    msg = f"单位 '{unit_name}' 的邮编可能不正确。文档邮编: {doc_zipcode}, API建议邮编: {api_zipcode}"
+                    if msg not in report['messages']:
+                        report['ok'] = False
+                        report['messages'].append(msg)
+                    print(f"    ✗ 邮编不匹配 - 文档邮编: {doc_zipcode}")
+                elif api_zipcode:
+                    print(f"    ✓ 邮编验证通过 - 文档邮编: {doc_zipcode}")
+            else:
+                if not aliyun_enabled: print("  阿里云API未配置，跳过邮编验证。")
+                if not deepseek_enabled: print("  DeepSeek API未配置，跳过邮编验证。")
+
+    # 5. 检测地址格式
+    for aff_para in affiliation_paragraphs:
+        text = aff_para['text']
+        # 匹配地址和邮编，例如 "上海 201620" 或 "江苏 南通 226019"
+        match = re.search(r'([\u4e00-\u9fa5\s]+)(\d{6})', text)
+        if match:
+            address_part = match.group(1).strip()
+            # 地址格式规则检查
+            if ' ' in address_part:
+                # 如果包含空格，检查第一部分是否为直辖市
+                parts = address_part.split()
+                if parts[0] in MUNICIPALITIES:
+                    msg = f"单位地址 '{address_part}' 格式错误，直辖市名称后不应有空格和下级区划（应直接写 '{parts[0]}'）"
+                    if msg not in report['messages']:
+                        report['ok'] = False
+                        report['messages'].append(msg)
+            else:
+                # 如果不包含空格，那它必须是直辖市
+                if address_part not in MUNICIPALITIES:
+                    msg = f"单位地址 '{address_part}' 不是直辖市，应在其前加上省份名并用空格隔开（例如：'江苏 南通'）"
+                    if msg not in report['messages']:
+                        report['ok'] = False
+                        report['messages'].append(msg)
+
+    # 6. 检测单位编号规则
     affiliation_rules = tpl.get('check_rules', {}).get('affiliation_rules', {})
     
     # 规则：只有一个单位时，不应使用编号
@@ -703,9 +896,18 @@ def check_chinese_abstract(doc, chinese_section, tpl):
 
         current_text_pos += len(run.text)
         
-    # 3. 检查段落级格式（如对齐、段间距等）
-    # ... 此处可添加从 check_paragraph_full_format 移植过来的段落级检查 ...
-    
+    # 3. 检查段落级格式（如对齐、段间距、缩进等），但跳过bold/italic检查，因为前面已处理
+    format_rules_for_paragraph = expected_format.copy()
+    format_rules_for_paragraph.pop('bold', None)
+    format_rules_for_paragraph.pop('italic', None)
+    paragraph_format_report = check_paragraph_full_format(abstract_para, "中文摘要", format_rules_for_paragraph, tpl, verbose=False)
+    if not paragraph_format_report['ok']:
+        report['ok'] = False
+        # 合并错误消息，避免重复
+        for msg in paragraph_format_report['messages']:
+            if msg not in report['messages']:
+                report['messages'].append(msg)
+
     return report
 
 def check_chinese_keywords(doc, chinese_section, tpl):
@@ -773,7 +975,19 @@ def check_chinese_keywords(doc, chinese_section, tpl):
                     
         current_text_pos += len(run.text)
 
-    # 2. 检测分隔符 (保留原有逻辑)
+    # 2. 检查段落级格式（如对齐、段间距、缩进等），但跳过bold/italic检查，因为前面已处理
+    format_rules_for_paragraph = expected_format.copy()
+    format_rules_for_paragraph.pop('bold', None)
+    format_rules_for_paragraph.pop('italic', None)
+    paragraph_format_report = check_paragraph_full_format(keywords_para, "中文关键词", format_rules_for_paragraph, tpl, verbose=False)
+    if not paragraph_format_report['ok']:
+        report['ok'] = False
+        # 合并错误消息，避免重复
+        for msg in paragraph_format_report['messages']:
+            if msg not in report['messages']:
+                report['messages'].append(msg)
+
+    # 3. 检测分隔符 (保留原有逻辑)
     keywords_rules = tpl.get('check_rules', {}).get('keywords_rules', {})
     if keywords_rules.get('check_separator', True):
         match = re.search(r'关键(词|字)\s*[:：]\s*(.+)', keywords_text)
@@ -792,193 +1006,181 @@ def check_chinese_keywords(doc, chinese_section, tpl):
             for sep in separators:
                 if sep != expected_separator:
                     report['ok'] = False
-                    report['messages'].append(f"关键词分隔符应为“{expected_separator}”（当前使用了“{sep}”）")
-                    print(f"  分隔符检查: ✗ 发现错误的分隔符“{sep}”，应为“{expected_separator}”")
-                    break  # 只报告第一个错误
+                    report['messages'].append(f"关键词之间应使用“{expected_separator}”分隔（检测到“{sep}”）")
+                    break
     
     return report
 
-def check_doc_with_template(doc_path, template_identifier):
+def check_chinese_section_with_template(docx_path, template_identifier):
     """
-    使用指定的模板检测文档中的中文部分格式
-    
-    参数:
-        doc_path: Word文档路径
-        template_identifier: 模板标识符
-    
-    返回:
-        检测报告字典
+    中文部分检测的主函数
     """
-    # 加载模板
+    print(f"--- 开始中文部分检测 ---")
     tpl = load_template(template_identifier)
+    doc = Document(docx_path)
     
-    # 加载文档
-    doc = Document(doc_path)
+    all_reports = {}
     
-    # 初始化报告
-    report = {
-        'overall': {'ok': True, 'messages': []},
-        'chinese_title': {'ok': True, 'messages': []},
-        'chinese_author': {'ok': True, 'messages': []},
-        'chinese_affiliation': {'ok': True, 'messages': []},
-        'chinese_abstract': {'ok': True, 'messages': []},
-        'chinese_keywords': {'ok': True, 'messages': []},
-        'summary': {}
-    }
-    
-    # 查找中文部分
-    print("正在查找中文部分...")
+    # 1. 定位中文部分
     chinese_section = find_chinese_section(doc)
+    if not chinese_section:
+        print("文档中未找到中文部分，跳过检测")
+        return {"summary": ["未找到中文部分"]}
     
-    if chinese_section is None:
-        report['overall']['ok'] = False
-        report['overall']['messages'].append("未找到参考文献（References）部分，无法定位中文部分")
-        return report
+    # 2. 依次检测各个部分
+    # 检测标题
+    title_report = check_chinese_title(doc, chinese_section, tpl)
+    all_reports['chinese_title_format'] = title_report
     
-    print(f"找到参考文献位置: 段落 {chinese_section['start_index']}")
-    if chinese_section['title_index']:
-        print(f"找到中文标题位置: 段落 {chinese_section['title_index']}")
-    if chinese_section['abstract_index']:
-        print(f"找到中文摘要位置: 段落 {chinese_section['abstract_index']}")
-    if chinese_section['keywords_index']:
-        print(f"找到中文关键词位置: 段落 {chinese_section['keywords_index']}")
-    print()
+    # 检测作者
+    authors_data = []
+    if chinese_section.get('author_index') is not None:
+        author_text = doc.paragraphs[chinese_section['author_index']].text.strip()
+        authors_data = parse_chinese_authors(author_text)
+    author_report = check_chinese_author(doc, chinese_section, tpl)
+    all_reports['chinese_author_format'] = author_report
     
-    # 检查中文标题
-    print("【检测中文标题】")
-    title_result = check_chinese_title(doc, chinese_section, tpl)
-    report['chinese_title'] = title_result
-    if not title_result['ok']:
-        report['overall']['ok'] = False
-    print()
+    # 检测单位
+    affiliation_report = check_chinese_affiliation(doc, chinese_section, authors_data, tpl)
+    all_reports['chinese_affiliation_format'] = affiliation_report
     
-    # 检查中文作者
-    print("【检测中文作者】")
-    author_result = check_chinese_author(doc, chinese_section, tpl)
-    report['chinese_author'] = author_result
-    if not author_result['ok']:
-        report['overall']['ok'] = False
+    # 检测摘要
+    abstract_report = check_chinese_abstract(doc, chinese_section, tpl)
+    all_reports['chinese_abstract_format'] = abstract_report
     
-    # 获取作者数据（用于单位引用检查）
-    author_para = doc.paragraphs[chinese_section['author_index']] if chinese_section['author_index'] else None
-    authors_data = parse_chinese_authors(author_para.text.strip()) if author_para else []
-    print()
+    # 检测关键词
+    keywords_report = check_chinese_keywords(doc, chinese_section, tpl)
+    all_reports['chinese_keywords_format'] = keywords_report
     
-    # 检查中文单位
-    print("【检测中文单位】")
-    affiliation_result = check_chinese_affiliation(doc, chinese_section, authors_data, tpl)
-    report['chinese_affiliation'] = affiliation_result
-    if not affiliation_result['ok']:
-        report['overall']['ok'] = False
-    print()
+    # 3. 生成总结
+    summary = []
+    for section, report in all_reports.items():
+        if not report.get('ok', True):
+            section_name = section
+            messages = report.get('messages', [])
+            if messages:
+                summary.append(f"{section_name} 检测失败:")
+                for msg in messages:
+                    summary.append(f"  • {msg}")
+    all_reports['summary'] = summary if summary else ["中文部分格式基本符合要求"]
     
-    # 检查中文摘要
-    print("【检测中文摘要】")
-    abstract_result = check_chinese_abstract(doc, chinese_section, tpl)
-    report['chinese_abstract'] = abstract_result
-    if not abstract_result['ok']:
-        report['overall']['ok'] = False
-    print()
-    
-    # 检查中文关键词
-    print("【检测中文关键词】")
-    keywords_result = check_chinese_keywords(doc, chinese_section, tpl)
-    report['chinese_keywords'] = keywords_result
-    if not keywords_result['ok']:
-        report['overall']['ok'] = False
-    print()
-    
-    return report
-
-# ---------- 报告生成 ----------
-def print_report(report, tpl):
-    """打印格式化的检测报告"""
-    print("=" * 60)
-    print("中文部分格式检测报告")
-    print("=" * 60)
-    print()
-    
-    # 总结
-    print("【检查总结】")
-    result_text = "通过" if report['overall']['ok'] else "发现问题"
-    print(f"  中文部分格式检查结果: {result_text}")
-    print()
-    
-    # 整体问题
-    if report['overall']['messages']:
-        print("【整体问题】")
-        for msg in report['overall']['messages']:
-            print(f"  ✗ {msg}")
-        print()
-    
-    # 各部分检查结果
-    sections = [
-        ('chinese_title', '中文标题'),
-        ('chinese_author', '中文作者'),
-        ('chinese_affiliation', '中文单位'),
-        ('chinese_abstract', '中文摘要'),
-        ('chinese_keywords', '中文关键词')
-    ]
-    
-    for section_key, section_name in sections:
-        if section_key in report and report[section_key].get('messages'):
-            print(f"【{section_name}检查】")
-            if report[section_key]['ok']:
-                print(f"  ✓ {section_name}格式正确")
-            else:
-                for msg in report[section_key]['messages']:
-                    print(f"  ✗ {msg}")
-            print()
-    
-    print("=" * 60)
-
-# ---------- 命令行接口 ----------
-def main():
-    """命令行入口"""
-    if len(sys.argv) < 3:
-        print(__doc__)
-        print("\n使用方法：")
-        print("  python Chinese_section_detect.py check <docx文件路径> <模板标识符>")
-        print("\n示例：")
-        print("  python Chinese_section_detect.py check template/test.docx Chinese")
-        print("  python Chinese_section_detect.py check template/test.docx templates/Chinese.json")
-        sys.exit(1)
-    
-    command = sys.argv[1]
-    
-    if command == "check":
-        if len(sys.argv) < 4:
-            print("错误：check命令至少需要2个参数")
-            sys.exit(1)
-        
-        doc_path = sys.argv[2]
-        template_id = sys.argv[3]
-        
-        # 检查文件是否存在
-        if not os.path.isfile(doc_path):
-            print(f"错误：文件不存在: {doc_path}")
-            sys.exit(1)
-        
-        try:
-            # 执行检测
-            report = check_doc_with_template(doc_path, template_id)
-            
-            # 加载模板用于打印
-            tpl = load_template(template_id)
-            
-            # 打印报告
-            print_report(report, tpl)
-            
-        except Exception as e:
-            print(f"检测过程中发生错误: {e}")
-            import traceback
-            traceback.print_exc()
-            sys.exit(1)
-    else:
-        print(f"未知命令: {command}")
-        print("支持的命令: check")
-        sys.exit(1)
+    print(f"--- 中文部分检测完成 ---")
+    return all_reports
 
 if __name__ == '__main__':
-    main()
+    # 用于独立测试
+    if len(sys.argv) > 2 and sys.argv[1] == 'check':
+        docx_file = sys.argv[2]
+        report = check_chinese_section_with_template(docx_file, 'Chinese_section')
+        
+        # 使用与主报告类似的格式打印
+        print("\n" + "="*60)
+        print("中文部分检测报告 (独立运行)")
+        print("="*60)
+        
+        module_cn_names = {
+            'chinese_title_format': '中文标题',
+            'chinese_author_format': '中文作者',
+            'chinese_affiliation_format': '中文单位',
+            'chinese_abstract_format': '中文摘要',
+            'chinese_keywords_format': '中文关键词',
+        }
 
+        # 先显示单位检测的详细信息（如果有的话）
+        affiliation_rep = report.get('chinese_affiliation_format', {})
+        if affiliation_rep:
+            print(f"\n  ┌─────────────────────────────────────────────────────┐")
+            print(f"  │ 【中文单位检测详情】                                │")
+            print(f"  └─────────────────────────────────────────────────────┘")
+            
+            # 显示所有单位的详细信息
+            affiliations_detail = affiliation_rep.get('affiliations_detail', [])
+            if affiliations_detail:
+                for aff in affiliations_detail:
+                    print(f"\n    单位 {aff['number']}: {aff['unit_name']}")
+                    
+                    # 显示文档地址检测结果
+                    if aff.get('direct_address'):
+                        print(f"      【文档地址检测】")
+                        print(f"        检测地址: {aff['direct_address']}")
+                        if aff.get('direct_zipcode'):
+                            print(f"        API检测邮编: {aff['direct_zipcode']}")
+                    
+                    # 显示结构化地址检测结果
+                    if aff.get('structured_address'):
+                        print(f"      【结构化地址检测】")
+                        print(f"        检测地址: {aff['structured_address']}")
+                        if aff.get('structured_zipcode'):
+                            print(f"        API检测邮编: {aff['structured_zipcode']}")
+                    
+                    # 显示最终结果
+                    print(f"      文档邮编: {aff['doc_zipcode']}")
+                    if aff.get('api_zipcode'):
+                        if aff['match']:
+                            print(f"      ✓ 邮编验证通过")
+                        else:
+                            print(f"      ✗ 邮编不匹配")
+        
+        print()
+        
+        for section, rep in report.items():
+            if section == 'summary' or section == 'chinese_affiliation_format': continue
+            
+            section_name = module_cn_names.get(section, section)
+            status = '✓ 通过' if rep.get('ok') else '✗ 失败'
+            print(f"\n  [{section_name}] {status}")
+            
+            if not rep.get('ok'):
+                for msg in rep.get('messages', []):
+                    # 检查是否是"最相关的结果"消息
+                    if '最相关的' in msg and '结果是' in msg:
+                        # 提取最相关的结果部分
+                        parts = msg.split('最相关的')
+                        if len(parts) == 2:
+                            prefix = parts[0] + '最相关的'
+                            results_part = parts[1]
+                            print(f"    • {prefix}")
+                            print(f"      ┌─────────────────────────────────────┐")
+                            # 分割结果并逐个显示
+                            if '结果是：' in results_part:
+                                results_text = results_part.split('结果是：')[1]
+                                results_list = [r.strip() for r in results_text.split(',')]
+                                for i, result in enumerate(results_list, 1):
+                                    if result:
+                                        print(f"      │ {i}. {result}")
+                            print(f"      └─────────────────────────────────────┘")
+                        else:
+                            print(f"    • {msg}")
+                    else:
+                        print(f"    • {msg}")
+        
+        # 最后显示单位检测的格式问题
+        if affiliation_rep and not affiliation_rep.get('ok'):
+            print(f"\n  [中文单位] ✗ 失败")
+            for msg in affiliation_rep.get('messages', []):
+                if '总共找到' not in msg and '文档中的单位编号' not in msg and '识别为单位' not in msg and '邮编' not in msg and '检测地址' not in msg and '✓' not in msg and '✗' not in msg:
+                    # 检查是否是"最相关的结果"消息
+                    if '最相关的' in msg and '结果是' in msg:
+                        # 提取最相关的结果部分
+                        parts = msg.split('最相关的')
+                        if len(parts) == 2:
+                            prefix = parts[0] + '最相关的'
+                            results_part = parts[1]
+                            print(f"    • {prefix}")
+                            print(f"      ┌─────────────────────────────────────┐")
+                            # 分割结果并逐个显示
+                            if '结果是：' in results_part:
+                                results_text = results_part.split('结果是：')[1]
+                                results_list = [r.strip() for r in results_text.split(',')]
+                                for i, result in enumerate(results_list, 1):
+                                    if result:
+                                        print(f"      │ {i}. {result}")
+                            print(f"      └─────────────────────────────────────┘")
+                        else:
+                            print(f"    • {msg}")
+                    else:
+                        print(f"    • {msg}")
+        
+        print("\n" + "="*60)
+    else:
+        print("使用方法: python Chinese_section_detect.py check <docx文件路径>")

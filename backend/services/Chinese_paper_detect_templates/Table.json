@@ -1,0 +1,100 @@
+{
+  "table_rule": "中文论文表格：中文表题(表{章}-{序} 表名，可选带'（续）'表示续表)下一行紧跟英文表题(Table {章}-{序} Title)。中文表题楷体_GB2312五号不加粗无特殊颜色；英文表题Times New Roman五号不加粗无特殊颜色；表格建议三线表且不加左右边线和内部竖线。续表不计入编号连续性检查。",
+  "table_detection_rules": {
+    "caption_cn_pattern": "^\\s*表\\s*(\\d+)\\s*[-－]\\s*(\\d+)\\s*(.+?)(?:（续）)?\\s*$",
+    "caption_en_pattern": "^\\s*Table\\s+(\\d+)\\s*[-－]\\s*(\\d+)\\s+(.+?)\\s*$",
+    "caption_cn_forbidden_punct_pattern": "[，。；：、？！……—【】《》“”‘',.!?;:()\\[\\]{}]",
+    "table_style": {
+      "type": "three_line",
+      "description": "三线表：不加左、右边线；不加内部竖线；仅保留必要横线",
+      "border_width": {
+        "top_line": 1.5,
+        "bottom_line": 1.5,
+        "header_line": 0.5,
+        "unit": "pt"
+      }
+    },
+    "content_alignment": {
+      "header_row": "center",
+      "content_long": "left",
+      "content_short": "center",
+      "description": "表头行居中对齐，内容行根据长度判断（较长左对齐，较短居中对齐）"
+    }
+  },
+    "format_rules": {
+    "caption_cn": {
+      "font_size_pt": 10.5,
+      "font_name_eastasia": "楷体_GB2312",
+      "bold": false,
+      "italic": false,
+      "no_special_color": true,
+      "alignment": "center"
+    },
+    "caption_en": {
+      "font_size_pt": 10.5,
+      "font_name_ascii": "Times New Roman",
+      "bold": false,
+      "italic": false,
+      "no_special_color": true,
+      "alignment": "center"
+    }
+  },
+  "check_rules": {
+    "caption_numbering_check": true,
+    "table_style_check": true,
+    "border_width_check": true,
+    "border_width_tolerance": 0.1,
+    "alignment_check": true,
+    "alignment_length_threshold": 20,
+    "table_content_alignment_check": false,
+    "table_reference_check": true,
+    "caption_en_check": false
+  },
+  "messages": {
+    "table_detection_error": "表格格式检查发现问题",
+
+    "caption_missing": "未找到表格标题",
+    "caption_pattern_error": "表格标题格式应为：中文表题(表 章-序 表名)下一行紧跟英文表题(Table 章-序 Title)",
+
+    "caption_cn_format_error": "中文表题格式不正确",
+    "caption_cn_font_size_error": "中文表题字号应为五号(10.5pt)",
+    "caption_cn_font_name_error": "中文表题字体应为楷体_GB2312",
+    "caption_cn_bold_error": "中文表题不应加粗",
+    "caption_cn_color_error": "中文表题应为无特殊颜色",
+    "caption_cn_punct_error": "中文表题中不允许出现标点符号",
+
+    "caption_en_format_error": "英文表题格式不正确",
+    "caption_en_font_size_error": "英文表题字号应为五号(10.5pt)",
+    "caption_en_font_name_error": "英文表题字体应为Times New Roman",
+    "caption_en_bold_error": "英文表题不应加粗",
+    "caption_en_color_error": "英文表题应为无特殊颜色",
+
+    "caption_number_mismatch_error": "中英文表序不一致",
+    "caption_numbering_error": "表格编号不连续，发现编号：{numbers}",
+
+    "table_style_error": "表格应为三线表格式（不加左、右边线，不加内部竖线）",
+    "border_width_error": "表格边框粗细不正确",
+    "top_border_width_error": "顶线宽度应为1.5磅，实际为{actual}磅",
+    "bottom_border_width_error": "底线宽度应为1.5磅，实际为{actual}磅",
+    "header_border_width_error": "表头底线宽度应为0.5磅，实际为{actual}磅",
+
+    "table_not_found": "未在英文表题下方找到表格",
+
+    "table_reference_error": "表格引用检测未通过（如：表{chapter}-{seq}）",
+
+    "table_content_alignment_error": "表格内容对齐方式不正确",
+    "table_header_alignment_error": "表头行应居中对齐",
+    "table_content_long_error": "内容行（>20字符）应左对齐",
+    "table_content_short_error": "内容行（≤20字符）应居中对齐",
+
+    "summary_overall": "表格格式检查结果: {ok}",
+    "table_count": "检测到 {count} 个表格"
+  },
+  "notes": [
+    "中文表格标题为两行：第一行为中文表题(表 章-序 表名)，第二行为英文表题(Table 章-序 Title)，两行必须紧挨。",
+    "中文表题字体：楷体_GB2312，五号(10.5pt)，不加粗，无特殊颜色。",
+    "英文表题字体：Times New Roman，五号(10.5pt)，不加粗，无特殊颜色。",
+    "中文表题不允许出现标点符号。",
+    "三线表要求：不加左、右边线，不加内部竖线；可选检查顶线/表头线/底线粗细。"
+  ]
+}

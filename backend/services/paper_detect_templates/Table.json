@@ -64,9 +64,7 @@
     "alignment_length_threshold": 20
   },
   "messages": {
-    "table_detection_ok": "表格格式检查通过",
     "table_detection_error": "表格格式检查发现问题",
-    "caption_format_ok": "表格标题格式正确",
     "caption_format_error": "表格标题格式不正确",
     "caption_missing": "未找到表格标题",
     "caption_pattern_error": "表格标题格式应为：Table X 表名（X为数字编号）",
@@ -75,17 +73,13 @@
     "caption_font_size_error": "表格标题字体大小应为五号(10.5pt)",
     "caption_title_case_error": "表格名称首字母应大写",
     "caption_numbering_error": "表格编号不连续，发现编号：{numbers}",
-    "table_style_ok": "表格为三线表格式",
     "table_style_error": "表格应为三线表格式（仅顶线、底线和表头底线）",
-    "border_width_ok": "表格边框粗细正确（顶线和底线1.5磅，表头线0.75磅）",
     "border_width_error": "表格边框粗细不正确",
     "top_border_width_error": "顶线宽度应为1.5磅，实际为{actual}磅",
     "bottom_border_width_error": "底线宽度应为1.5磅，实际为{actual}磅",
     "header_border_width_error": "表头底线宽度应为0.75磅，实际为{actual}磅",
     "table_not_found": "未在标题下方找到表格",
-    "table_content_alignment_ok": "表格内容对齐方式正确",
     "table_content_alignment_error": "表格内容对齐方式不正确（表头行居中对齐，内容行根据长度判断）",
-    "table_content_font_ok": "表格内容字体格式正确",
     "table_content_font_error": "表格内容字体格式应与正文一致",
     "summary_overall": "表格格式检查结果: {ok}",
     "table_count": "检测到 {count} 个表格"

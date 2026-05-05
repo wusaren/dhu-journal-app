@@ -205,22 +205,117 @@ class FormatCheckFile(db.Model):
     report_path = db.Column(db.String(500))  # 检测报告路径
     annotated_path = db.Column(db.String(500))  # 批注文档路径
     content_details_path = db.Column(db.String(500))  # content_details文件路径
+    term_result_path = db.Column(db.String(500))  # 术语检测结果JSON文件路径
     
     # 检测状态
     check_status = db.Column(db.Enum('pending', 'completed', 'failed'), default='pending')  # 检测状态
-    
+
+    # 审核状态（新增）
+    review_status = db.Column(db.String(50))  # 'pending' / 'reviewed' / 'needs_revision'
+    review_comment = db.Column(db.Text)       # 审核意见
+    reviewed_at = db.Column(db.DateTime)       # 审核时间
+
     # 检测结果摘要（可选，用于快速查询）
     total_checks = db.Column(db.Integer)  # 总检测项数
     passed_checks = db.Column(db.Integer)  # 通过项数
     failed_checks = db.Column(db.Integer)  # 失败项数
     pass_rate = db.Column(db.Float)  # 通过率
-    
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # 索引
     __table_args__ = (
         db.Index('idx_title', 'title'),
         db.Index('idx_submit_date', 'submit_date'),
         db.Index('idx_check_status', 'check_status'),
+        db.Index('idx_review_status', 'review_status'),
+    )
+
+class Term(db.Model):
+    """术语表 - 存储学术术语数据集"""
+    __tablename__ = 'terms'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # CSV原始字段
+    term = db.Column(db.String(500), nullable=False)  # 术语
+    category = db.Column(db.String(200))  # 类别
+    # 动物 生物学 化学 常见二元词组 常用词汇 计算机 地球 工程学 食品 普通科学与工具 医学与健康 纳米技术 物理学 社会科学 太空与天文学
+    sentence = db.Column(db.Text)  # 句子
+    label = db.Column(db.Integer)  # 标签
+    definition = db.Column(db.Text)  # 定义
+    gen_definition = db.Column(db.Text)  # 生成的定义
+    ner_tags = db.Column(db.Text)  # 命名实体识别标签
+    tokens = db.Column(db.Text)  # 词元
+    
+    # 额外字段
+    is_original_dataset = db.Column(db.Integer, default=0, nullable=False)  # 0=原始数据集, 1=新添加数据
+    created_at = db.Column(db.Date, default=datetime.utcnow().date, nullable=False)  # 存入日期
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_term', 'term'),
+        db.Index('idx_category', 'category'),
+        db.Index('idx_label', 'label'),
+        db.Index('idx_is_original_dataset', 'is_original_dataset'),
+    )
+
+
+class BatchJob(db.Model):
+    """批量任务表 - 用于业务员批量检测论文"""
+    __tablename__ = 'batch_jobs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    operator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    directory_path = db.Column(db.String(500))  # 源论文目录
+    output_path = db.Column(db.String(500))  # 输出目录
+    total_papers = db.Column(db.Integer, default=0)  # 总论文数
+    processed = db.Column(db.Integer, default=0)  # 已处理数
+    passed = db.Column(db.Integer, default=0)  # 通过数
+    failed = db.Column(db.Integer, default=0)  # 失败数
+    status = db.Column(db.String(20), default='pending')  # pending/running/completed/failed/cancelled
+    pass_threshold = db.Column(db.Float, default=85.0)  # 自动通过阈值
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 关系
+    operator = db.relationship('User', backref='batch_jobs')
+    papers = db.relationship('PaperCheckResult', backref='batch_job', lazy='dynamic', cascade='all, delete-orphan')
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_operator_id', 'operator_id'),
+        db.Index('idx_batch_status', 'status'),
+        db.Index('idx_batch_created_at', 'created_at'),
+    )
+
+
+class PaperCheckResult(db.Model):
+    """论文检测结果表 - 存储批量检测的论文结果"""
+    __tablename__ = 'paper_check_results'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    batch_job_id = db.Column(db.Integer, db.ForeignKey('batch_jobs.id'))
+    student_id = db.Column(db.String(50))  # 学号
+    student_name = db.Column(db.String(100))  # 姓名
+    original_filename = db.Column(db.String(500))  # 原始文件名
+    original_path = db.Column(db.String(500))  # 原始文件路径
+    annotated_path = db.Column(db.String(500))  # 批注文档路径
+    report_path = db.Column(db.String(500))  # 检测报告路径
+    details_json = db.Column(db.JSON)  # 详细检测结果
+    check_status = db.Column(db.String(20), default='pending')  # pending/completed/failed
+    review_status = db.Column(db.String(20), default='pending')  # pending/reviewed/needs_revision
+    pass_rate = db.Column(db.Float)  # 通过率
+    error_message = db.Column(db.Text)  # 错误信息
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)  # 完成时间
+    
+    # 索引
+    __table_args__ = (
+        db.Index('idx_pcr_batch_id', 'batch_job_id'),
+        db.Index('idx_pcr_student_id', 'student_id'),
+        db.Index('idx_pcr_check_status', 'check_status'),
+        db.Index('idx_pcr_review_status', 'review_status'),
     )

@@ -1,0 +1,911 @@
+{
+  "Title": {
+    "module": "Title",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "英文标题过长（超过200字符）"
+        ],
+        "title_paragraph": "在8个涵盖图像、文本、音频领域的公开数据集上进行实验评估，结果显示在相同搜索参数下，H3NSW的召回率显著超越原始HNSW，且接近甚至在某些数据集上略优于HNSW+LSG的混合方案。同时，相较于HNSW+LSG，H3NSW有效规避了预处理阶段的冗余距离计算，大幅降低了索引构建时间。H3NSW在未引入额外空间开销的前提下，成功实现了检索效率与构建时间之间更优的权衡，为LSG算法提供了一种更具实用性的原生索引结构支撑。",
+        "title_text": "在8个涵盖图像、文本、音频领域的公开数据集上进行实验评估，结果显示在相同搜索参数下，H3NSW的召回率显著超越原始HNSW，且接近甚至在某些数据集上略优于HNSW+LSG的混合方案。同时，相较于HNSW+LSG，H3NSW有效规避了预处理阶段的冗余距离计算，大幅降低了索引构建时间。H3NSW在未引入额外空间开销的前提下，成功实现了检索效率与构建时间之间更优的权衡，为LSG算法提供了一种更具实用性的原生索引结构支撑。"
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体大小应为三号（16.0pt），实际为小四（12.0pt）",
+          "字体应为加粗，实际为不加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "段落应为居中对齐，实际为左对齐",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt",
+          "段后间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "标题检查结果: 通过",
+      "英文标题检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Abstract": {
+    "module": "Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "摘 要",
+        "content_paragraphs": [
+          "信息大爆炸时代，数据量快速增长，且非结构化数据占比越来越高，如何处理非结构化数据成为多个领域的关键技术挑战。以近似最近邻技术为核心的向量数据库，为非结构化数据的存取提供解决方案。其中基于图的索引在搜索精度和搜索时间上取得了较优表现，被向量数据库广泛应用。本文针对近似最近邻搜索中图索引结构的精度瓶颈与优化代价问题，提出了一种名为H3NSW的新型向量索引。",
+          "H3NSW采用三层功能解耦的图索引架构，具体划分为采样层、导航层与数据层。H3NSW进行采样并预构建一个单层图索引，据此初始化整个三层图结构，构建过程中利用密度感知的统计量，即邻域半径，引导图结构的构建。采样层通过复用数据插入时固有的近邻搜索流程直接获取邻域半径，从而完全替代了LSG原有的独立采样集及其暴力计算需求；导航层则依据邻域半径进行显式枢纽识别，构建高效的全局导航骨干网络；底层数据层经LSG算法优化连接结构以保障高精度局部搜索。LSG实现了从随机分层向功能分层的范式转变。",
+          "在8个涵盖图像、文本、音频领域的公开数据集上进行实验评估，结果显示在相同搜索参数下，H3NSW的召回率显著超越原始HNSW，且接近甚至在某些数据集上略优于HNSW+LSG的混合方案。同时，相较于HNSW+LSG，H3NSW有效规避了预处理阶段的冗余距离计算，大幅降低了索引构建时间。H3NSW在未引入额外空间开销的前提下，成功实现了检索效率与构建时间之间更优的权衡，为LSG算法提供了一种更具实用性的原生索引结构支撑。"
+        ],
+        "content_text": "信息大爆炸时代，数据量快速增长，且非结构化数据占比越来越高，如何处理非结构化数据成为多个领域的关键技术挑战。以近似最近邻技术为核心的向量数据库，为非结构化数据的存取提供解决方案。其中基于图的索引在搜索精度和搜索时间上取得了较优表现，被向量数据库广泛应用。本文针对近似最近邻搜索中图索引结构的精度瓶颈与优化代价问题，提出了一种名为H3NSW的新型向量索引。 H3NSW采用三层功能解耦的图索引架构，具体划分为采样层、导航层与数据层。H3NSW进行采样并预构建一个单层图索引，据此初始化整个三层图结构，构建过程中利用密度感知的统计量，即邻域半径，引导图结构的构建。采样层通过复用数据插入时固有的近邻搜索流程直接获取邻域半径，从而完全替代了LSG原有的独立采样集及其暴力计算需求；导航层则依据邻域半径进行显式枢纽识别，构建高效的全局导航骨干网络；底层数据层经LSG算法优化连接结构以保障高精度局部搜索。LSG实现了从随机分层向功能分层的范式转变。 在8个涵盖图像、文本、音频领域的公开数据集上进行实验评估，结果显示在相同搜索参数下，H3NSW的召回率显著超越原始HNSW，且接近甚至在某些数据集上略优于HNSW+LSG的混合方案。同时，相较于HNSW+LSG，H3NSW有效规避了预处理阶段的冗余距离计算，大幅降低了索引构建时间。H3NSW在未引入额外空间开销的前提下，成功实现了检索效率与构建时间之间更优的权衡，为LSG算法提供了一种更具实用性的原生索引结构支撑。",
+        "title_paragraph_index": 68,
+        "content_paragraphs_indices": [],
+        "content_paragraph_indexes": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段正文行间距应为1.25倍行距（1.25倍），实际为1.5倍行距（1.5倍）",
+          "第2段正文行间距应为1.25倍行距（1.25倍），实际为1.5倍行距（1.5倍）",
+          "第3段正文行间距应为1.25倍行距（1.25倍），实际为1.5倍行距（1.5倍）"
+        ]
+      }
+    },
+    "summary": [
+      "摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "English_Abstract": {
+    "module": "English_Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段字号应为11pt，当前12.0pt",
+          "第1段行距应为1.25倍，当前1.5",
+          "第1段应左对齐",
+          "第1段首行缩进应为4.0字符，当前约2.0字符",
+          "第2段字号应为11pt，当前12.0pt",
+          "第2段行距应为1.25倍，当前1.5",
+          "第2段应左对齐",
+          "第2段首行缩进应为4.0字符，当前约2.0字符",
+          "第3段字号应为11pt，当前12.0pt",
+          "第3段行距应为1.25倍，当前1.5",
+          "第3段应左对齐",
+          "第3段首行缩进应为4.0字符，当前约2.0字符",
+          "第4段字号应为11pt，当前12.0pt",
+          "第4段行距应为1.25倍，当前1.5",
+          "第4段应左对齐",
+          "第4段首行缩进应为4.0字符，当前约1.8字符"
+        ]
+      }
+    },
+    "summary": [
+      "英文摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Keywords": {
+    "module": "Keywords",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "摘要与关键词之间应空两行",
+          "关键词分隔符错误，应使用英文逗号（,）分隔，而不是分号、中文逗号或其他符号",
+          "关键词数量过少（1个），应为3-5个关键词"
+        ],
+        "keywords_paragraph": "KEY WORDS: graph based indexing；approximate nearest neighbor search；density aware statistics ；explicit hub recognition；",
+        "keywords_text": "graph based indexing；approximate nearest neighbor search；density aware statistics ；explicit hub recognition；",
+        "keywords_list": [
+          "graph based indexing；approximate nearest neighbor search；density aware statistics ；explicit hub recognition；"
+        ],
+        "keywords_paragraph_index": 84
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "首行缩进应为0.0pt，实际为-90.0pt",
+          "左缩进应为0.0pt，实际为90.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "中文和英文关键词检测均失败",
+      "关键词检查结果: 失败",
+      "关键词检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Content": {
+    "module": "Content",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "level": 1,
+            "number": "1",
+            "text": "绪论",
+            "paragraph_index": 155,
+            "full_text": "第一章 绪论"
+          },
+          {
+            "level": 2,
+            "number": "1.1",
+            "text": "研究背景与意义",
+            "paragraph_index": 156,
+            "full_text": "1.1 研究背景与意义"
+          },
+          {
+            "level": 2,
+            "number": "1.2",
+            "text": "国内外研究现状",
+            "paragraph_index": 163,
+            "full_text": "1.2 国内外研究现状"
+          },
+          {
+            "level": 2,
+            "number": "1.3",
+            "text": "本文研究内容",
+            "paragraph_index": 172,
+            "full_text": "1.3 本文研究内容"
+          },
+          {
+            "level": 2,
+            "number": "1.4",
+            "text": "本文组织架构",
+            "paragraph_index": 178,
+            "full_text": "1.4 本文组织架构"
+          },
+          {
+            "level": 1,
+            "number": "2",
+            "text": "相关工作",
+            "paragraph_index": 192,
+            "full_text": "第二章 相关工作"
+          },
+          {
+            "level": 2,
+            "number": "2.1",
+            "text": "预备知识",
+            "paragraph_index": 194,
+            "full_text": "2.1 预备知识"
+          },
+          {
+            "level": 2,
+            "number": "2.2",
+            "text": "基于空间划分的方法",
+            "paragraph_index": 205,
+            "full_text": "2.2 基于空间划分的方法"
+          },
+          {
+            "level": 2,
+            "number": "2.3",
+            "text": "基于哈希的方法",
+            "paragraph_index": 210,
+            "full_text": "2.3 基于哈希的方法"
+          },
+          {
+            "level": 2,
+            "number": "2.4",
+            "text": "基于量化的方法",
+            "paragraph_index": 217,
+            "full_text": "2.4 基于量化的方法"
+          },
+          {
+            "level": 2,
+            "number": "2.5",
+            "text": "基于图的方法",
+            "paragraph_index": 223,
+            "full_text": "2.5 基于图的方法"
+          },
+          {
+            "level": 3,
+            "number": "2.5.1",
+            "text": "NSG算法",
+            "paragraph_index": 225,
+            "full_text": "2.5.1 NSG算法"
+          },
+          {
+            "level": 3,
+            "number": "2.5.2",
+            "text": "DiskANN算法",
+            "paragraph_index": 236,
+            "full_text": "2.5.2 DiskANN算法"
+          },
+          {
+            "level": 3,
+            "number": "2.5.3",
+            "text": "HNSW算法",
+            "paragraph_index": 242,
+            "full_text": "2.5.3 HNSW算法"
+          },
+          {
+            "level": 3,
+            "number": "2.5.4",
+            "text": "LSG算法",
+            "paragraph_index": 247,
+            "full_text": "2.5.4 LSG算法"
+          },
+          {
+            "level": 1,
+            "number": "3",
+            "text": "现有方法介绍与问题分析",
+            "paragraph_index": 259,
+            "full_text": "第三章 现有方法介绍与问题分析"
+          },
+          {
+            "level": 2,
+            "number": "3.1",
+            "text": "HNSW工作过程",
+            "paragraph_index": 260,
+            "full_text": "3.1 HNSW工作过程"
+          },
+          {
+            "level": 2,
+            "number": "3.2",
+            "text": "HNSW+LSG混合方法",
+            "paragraph_index": 268,
+            "full_text": "3.2 HNSW+LSG混合方法"
+          },
+          {
+            "level": 2,
+            "number": "3.3",
+            "text": "问题分析",
+            "paragraph_index": 274,
+            "full_text": "3.3 问题分析"
+          },
+          {
+            "level": 3,
+            "number": "3.3.1",
+            "text": "HNSW问题分析",
+            "paragraph_index": 275,
+            "full_text": "3.3.1 HNSW问题分析"
+          },
+          {
+            "level": 3,
+            "number": "3.3.2",
+            "text": "HNSW+LSG混合方法问题分析",
+            "paragraph_index": 281,
+            "full_text": "3.3.2 HNSW+LSG混合方法问题分析"
+          },
+          {
+            "level": 2,
+            "number": "3.4",
+            "text": "优化策略与实验",
+            "paragraph_index": 286,
+            "full_text": "3.4 优化策略与实验"
+          },
+          {
+            "level": 3,
+            "number": "3.4.1",
+            "text": "采样层级化策略",
+            "paragraph_index": 288,
+            "full_text": "3.4.1 采样层级化策略"
+          },
+          {
+            "level": 3,
+            "number": "3.4.2",
+            "text": "分层策略",
+            "paragraph_index": 297,
+            "full_text": "3.4.2 分层策略"
+          },
+          {
+            "level": 2,
+            "number": "3.5",
+            "text": "本章小结",
+            "paragraph_index": 306,
+            "full_text": "3.5 本章小结"
+          },
+          {
+            "level": 1,
+            "number": "4",
+            "text": "基于采样预构建和密度感知的图索引算法",
+            "paragraph_index": 313,
+            "full_text": "第四章 基于采样预构建和密度感知的图索引算法"
+          },
+          {
+            "level": 2,
+            "number": "4.1",
+            "text": "索引结构设计",
+            "paragraph_index": 315,
+            "full_text": "4.1 索引结构设计"
+          },
+          {
+            "level": 3,
+            "number": "4.1.1",
+            "text": "整体框架",
+            "paragraph_index": 316,
+            "full_text": "4.1.1 整体框架"
+          },
+          {
+            "level": 3,
+            "number": "4.1.2",
+            "text": "核心模块设计",
+            "paragraph_index": 324,
+            "full_text": "4.1.2 核心模块设计"
+          },
+          {
+            "level": 2,
+            "number": "4.2",
+            "text": "算法流程",
+            "paragraph_index": 332,
+            "full_text": "4.2 算法流程"
+          },
+          {
+            "level": 2,
+            "number": "4.3",
+            "text": "理论分析",
+            "paragraph_index": 348,
+            "full_text": "4.3 理论分析"
+          },
+          {
+            "level": 1,
+            "number": "5",
+            "text": "实验分析与结果",
+            "paragraph_index": 360,
+            "full_text": "第五章 实验分析与结果"
+          },
+          {
+            "level": 2,
+            "number": "5.1",
+            "text": "实验设计",
+            "paragraph_index": 361,
+            "full_text": "5.1 实验设计"
+          },
+          {
+            "level": 2,
+            "number": "5.2",
+            "text": "实验数据集",
+            "paragraph_index": 365,
+            "full_text": "5.2 实验数据集"
+          },
+          {
+            "level": 2,
+            "number": "5.3",
+            "text": "实验结果与分析",
+            "paragraph_index": 369,
+            "full_text": "5.3 实验结果与分析"
+          },
+          {
+            "level": 3,
+            "number": "5.3.1",
+            "text": "召回率实验",
+            "paragraph_index": 370,
+            "full_text": "5.3.1 召回率实验"
+          },
+          {
+            "level": 3,
+            "number": "5.3.3",
+            "text": "构建时间实验",
+            "paragraph_index": 379,
+            "full_text": "5.3.3 构建时间实验"
+          },
+          {
+            "level": 2,
+            "number": "5.4",
+            "text": "本章小结",
+            "paragraph_index": 385,
+            "full_text": "5.4 本章小结"
+          },
+          {
+            "level": 1,
+            "number": "6",
+            "text": "总结与展望",
+            "paragraph_index": 390,
+            "full_text": "第六章 总结与展望"
+          },
+          {
+            "level": 2,
+            "number": "6.1",
+            "text": "总结",
+            "paragraph_index": 391,
+            "full_text": "6.1 总结"
+          },
+          {
+            "level": 2,
+            "number": "6.2",
+            "text": "展望",
+            "paragraph_index": 398,
+            "full_text": "6.2 展望"
+          }
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "标题“绪论”段前应为0.0pt，实际为19.9pt",
+          "标题“绪论”段后应为0.0pt，实际为19.9pt",
+          "标题\"研究背景与意义\"应为左对齐，实际为两端对齐",
+          "标题\"国内外研究现状\"应为左对齐，实际为两端对齐",
+          "标题\"本文研究内容\"应为左对齐，实际为两端对齐",
+          "标题\"本文组织架构\"应为左对齐，实际为两端对齐",
+          "标题“相关工作”段前应为0.0pt，实际为19.9pt",
+          "标题“相关工作”段后应为0.0pt，实际为19.9pt",
+          "标题\"预备知识\"应为左对齐，实际为两端对齐",
+          "标题\"基于空间划分的方法\"应为左对齐，实际为两端对齐",
+          "标题\"基于哈希的方法\"应为左对齐，实际为两端对齐",
+          "标题\"基于量化的方法\"应为左对齐，实际为两端对齐",
+          "标题\"基于图的方法\"应为左对齐，实际为两端对齐",
+          "标题“NSG算法”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"NSG算法\"应为左对齐，实际为两端对齐",
+          "标题“DiskANN算法”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"DiskANN算法\"应为左对齐，实际为两端对齐",
+          "标题“HNSW算法”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"HNSW算法\"应为左对齐，实际为两端对齐",
+          "标题“LSG算法”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"LSG算法\"应为左对齐，实际为两端对齐",
+          "标题“现有方法介绍与问题分析”段前应为0.0pt，实际为19.9pt",
+          "标题“现有方法介绍与问题分析”段后应为0.0pt，实际为19.9pt",
+          "标题\"HNSW工作过程\"应为左对齐，实际为两端对齐",
+          "标题\"HNSW+LSG混合方法\"应为左对齐，实际为两端对齐",
+          "标题\"问题分析\"应为左对齐，实际为两端对齐",
+          "标题“HNSW问题分析”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"HNSW问题分析\"应为左对齐，实际为两端对齐",
+          "标题“HNSW+LSG混合方法问题分析”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"HNSW+LSG混合方法问题分析\"应为左对齐，实际为两端对齐",
+          "标题\"优化策略与实验\"应为左对齐，实际为两端对齐",
+          "标题“采样层级化策略”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"采样层级化策略\"应为左对齐，实际为两端对齐",
+          "标题“分层策略”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"分层策略\"应为左对齐，实际为两端对齐",
+          "标题\"本章小结\"应为左对齐，实际为两端对齐",
+          "标题“基于采样预构建和密度感知的图索引算法”段前应为0.0pt，实际为19.9pt",
+          "标题“基于采样预构建和密度感知的图索引算法”段后应为0.0pt，实际为19.9pt",
+          "标题\"索引结构设计\"应为左对齐，实际为两端对齐",
+          "标题“整体框架”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"整体框架\"应为左对齐，实际为两端对齐",
+          "标题“核心模块设计”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"核心模块设计\"应为左对齐，实际为两端对齐",
+          "标题\"算法流程\"应为左对齐，实际为两端对齐",
+          "标题\"理论分析\"应为左对齐，实际为两端对齐",
+          "标题“实验分析与结果”段前应为0.0pt，实际为19.9pt",
+          "标题“实验分析与结果”段后应为0.0pt，实际为19.9pt",
+          "标题\"实验设计\"应为左对齐，实际为两端对齐",
+          "标题\"实验数据集\"应为左对齐，实际为两端对齐",
+          "标题\"实验结果与分析\"应为左对齐，实际为两端对齐",
+          "标题“召回率实验”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"召回率实验\"应为左对齐，实际为两端对齐",
+          "标题“构建时间实验”字号应为小四（12.0pt），实际为四号（14.0pt）",
+          "标题\"构建时间实验\"应为左对齐，实际为两端对齐",
+          "标题\"本章小结\"应为左对齐，实际为两端对齐",
+          "标题“总结与展望”段前应为0.0pt，实际为19.9pt",
+          "标题“总结与展望”段后应为0.0pt，实际为19.9pt",
+          "标题\"总结\"应为左对齐，实际为两端对齐",
+          "标题\"展望\"应为左对齐，实际为两端对齐"
+        ]
+      }
+    },
+    "summary": [],
+    "extracted": {},
+    "details": {}
+  },
+  "Formula": {
+    "module": "Formula",
+    "checks": {
+      "[公式检测]": {
+        "ok": true,
+        "messages": []
+      }
+    },
+    "summary": [
+      "公式格式检查结果: 通过",
+      "检测统计：共 461 个段落，识别出 0 个带编号的公式段落"
+    ],
+    "extracted": {},
+    "details": {
+      "total_paragraphs": 461,
+      "formula_paragraphs_count": 0,
+      "formula_paragraphs": [],
+      "debug": true
+    }
+  },
+  "TOC": {
+    "module": "TOC",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "目录标题与条目之间应空两行，实际为空0行",
+          "图录标题与条目之间应空两行，实际为空0行",
+          "表录标题与条目之间应空两行，实际为空0行"
+        ],
+        "titles": [
+          {
+            "title_type": "目录",
+            "paragraph": "目录",
+            "index": 90,
+            "text": "目录"
+          },
+          {
+            "title_type": "图录",
+            "paragraph": "图录",
+            "index": 135,
+            "text": "图录"
+          },
+          {
+            "title_type": "表录",
+            "paragraph": "表录",
+            "index": 140,
+            "text": "表录"
+          }
+        ]
+      },
+      "[目录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "段后间距应为0.0厘米（约0.0pt），实际为19.9pt"
+        ]
+      },
+      "[图录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "段后间距应为0.0厘米（约0.0pt），实际为19.9pt"
+        ]
+      },
+      "[表录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "段后间距应为0.0厘米（约0.0pt），实际为19.9pt"
+        ]
+      }
+    },
+    "summary": [
+      "目录/图录/表录检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Figure": {
+    "module": "Figure",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[图检测]": {
+        "ok": false,
+        "messages": [
+          "图4-1 H3NSW层级结构：标题格式——图片标题字体大小应为五号(10.5pt)（期望：五号，实际：小四）",
+          "图5-1 不同索引的召回率表现：标题格式——图片标题字体大小应为五号(10.5pt)（期望：五号，实际：小四）",
+          "图5-1 不同索引的召回率表现：图片对齐——图片应居中对齐（当前：两端对齐）",
+          "图5-2 不同索引的构建时间：标题格式——图片标题字体大小应为五号(10.5pt)（期望：五号，实际：小四）",
+          "图5-2 不同索引的构建时间：图片对齐——图片应居中对齐（当前：两端对齐）"
+        ],
+        "total": 3,
+        "failed": 3
+      }
+    },
+    "summary": {
+      "figure_count": 3
+    },
+    "extracted": {},
+    "details": {
+      "figure_count": 3
+    }
+  },
+  "Table": {
+    "module": "Table",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[表格检测]": {
+        "ok": false,
+        "messages": [
+          "表3-1不同最高层级HNSW的召回率：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表3-1不同最高层级HNSW的召回率：表格样式——底线宽度应为1.5磅，实际为0.5磅",
+          "表3-1不同最高层级HNSW的召回率：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表3-2采样层级化策略实验的召回率：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表3-2采样层级化策略实验的召回率：表格样式——底线宽度应为1.5磅，实际为0.5磅",
+          "表3-2采样层级化策略实验的召回率：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表3-3采样层级化策略实验的构建时间（ms）：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表3-3采样层级化策略实验的构建时间（ms）：表格样式——底线宽度应为1.5磅，实际为0.5磅",
+          "表3-3采样层级化策略实验的构建时间（ms）：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表3-4不同策略的召回率：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表3-4不同策略的召回率：表格样式——底线宽度应为1.5磅，实际为0.5磅",
+          "表3-4不同策略的召回率：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表5-1数据集相关信息：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表5-1数据集相关信息：表格样式——表头底线宽度应为0.5磅，实际为0.75磅",
+          "表5-1数据集相关信息：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表5-2不同索引的QPS：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表5-2不同索引的QPS：表格样式——底线宽度应为1.5磅，实际为0.5磅",
+          "表5-2不同索引的QPS：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）"
+        ],
+        "total": 6,
+        "failed": 6
+      }
+    },
+    "summary": [
+      "表格格式检查结果: 发现问题",
+      "检测到 6 个表格"
+    ],
+    "extracted": {},
+    "details": {
+      "table_count": 6
+    }
+  },
+  "References": {
+    "module": "References",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "参考文献标题与内容之间应空两行"
+        ],
+        "header_paragraph": "参考文献",
+        "content_paragraphs": [
+          "[EB/OL].  https://report.iresearch.cn/report_pdf.aspx?id=4027. Cited on 2022-07.",
+          "Andoni A, Indyk P, Laarhoven T, et al. Practical and optimal LSH for angular distance[J]. Advances in neural information processing systems, 2015, 28",
+          "Panigrahy R. Entropy based nearest neighbor search in high dimensions[J]. arXiv preprint cs/0510019, 2005.",
+          "孙晓峰,彭天强.基于视觉词典和位置敏感哈希的图像检索方法[J].河南工程学 院学报(自然科学版),2016,28(03):64-68.",
+          "Kulis B, Grauman K. Kernelized locality-sensitive hashing for scalable image search[C]//2009 IEEE 12th international conference on computer vision. IEEE, 2009: 2130-2137.",
+          "Adeniyi D A, Wei Z, Yongquan Y. Automated web usage data mining and recommendation system using K-Nearest Neighbor (KNN) classification method[J]. Applied Computing and Informatics, 2016, 12(1): 90-108.",
+          "Samsir S, Suparno S, Giatman M. Predicting the loan risk towards new customer applying data mining using nearest neighbor algorithm[C]//IOP Conference Series: Materials Science and Engineering. IOP Publishing, 2020, 830(3): 032004.",
+          "Aasirekha K, Thangavel K. Optimization of K-nearest neighbor using particle swarm optimization for face recognition[J]. Neural Computing and Applications, 2019, 31(11): 7935-7944.",
+          "Muja M, Lowe D G. Fast approximate nearest neighbors with automatic algorithm configuration[J]. VISAPP (1), 2009, 2(331-340): 2.",
+          "M. Muja, Fast approximate nearest neighbors with automatic algoritm configuration. Proceedings of the Fourth International Conference on Computer Vision Theory and Applications, Lisboa, Portugal, Febrary, 2009, 331–340.",
+          "Bentley J L. Multidimensional binary search trees used for associative searching[J]. Communications of the ACM, 1975, 18(9): 509-517.",
+          "Kennedy C, Ward R. Fast Cross-Polytope Locality-Sensitive Hashing[C]//8th Innovations in Theoretical Computer Science Conference (ITCS 2017). Schloss Dagstuhl--Leibniz-Zentrum fuer Informatik, 2017, 67: 53.",
+          "Beckmann N, Kriegel H P, Schneider R, et al. The R*-tree: An efficient and robust access method for points and rectangles[C]//Proceedings of the 1990 ACM SIGMOD international conference on Management of data. 1990: 322-331.",
+          "Silpa-Anan C, Hartley R. Optimised KD-trees for fast image descriptor matching[C]//2008 IEEE Conference on Computer Vision and Pattern Recognition. IEEE, 2008: 1-8.",
+          "Dasgupta S, Freund Y. Random projection trees and low dimensional manifolds[C]//Proceedings of the fortieth annual ACM symposium on Theory of computing. 2008: 537-546.",
+          "Sproull R F. Refinements to nearest-neighbor searching in k-dimensional trees[J]. Algorithmica, 1991, 6(1): 579-589.",
+          "A. Babenko and V. Lempitsky, \"Efficient indexing of billion-scale datasets of deep descriptors,\" in Proc. IEEE Conf. Comput. Vis. Pattern Recognit., 2016.",
+          "Datar M, Immorlica N, Indyk P, et al. Locality-sensitive hashing scheme based on p-stable distributions[C]//Proceedings of the twentieth annual symposium on Computational geometry. 2004: 253-262.",
+          "Huang Q, Feng J, Zhang Y, et al. Query-aware locality-sensitive hashing for approximate nearest neighbor search[J]. Proceedings of the VLDB Endowment, 2015, 9(1): 1-12.",
+          "Gan J, Feng J, Fang Q, et al. Locality-sensitive hashing scheme based on dynamic collision counting[C]//Proceedings of the 2012 ACM SIGMOD international conference on management of data. 2012: 541-552.",
+          "Lv Q, Josephson W, Wang Z, et al. Multi-probe LSH: efficient indexing for highdimensional similarity search[C]//33rd International Conference on Very Large Data Bases, VLDB 2007. Association for Computing Machinery, Inc, 2007: 950- 961.",
+          "Kim B, Lee D H. LSB-Tree: a log-structured B-Tree index structure for NAND flash SSDs[J]. Design Automation for Embedded Systems, 2015, 19(1): 77-100.",
+          "Sun Y, Wang W, Qin J, et al. SRS: Solving c-Approximate Nearest Neighbor Queries in High Dimensional Euclidean Space with[J]. Proceedings of the VLDB Endowment, 2014, 8(1).",
+          "Lu K, Wang H, Wang W, et al. VHP: approximate nearest neighbor search via virtual hypersphere partitioning[J]. Proceedings of the VLDB Endowment, 2020, 13(9): 1443-1455.",
+          "Jégou H, Douze M, Schmid C. Product quantization for nearest neighbor search[J]. IEEE Transactions on Pattern Analysis and Machine Intelligence, 2011, 33(1): 117- 128.",
+          "T. Ge, K. He, Q. Ke, et al. Optimized product quantization for approximate nearest neighbor search. Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2013, 2946-2953.",
+          "Gao, J., & Long, C.. RaBitQ: Quantizing High-Dimensional Vectors with a Theoretical Error Bound for Approximate Nearest Neighbor Search[J]. Proceedings of the ACM on Management of Data ,2024, 2(3), 1-27.",
+          "Babenko A, Lempitsky V. Tree quantization for large-scale similarity search and classification[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2015: 4240-4248.",
+          "Zhang T, Du C, Wang J. Composite quantization for approximate nearest neighbor search[C]//International Conference on Machine Learning. PMLR, 2014: 838-846.",
+          "Zhang T, Qi G J, Tang J, et al. Sparse composite quantization[C]//Proceedings of the IEEE conference on computer vision and pattern recognition. 2015: 4548-455.",
+          "Kalantidis Y, Avrithis Y. Locally optimized product quantization for approximate nearest neighbor search[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2014: 2321-2328.",
+          "BABENKO A, LEMPITSKY V. Efficient indexing of billion-scale datasets of deep descriptors[C]//2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR). Las Vegas, NV, USA: IEEE, 2016: 2073-2081.",
+          "Malkov Y, Ponomarenko A, Logvinov A, et al. Approximate nearest neighbor algorithm based on navigable small world graphs[J]. Information Systems, 2014, 45: 61-68.",
+          "]Malkov Y A, Yashunin D A. Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs[J]. IEEE transactions on pattern analysis and machine intelligence, 2018, 42(4): 824-836.",
+          "Fu C, Xiang C, Wang C, et al. Fast approximate nearest neighbor search with the navigating spreading-out graph[J]. Proceedings of the VLDB Endowment, 2019, 12(5): 461-474.",
+          "Fu C, Wang C, Cai D. High dimensional similarity search with satellite system graph: Efficiency, scalability, and unindexed query compatibility[J]. IEEE Transactions on Pattern Analysis and Machine Intelligence, 2021, 44(8): 4139-4150.",
+          "Jayaram Subramanya S, Devvrit F, Simhadri H V, et al. Diskann: Fast accurate billion-point nearest neighbor search on a single node[J]. Advances in Neural Information Processing Systems, 2019, 32.",
+          "H. Wang et al.Boosting Accuracy and Efficiency for Vector Retrieval with Local Scaling Graph[C]//2025 IEEE 41st International Conference on Data Engineering (ICDE). IEEE, 2025.",
+          "LIN P C, ZHAO W L. Graph based nearest neighbor search: Promises and failures[EB/OL]. arXiv:1904.02077, 2019.",
+          "RADOVANOVIC M, NANPOULOS A, IVANOVIC M. Hubs in space: Popular nearest neighbors in high-dimensional data[J]. Journal of Machine Learning Research, 2010, 11: 2487-2531.",
+          "LI W, ZHANG X, CUI J, et al. Approximate nearest neighbor search on high dimensional data experiments, analyses, and improvement[J]. IEEE Transactions on Knowledge and Data Engineering, 2020, 32(4): 814-823.",
+          "Facebook Research. Faiss: A library for efficient similarity search. [EB/OL]. https://github.com/facebookresearch/faiss. Cited on 2024.",
+          "pgvector: Open-source vector similarity search for PostgreSQL. GitHub. [EB/OL]. https://github.com/pgvector/pgvector. Cited on 2024. ",
+          "RENATO F, POGGIONI V, VAGLINI G. A comparative study on hierarchical navigable small world graphs[C]//Proceedings of the 24th Brazilian Symposium on Multimedia and the Web. New York, NY, USA: ACM, 2018: 49-56.",
+          "PONOMARENKO A, KUZNETSOV D, BABENKO A. Down with the hierarchy: The 'H' in HNSW stands for “Hubs”[C]//The Twelfth International Conference on Learning Representations (ICLR). 2024.",
+          "LI W, ZHANG Y, SUN Y, et al. Approximate nearest neighbor search on high dimensional data: experiments, analyses, and improvement[J]. IEEE Transactions on Knowledge and Data Engineering, 2020, 32(8): 1475-1488.",
+          "WANG M, XU X, YUE Q, et al. A comprehensive survey and experimental comparison of graph-based approximate nearest neighbor search[J]. Proceedings of the VLDB Endowment, 2021, 14(11): 1964-1978.",
+          "PENG Y, CHOI B, CHAN T N, et al. Efficient approximate nearest neighbor search in multidimensional databases[J]. Proceedings of the ACM on Management of Data, 2023, 1(1): 54:1-54:27.",
+          "Fu C, Cai D. Efanna: An extremely fast approximate nearest neighbor search algorithm based on knn graph[J]. arXiv preprint arXiv:1609.07228, 2016.",
+          "Mount D, Arya S. ANN: library for approximate nearest neighbor searching, 1998[C]//2nd annual CGC workshop on computational geometry.",
+          "LEVINA E, BICKEL P. Maximum likelihood estimation of intrinsic dimension[C]//Advances in Neural Information Processing Systems 17. Cambridge, MA: MIT Press, 2005: 761-768.",
+          "BÖHM C, HARTMANN T, KIESSLING M, et al. The impacts of data, ordering, and intrinsic dimensionality on recall in hierarchical navigable small worlds[C]//SIRI '24: Proceedings of the 1st Workshop on Similarity Search and Applications. New York, NY, USA: ACM, 2024: 1-8.",
+          "POTTS M, WEBER M, ZIMMERMANN P. The role of local intrinsic dimensionality in benchmarking nearest neighbor search[C]//Lecture Notes in Computer Science. Cham: Springer, 2019, 11681: 30-41.",
+          "KUSUMA G P, WIJAYA A A K, SUWIGNYO B. Dual-branch HNSW approach with skip bridges and LID-driven optimization[J]. IEEE Access, 2024, 12: 168840-168853."
+        ],
+        "blank_lines_after_header": 1,
+        "header_paragraph_index": 405,
+        "content_paragraph_indices": [
+          407,
+          408,
+          409,
+          410,
+          411,
+          412,
+          413,
+          414,
+          415,
+          416,
+          417,
+          418,
+          419,
+          420,
+          421,
+          422,
+          423,
+          424,
+          425,
+          426,
+          427,
+          428,
+          429,
+          430,
+          431,
+          432,
+          433,
+          434,
+          435,
+          436,
+          437,
+          438,
+          439,
+          440,
+          441,
+          442,
+          443,
+          444,
+          445,
+          446,
+          447,
+          448,
+          449,
+          450,
+          451,
+          452,
+          453,
+          454,
+          455,
+          456,
+          457,
+          458,
+          459,
+          460
+        ],
+        "reference_numbers": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ]
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "标题字体应为加粗，实际为不加粗",
+          "无法检测到参考文献标题行间距格式信息",
+          "无法检测到标题段后间距格式信息"
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "第1条参考文献无法检测到左缩进格式信息",
+          "第2条参考文献无法检测到左缩进格式信息",
+          "第3条参考文献无法检测到左缩进格式信息",
+          "第4条参考文献无法检测到左缩进格式信息",
+          "第5条参考文献无法检测到左缩进格式信息",
+          "第6条参考文献无法检测到左缩进格式信息",
+          "第7条参考文献无法检测到左缩进格式信息",
+          "第8条参考文献无法检测到左缩进格式信息",
+          "第9条参考文献无法检测到左缩进格式信息",
+          "第10条参考文献无法检测到左缩进格式信息",
+          "第11条参考文献无法检测到左缩进格式信息",
+          "第12条参考文献无法检测到左缩进格式信息",
+          "第13条参考文献无法检测到左缩进格式信息",
+          "第14条参考文献无法检测到左缩进格式信息",
+          "第15条参考文献无法检测到左缩进格式信息",
+          "第16条参考文献无法检测到左缩进格式信息",
+          "第17条参考文献无法检测到左缩进格式信息",
+          "第18条参考文献无法检测到左缩进格式信息",
+          "第19条参考文献无法检测到左缩进格式信息",
+          "第20条参考文献无法检测到左缩进格式信息",
+          "第21条参考文献无法检测到左缩进格式信息",
+          "第22条参考文献无法检测到左缩进格式信息",
+          "第23条参考文献无法检测到左缩进格式信息",
+          "第24条参考文献无法检测到左缩进格式信息",
+          "第25条参考文献无法检测到左缩进格式信息",
+          "第26条参考文献无法检测到左缩进格式信息",
+          "第27条参考文献无法检测到左缩进格式信息",
+          "第28条参考文献无法检测到左缩进格式信息",
+          "第29条参考文献无法检测到左缩进格式信息",
+          "第30条参考文献无法检测到左缩进格式信息",
+          "第31条参考文献无法检测到左缩进格式信息",
+          "第32条参考文献无法检测到左缩进格式信息",
+          "第33条参考文献无法检测到左缩进格式信息",
+          "第34条参考文献无法检测到左缩进格式信息",
+          "第35条参考文献无法检测到左缩进格式信息",
+          "第36条参考文献无法检测到左缩进格式信息",
+          "第37条参考文献无法检测到左缩进格式信息",
+          "第38条参考文献无法检测到左缩进格式信息",
+          "第39条参考文献无法检测到左缩进格式信息",
+          "第40条参考文献无法检测到左缩进格式信息",
+          "第41条参考文献无法检测到左缩进格式信息",
+          "第42条参考文献无法检测到左缩进格式信息",
+          "第43条参考文献无法检测到左缩进格式信息",
+          "第44条参考文献无法检测到左缩进格式信息",
+          "第45条参考文献无法检测到左缩进格式信息",
+          "第46条参考文献无法检测到左缩进格式信息",
+          "第47条参考文献无法检测到左缩进格式信息",
+          "第48条参考文献无法检测到左缩进格式信息",
+          "第49条参考文献无法检测到左缩进格式信息",
+          "第50条参考文献无法检测到左缩进格式信息",
+          "第51条参考文献无法检测到左缩进格式信息",
+          "第52条参考文献无法检测到左缩进格式信息",
+          "第53条参考文献无法检测到左缩进格式信息",
+          "第54条参考文献无法检测到左缩进格式信息",
+          "检测到 9 条文献未被正文引用:\n  [5] Kulis B, Grauman K. Kernelized locality-sensitive hashing for scalable image sea...\n  [7] Samsir S, Suparno S, Giatman M. Predicting the loan risk towards new customer ap...\n  [18] Datar M, Immorlica N, Indyk P, et al. Locality-sensitive hashing scheme based on...\n  [19] Huang Q, Feng J, Zhang Y, et al. Query-aware locality-sensitive hashing for appr...\n  [26] T. Ge, K. He, Q. Ke, et al. Optimized product quantization for approximate neare...\n  [28] Babenko A, Lempitsky V. Tree quantization for large-scale similarity search and ...\n  [29] Zhang T, Du C, Wang J. Composite quantization for approximate nearest neighbor s...\n  [36] Fu C, Wang C, Cai D. High dimensional similarity search with satellite system gr...\n  [44] RENATO F, POGGIONI V, VAGLINI G. A comparative study on hierarchical navigable s..."
+        ]
+      }
+    },
+    "summary": [
+      "参考文献检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  }
+}

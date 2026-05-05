@@ -10,9 +10,27 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 
+
+def should_skip_check(check_name):
+    """
+    判断是否应该跳过某个检测项
+    参数:
+        check_name: 检测项名称 (font_size, bold, italic, alignment, spacing, indent)
+    返回:
+        bool: True表示跳过该检测项，False表示执行该检测项
+    """
+    global _skip_checks_config
+    if _skip_checks_config is None:
+        return False
+    return check_name in _skip_checks_config
+
+# 全局变量，用于存储当前模块的跳过检测项配置
+_skip_checks_config = []
+
+
 # 导入Title_detect的作者和标题提取功能
 try:
-    from paper_detect.Title_detect import extract_from_docx, parse_authors_by_regex, split_authors_block, get_nonempty_paragraphs
+    from services.paper_detect.Title_detect import extract_from_docx, parse_authors_by_regex, split_authors_block, get_nonempty_paragraphs
     TITLE_DETECT_AVAILABLE = True
 except ImportError:
     TITLE_DETECT_AVAILABLE = False
@@ -377,9 +395,14 @@ def check_keywords_structure(text, tpl):
 def check_keywords_paragraphs(doc, tpl):
     """
     检查关键词段落查找
-    返回 {'ok': bool, 'messages': [], 'keywords_paragraph': paragraph}
+    返回 {
+        'ok': bool,
+        'messages': [],
+        'keywords_paragraph': paragraph,  # 用于内容/整体格式检查
+        'title_paragraph': paragraph or None  # 如果标题单独成段，则为标题所在段
+    }
     """
-    report = {'ok': True, 'messages': [], 'keywords_paragraph': None}
+    report = {'ok': True, 'messages': [], 'keywords_paragraph': None, 'title_paragraph': None}
     
     # 方案1：查找包含Keywords:的段落（正确格式）
     keywords_with_colon = []
@@ -410,12 +433,14 @@ def check_keywords_paragraphs(doc, tpl):
     if len(keywords_with_colon) == 1:
         # 找到正确格式
         report['keywords_paragraph'] = keywords_with_colon[0]
+        report['title_paragraph'] = keywords_with_colon[0]
         ok_msg = tpl.get('messages', {}).get('structure_header_ok')
         if ok_msg:
             report['messages'].append("找到关键词段落（正确格式）")
     elif keywords_alone:
         # 找到错误格式（Keywords单独一行）
         report['ok'] = False
+        report['title_paragraph'] = keywords_alone
         report['keywords_paragraph'] = next_paragraph  # 返回内容段落用于后续格式检查
         report['messages'].append("关键词格式错误：'Keywords'应与内容在同一段落，格式为'Keywords: 关键词1; 关键词2'")
         report['messages'].append("当前错误格式：'Keywords'单独成行，内容另起一段")
@@ -659,7 +684,7 @@ def check_clc_document_format(paragraph, tpl):
         actual_size_pt, actual_font_name, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(check_run, paragraph)
         
         # 字体大小检查
-        if 'font_size_pt' in format_rules:
+        if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
             expected_size_pt = float(format_rules['font_size_pt'])
             actual_size_name = get_font_size(actual_size_pt, tpl)
             expected_size_name = get_font_size(expected_size_pt, tpl)
@@ -668,14 +693,14 @@ def check_clc_document_format(paragraph, tpl):
                 issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
         
         # 字体名称检查
-        if 'font_name' in format_rules:
+        if not should_skip_check('font_name') and 'font_name' in format_rules:
             expected_font_name = str(format_rules['font_name'])
             print(f"CLC/Document字体名称: {actual_font_name} (期望: {expected_font_name})")
             if expected_font_name.lower() not in actual_font_name.lower():
                 issues.append(f"字体应为{expected_font_name}，实际为{actual_font_name}")
         
         # 斜体检查
-        if 'italic' in format_rules:
+        if not should_skip_check('italic') and 'italic' in format_rules:
             expected_italic = bool(format_rules['italic'])
             print(f"CLC/Document斜体: {'是' if actual_italic else '否'} (期望: {'是' if expected_italic else '否'})")
             if actual_italic != expected_italic:
@@ -699,7 +724,7 @@ def check_clc_document_format(paragraph, tpl):
     
     return report
 
-def check_keywords_format(paragraph, tpl):
+def check_keywords_format(paragraph, tpl, title_paragraph=None):
     """
     检查关键词格式（字体、加粗、行间距等，包括混合格式）
     返回 {'ok': bool, 'messages': []}
@@ -720,7 +745,7 @@ def check_keywords_format(paragraph, tpl):
     keywords_title_runs = []  # Keywords标题部分的runs
     content_runs = []  # 关键词内容部分的runs
     
-    # 查找Keywords标题位置
+    # 查找Keywords标题位置（优先在当前段落中查找 "Keywords:"）
     full_text = paragraph.text
     keywords_match = re.search(r'\bKeywords\s*:', full_text, re.IGNORECASE)
     
@@ -742,10 +767,18 @@ def check_keywords_format(paragraph, tpl):
             
             current_pos = run_end
     else:
-        # 没有找到Keywords标题，将第一个run作为标题，其余作为内容
-        if paragraph.runs:
-            keywords_title_runs = [paragraph.runs[0]]
-            content_runs = paragraph.runs[1:] if len(paragraph.runs) > 1 else []
+        # 没有在当前段落中找到Keywords标题
+        # 如果提供了单独的标题段落（如 "Keywords" 独立成行），优先使用该段作为标题
+        if title_paragraph and title_paragraph.text and re.match(r'^\s*Keywords\s*$', title_paragraph.text.strip(), re.IGNORECASE):
+            keywords_title_runs = list(title_paragraph.runs)
+            # 内容仍然使用当前段落（paragraph）
+            if not content_runs and paragraph.runs:
+                content_runs = list(paragraph.runs)
+        else:
+            # 退化方案：没有标题段信息时，将当前段第一个run视为标题
+            if paragraph.runs:
+                keywords_title_runs = [paragraph.runs[0]]
+                content_runs = paragraph.runs[1:] if len(paragraph.runs) > 1 else []
     
     # 检查Keywords标题部分格式
     if keywords_title_runs:
@@ -783,7 +816,7 @@ def check_keywords_format(paragraph, tpl):
         actual_size_pt, actual_font_name, actual_bold, actual_italic, actual_line_spacing = detect_font_for_run(check_run, paragraph)
         
         # 字体大小检查
-        if 'font_size_pt' in format_rules:
+        if not should_skip_check('font_size') and 'font_size_pt' in format_rules:
             expected_size_pt = float(format_rules['font_size_pt'])
             actual_size_name = get_font_size(actual_size_pt, tpl)
             expected_size_name = get_font_size(expected_size_pt, tpl)
@@ -792,14 +825,14 @@ def check_keywords_format(paragraph, tpl):
                 issues.append(f"字体大小应为{expected_size_name}（{expected_size_pt}pt），实际为{actual_size_name}（{actual_size_pt}pt）")
         
         # 字体名称检查
-        if 'font_name' in format_rules:
+        if not should_skip_check('font_name') and 'font_name' in format_rules:
             expected_font_name = str(format_rules['font_name'])
             print(f"字体名称: {actual_font_name} (期望: {expected_font_name})")
             if expected_font_name.lower() not in actual_font_name.lower():
                 issues.append(f"字体应为{expected_font_name}，实际为{actual_font_name}")
         
         # 斜体检查
-        if 'italic' in format_rules:
+        if not should_skip_check('italic') and 'italic' in format_rules:
             expected_italic = bool(format_rules['italic'])
             print(f"斜体: {'是' if actual_italic else '否'} (期望: {'是' if expected_italic else '否'})")
             if actual_italic != expected_italic:
@@ -808,7 +841,7 @@ def check_keywords_format(paragraph, tpl):
                 issues.append(f"字体应为{italic_status}，实际为{actual_status}")
         
         # 行间距检查
-        if 'line_spacing' in format_rules:
+        if not should_skip_check('spacing') and 'line_spacing' in format_rules:
             expected_line_spacing = float(format_rules['line_spacing'])
             actual_spacing_name = get_line_spacing_name(actual_line_spacing, tpl)
             expected_spacing_name = get_line_spacing_name(expected_line_spacing, tpl)
@@ -873,10 +906,18 @@ def check_keywords_format(paragraph, tpl):
     
     return report
 
-def check_keywords_with_template(doc_path, template_identifier):
+def check_keywords_with_template(doc_path, template_identifier, skip_checks=None):
     """
     主检查函数：检查关键词格式、CLC/Document code和脚注
+    参数:
+        doc_path: 文档路径
+        template_identifier: 模板标识符
+        skip_checks: 要跳过的检测项列表，如 ['font_size', 'bold']
     """
+    # 设置全局跳过检测项配置
+    global _skip_checks_config
+    _skip_checks_config = skip_checks or []
+    
     tpl = load_template(template_identifier)
     doc = Document(doc_path)
     
@@ -941,7 +982,8 @@ def check_keywords_with_template(doc_path, template_identifier):
     structure_report = check_keywords_structure(keywords_text, tpl) if keywords_text else {'ok': False, 'messages': ['无法检查关键词结构']}
     
     if paragraphs_report['keywords_paragraph']:
-        format_report = check_keywords_format(paragraphs_report['keywords_paragraph'], tpl)
+        title_paragraph = paragraphs_report.get('title_paragraph') or paragraphs_report['keywords_paragraph']
+        format_report = check_keywords_format(paragraphs_report['keywords_paragraph'], tpl, title_paragraph=title_paragraph)
     else:
         format_report = {'ok': False, 'messages': ['无法检测关键词格式']}
     
@@ -962,13 +1004,14 @@ def check_keywords_with_template(doc_path, template_identifier):
         'structure': structure_report,
         'paragraphs': paragraphs_report,
         'format': format_report,
-        'clc_structure': clc_structure_report,
-        'clc_format': clc_format_report,
+        'clc_document_structure': clc_structure_report,
+        'clc_document_format': clc_format_report,
         'footnote_structure': footnote_structure_report,
         'footnote_format': footnote_format_report,
-        'summary': []
+        'summary': [],
+        'clc_content': clc_structure_report.get('clc_content', '')  # 将提取到的CLC号添加到主报告中
     }
-    
+
     # 生成总结
     all_ok = (structure_report['ok'] and paragraphs_report['ok'] and format_report['ok'] and 
               clc_structure_report['ok'] and clc_format_report['ok'] and

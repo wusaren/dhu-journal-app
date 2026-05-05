@@ -1,0 +1,88 @@
+{
+  "formula_rule": "中文论文公式：公式单独成段，公式编号为半角括号(章-序)，编号右端对齐；编号Times New Roman无特殊颜色；公式内容为Office Math对象（通常为Cambria Math）。",
+  "formula_detection_rules": {
+    "number_pattern": "[#＃]?\\s*(?P<chapter>\\d+)\\s*[-－–]\\s*(?P<seq>\\d+)",
+    "tab_stops": [
+      {
+        "position_chars": 20,
+        "alignment": "center",
+        "description": "公式居中对齐位置"
+      },
+      {
+        "position_chars": 40,
+        "alignment": "right",
+        "description": "编号右对齐位置"
+      }
+    ],
+    "font_requirements": {
+      "formula_content": "Cambria Math",
+      "formula_number": "Times New Roman",
+      "font_size_pt": 10.5
+    },
+    "math_object_detection": {
+      "required": true,
+      "namespaces": ["w:oMath", "m:oMath", "oMath"],
+      "fallback_patterns": [
+        "[=<>≤≥≠±∞∑∏∫]",
+        "[α-ωΑ-Ω]",
+        "[₀-₉⁰-⁹]"
+      ]
+    }
+  },
+  "format_rules": {
+    "formula_paragraph": {
+      "font_size_pt": 12,
+      "tab_stops_required": true,
+      "math_object_preferred": true,
+      "alignment": "left"
+    }
+  },
+  "check_rules": {
+    "debug": true,
+    "tab_stops_check": false,
+    "tab_position_tolerance": 5,
+    "caption_numbering_check": true,
+    "caption_sequential_check": true,
+    "formula_content_italic": true,
+    "formula_content_italic_check": false,
+    "formula_content_bold": false,
+    "formula_number_italic": true,
+    "formula_number_italic_check": false,
+    "formula_number_bold": false,
+    "number_color_check": true,
+    "formula_reference_check": false
+  },
+  "config_descriptions": {
+    "debug": "调试模式开关，开启后会输出详细的检测日志",
+    "tab_stops_check": "是否检查制表位对齐",
+    "tab_position_tolerance": "制表位位置容差（字符数），允许的误差范围",
+    "caption_numbering_check": "是否检查编号连续性",
+    "caption_sequential_check": "是否检查编号顺序",
+    "formula_content_italic": "公式内容是否应为斜体（true=斜体，false=正体）",
+    "formula_content_italic_check": "是否检查公式内容斜体设置（true=检查，false=跳过）",
+    "formula_content_bold": "公式内容是否应为加粗（true=加粗，false=正常）",
+    "formula_number_italic": "公式编号是否应为斜体（true=斜体，false=正体）",
+    "formula_number_italic_check": "是否检查公式编号斜体设置（true=检查，false=跳过）",
+    "formula_number_bold": "公式编号是否应为加粗（true=加粗，false=正常）",
+    "number_color_check": "是否检查公式编号颜色（是否使用默认颜色）"
+  },
+  "messages": {
+    "formula_detection_error": "公式格式检查发现问题",
+    "formula_detection_issue_header": "公式格式检查发现问题：",
+    "tab_stops_error": "制表位设置不正确",
+    "tab_stops_missing": "未检测到制表位设置",
+    "math_object_missing": "未检测到Office Math对象（可能是手动输入的公式）",
+    "font_number_error": "公式编号字体应为{expected}，实际为{actual}",
+    "font_number_color_error": "公式编号应为无特殊颜色",
+    "formula_number_missing": "未检测到公式编号（要求格式为#章-序，如#2-1）",
+    "formula_reference_error": "公式上一段落未提及该公式引用（如：公式{ch}-{seq}）",
+    "summary_overall": "公式格式检查结果: {ok}"
+  },
+  "notes": [
+    "中文论文公式编号为半角括号(章-序)，例如(2-1)，编号右端对齐。",
+    "编号字体：Times New Roman，字号：小四(12pt)，无特殊颜色。",
+    "公式内容建议使用Word的Office Math对象（通常为Cambria Math）。",
+    "建议通过段落制表位实现公式居中与编号右对齐（20字符居中，40字符右对齐）。",
+    "编号识别范围已扩大，支持：(1), (1.1), (1-1), #1, #1-1 等多种格式。"
+  ]
+}

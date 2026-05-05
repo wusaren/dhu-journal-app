@@ -1,0 +1,537 @@
+{
+  "Title": {
+    "module": "Title",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "RESEARCH ON DEEP LEARNING-BASED PREDICTION MODELS FOR THE PROPERTIES OF ORGANIC OPTOELECTRONIC FUNCTIONAL MOLECULES",
+        "title_text": "RESEARCH ON DEEP LEARNING-BASED PREDICTION MODELS FOR THE PROPERTIES OF ORGANIC OPTOELECTRONIC FUNCTIONAL MOLECULES"
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt",
+          "段后间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "标题检查结果: 失败",
+      "英文标题检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Abstract": {
+    "module": "Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "title_paragraph": "摘 要",
+        "content_paragraphs": [
+          "有机光电功能分子在有机光伏器件、荧光探针和发光器件等领域具有重要应用价值，其电子结构、吸收与发射波长及荧光量子产率等关键性质直接影响材料的光电性能与应用效果。传统材料研发主要依赖实验合成与表征，存在研发周期长、试错成本高和筛选效率低等问题。利用机器学习，尤其是图神经网络，对有机光电功能分子的关键性质进行预测，已成为提升材料研发效率、降低实验成本的重要手段。",
+          "本文围绕三类有机光电功能分子开展性质预测研究，包括面向光电转换的有机光伏分子、面向光吸收与发射过程的有机发光分子，以及面向荧光发射行为的有机荧光分子。首先，针对有机光伏材料分子的性质预测任务，构建了融合分子图结构、分子指纹与 Transformer 的 GIFT-Former 模型，用于最高已占分子轨道（HOMO）、最低未占分子轨道（LUMO）、光谱重叠（spectral overlap）和光学相关的 LUMO 能级（optical LUMO）的预测。其次，针对有机发光分子的最大吸收波长（abs）和最大发射波长（emi）的预测，设计了基于双分支图神经网络的预测模型，实现材料分子与溶剂分子的协同建模。进一步地，针对有机荧光分子的多性质预测任务，提出 GIFT-Solv 模型，引入溶剂极性、酸碱性、氢键能力及偶极相关性质等参数，实现对最大吸收波长、最大发射波长和荧光量子产率（PLQY）的多性质联合预测。",
+          "实验结果表明，本文提出的模型在多类有机光电功能分子性质预测任务上均取得了较好的效果。GIFT-Former 在有机光伏分子性质预测中整体优于传统机器学习模型和基础图神经网络模型；双分支图神经网络模型验证了溶剂多模态信息融合在有机发光分子光物理性质预测中的有效性；GIFT-Solv 在有机荧光分子多性质联合预测任务中表现出较好的综合性能。研究结果表明，图神经网络与多模态特征融合方法能够有效提升有机光电功能分子性质预测精度，为候选材料快速筛选、实验优化和研发成本降低提供支持。"
+        ],
+        "content_text": "有机光电功能分子在有机光伏器件、荧光探针和发光器件等领域具有重要应用价值，其电子结构、吸收与发射波长及荧光量子产率等关键性质直接影响材料的光电性能与应用效果。传统材料研发主要依赖实验合成与表征，存在研发周期长、试错成本高和筛选效率低等问题。利用机器学习，尤其是图神经网络，对有机光电功能分子的关键性质进行预测，已成为提升材料研发效率、降低实验成本的重要手段。 本文围绕三类有机光电功能分子开展性质预测研究，包括面向光电转换的有机光伏分子、面向光吸收与发射过程的有机发光分子，以及面向荧光发射行为的有机荧光分子。首先，针对有机光伏材料分子的性质预测任务，构建了融合分子图结构、分子指纹与 Transformer 的 GIFT-Former 模型，用于最高已占分子轨道（HOMO）、最低未占分子轨道（LUMO）、光谱重叠（spectral overlap）和光学相关的 LUMO 能级（optical LUMO）的预测。其次，针对有机发光分子的最大吸收波长（abs）和最大发射波长（emi）的预测，设计了基于双分支图神经网络的预测模型，实现材料分子与溶剂分子的协同建模。进一步地，针对有机荧光分子的多性质预测任务，提出 GIFT-Solv 模型，引入溶剂极性、酸碱性、氢键能力及偶极相关性质等参数，实现对最大吸收波长、最大发射波长和荧光量子产率（PLQY）的多性质联合预测。 实验结果表明，本文提出的模型在多类有机光电功能分子性质预测任务上均取得了较好的效果。GIFT-Former 在有机光伏分子性质预测中整体优于传统机器学习模型和基础图神经网络模型；双分支图神经网络模型验证了溶剂多模态信息融合在有机发光分子光物理性质预测中的有效性；GIFT-Solv 在有机荧光分子多性质联合预测任务中表现出较好的综合性能。研究结果表明，图神经网络与多模态特征融合方法能够有效提升有机光电功能分子性质预测精度，为候选材料快速筛选、实验优化和研发成本降低提供支持。",
+        "title_paragraph_index": 62,
+        "content_paragraphs_indices": [],
+        "content_paragraph_indexes": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": true,
+        "messages": []
+      }
+    },
+    "summary": [
+      "摘要检查结果: 通过"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "English_Abstract": {
+    "module": "English_Abstract",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": []
+      },
+      "[标题格式]": {
+        "ok": true,
+        "messages": []
+      },
+      "[内容格式]": {
+        "ok": false,
+        "messages": [
+          "第1段行距应为1.25倍，当前1.5",
+          "第1段应左对齐",
+          "第1段首行缩进应为4.0字符，当前约2.5字符",
+          "第2段行距应为1.25倍，当前1.5",
+          "第2段应左对齐",
+          "第2段首行缩进应为4.0字符，当前约2.5字符",
+          "第3段行距应为1.25倍，当前1.5",
+          "第3段应左对齐",
+          "第3段首行缩进应为4.0字符，当前约2.5字符",
+          "第4段字号应为11pt，当前12.0pt",
+          "第4段行距应为1.25倍，当前1.5",
+          "第4段应左对齐",
+          "第4段首行缩进应为4.0字符，当前约16.7字符"
+        ]
+      }
+    },
+    "summary": [
+      "英文摘要检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Keywords": {
+    "module": "Keywords",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "关键词分隔符错误，应使用英文逗号（,）分隔，而不是分号、中文逗号或其他符号",
+          "关键词数量过少（1个），应为3-5个关键词"
+        ],
+        "keywords_paragraph": "KEY WORDS: graph neural network; organic optoelectronic functional molecules; property prediction",
+        "keywords_text": "graph neural network; organic optoelectronic functional molecules; property prediction",
+        "keywords_list": [
+          "graph neural network; organic optoelectronic functional molecules; property prediction"
+        ],
+        "keywords_paragraph_index": 83
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "首行缩进应为0.0pt，实际为-90.0pt",
+          "左缩进应为0.0pt，实际为90.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "中文和英文关键词检测均失败",
+      "关键词检查结果: 失败",
+      "关键词检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Content": {
+    "module": "Content",
+    "checks": {
+      "[结构]": {
+        "ok": false,
+        "messages": [
+          "中文正文标题层级结构有问题"
+        ],
+        "titles": []
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "没有标题可供格式检查"
+        ]
+      }
+    },
+    "summary": [],
+    "extracted": {},
+    "details": {}
+  },
+  "Formula": {
+    "module": "Formula",
+    "checks": {
+      "[公式检测]": {
+        "ok": false,
+        "messages": [
+          "公式检测过程中发生异常: BaseOxmlElement.xpath() got an unexpected keyword argument 'namespaces'"
+        ]
+      }
+    },
+    "summary": [
+      "检查失败: BaseOxmlElement.xpath() got an unexpected keyword argument 'namespaces'"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "TOC": {
+    "module": "TOC",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "titles": [
+          {
+            "title_type": "目录",
+            "paragraph": "目录",
+            "index": 86,
+            "text": "目录"
+          },
+          {
+            "title_type": "图录",
+            "paragraph": "图录",
+            "index": 171,
+            "text": "图录"
+          },
+          {
+            "title_type": "表录",
+            "paragraph": "表录",
+            "index": 188,
+            "text": "表录"
+          }
+        ]
+      },
+      "[目录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "行间距应为单倍行距（1.0倍），实际为1.5倍行距（1.5倍）",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      },
+      "[图录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      },
+      "[表录格式]": {
+        "ok": false,
+        "messages": [
+          "字体应为不加粗，实际为加粗",
+          "段前间距应为0.7厘米（约19.8pt），实际为0.0pt"
+        ]
+      }
+    },
+    "summary": [
+      "目录/图录/表录检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  },
+  "Figure": {
+    "module": "Figure",
+    "checks": {
+      "[编号]": {
+        "ok": false,
+        "messages": [
+          "图片编号重复：3-5",
+          "图片编号重复：3-6",
+          "章节3的图片编号不连续，缺失编号：7, 8"
+        ]
+      },
+      "[图检测]": {
+        "ok": false,
+        "messages": [
+          "图 1-1 文章组织架构图：标题格式——图片标题中文字体应为宋体（当前：楷体_GB2312）",
+          "图 1-1 文章组织架构图：图片对齐——图片应居中对齐（当前：两端对齐）",
+          "图 2-1 Transformer基本模型结构图：标题格式——图片标题中文字体应为宋体（当前：楷体_GB2312）"
+        ],
+        "total": 14,
+        "failed": 2
+      }
+    },
+    "summary": {
+      "figure_count": 14
+    },
+    "extracted": {},
+    "details": {
+      "figure_count": 14
+    }
+  },
+  "Table": {
+    "module": "Table",
+    "checks": {
+      "[编号]": {
+        "ok": true,
+        "messages": []
+      },
+      "[表格检测]": {
+        "ok": false,
+        "messages": [
+          "表4-1GIFT-Former 模型训练的基本参数：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表4-1GIFT-Former 模型训练的基本参数：表格样式——表格不应有左边框（三线表格式）",
+          "表4-2不同模型在 OPV 分子性质预测任务上的性能对比：表格样式——表格不应有左边框（三线表格式）",
+          "表5-1双分支图神经网络模型实验超参数：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表5-1双分支图神经网络模型实验超参数：表格样式——表格不应有左边框（三线表格式）",
+          "表5-2基线模型在 abs 与 emi 任务上的实验结果：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表5-2基线模型在 abs 与 emi 任务上的实验结果：表格样式——表格不应有左边框（三线表格式）",
+          "表5-3不同模型在 abs 与 emi 预测任务上的性能对比：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表5-3不同模型在 abs 与 emi 预测任务上的性能对比：表格样式——表格不应有左边框（三线表格式）",
+          "表5-4消融实验模型在 abs 与 emi 预测任务上的性能对比：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表5-4消融实验模型在 abs 与 emi 预测任务上的性能对比：表格样式——表格不应有左边框（三线表格式）",
+          "表5-4消融实验模型在 abs 与 emi 预测任务上的性能对比：表格引用——表格上一段落未提及该表格引用（如：表{ch}-{seq}）",
+          "表6-1不同模型在 ChemFluor 数据集多性质预测任务上的性能对比：中文表题格式——中文表题字号应为五号(10.5pt)",
+          "表6-1不同模型在 ChemFluor 数据集多性质预测任务上的性能对比：表格样式——表格不应有左边框（三线表格式）"
+        ],
+        "total": 7,
+        "failed": 7
+      }
+    },
+    "summary": [
+      "表格格式检查结果: 发现问题",
+      "检测到 7 个表格"
+    ],
+    "extracted": {},
+    "details": {
+      "table_count": 7
+    }
+  },
+  "References": {
+    "module": "References",
+    "checks": {
+      "[结构]": {
+        "ok": true,
+        "messages": [],
+        "header_paragraph": "参 考 文 献",
+        "content_paragraphs": [
+          "Zhong J, Zhu W, Shen S, et al. Machine learning for organic fluorescent materials[J]. Aggregate, 2025, 6(9): e70089.",
+          "Bian Q, Wang X. Machine Learning-Driven Design of Fluorescent Materials: Principles, Methodologies, and Future Directions[J]. Nanomaterials, 2025, 15(19): 1495.",
+          "Zhao Y, Chen K, Yu B, et al. Development of organic aggregation-induced emission fluorescent materials based on machine learning models and experimental validation[J]. Journal of Molecular Structure, 2024, 1317: 139126.",
+          "Deshmukh P S, Sengupta D. Robust Prediction of Fluorescence Properties using Machine Learning Approaches[J]. Available at SSRN 6102560.",
+          "Zhong J, Du K, Zhou N, et al. Accurate Property Prediction of Fluorescent Dyes with KPGT-Fluor[J]. 2025.",
+          "Song W, Zhang Y, Xiong L, et al. Fluor-tools: an integrated platform for dye property prediction and structure optimization[J]. Digital Discovery, 2025, 4(12): 3728-3743.",
+          "Lyu J, Zhou N, Zhong J, et al. FluorGen: A graph-based deep learning model generates fluorescent dyes with structural fragments[J]. Dyes and Pigments, 2025: 113330.",
+          "Walters W P, Barzilay R. Applications of deep learning in molecule generation and molecular property prediction[J]. Accounts of chemical research, 2020, 54(2): 263-270.",
+          "Li Z, Jiang M, Wang S, et al. Deep learning methods for molecular representation and property prediction[J]. Drug Discovery Today, 2022, 27(12): 103373.",
+          "Pang C, Tong H H Y, Wei L. Advanced deep learning methods for molecular property prediction[J]. Quantitative Biology, 2023, 11(4): 395-404.",
+          "Wieder O, Kohlbacher S, Kuenemann M, et al. A compact review of molecular property prediction with graph neural networks[J]. Drug Discovery Today: Technologies, 2020, 37: 1-12.",
+          "Xia J, Zhang L, Zhu X, et al. Understanding the limitations of deep models for molecular property prediction: Insights and solutions[J]. Advances in Neural Information Processing Systems, 2023, 36: 64774-64792.",
+          "Shen J, Nicolaou C A. Molecular property prediction: recent trends in the era of artificial intelligence[J]. Drug Discovery Today: Technologies, 2019, 32: 29-36.",
+          "Sultan A, Sieg J, Mathea M, et al. Transformers for molecular property prediction: Lessons learned from the past five years[J]. Journal of Chemical Information and Modeling, 2024, 64(16): 6259-6280.",
+          "Alsaiari N S, Rasool A, Manzoor R, et al. Feature-Driven Machine Learning Approach for Predicting Photophysical Properties of Fluorescent Compounds: A Cheminformatics Pipeline[J]. Synthetic Metals, 2025: 118045.",
+          "Lyu J, Zhong J, Zhou N, et al. KPGT-Fluor: A Graph Transformer Framework for Accurate Property Prediction of Fluorescent Dyes under Different Solvent Environment[J]. Journal of Chemical Information and Modeling, 2026.",
+          "Souza R C, Duarte J C, Goldschmidt R R, et al. Predicting fluorescence emission wavelengths and quantum yields via machine learning[J]. Journal of Chemical Information and Modeling, 2025, 65(7): 3270-3281.",
+          "Li R, Ou Q, Shuai Z. Combining quantum chemistry, machine learning and rate theory for organic luminescent materials[J]. Chemical Society Reviews, 2025.",
+          "Shao J, Liu Y, Yan J, et al. Prediction of maximum absorption wavelength using deep neural networks[J]. Journal of Chemical Information and Modeling, 2022, 62(6): 1368-1375.",
+          "Mahato K D, Kumar U. Optimized Machine learning techniques Enable prediction of organic dyes photophysical Properties: Absorption Wavelengths, emission Wavelengths, and quantum yields[J]. Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy, 2024, 308: 123768.",
+          "Ye Z R, Huang I S, Chan Y T, et al. Predicting the emission wavelength of organic molecules using a combinatorial QSAR and machine learning approach[J]. RSC advances, 2020, 10(40): 23834-23841.",
+          "Jin Y, Wang Z, Dong M, et al. Data-driven machine learning models for predicting the maximum absorption and emission wavelengths of single benzene fluorophores[J]. Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy, 2025, 326: 125213.",
+          "Li B, Liu R, Bai H, et al. Can Machine Learning Be More Accurate Than TD-DFT? Prediction of Emission Wavelengths and Quantum Yields of Organic Fluorescent Materials[J]. ChemRxiv, 2020.",
+          "Zhao S, Li J, Wu L, et al. High-precision prediction of fluorescence wavelength of organic based on ensemble automatic machine learning method and online querying[J]. Dyes and Pigments, 2025, 242: 113012.",
+          "Jung S G, Jung G, Cole J M. Automatic prediction of peak optical absorption wavelengths in molecules using convolutional neural networks[J]. Journal of Chemical Information and Modeling, 2024, 64(5): 1486-1501.",
+          "Liu X, Xu Z, Cole J M. Molecular design of UV–vis absorption and emission properties in organic fluorophores: toward larger bathochromic shifts, enhanced molar extinction coefficients, and greater stokes shifts[J]. The Journal of Physical Chemistry C, 2013, 117(32): 16584-16595.",
+          "Ju C W, Bai H, Li B, et al. Machine learning enables highly accurate predictions of photophysical properties of organic fluorescent materials: Emission wavelengths and quantum yields[J]. Journal of Chemical Information and Modeling, 2021, 61(3): 1053-1065.",
+          "Chebotaev P P, Buglak A A, Sheehan A, et al. Predicting fluorescence to singlet oxygen generation quantum yield ratio for BODIPY dyes using QSPR and machine learning[J]. Physical Chemistry Chemical Physics, 2024, 26(38): 25131-25142.",
+          "Kanematsu Y, Ohta A, Nagai S, et al. A Practical Application of Machine Learning for the Development of Metallole-Based Fluorescent Materials[J]. Molecules, 2025, 30(8): 1686.",
+          "Buglak A A, Chebotaev P P, Filatov M A. Applications of QSPR and Machine Learning in Molecular Photonics[J]. Advanced Optical Materials, 2025, 13(33): e01713.",
+          "Shi H, Shi Y, Liang Z, et al. Machine learning-enabled discovery of multi-resonance TADF molecules: Unraveling PLQY predictions from molecular structures[J]. Chemical Engineering Journal, 2024, 494: 153150.",
+          "Choi JY, Zhang P, Mehta K, et al. Scalable training of graph convolutional neural networks for fast and accurate predictions of HOMO-LUMO gap in molecules[J]. Journal of Cheminformatics, 2022, 14(1): 70.",
+          "Khan A, Akbar B, Chong K T, et al. Bridging experiment and deep learning: Predicting of electronic properties in organic semiconductors using residual-gated graph neural networks[J]. Materials Today Energy, 2025, 52: 101959.",
+          "Igarashi Y, Re S, Kojima R, et al. Development of a GCN-based model to predict in vitro phototoxicity from the chemical structure and HOMO-LUMO gap[J]. The Journal of Toxicological Sciences, 2023, 48(5): 243-249.",
+          "Rahaman O, Gagliardi A. Deep learning total energies and orbital energies of large organic molecules using hybridization of molecular fingerprints[J]. Journal of Chemical Information and Modeling, 2020, 60(12): 5971-5983.",
+          "Abbassi O, Ziti S. QMGBP-DL: a deep learning and machine learning approach for quantum molecular graph band-gap prediction[J]. Molecular Diversity, 2025, 29(4): 3501-3515.",
+          "Kosasih E E, Cabezas J, Sumba X, et al. On graph neural network ensembles for large-scale molecular property prediction[J]. arXiv preprint arXiv:2106.15529, 2021.",
+          "Stein H S, Guevarra D, Newhouse P F, et al. Machine learning of optical properties of materials–predicting spectra from images and images from spectra[J]. Chemical science, 2019, 10(1): 47-55.",
+          "Verma S, Chugh S, Ghosh S, et al. A comprehensive deep learning method for empirical spectral prediction and its quantitative validation of nano-structured dimers[J]. Scientific Reports, 2023, 13(1): 1129.",
+          "Ho Manh L, Chen V C P, Rosenberger J, et al. Prediction of vacuum ultraviolet/ultraviolet gas-phase absorption spectra using molecular feature representations and machine learning[J]. Journal of Chemical Information and Modeling, 2024, 64(14): 5547-5556.",
+          "Ye W, Li J, Cai X. Mfgnn: Multi‐Scale Feature‐Attentive Graph Neural Networks for Molecular Property Prediction[J]. Journal of Computational Chemistry, 2025, 46(3): e70011.",
+          "Chen S, Wulamu A, Zou Q, et al. MD-GNN: A mechanism-data-driven graph neural network for molecular properties prediction and new material discovery[J]. Journal of Molecular Graphics and Modelling, 2023, 123: 108506.",
+          "Lu M, Du L, Cui Z, et al. Quantum-embedded graph neural network architecture for molecular property prediction[J]. Journal of Chemical Information and Modeling, 2025, 65(15): 8057-8065.",
+          "Qu C, Schneider B I, Kearsley A J, et al. Applying graph neural network models to molecular property prediction using high-quality experimental data[J]. Artificial Intelligence Chemistry, 2024, 2(1): 100050.",
+          "Zhao Z, Shi G, Wu X, et al. DIG-Mol: A contrastive dual-interaction graph neural network for molecular property prediction[J]. IEEE Journal of Biomedical and Health Informatics, 2024, 29(3): 1735-1746.",
+          "Panapitiya G, Gao P, Maupin C M, et al. FragNet: a graph neural network for molecular property prediction with four levels of interpretability[J]. Journal of the American Chemical Society, 2026.",
+          "Jiang S, Balaprakash P. Graph neural network architecture search for molecular property prediction[C]//2020 IEEE International conference on big data (big data). IEEE, 2020: 1346-1353.",
+          "Liu S, Chen M, Yao X, et al. Fingerprint-enhanced hierarchical molecular graph neural networks for property prediction[J]. Journal of Pharmaceutical Analysis, 2025, 15(6): 101242.",
+          "Zhang T, Xia C, Yang H, et al. SGNN-T: space graph neural network coupled transformer for molecular property prediction[J]. Computational Materials Science, 2025, 246: 113358.",
+          "Wang H, Zhang A, Zhong Y, et al. Chain-aware graph neural networks for molecular property prediction[J]. Bioinformatics, 2024, 40(10): btae574.",
+          "See T J, Zhang D, Boley M, et al. Graph neural network-based molecular property prediction with patch aggregation[J]. Journal of Chemical Theory and Computation, 2024, 20(20): 8886-8896.",
+          "Vitz M, Mohammadbagherpoor H, Sandeep S, et al. Hybrid quantum graph neural network for molecular property prediction[J]. arXiv preprint arXiv:2405.05205, 2024.",
+          "Gao T, Ji Y, Liu C, et al. Molecular descriptor-enhanced graph neural network for energetic molecular property prediction[J]. Science China Materials, 2024, 67(4): 1243-1252."
+        ],
+        "blank_lines_after_header": 2,
+        "header_paragraph_index": 697,
+        "content_paragraph_indices": [
+          700,
+          701,
+          702,
+          703,
+          704,
+          705,
+          706,
+          707,
+          708,
+          709,
+          710,
+          711,
+          712,
+          713,
+          714,
+          715,
+          716,
+          717,
+          718,
+          719,
+          720,
+          721,
+          722,
+          723,
+          724,
+          725,
+          726,
+          727,
+          728,
+          729,
+          730,
+          731,
+          732,
+          733,
+          734,
+          735,
+          736,
+          737,
+          738,
+          739,
+          740,
+          741,
+          742,
+          743,
+          744,
+          745,
+          746,
+          747,
+          748,
+          749,
+          750,
+          751,
+          752
+        ],
+        "reference_numbers": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ]
+      },
+      "[标题格式]": {
+        "ok": false,
+        "messages": [
+          "无法检测到参考文献标题行间距格式信息",
+          "标题段前间距应为0.7厘米，实际约为0.42厘米"
+        ]
+      },
+      "[格式]": {
+        "ok": false,
+        "messages": [
+          "第1条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第2条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第3条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第4条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第5条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第6条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第7条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第8条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第9条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第10条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第11条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第12条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第13条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第14条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第15条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第16条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第17条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第18条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第19条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第20条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第21条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第22条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第23条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第24条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第25条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第26条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第27条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第28条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第29条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第30条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第31条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第32条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第33条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第34条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第35条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第36条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第37条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第38条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第39条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第40条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第41条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第42条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第43条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第44条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第45条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第46条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第47条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第48条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第49条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第50条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第51条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第52条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "第53条参考文献应使用悬挂缩进（首行无缩进，后续行缩进2.0字符），当前未设置缩进",
+          "引用检测通过，共引用 53 次"
+        ]
+      }
+    },
+    "summary": [
+      "参考文献检查结果: 失败"
+    ],
+    "extracted": {},
+    "details": {}
+  }
+}
