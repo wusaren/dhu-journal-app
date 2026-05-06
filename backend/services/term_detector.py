@@ -142,7 +142,7 @@ class TermDetector:
             text = para.text.strip()
             
             # 检测Keywords行
-            if re.match(r'^Keywords?\s*[:：]', text, re.IGNORECASE):
+            if re.match(r'^Key\s*words?\s*[:：]', text, re.IGNORECASE):
                 match = re.search(r'[:：]\s*(.+)', text, re.IGNORECASE)
                 if match:
                     keyword_text = match.group(1)
